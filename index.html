@@ -2054,7 +2054,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
   align-items:center;justify-content:center;
 ">
   <div style="background:#0d1e30;border:1px solid rgba(201,162,39,0.2);border-radius:14px;padding:32px;max-width:480px;width:90%;position:relative;">
-    <button onclick="fecharModalEmpresa()" style="position:absolute;top:12px;right:16px;background:transparent;border:none;color:rgba(200,215,235,0.3);font-size:1.2em;cursor:pointer;"></button>
+    <button onclick="fecharModalEmpresa()" style="position:absolute;top:12px;right:16px;background:transparent;border:none;color:rgba(200,215,235,0.3);font-size:1.2em;cursor:pointer;">×</button>
     <div style="font-family:'Syne',sans-serif;font-size:1em;font-weight:700;color:#c9a227;margin-bottom:4px" id="modal-emp-titulo">+ Nova Empresa</div>
     <p style="font-size:0.8em;color:rgba(200,215,235,0.45);margin-bottom:20px">Digite o CNPJ para buscar automaticamente na Receita Federal.</p>
 
@@ -2144,7 +2144,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
   align-items:center;justify-content:center;
 ">
   <div style="background:#0d1e30;border:1px solid rgba(201,162,39,0.25);border-radius:14px;padding:24px;max-width:560px;width:90%;position:relative;max-height:88vh;overflow-y:auto;">
-    <button onclick="fecharModalFilial()" style="position:absolute;top:12px;right:16px;background:transparent;border:none;color:rgba(200,215,235,0.3);font-size:1.2em;cursor:pointer;z-index:2;"></button>
+    <button onclick="fecharModalFilial()" style="position:absolute;top:12px;right:16px;background:transparent;border:none;color:rgba(200,215,235,0.3);font-size:1.2em;cursor:pointer;z-index:2;">×</button>
     <div style="font-family:'Syne',sans-serif;font-size:1em;font-weight:700;color:#c9a227;margin-bottom:4px" id="modal-fil-titulo">+ Nova Filial</div>
     <p style="font-size:0.76em;color:rgba(200,215,235,0.45);margin-bottom:14px;line-height:1.5">Filial = estabelecimento com CNPJ próprio. Campos por estabelecimento variam de filial pra filial. Regime tributário, sócios e patrimônio são únicos do grupo (CNPJ raiz).</p>
 
@@ -2588,9 +2588,9 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
   <!-- Topbar v30.15.2: só -->
   <div class="topbar" style="justify-content:flex-start;">
     <button id="btn-toggle-sidebar" onclick="toggleSidebar()" title="Ocultar/Mostrar menu" style="background:linear-gradient(135deg,#c9a227,#e8b020);color:#0c1628;border:none;width:36px;height:36px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.05em;font-weight:800;flex-shrink:0;">
-      <span id="sandwich-icon"></span>
+      <span id="sandwich-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span>
     </button>
-    <button id="btn-tema-topbar" onclick="toggleTema()" title="Alternar tema claro/escuro" style="background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.16);width:36px;height:36px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.15em;flex-shrink:0;transition:all .2s;"></button>
+    <button id="btn-tema-topbar" onclick="toggleTema()" title="Alternar tema claro/escuro" style="background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.16);width:36px;height:36px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.15em;flex-shrink:0;transition:all .2s;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a227" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
     <button onclick="abrirPagina('tour',null)" title="Imersão — Aprenda a usar a ferramenta" style="background:rgba(201,162,39,0.10);color:rgba(201,162,39,0.85);border:1px solid rgba(201,162,39,0.28);height:36px;padding:0 14px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:0.78em;font-weight:600;flex-shrink:0;white-space:nowrap;font-family:'DM Sans',sans-serif;">Aprenda</button>
     <button id="btn-cliente-topbar" onclick="LH_abrirSeletorCliente()" title="Cliente ativo — clique para trocar" style="background:rgba(201,162,39,0.12);color:#e8b020;border:1px solid rgba(201,162,39,0.40);height:36px;padding:0 14px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:7px;font-size:0.78em;font-weight:700;flex-shrink:0;white-space:nowrap;font-family:'DM Sans',sans-serif;"><span style="opacity:.85;"></span><span id="btn-cliente-topbar-nome">Selecionar cliente</span><span style="opacity:.6;font-size:0.85em;">▼</span></button>
     <div id="lh-aprenda-topbar" style="display:none;align-items:center;gap:9px;height:36px;padding:0 11px;border-radius:8px;background:rgba(201,162,39,0.10);border:1px solid rgba(201,162,39,0.38);flex-shrink:0;white-space:nowrap;font-family:'DM Sans',sans-serif;">
@@ -2613,7 +2613,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
   </div>
 
   <!-- v30.10 ONDA 2.A.3 — FAB Sair da Apresentação (visível só em modo apresentação) -->
-  <button class="lh-fab-sair-apresentacao" onclick="toggleModoApresentacao()" title="Sair do modo apresentação">Sair Apresentação</button>
+  <button class="lh-fab-sair-apresentacao" onclick="toggleModoApresentacao()" title="Sair do modo apresentação">× Sair Apresentação</button>
 
   <!-- Modal de Busca Global -->
   <div id="busca-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9998;align-items:flex-start;justify-content:center;padding-top:10vh;" onclick="if(event.target===this)fecharBuscaGlobal()">
@@ -4219,7 +4219,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
           <div class="input-group"><label>Folha mensal (R$) <span style="font-size:0.82em;color:var(--text3);">— p/ Fator R</span></label><input type="number" class="cnae-folha" placeholder="Ex: 15000"></div>
           <div class="input-group"><label>Margem lucro (%) <span style="font-size:0.82em;color:var(--text3);">— p/ Real</span></label><input type="number" class="cnae-margem" placeholder="Ex: 18"></div>
           <div class="input-group"><label>Segmento</label><select class="cnae-seg"></select></div>
-          <button onclick="removerLinhaCNAE(this)" style="padding:8px 12px;background:rgba(220,38,38,0.15);color:#dc6b7a;border:1px solid rgba(220,38,38,0.3);border-radius:7px;cursor:pointer;height:fit-content;"></button>
+          <button onclick="removerLinhaCNAE(this)" style="padding:8px 12px;background:rgba(220,38,38,0.15);color:#dc6b7a;border:1px solid rgba(220,38,38,0.3);border-radius:7px;cursor:pointer;height:fit-content;">×</button>
         </div>
         <div class="cnae-linha" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:10px;align-items:end;">
           <div class="input-group"><label>CNAE 2 — descrição</label><input type="text" class="cnae-desc" placeholder="Ex: Coleta de resíduos"></div>
@@ -4227,7 +4227,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
           <div class="input-group"><label>Folha mensal (R$) <span style="font-size:0.82em;color:var(--text3);">— p/ Fator R</span></label><input type="number" class="cnae-folha" placeholder="Ex: 33000"></div>
           <div class="input-group"><label>Margem lucro (%) <span style="font-size:0.82em;color:var(--text3);">— p/ Real</span></label><input type="number" class="cnae-margem" placeholder="Ex: 18"></div>
           <div class="input-group"><label>Segmento</label><select class="cnae-seg"></select></div>
-          <button onclick="removerLinhaCNAE(this)" style="padding:8px 12px;background:rgba(220,38,38,0.15);color:#dc6b7a;border:1px solid rgba(220,38,38,0.3);border-radius:7px;cursor:pointer;height:fit-content;"></button>
+          <button onclick="removerLinhaCNAE(this)" style="padding:8px 12px;background:rgba(220,38,38,0.15);color:#dc6b7a;border:1px solid rgba(220,38,38,0.3);border-radius:7px;cursor:pointer;height:fit-content;">×</button>
         </div>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;">
@@ -5367,7 +5367,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
               <div class="input-group"><label>Fonte — descrição</label><input type="text" class="c07-f-desc" placeholder="Ex: Salário CLT"></div>
               <div class="input-group"><label>Valor mensal (R$)</label><input type="number" class="c07-f-valor" placeholder="Ex: 8000" oninput="somarFontesC07()"></div>
               <div class="input-group"><label>Tipo</label><select class="c07-f-tipo" onchange="somarFontesC07()"><option value="principal">Renda principal</option><option value="outra">Outra renda (base IRPFM)</option></select></div>
-              <button onclick="removerFonteC07(this)" style="padding:7px 11px;background:rgba(220,38,38,0.15);color:#dc6b7a;border:1px solid rgba(220,38,38,0.3);border-radius:7px;cursor:pointer;height:fit-content;"></button>
+              <button onclick="removerFonteC07(this)" style="padding:7px 11px;background:rgba(220,38,38,0.15);color:#dc6b7a;border:1px solid rgba(220,38,38,0.3);border-radius:7px;cursor:pointer;height:fit-content;">×</button>
             </div>
           </div>
           <button onclick="adicionarFonteC07()" style="padding:8px 14px;background:rgba(201,162,39,0.12);color:#c9a227;border:1px solid rgba(201,162,39,0.25);border-radius:7px;font-weight:700;cursor:pointer;font-size:0.85em;">+ Adicionar fonte</button>
@@ -5606,7 +5606,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
               <div class="input-group"><label>Imóvel — descrição</label><input type="text" class="n15-im-desc" placeholder="Ex: Apto Centro"></div>
               <div class="input-group"><label>Valor (R$)</label><input type="number" class="n15-im-valor" placeholder="Ex: 800000" oninput="somarImoveisN15()"></div>
               <div class="input-group"><label>Aluguel anual (R$)</label><input type="number" class="n15-im-aluguel" placeholder="Ex: 48000" oninput="somarImoveisN15()"></div>
-              <button onclick="removerImovelN15(this)" style="padding:7px 11px;background:rgba(220,38,38,0.15);color:#dc6b7a;border:1px solid rgba(220,38,38,0.3);border-radius:7px;cursor:pointer;height:fit-content;"></button>
+              <button onclick="removerImovelN15(this)" style="padding:7px 11px;background:rgba(220,38,38,0.15);color:#dc6b7a;border:1px solid rgba(220,38,38,0.3);border-radius:7px;cursor:pointer;height:fit-content;">×</button>
             </div>
           </div>
           <button onclick="adicionarImovelN15()" style="padding:8px 14px;background:rgba(201,162,39,0.12);color:#c9a227;border:1px solid rgba(201,162,39,0.25);border-radius:7px;font-weight:700;cursor:pointer;font-size:0.85em;">+ Adicionar imóvel</button>
@@ -5840,7 +5840,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
       </div>
     </div>
     <div class="input-card">
-      <h3>Premissas do regime regular (CBS/IBS) — confirmar c/ regulamento</h3>
+      <h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg> Premissas do regime regular (CBS/IBS) — confirmar c/ regulamento</h3>
       <div class="input-grid-2">
         <div class="input-group">
           <label>Alíquota referência IBS+CBS (%)</label>
@@ -7886,7 +7886,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
       <ul style="margin-left:22px;color:rgba(232,237,245,0.85);">
         <li><strong>Inciso II — Acesso:</strong> ver todos os dados armazenados via "Meus Dados" no menu;</li>
         <li><strong>Inciso V — Portabilidade:</strong> exportar em JSON via botão "Exportar" na empresa;</li>
-        <li><strong>Inciso VI — Eliminação:</strong> botão "Esquecer" remove a empresa e TODOS os dados relacionados;</li>
+        <li><strong>Inciso VI — Eliminação:</strong> botão "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Esquecer" remove a empresa e TODOS os dados relacionados;</li>
         <li><strong>Inciso VII — Informação compartilhamento:</strong> nenhum dado é compartilhado por padrão.</li>
       </ul>
 
@@ -7927,7 +7927,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
       <button onclick="renderizarInventarioLGPD()" style="padding:10px 18px;background:rgba(201,162,39,0.10);color:#c9a227;border:1px solid rgba(201,162,39,0.25);border-radius:8px;font-weight:600;cursor:pointer;">Atualizar inventário</button>
       <button onclick="exportarLogsLGPD()" style="padding:10px 18px;background:rgba(255,255,255,0.05);color:#06b6d4;border:1px solid rgba(201,162,39,0.25);border-radius:8px;font-weight:600;cursor:pointer;">Exportar logs CSV</button>
       <button onclick="abrirPagina('lgpd',null)" style="padding:10px 18px;background:rgba(201,162,39,0.10);color:#c9a227;border:1px solid rgba(201,162,39,0.25);border-radius:8px;font-weight:600;cursor:pointer;">Política de Privacidade</button>
-      <button onclick="confirmarExpurgoTotal()" style="padding:10px 18px;background:rgba(239,68,68,0.10);color:#ef4444;border:1px solid rgba(239,68,68,0.25);border-radius:8px;font-weight:600;cursor:pointer;">Expurgar TODOS os dados</button>
+      <button onclick="confirmarExpurgoTotal()" style="padding:10px 18px;background:rgba(239,68,68,0.10);color:#ef4444;border:1px solid rgba(239,68,68,0.25);border-radius:8px;font-weight:600;cursor:pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Expurgar TODOS os dados</button>
       <!-- v28 ONDA D.4 — Backup criptografado -->
       <button onclick="exportarBackupCriptografado()" style="padding:10px 18px;background:rgba(16,185,129,0.10);color:#10b981;border:1px solid rgba(16,185,129,0.25);border-radius:8px;font-weight:600;cursor:pointer;">Salvar Backup</button>
       <button onclick="importarBackupCriptografado()" style="padding:10px 18px;background:rgba(255,255,255,0.04);color:#c9a227;border:1px solid rgba(201,162,39,0.20);border-radius:8px;font-weight:600;cursor:pointer;">Restaurar backup</button>
@@ -9671,7 +9671,7 @@ function toggleModoApresentacao() {
   try { localStorage.setItem('lh_modo_apresentacao', ativo ? '1' : '0'); } catch(e){}
   // Feedback ao entrar
   if(ativo && typeof mostrarToast === 'function') {
-    mostrarToast('Modo Apresentação ativado · ESC ou pra sair', 'success');
+    mostrarToast('Modo Apresentação ativado · ESC ou × pra sair', 'success');
   }
 }
 
@@ -11124,7 +11124,7 @@ function adicionarLinhaCNAE(){
     '<div class="input-group"><label>Folha mensal (R$) <span style="font-size:0.82em;color:var(--text3);">— p/ Fator R</span></label><input type="number" class="cnae-folha" placeholder="Ex: 12500"></div>'+
     '<div class="input-group"><label>Margem lucro (%) <span style="font-size:0.82em;color:var(--text3);">— p/ Real</span></label><input type="number" class="cnae-margem" placeholder="Ex: 18"></div>'+
     '<div class="input-group"><label>Segmento</label><select class="cnae-seg">'+CNAE_SEG_OPTIONS+'</select></div>'+
-    '<button onclick="removerLinhaCNAE(this)" style="padding:8px 12px;background:rgba(220,38,38,0.15);color:#dc6b7a;border:1px solid rgba(220,38,38,0.3);border-radius:7px;cursor:pointer;height:fit-content;"></button>';
+    '<button onclick="removerLinhaCNAE(this)" style="padding:8px 12px;background:rgba(220,38,38,0.15);color:#dc6b7a;border:1px solid rgba(220,38,38,0.3);border-radius:7px;cursor:pointer;height:fit-content;">×</button>';
   cont.appendChild(div);
 }
 
@@ -13392,7 +13392,7 @@ function adicionarFonteC07(){
   div.innerHTML = '<div class="input-group"><label>Fonte — descrição</label><input type="text" class="c07-f-desc" placeholder="Ex: Aluguel"></div>'+
     '<div class="input-group"><label>Valor mensal (R$)</label><input type="number" class="c07-f-valor" placeholder="Ex: 3000" oninput="somarFontesC07()"></div>'+
     '<div class="input-group"><label>Tipo</label><select class="c07-f-tipo" onchange="somarFontesC07()"><option value="principal">Renda principal</option><option value="outra">Outra renda (base IRPFM)</option></select></div>'+
-    '<button onclick="removerFonteC07(this)" style="padding:7px 11px;background:rgba(220,38,38,0.15);color:#dc6b7a;border:1px solid rgba(220,38,38,0.3);border-radius:7px;cursor:pointer;height:fit-content;"></button>';
+    '<button onclick="removerFonteC07(this)" style="padding:7px 11px;background:rgba(220,38,38,0.15);color:#dc6b7a;border:1px solid rgba(220,38,38,0.3);border-radius:7px;cursor:pointer;height:fit-content;">×</button>';
   cont.appendChild(div);
 }
 
@@ -13877,7 +13877,7 @@ function adicionarImovelN15(){
   div.innerHTML = '<div class="input-group"><label>Imóvel — descrição</label><input type="text" class="n15-im-desc" placeholder="Ex: Imóvel '+n+'"></div>'+
     '<div class="input-group"><label>Valor (R$)</label><input type="number" class="n15-im-valor" placeholder="Ex: 500000" oninput="somarImoveisN15()"></div>'+
     '<div class="input-group"><label>Aluguel anual (R$)</label><input type="number" class="n15-im-aluguel" placeholder="Ex: 30000" oninput="somarImoveisN15()"></div>'+
-    '<button onclick="removerImovelN15(this)" style="padding:7px 11px;background:rgba(220,38,38,0.15);color:#dc6b7a;border:1px solid rgba(220,38,38,0.3);border-radius:7px;cursor:pointer;height:fit-content;"></button>';
+    '<button onclick="removerImovelN15(this)" style="padding:7px 11px;background:rgba(220,38,38,0.15);color:#dc6b7a;border:1px solid rgba(220,38,38,0.3);border-radius:7px;cursor:pointer;height:fit-content;">×</button>';
   cont.appendChild(div);
 }
 
@@ -16345,7 +16345,7 @@ function reabrirWelcome() {
       '<div style="padding:22px 24px 8px;overflow-y:auto;flex:1;min-height:0;max-height:calc(90vh - 90px);scrollbar-width:thin;scrollbar-color:#c9a227 #f1f5f9;">'+
         '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;">'+
           '<div style="font-family:\'Syne\',sans-serif;font-size:1.15em;font-weight:800;color:#0c1628;line-height:1.3;flex:1;">'+step.title+'</div>'+
-          '<button onclick="encerrarTourInterativo()" style="background:#dc2626;color:#fff;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:0.9em;font-weight:800;flex-shrink:0;" title="Sair do Tour"></button>'+
+          '<button onclick="encerrarTourInterativo()" style="background:#dc2626;color:#fff;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:0.9em;font-weight:800;flex-shrink:0;" title="Sair do Tour">×</button>'+
         '</div>'+
         '<p style="margin:0 0 '+(blocoDorEntrega || blocoVerMais ? '0' : '14px')+';color:#495057;line-height:1.55;font-size:0.9em;">'+step.text+'</p>'+
         blocoDorEntrega+
@@ -16664,8 +16664,8 @@ function renderizarFiliaisNoModal() {
       html += '<div style="font-size:0.66em;color:rgba(200,215,235,0.4);margin-top:1px;">'+(f.cnpj||'sem CNPJ')+' · '+(f.uf||'—')+' · fat '+fmtR((f.fat||0)*12)+'/ano</div>';
       html += '</div>';
       html += '<div style="display:flex;gap:5px;flex-shrink:0;margin-left:8px;">';
-      html += '<button type="button" onclick="abrirModalFilial('+i+')" style="padding:4px 8px;background:rgba(201,162,39,0.08);border:1px solid rgba(201,162,39,0.2);border-radius:4px;color:#c9a227;font-size:0.7em;cursor:pointer;"></button>';
-      html += '<button type="button" onclick="excluirFilial('+i+')" style="padding:4px 8px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:4px;color:#ef4444;font-size:0.7em;cursor:pointer;"></button>';
+      html += '<button type="button" onclick="abrirModalFilial('+i+')" style="padding:4px 8px;background:rgba(201,162,39,0.08);border:1px solid rgba(201,162,39,0.2);border-radius:4px;color:#c9a227;font-size:0.7em;cursor:pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>';
+      html += '<button type="button" onclick="excluirFilial('+i+')" style="padding:4px 8px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:4px;color:#ef4444;font-size:0.7em;cursor:pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
       html += '</div>';
       html += '</div>';
     });
@@ -16689,7 +16689,7 @@ function renderizarFiliaisNoModal() {
 function abrirModalFilial(idx) {
   editandoFilialIdx = (idx !== undefined && idx >= 0) ? idx : -1;
   var titulo = document.getElementById('modal-fil-titulo');
-  if(titulo) titulo.textContent = editandoFilialIdx >= 0 ? 'Editar Filial' : '+ Nova Filial';
+  if(titulo) titulo.textContent = editandoFilialIdx >= 0 ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg> Editar Filial' : '+ Nova Filial';
   var msg = document.getElementById('fil-msg');
   if(msg) msg.style.display = 'none';
 
@@ -17121,7 +17121,7 @@ function abrirModalEmpresa(idx) {
   // Resetar buffer de filiais (só usado para nova empresa)
   if(editandoEmpresaIdx < 0) window._filiaisBuffer = [];
   var titulo = document.getElementById('modal-emp-titulo');
-  if(titulo) titulo.textContent = editandoEmpresaIdx >= 0 ? 'Editar Empresa' : '+ Nova Empresa';
+  if(titulo) titulo.textContent = editandoEmpresaIdx >= 0 ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg> Editar Empresa' : '+ Nova Empresa';
   var msg = document.getElementById('me-msg');
   if(msg) msg.style.display='none';
   if(editandoEmpresaIdx >= 0) {
@@ -17222,7 +17222,7 @@ function salvarEmpresa() {
 
 function excluirEmpresaAtiva() {
   if(!EMPRESAS_LITE.length) return;
-  if(!confirm('Excluir '+EMPRESAS_LITE[empresaAtivaIdx]?.nome+'?\n\nUse esta opção para remoção simples. Para exercer "direito ao esquecimento" da LGPD (apaga TUDO relacionado), use o botão "Esquecer cliente" no menu Privacidade.')) return;
+  if(!confirm('Excluir '+EMPRESAS_LITE[empresaAtivaIdx]?.nome+'?\n\nUse esta opção para remoção simples. Para exercer "direito ao esquecimento" da LGPD (apaga TUDO relacionado), use o botão "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Esquecer cliente" no menu Privacidade.')) return;
   if(typeof window.LGPD !== 'undefined') window.LGPD.log('empresa_excluida_simples', { nome: EMPRESAS_LITE[empresaAtivaIdx]?.nome });
   EMPRESAS_LITE.splice(empresaAtivaIdx, 1);
   empresaAtivaIdx = Math.max(0, empresaAtivaIdx-1);
@@ -17624,7 +17624,7 @@ function renderizarContratos() {
     return '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:7px;padding:10px 14px;display:flex;align-items:center;gap:12px;">' +
       '<div style="flex:1;"><div style="font-size:0.83em;font-weight:500;color:#e8e8f0">'+c.desc+'</div>' +
       '<div style="font-size:0.72em;color:#888;margin-top:2px">'+fmtR(c.preco)+' / '+c.freq+'</div></div>' +
-      '<button onclick="removerContrato('+i+')" style="padding:3px 8px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#888;font-size:0.72em;cursor:pointer;"></button>' +
+      '<button onclick="removerContrato('+i+')" style="padding:3px 8px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#888;font-size:0.72em;cursor:pointer;">×</button>' +
     '</div>';
   }).join('');
 
@@ -18343,7 +18343,7 @@ function toggleSidebar() {
   var colapsada = app.classList.contains('sidebar-colapsada');
   try { localStorage.setItem('lh_sidebar_colapsada', colapsada ? '1' : '0'); } catch(e){}
   var icon = document.getElementById('sandwich-icon');
-  if(icon) icon.textContent = colapsada ? '' : '';
+  if(icon) icon.innerHTML = colapsada ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>' : '×';
   if(window.LGPD) window.LGPD.log('sidebar_'+(colapsada?'colapsada':'expandida'), {});
 }
 
@@ -18354,7 +18354,7 @@ function aplicarEstadoSidebar() {
       var app = document.querySelector('.app');
       if(app) app.classList.add('sidebar-colapsada');
       var icon = document.getElementById('sandwich-icon');
-      if(icon) icon.textContent = '';
+      if(icon) icon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
     }
   } catch(e){}
 }
@@ -19066,7 +19066,7 @@ function renderizarBannerOnboarding() {
         '<div style="font-size:0.78em;color:rgba(200,215,235,0.7);line-height:1.5;">'+proximo.desc+'</div>'+
       '</div>'+
       '<button onclick="'+proximo.acao+'" style="padding:10px 22px;background:'+proximo.cor+';color:'+(proximo.cor==='#c9a227'?'#0c1628':'#fff')+';border:none;border-radius:8px;font-weight:800;font-size:0.88em;cursor:pointer;flex-shrink:0;transition:all .2s;animation:onbPulse 2s ease-in-out infinite;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">'+proximo.label+' →</button>'+
-      '<button onclick="dismissOnboardingBanner()" title="Dispensar permanentemente" style="background:transparent;border:none;color:rgba(200,215,235,0.4);font-size:1.1em;cursor:pointer;padding:4px 8px;align-self:flex-start;"></button>'+
+      '<button onclick="dismissOnboardingBanner()" title="Dispensar permanentemente" style="background:transparent;border:none;color:rgba(200,215,235,0.4);font-size:1.1em;cursor:pointer;padding:4px 8px;align-self:flex-start;">×</button>'+
     '</div>';
 }
 
@@ -19636,7 +19636,7 @@ function renderizarItensLivres() {
     html += '<option value="pontual"'+(it.tipo==='pontual'?' selected':'')+'>Pontual</option>';
     html += '<option value="recorrente"'+(it.tipo==='recorrente'?' selected':'')+'>Recorrente/mês</option>';
     html += '</select>';
-    html += '<button onclick="removerItemLivre('+idx+')" style="padding:6px 10px;background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.25);border-radius:6px;color:#ef4444;cursor:pointer;font-size:0.78em;"></button>';
+    html += '<button onclick="removerItemLivre('+idx+')" style="padding:6px 10px;background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.25);border-radius:6px;color:#ef4444;cursor:pointer;font-size:0.78em;">×</button>';
     html += '</div>';
   });
   lista.innerHTML = html;
@@ -19748,7 +19748,7 @@ function renderizarPropostasSalvas() {
     html += '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:10px 12px;margin-bottom:6px;gap:10px;flex-wrap:wrap;">';
     html += '<div style="flex:1;min-width:180px;"><div style="font-size:0.88em;font-weight:600;color:#06b6d4">'+p.cliente+'</div><div style="font-size:0.7em;color:rgba(200,215,235,0.5)">'+dt+' · '+Object.keys(p.selecoes||{}).length+' produto(s) · porte '+p.porte+'</div></div>';
     html += '<div style="display:flex;gap:5px"><button onclick="carregarPropostaSalva(\''+id+'\')" style="padding:6px 12px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);border-radius:5px;color:#10b981;font-size:0.75em;font-weight:600;cursor:pointer;">Carregar</button>';
-    html += '<button onclick="excluirPropostaSalva(\''+id+'\')" style="padding:6px 10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:5px;color:#ef4444;font-size:0.75em;cursor:pointer;"></button></div>';
+    html += '<button onclick="excluirPropostaSalva(\''+id+'\')" style="padding:6px 10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:5px;color:#ef4444;font-size:0.75em;cursor:pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>';
     html += '</div>';
   });
   lista.innerHTML = html;
@@ -20196,7 +20196,7 @@ function renderizarListaCenarios() {
     html += '</div>';
     html += '<div style="display:flex;gap:6px;flex-shrink:0;">';
     html += '<button onclick="carregarCenario(\''+c.id+'\')" style="padding:8px 14px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);border-radius:6px;color:#10b981;font-size:0.76em;font-weight:600;cursor:pointer;">Carregar</button>';
-    html += '<button onclick="excluirCenario(\''+c.id+'\')" style="padding:8px 12px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px;color:#ef4444;font-size:0.76em;cursor:pointer;"></button>';
+    html += '<button onclick="excluirCenario(\''+c.id+'\')" style="padding:8px 12px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px;color:#ef4444;font-size:0.76em;cursor:pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
     html += '</div>';
     html += '</div>';
     html += '</div>';
@@ -21853,7 +21853,7 @@ function executarDebugMotor360() {
   var html = '<div style="background:rgba(239,68,68,0.06);border:2px solid rgba(239,68,68,0.35);border-radius:12px;padding:18px;color:#e8edf5;">';
   html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">';
   html += '<h3 style="color:#ef4444;margin:0;font-family:\'Syne\',sans-serif;font-size:1.05em">DEBUG · Composição da Economia</h3>';
-  html += '<button onclick="document.getElementById(\'motor360-debug\').style.display=\'none\'" style="padding:5px 12px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:5px;color:#ef4444;font-size:0.78em;cursor:pointer;">Fechar</button>';
+  html += '<button onclick="document.getElementById(\'motor360-debug\').style.display=\'none\'" style="padding:5px 12px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:5px;color:#ef4444;font-size:0.78em;cursor:pointer;">× Fechar</button>';
   html += '</div>';
 
   html += '<div style="background:rgba(0,0,0,0.25);border-radius:8px;padding:12px;margin-bottom:14px;font-size:0.82em;line-height:1.7">';
@@ -24728,7 +24728,7 @@ window.LH_HIST_PROPOSTAS = (function(){
       html += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
       html += '<button onclick="LH_HIST_PROPOSTAS.reabrir(\'' + id + '\')" title="Reabrir esta proposta na página de Proposta" style="padding:6px 12px;background:rgba(201,162,39,0.15);border:1px solid rgba(201,162,39,0.40);color:#c9a227;border-radius:6px;font-size:0.75em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">Reabrir</button>';
       html += '<button onclick="LH_HIST_PROPOSTAS.duplicar(\'' + id + '\')" title="Cria cópia desta proposta pra adaptar a outro cliente" style="padding:6px 12px;background:rgba(201,162,39,0.14);border:1px solid rgba(201,162,39,0.30);color:#c9a227;border-radius:6px;font-size:0.75em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">Duplicar</button>';
-      html += '<button onclick="LH_HIST_PROPOSTAS.excluir(\'' + id + '\')" title="Exclui esta proposta (não pode desfazer)" style="padding:6px 12px;background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.30);color:#ef4444;border-radius:6px;font-size:0.75em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;"></button>';
+      html += '<button onclick="LH_HIST_PROPOSTAS.excluir(\'' + id + '\')" title="Exclui esta proposta (não pode desfazer)" style="padding:6px 12px;background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.30);color:#ef4444;border-radius:6px;font-size:0.75em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
       html += '</div>';
       html += '</div>';
     });
@@ -26506,7 +26506,7 @@ window.LH_SAUDE = (function(){
         html += '<td>'+fmtR(s.capital_giro||0)+'</td>';
         html += '<td>'+fmtR(s.rbt12||0)+'</td>';
         html += '<td>'+((s.fator_r||0).toFixed(1))+'%</td>';
-        html += '<td><button onclick="LH_SAUDE.removerSnapshot(\''+m+'\')" style="background:transparent;border:none;color:#dc2626;cursor:pointer;font-size:1em;" title="Remover snapshot"></button></td>';
+        html += '<td><button onclick="LH_SAUDE.removerSnapshot(\''+m+'\')" style="background:transparent;border:none;color:#dc2626;cursor:pointer;font-size:1em;" title="Remover snapshot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td>';
         html += '</tr>';
       });
       html += '</tbody></table></div>';
@@ -29527,7 +29527,7 @@ function toggleTema() {
   var novo = (atual === 'claro') ? 'onyx' : 'claro';
   setTema(novo);
   var btn = document.getElementById('btn-tema-topbar');
-  if(btn) btn.textContent = novo === 'claro' ? '' : '';
+  if(btn) btn.innerHTML = novo === 'claro' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a227" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a227" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
 }
 
 </script>
@@ -31163,7 +31163,7 @@ window.LH_SAUDE_render = function(){
     var prk=['splitGap','cargaCnae','reprice','creditosCBS'], pf=prk.filter(function(k){return sa[k];}).length;
     var det='<div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-top:12px;">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><b style="font-family:Syne,sans-serif;color:var(--gold2);font-size:1.05em;">'+s.rotulo+' · '+s.indice+'% de saúde</b>'
-      +'<span onclick="renderHistorico()" style="cursor:pointer;color:var(--text3);font-size:0.8em;">fechar</span></div>'
+      +'<span onclick="renderHistorico()" style="cursor:pointer;color:var(--text3);font-size:0.8em;">× fechar</span></div>'
       +linha('Enquadramento ótimo', sa.enquadramento, function(d){return d.noOtimo?'No ótimo':'Revisar';})
       +linha('Folga até o sublimite', sa.sublimite)
       +linha('Prontidão Reforma 2027', pf>0?{nivel:(pf>=3?'ok':'atencao'),rotulo:Math.round(pf/4*100)+'%'}:null)
@@ -31280,7 +31280,7 @@ window.LH_scoreMotor = function(){
     try{
       var sec=btn.closest('.resultado-section');
       if(!sec){ if(window.mostrarToast)mostrarToast('Resultado nao encontrado','error'); return; }
-      if(typeof html2canvas==='undefined' || !window.jspdf){ if(window.mostrarToast)mostrarToast('Bibliotecas de PDF ainda carregando, tente de novo','warning'); return; }
+      if(typeof html2canvas==='undefined'||!window.jspdf){ if(window.mostrarToast)mostrarToast('Bibliotecas de PDF carregando, tente de novo','warning'); return; }
       var page=btn.closest('.page');
       var titulo=(page&&page.querySelector('h1,h2'))?page.querySelector('h1,h2').textContent.trim():'Lionheart';
       if(window.mostrarToast)mostrarToast('Gerando PDF...','info');
@@ -31288,43 +31288,28 @@ window.LH_scoreMotor = function(){
       var bg=getComputedStyle(document.body).backgroundColor||'#0d1117';
       html2canvas(sec,{scale:2,backgroundColor:bg,useCORS:true,logging:false}).then(function(canvas){
         btn.style.display=prev;
-        var jsPDF=window.jspdf.jsPDF;
-        var pdf=new jsPDF('p','mm','a4');
+        var jsPDF=window.jspdf.jsPDF, pdf=new jsPDF('p','mm','a4');
         var pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
-        var margin=8, imgW=pw-margin*2;
-        var imgH=canvas.height*imgW/canvas.width;
+        var margin=8, imgW=pw-margin*2, imgH=canvas.height*imgW/canvas.width;
         var imgData=canvas.toDataURL('image/jpeg',0.92);
         pdf.setFontSize(13); pdf.setTextColor(40,40,40); pdf.text(titulo,margin,11);
         pdf.setDrawColor(201,162,39); pdf.setLineWidth(0.6); pdf.line(margin,13,pw-margin,13);
-        var top1=17, topN=margin;
-        var avail1=ph-top1-margin, availN=ph-topN-margin;
+        var top1=17, topN=margin, avail1=ph-top1-margin, availN=ph-topN-margin;
         pdf.addImage(imgData,'JPEG',margin,top1,imgW,imgH);
         var heightLeft=imgH-avail1, shown=avail1;
-        while(heightLeft>0){
-          pdf.addPage();
-          pdf.addImage(imgData,'JPEG',margin,topN-shown,imgW,imgH);
-          heightLeft-=availN; shown+=availN;
-        }
-        var nome='Lionheart_'+((sec.id||'calc').replace('res-',''))+'.pdf';
-        pdf.save(nome);
+        while(heightLeft>0){ pdf.addPage(); pdf.addImage(imgData,'JPEG',margin,topN-shown,imgW,imgH); heightLeft-=availN; shown+=availN; }
+        pdf.save('Lionheart_'+((sec.id||'calc').replace('res-',''))+'.pdf');
         if(window.mostrarToast)mostrarToast('PDF gerado','success');
       }).catch(function(e){ btn.style.display=prev; if(window.mostrarToast)mostrarToast('Erro ao gerar PDF','error'); console.error('gerarPdfCalc',e); });
     }catch(e){ if(window.mostrarToast)mostrarToast('Erro ao gerar PDF','error'); console.error('gerarPdfCalc',e); }
   }
   window.gerarPdfCalc=gerarPdfCalc;
-  function inject(){
-    var secs=document.querySelectorAll('.resultado-section'); var n=0;
-    secs.forEach(function(sec){
+  function inject(){ var n=0; document.querySelectorAll('.resultado-section').forEach(function(sec){
       if(sec.querySelector('.btn-pdf-calc'))return;
-      var b=document.createElement('button');
-      b.className='btn-pdf-calc'; b.type='button';
-      b.setAttribute('data-html2canvas-ignore','true');
-      b.textContent='Gerar PDF';
-      b.addEventListener('click',function(){gerarPdfCalc(b);});
-      sec.appendChild(b); n++;
-    });
-    window.__pdfBtns=n;
-  }
+      var b=document.createElement('button'); b.className='btn-pdf-calc'; b.type='button';
+      b.setAttribute('data-html2canvas-ignore','true'); b.textContent='Gerar PDF';
+      b.addEventListener('click',function(){gerarPdfCalc(b);}); sec.appendChild(b); n++;
+    }); window.__pdfBtns=n; }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',inject); else inject();
 })();
 </script>
