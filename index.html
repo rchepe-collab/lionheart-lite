@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <!--
   ╔══════════════════════════════════════════════════════════════╗
-  ║  LIONHEART CALC SUITE — VERSÃO LITE v1.0                    ║
+  ║  LIONHEART CORE v1.0                    ║
   ║  23 Calculadoras Essenciais para Escritórios BPO            ║
   ║                                                              ║
   ║  Pilar 1 — Reforma Tributária (LC 214/2025 · LC 227/2026)  ║
@@ -27,14 +27,14 @@
   ║    C08 · Pró-labore Ótimo                                   ║
   ║                                                              ║
   ║  Desenvolvido por: Lionheart Business Intelligence           ║
-  ║  Versão: Lite 1.0 — Mai/2026                                ║
+  ║  Versão: CORE 1.0 — Mai/2026                                ║
   ╚══════════════════════════════════════════════════════════════╝
 -->
 <head>
 <script>(function(){var h=document.documentElement;try{h.classList.add(localStorage.getItem('lh_welcome_desabilitado_v29')==='1'?'lh-welc-off':'lh-welc-on');}catch(e){h.classList.add('lh-welc-on');}h.classList.add('lh-booting');try{requestAnimationFrame(function(){requestAnimationFrame(function(){h.classList.remove('lh-booting');});});}catch(e){h.classList.remove('lh-booting');}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lionheart Calc Suite LITE — 23 Calculadoras Essenciais BPO</title>
+<title>Lionheart CORE — 23 Calculadoras Essenciais BPO</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&family=Syne:wght@600;700;800&family=Spectral:wght@500;600;700&display=swap" rel="stylesheet">
 <!-- v28 ONDA D.7 — Dependências externas auditadas:
@@ -1128,7 +1128,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text)
 
 .chart-card {
   background:var(--card); border-radius:var(--radius); padding:20px 24px;
-  border:1px solid var(--border); margin-bottom:16px;
+  border:1px solid var(--border); border-left:4px solid var(--gold); margin-bottom:16px;
 }
 .chart-card h4 { font-size:0.8em; font-weight:700; color:var(--text2); margin-bottom:14px; }
 
@@ -1154,7 +1154,7 @@ details.chart-card[open] > summary{margin-bottom:14px;}
 /* RECOMENDAÇÕES */
 .rec-card {
   border-radius:10px; padding:14px 18px; margin-bottom:10px;
-  border-left:4px solid var(--border);
+  border-left:4px solid var(--gold);
   background:var(--card); border-top:1px solid var(--border); border-right:1px solid var(--border); border-bottom:1px solid var(--border);
 }
 .rec-critica { border-left-color:var(--red); background:rgba(220,38,38,0.03); }
@@ -1761,12 +1761,12 @@ button[onclick*="cenarioSalvar"] { display: none !important; }
 [id*="proxima-calc"],
 [class*="proxima-calc"] { display: none !important; }
 
-/* Versão Lite badge ("+ VERSÃO LITE — 23 CALCS") */
+/* Versão Lite badge ("+ VERSÃO CORE — 23 CALCS") */
 .lh-versao-badge,
 #lh-versao-badge,
-a[style*="VERSÃO LITE"],
-div[style*="VERSÃO LITE"],
-button[style*="VERSÃO LITE"] { display: none !important; }
+a[style*="VERSÃO CORE"],
+div[style*="VERSÃO CORE"],
+button[style*="VERSÃO CORE"] { display: none !important; }
 [onclick*="abrirModalVersao"] { display: none !important; }
 
 /* "Comece Aqui" tópicos coloridos → brancos */
@@ -1958,7 +1958,7 @@ Troque a URL em LH_LOGIN_URL pela URL do seu Apps Script publicado.
   <div style="width:340px;max-width:90vw;background:#11203a;border:1px solid rgba(201,162,39,0.3);border-radius:16px;padding:32px 28px;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
     <div style="text-align:center;font-size:1.6em;margin-bottom:4px;"></div>
     <div style="text-align:center;color:#c9a227;font-weight:800;font-size:1.15em;letter-spacing:.04em;margin-bottom:2px;">LIONHEART</div>
-    <div style="text-align:center;color:#9fb0c8;font-size:0.8em;margin-bottom:22px;">Calc Suite LITE · Acesso</div>
+    <div style="text-align:center;color:#9fb0c8;font-size:0.8em;margin-bottom:22px;">CORE · Acesso</div>
 
     <label style="display:block;color:#9fb0c8;font-size:0.74em;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">Email</label>
     <input id="lh-login-email" type="email" autocomplete="username" placeholder="seu@email.com"
@@ -2027,7 +2027,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
 
 
 <!-- ══════════════════════════════════════════
-     TELA DE BOAS-VINDAS — LIONHEART LITE
+     TELA DE BOAS-VINDAS — LIONHEART CORE
 ══════════════════════════════════════════ -->
 <!-- v30.15.2 — WELCOME MODAL simplificado -->
 <!-- BOAS-VINDAS NOVA (v83) — modal isolado -->
@@ -2577,7 +2577,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
   </nav>
 
   <div class="sidebar-footer">
-    Lionheart Calc Suite Lite v1.0<br>
+    Lionheart CORE v1.0<br>
     LC 214/2025 · LC 227/2026<br>
     Mai 2026
   </div>
@@ -2593,6 +2593,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
     <button id="btn-tema-topbar" onclick="toggleTema()" title="Alternar tema claro/escuro" style="background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.16);width:36px;height:36px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.15em;flex-shrink:0;transition:all .2s;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a227" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
     <button onclick="abrirPagina('tour',null)" title="Imersão — Aprenda a usar a ferramenta" style="background:rgba(201,162,39,0.10);color:rgba(201,162,39,0.85);border:1px solid rgba(201,162,39,0.28);height:36px;padding:0 14px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:0.78em;font-weight:600;flex-shrink:0;white-space:nowrap;font-family:'DM Sans',sans-serif;">Aprenda</button>
     <button id="btn-cliente-topbar" onclick="LH_abrirSeletorCliente()" title="Cliente ativo — clique para trocar" style="background:rgba(201,162,39,0.12);color:#e8b020;border:1px solid rgba(201,162,39,0.40);height:36px;padding:0 14px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:7px;font-size:0.78em;font-weight:700;flex-shrink:0;white-space:nowrap;font-family:'DM Sans',sans-serif;"><span style="opacity:.85;"></span><span id="btn-cliente-topbar-nome">Selecionar cliente</span><span style="opacity:.6;font-size:0.85em;">▼</span></button>
+    <button onclick="lhBkpAbrir()" title="Backup dos dados — fase beta" style="background:linear-gradient(135deg,#f4cc4a,#c9a227);color:#1a1407;border:none;height:36px;padding:0 14px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:7px;font-size:0.78em;font-weight:700;flex-shrink:0;white-space:nowrap;font-family:'DM Sans',sans-serif;box-shadow:0 3px 12px rgba(201,162,39,.3);">💾 Backup</button>
     <div id="lh-aprenda-topbar" style="display:none;align-items:center;gap:9px;height:36px;padding:0 11px;border-radius:8px;background:rgba(201,162,39,0.10);border:1px solid rgba(201,162,39,0.38);flex-shrink:0;white-space:nowrap;font-family:'DM Sans',sans-serif;">
       <span style="font-size:1.05em;color:var(--gold);line-height:1;flex-shrink:0;"></span>
       <span style="font-size:0.62rem;font-weight:700;letter-spacing:0.03em;color:var(--gold);text-transform:uppercase;line-height:1.15;">Quer dominar<br>esta ferramenta?</span>
@@ -3025,7 +3026,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
 
 <div class="page active" id="page-home">
     <div class="home-hero">
-      <h2>Lionheart Calc Suite <span style="color:var(--gold2);">Lite</span></h2>
+      <h2>Lionheart Calc Suite <span style="color:var(--gold2);">CORE</span></h2>
       <p>23 calculadoras essenciais para resolver 95% dos casos do dia a dia do escritório BPO — atualizado com a LC 214/2025 e LC 227/2026.</p>
       <div class="hero-badges">
         <span class="hero-badge hb-gold">EC 132/2023</span>
@@ -6234,14 +6235,6 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
        Espelho TAX LAW adaptado: visão única da cadeia Empresa→Motor→Proposta→ROI
        ════════════════════════════════════════════════ -->
   <div class="page" id="page-radar">
-    <div class="calc-page-header">
-      <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(184,148,31,0.20),rgba(212,168,42,0.10));"></div>
-      <div>
-        <h2 class="calc-page-title" style="color:#c9a227 !important">Diagnóstico Consolidado</h2>
-        <p class="calc-page-subtitle" style="color:rgba(200,215,235,0.65) !important">Visão única do cliente ativo: status, cobertura das calcs, cadeia Motor → Proposta → ROI, próximas ações.</p>
-      </div>
-    </div>
-
     <div id="radar-conteudo">
       <div style="text-align:center;padding:60px 20px;color:var(--text2);">
         <div style="font-size:3em;margin-bottom:14px;"></div>
@@ -6250,7 +6243,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
     </div>
 
     <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
-      <button onclick="LH_renderRadar()" style="padding:10px 18px;background:rgba(184,148,31,0.10);border:1px solid rgba(184,148,31,0.35);color:var(--gold);border-radius:8px;font-weight:700;font-size:0.85em;cursor:pointer;font-family:'Syne',sans-serif;letter-spacing:.03em;">Atualizar Diagnóstico</button>
+      
     </div>
   </div><!-- /radar -->
 
@@ -6762,15 +6755,15 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
         Gerar PDF da Proposta
       </button>
       <button onclick="salvarPropostaAtual()" style="padding:14px 22px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);border-radius:10px;color:#10b981;font-size:0.9em;font-weight:700;cursor:pointer;">
-        Salvar Rascunho
+        Salvar Proposta
       </button>
       <button onclick="limparPropostaAtual()" style="padding:14px 22px;background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.30);border-radius:10px;color:#ef4444;font-size:0.9em;font-weight:700;cursor:pointer;">
         Limpar Tudo
       </button>
     </div>
 
-    <!-- Propostas salvas -->
-    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px;margin-top:16px;">
+    <!-- Propostas salvas (ocultas no rodape - ver aba Historico de Propostas) -->
+    <div style="display:none;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px;margin-top:16px;">
       <h4 style="font-family:'Inter','DM Sans',sans-serif;font-size:0.95em;color:var(--gold);margin:0 0 10px;letter-spacing:.04em;">Propostas Salvas</h4>
       <div id="propostas-salvas-lista" style="font-size:0.82em;color:rgba(200,215,235,0.5);">Nenhuma proposta salva ainda</div>
     </div>
@@ -7095,7 +7088,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
             ☐ Identifiquei regime e CNAE<br>
             ☐ Tive a primeira conversa (cold ou indicação)<br>
             ☐ Apliquei as 7 perguntas-chave<br>
-            ☐ Anotei dados no <strong>Inputs do Cliente</strong> do Lite<br>
+            ☐ Anotei dados no <strong>Inputs do Cliente</strong> do CORE<br>
             ☐ Rodei a calc <strong>Regime Ótimo</strong> ou <strong>Alíq. Efetiva CNAE</strong> pra mostrar uma "amostra"<br>
             ☐ Agendei reunião pra apresentar proposta
           </div>
@@ -7194,7 +7187,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
           <div style="font-weight:700;color:#c9a227;font-size:0.85em;margin-bottom:8px;">CRONOGRAMA TÍPICO (Análise Pontual)</div>
           <div style="font-size:0.78em;color:var(--text2);line-height:1.7;">
             <strong>Semana 1:</strong> Coleta de documentos + entrevista inicial<br>
-            <strong>Semana 2:</strong> Diagnóstico no Lite (rodada de todas as calcs)<br>
+            <strong>Semana 2:</strong> Diagnóstico no CORE (rodada de todas as calcs)<br>
             <strong>Semana 3:</strong> Cenários (com/sem holding, mudança de regime, etc.) + Motor 360°<br>
             <strong>Semana 4:</strong> Reunião de apresentação + entrega do relatório PDF
           </div>
@@ -7208,7 +7201,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
             ☐ Lista de documentos enviada e recebida<br>
             ☐ Cronograma alinhado e formalizado<br>
             ☐ Pessoa de contato no cliente definida<br>
-            ☐ Cliente cadastrado no <strong>Inputs do Cliente</strong> do Lite
+            ☐ Cliente cadastrado no <strong>Inputs do Cliente</strong> do CORE
           </div>
         </div>
       </div>
@@ -7855,7 +7848,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
 
     <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:24px;margin-bottom:18px;line-height:1.65;font-size:0.92em;">
       <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:0 0 12px;font-size:1.15em;">1. Identificação</h3>
-      <p><strong>Controlador:</strong> O contador/escritório BPO que utiliza esta ferramenta.<br><strong>Operadora:</strong> Lionheart Calc Suite Lite (ferramenta) atua como operadora dos dados conforme LGPD Art. 5º VII.<br><strong>Encarregado (DPO):</strong> Ricardo · Rio Grande/RS · contato via canal interno do escritório.</p>
+      <p><strong>Controlador:</strong> O contador/escritório BPO que utiliza esta ferramenta.<br><strong>Operadora:</strong> Lionheart CORE (ferramenta) atua como operadora dos dados conforme LGPD Art. 5º VII.<br><strong>Encarregado (DPO):</strong> Ricardo · Rio Grande/RS · contato via canal interno do escritório.</p>
 
       <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:18px 0 12px;font-size:1.15em;">2. Dados Tratados</h3>
       <p>A ferramenta trata dados <strong>cadastrais e financeiros das empresas</strong> que o contador analisa:</p>
@@ -7954,7 +7947,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
     <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:24px;margin-bottom:18px;line-height:1.65;font-size:0.92em;color:rgba(232,237,245,0.88);">
 
       <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:0 0 12px;font-size:1.15em;">1. Natureza da ferramenta</h3>
-      <p>O Lionheart Calc Suite Lite é uma <strong>ferramenta de apoio à análise tributária</strong> que automatiza cálculos baseados em legislação vigente em <strong>maio/2026</strong>. Os resultados gerados são <strong>estimativas técnicas</strong> destinadas a auxiliar a tomada de decisão.</p>
+      <p>O Lionheart CORE é uma <strong>ferramenta de apoio à análise tributária</strong> que automatiza cálculos baseados em legislação vigente em <strong>maio/2026</strong>. Os resultados gerados são <strong>estimativas técnicas</strong> destinadas a auxiliar a tomada de decisão.</p>
 
       <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:18px 0 12px;font-size:1.15em;">2. Não é parecer jurídico nem aconselhamento profissional</h3>
       <div style="background:rgba(239,68,68,0.08);border-left:4px solid #ef4444;padding:14px 18px;border-radius:6px;margin-bottom:12px;">
@@ -8189,7 +8182,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
             <h3 style="margin:0;color:#c9a227;font-family:'Syne',sans-serif;font-size:1.15em;">BÔNUS · Escopo de Análise · Grupo Consolidado</h3>
             <span style="background:linear-gradient(90deg,#c9a227,#c9a227);color:#fff;padding:1px 9px;border-radius:10px;font-size:0.65em;font-weight:800;letter-spacing:.04em;">NOVIDADE</span>
           </div>
-          <p style="margin:0 0 10px;font-size:0.88em;color:rgba(200,215,235,0.75);line-height:1.55;">Cliente com matriz + filiais? <strong style="color:#c9a227;">Clique no picker de cliente</strong> (topo ou sidebar) e selecione <strong>GRUPO CONSOLIDADO</strong>. A LITE consolida automaticamente: faturamento SOMA, margem MÉDIA PONDERADA, etc. Calcs como <strong>Regime Ótimo (C05)</strong> e <strong>LTV (C09)</strong> só fazem sentido nesse escopo.</p>
+          <p style="margin:0 0 10px;font-size:0.88em;color:rgba(200,215,235,0.75);line-height:1.55;">Cliente com matriz + filiais? <strong style="color:#c9a227;">Clique no picker de cliente</strong> (topo ou sidebar) e selecione <strong>GRUPO CONSOLIDADO</strong>. O CORE consolida automaticamente: faturamento SOMA, margem MÉDIA PONDERADA, etc. Calcs como <strong>Regime Ótimo (C05)</strong> e <strong>LTV (C09)</strong> só fazem sentido nesse escopo.</p>
           <button onclick="if(window.LH_ESCOPO_UI){LH_ESCOPO_UI.abrirDropdown(document.body);}" style="padding:8px 18px;background:rgba(201,162,39,0.14);color:#c9a227;border:1px solid rgba(201,162,39,0.30);border-radius:8px;font-weight:600;cursor:pointer;font-size:0.88em;">Abrir Picker de Escopo</button>
         </div>
       </div>
@@ -8272,11 +8265,15 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
       </div>
     </div>
 
-    <!-- v30.11.85 — Vídeos do Beta (Loom) -->
+    <!-- Vídeos: estrutura preservada · slots prontos pra inserir os Looms depois -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:18px;">
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
-        <div style="position:relative;padding-bottom:56.25%;height:0;background:#000;">
-          <iframe loading="lazy" src="https://www.loom.com/embed/af3121ebaf07457095af8a563098570b" frameborder="0" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
+        <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
+          <!-- SLOT VÍDEO 1: cole aqui o iframe do vídeo (Loom/YouTube/etc.) preenchendo 100% deste espaço -->
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+            <div style="font-size:1.9em;opacity:.45;">🎬</div>
+            <div style="font-size:0.76em;color:rgba(200,215,235,0.5);margin-top:4px;letter-spacing:.04em;">Vídeo em breve</div>
+          </div>
         </div>
         <div style="padding:14px 16px;">
           <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 1 · ~5 MIN</div>
@@ -8286,8 +8283,12 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
       </div>
 
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
-        <div style="position:relative;padding-bottom:56.25%;height:0;background:#000;">
-          <iframe loading="lazy" src="https://www.loom.com/embed/c9ba46258d72412896f762fe93d354cd" frameborder="0" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
+        <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
+          <!-- SLOT VÍDEO 2: cole aqui o iframe do vídeo (Loom/YouTube/etc.) preenchendo 100% deste espaço -->
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+            <div style="font-size:1.9em;opacity:.45;">🎬</div>
+            <div style="font-size:0.76em;color:rgba(200,215,235,0.5);margin-top:4px;letter-spacing:.04em;">Vídeo em breve</div>
+          </div>
         </div>
         <div style="padding:14px 16px;">
           <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 2 · ~5 MIN</div>
@@ -8297,8 +8298,12 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
       </div>
 
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
-        <div style="position:relative;padding-bottom:56.25%;height:0;background:#000;">
-          <iframe loading="lazy" src="https://www.loom.com/embed/142ae165af2948d1bba82fd5e987b35c" frameborder="0" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
+        <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
+          <!-- SLOT VÍDEO 3: cole aqui o iframe do vídeo (Loom/YouTube/etc.) preenchendo 100% deste espaço -->
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+            <div style="font-size:1.9em;opacity:.45;">🎬</div>
+            <div style="font-size:0.76em;color:rgba(200,215,235,0.5);margin-top:4px;letter-spacing:.04em;">Vídeo em breve</div>
+          </div>
         </div>
         <div style="padding:14px 16px;">
           <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 3 · ~5 MIN</div>
@@ -8307,9 +8312,13 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
         </div>
       </div>
 
-      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(201,162,39,0.25);border-radius:14px;overflow:hidden;">
-        <div style="position:relative;padding-bottom:56.25%;height:0;background:#000;">
-          <iframe loading="lazy" src="https://www.loom.com/embed/f8565fc974f6415e99ebb00468386ea0" frameborder="0" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
+        <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
+          <!-- SLOT VÍDEO 4: cole aqui o iframe do vídeo (Loom/YouTube/etc.) preenchendo 100% deste espaço -->
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+            <div style="font-size:1.9em;opacity:.45;">🎬</div>
+            <div style="font-size:0.76em;color:rgba(200,215,235,0.5);margin-top:4px;letter-spacing:.04em;">Vídeo em breve</div>
+          </div>
         </div>
         <div style="padding:14px 16px;">
           <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">EXTRA · PARTICULARIDADES</div>
@@ -8317,6 +8326,7 @@ document.getElementById('lh-login-senha').addEventListener('keydown', function(e
           <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Detalhes e recursos extras da ferramenta.</div>
         </div>
       </div>
+    </div>
     </div>
 
     <div style="margin-top:20px;text-align:center;font-size:0.82em;color:rgba(200,215,235,0.55);line-height:1.55;">Todo o conteúdo também está em texto no <strong style="color:var(--gold);">Glossário Tributário</strong> e no <strong style="color:var(--gold);">Guia do Consultor</strong>.</div>
@@ -8507,7 +8517,7 @@ window.LGPD = {
         exportadoEm: new Date().toISOString(),
         versaoTermos: this.versaoTermos,
         baseLegal: 'LGPD Art. 18 V — direito de portabilidade',
-        ferramenta: 'Lionheart Calc Suite Lite v30.11.28'
+        ferramenta: 'Lionheart CORE v30.11.28'
       },
       empresa: emp,
       cenarios: cenarios,
@@ -9206,10 +9216,18 @@ function abrirPagina(id, navEl){
     setTimeout(function(){
       try {
         var elNome = document.getElementById('prop_cliente_nome');
-        if(elNome && !elNome.value.trim()) {
-          var idxE = (typeof window.empresaAtivaIdx !== 'undefined') ? window.empresaAtivaIdx : 0;
+        if(elNome) {
+          /* N6 fix: sincroniza o nome com o cliente ATIVO ao abrir a proposta.
+             Atualiza se o campo estiver vazio OU contiver o nome de um cliente conhecido
+             (ou seja, foi auto-preenchido antes). Preserva nome livre digitado a mao. */
+          var idxE = (typeof window.empresaAtivaIdx !== 'undefined' && window.empresaAtivaIdx !== null) ? window.empresaAtivaIdx : 0;
           var nomeE = (window.EMPRESAS_LITE && window.EMPRESAS_LITE[idxE]) ? window.EMPRESAS_LITE[idxE].nome : '';
-          if(nomeE) elNome.value = nomeE;
+          var atual = (elNome.value || '').trim();
+          var foiAuto = !atual || (window.EMPRESAS_LITE || []).some(function(e){ return e && e.nome === atual; });
+          if(nomeE && atual !== nomeE && foiAuto) {
+            elNome.value = nomeE;
+            elNome.dispatchEvent(new Event('input', {bubbles:true}));
+          }
         }
         /* v30.12 — pré-preenche faturamento ANUAL dos benefícios com o MENSAL do cadastro × 12 (só se vazio) */
         var elFat = document.getElementById('lite_pot_fat');
@@ -9990,7 +10008,7 @@ window.lhCards = function(cards){
       +'.lh-acc>summary{list-style:none;cursor:pointer;padding:13px 16px;display:flex;align-items:center;gap:11px;font-weight:600;font-size:0.95em;color:var(--text,#e8eef7);user-select:none}'
       +'.lh-acc>summary:hover{background:rgba(255,255,255,0.04)}'
       +'.lh-acc>summary::-webkit-details-marker{display:none}'
-      +'.lh-acc>summary::after{content:"\25BC";font-size:1.15em;margin-left:auto;transition:transform .22s ease;opacity:.55;flex:none}'
+      +'.lh-acc>summary::after{content:"\\25BC";font-size:1.15em;margin-left:auto;transition:transform .22s ease;opacity:.55;flex:none}'
       +'.lh-acc[open]>summary::after{transform:rotate(180deg);opacity:.85}'
       +'.lh-acc>.lh-acc-body{padding:2px 16px 14px;font-size:0.9em;color:var(--text,#cbd5e6);opacity:.92;line-height:1.5}'
       +'.lh-acc>.lh-acc-body p{margin:7px 0}';
@@ -10637,7 +10655,7 @@ function calcularC01(){
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtR(c.raw)}}},
       scales:{y:{beginAtZero:true,ticks:{callback:v=>'R$ '+fmtN(v)}}}}});
-  const difPct=((r29.cgPerdido-r26.cgPerdido)/r26.cgPerdido*100).toFixed(0);
+  const _b26=r26.cgPerdido; const difPct=(_b26>0)?((r29.cgPerdido-_b26)/_b26*100).toFixed(0):null;
   // v26 FIX GRAVE-05: C01 — alerta específico para Simples Nacional
   // SN tem regra DIFERENTE do Split Payment (LC 214 art. 28 — destaque OPCIONAL, não compulsório)
   var avisoSN = regime === 'simples'
@@ -10645,9 +10663,11 @@ function calcularC01(){
     : '';
   document.getElementById('recs-c01').innerHTML= window.lhWrapCards(`
     ${avisoSN}
-    <div class="rec-card rec-critica"><h5>Alerta de Liquidez</h5><p>O impacto do Split Payment cresce <strong>${difPct}%</strong> entre 2026 e 2029. Em 2029, o cliente precisará de <strong>${fmtR(r29.cgPerdido)}/mês</strong> de capital de giro adicional. Recomende reserva de liquidez agora, enquanto o impacto é mínimo (2026: apenas ${fmtPct(getAliq(2026).total*100)}).</p></div>
+    <div class="rec-card rec-critica"><h5>Alerta de Liquidez</h5><p>${(difPct!==null&&isFinite(difPct))?(`O impacto do Split Payment cresce <strong>${difPct}%</strong> entre 2026 e 2029.`):(`O impacto do Split Payment parte de praticamente zero em 2026 e cresce de forma acentuada at\u00e9 2029.`)} Em 2029, o cliente precisará de <strong>${fmtR(r29.cgPerdido)}/mês</strong> de capital de giro adicional. Recomende reserva de liquidez agora, enquanto o impacto é mínimo (2026: apenas ${fmtPct(getAliq(2026).total*100)}).</p></div>
     <div class="rec-card rec-atencao"><h5>Estratégia de Capital de Giro</h5><p>O custo de captar crédito para repor o CG será de <strong>${fmtR(r29.custoCG*12)}/ano</strong> em 2029. Avalie negociar linha de CG preventiva ainda em 2026.</p></div>
     <div class="rec-card rec-oport"><h5>Oportunidade Consultiva</h5><p>Este diagnóstico em R$ concretos é o argumento mais poderoso para vender planejamento financeiro para a Reforma. Pouquíssimos clientes conseguem quantificar o Split Payment em R$ — você entrega isso em 2 minutos.</p></div>`);
+  try{ if(document.getElementById('recs-c01')) document.getElementById('recs-c01').innerHTML += window.lhWrapCards(`<div class="rec-card rec-info"><h5>⚖️ Base Legal — Split Payment</h5><p><strong>LC 214/2025, arts. 31 a 35</strong> — institui o split payment (recolhimento de IBS/CBS na liquidação financeira da operação): art. 31 (regra geral), art. 32 (procedimento padrão), art. 34 (segregação proporcional nas vendas a prazo) e art. 36 (recolhimento pelo adquirente).<br><strong>LC 227/2026</strong> — detalha os procedimentos padrão e simplificado e institui o art. 471-D (penalidades aos prestadores de serviço de pagamento).<br><strong>EC 132/2023</strong> — base constitucional do IBS/CBS e do recolhimento na liquidação financeira.<br><span style="opacity:.65;font-size:.9em">Fonte: gov.br/Fazenda e Planalto (LC 214/2025). Sujeito a validação jurídica final.</span></p></div>`); }catch(e){}
+
   document.getElementById('res-c01').classList.add('visible');
   // ── Motor 360°: registrar resultado ──
   setMotorResultado('c01', {
@@ -12856,7 +12876,7 @@ window.calcularCR04 = function() {
   document.getElementById('recs-cr04').innerHTML = recHtml;
         var _m4=document.getElementById('mem-cr04');
         if(_m4 && window.lhMemoriaCalculo){ _m4.innerHTML = window.lhMemoriaCalculo({
-          titulo:'Créditos plenos de CBS/IBS: na não-cumulatividade ampla da reforma, quase toda aquisição usada na atividade gera crédito. Estima o crédito anual que reduz o imposto a pagar.',
+          baseLegal:[{lei:'LC 214/2025 (Reforma)',link:'https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm'},{lei:'EC 132/2023, art. 156-A, §1º (não-cumulatividade plena)'},{lei:'⚠️ tese sujeita a validação jurídica'}], titulo:'Créditos plenos de CBS/IBS: na não-cumulatividade ampla da reforma, quase toda aquisição usada na atividade gera crédito. Estima o crédito anual que reduz o imposto a pagar.',
           aliquotas:[
             {label:'Regime', valor:(document.getElementById('cr04_regime')||{value:''}).value||'—'},
             {label:'Alíquota CBS/IBS', valor:((parseFloat((document.getElementById('cr04_aliquota')||{value:0}).value)||0))+'%'},
@@ -12962,7 +12982,7 @@ window.calcularCR05 = function() {
   var rc = document.getElementById('recs-cr05'); if(rc) rc.innerHTML = recHtml;
         var _m5=document.getElementById('mem-cr05');
         if(_m5 && window.lhMemoriaCalculo){ _m5.innerHTML = window.lhMemoriaCalculo({
-          titulo:'Saldo credor de PIS/COFINS: estima o crédito acumulado (saldo, extemporâneos e crédito sobre estoque) que pode ser aproveitado ou monetizado na transição para o CBS/IBS.',
+          baseLegal:[{lei:'Lei 10.637/2002 (PIS não-cumulativo)'},{lei:'Lei 10.833/2003 (COFINS não-cumulativa)'},{lei:'Lei 11.033/2004'},{lei:'⚠️ tese sujeita a validação jurídica'}], titulo:'Saldo credor de PIS/COFINS: estima o crédito acumulado (saldo, extemporâneos e crédito sobre estoque) que pode ser aproveitado ou monetizado na transição para o CBS/IBS.',
           aliquotas:[
             {label:'Saldo credor informado', valor:fmtR(parseFloat((document.getElementById('cr05_saldo')||{value:0}).value)||0)},
             {label:'Crédito sobre estoque (9,25%)', valor:fmtR(creditoEstoque)},
@@ -13066,7 +13086,7 @@ window.calcularC11 = function() {
   var rc = document.getElementById('recs-c11'); if(rc) rc.innerHTML = recHtml;
   var memC11 = document.getElementById('mem-c11');
   if(memC11 && window.lhMemoriaCalculo){ memC11.innerHTML = window.lhMemoriaCalculo({
-    titulo:'Impacto do Split Payment no caixa: o recolhimento do CBS/IBS na liquidação (em vez do prazo mensal) antecipa a saída do imposto, consumindo capital de giro. Estima o custo financeiro dessa antecipação no ano.',
+    baseLegal:[{lei:'LC 214/2025, arts. 31–34 (split payment)',link:'https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm'},{lei:'LC 227/2026 (procedimentos)'},{lei:'EC 132/2023'}], titulo:'Impacto do Split Payment no caixa: o recolhimento do CBS/IBS na liquidação (em vez do prazo mensal) antecipa a saída do imposto, consumindo capital de giro. Estima o custo financeiro dessa antecipação no ano.',
     aliquotas:[
       {label:'Faturamento', valor:fmtR(parseFloat((document.getElementById('c11_fat')||{value:0}).value)||0)},
       {label:'Alíquota CBS/IBS do ano', valor:((aliqAno*100).toFixed(2).replace('.',','))+'%'},
@@ -13147,7 +13167,7 @@ window.calcularN30 = function() {
   var rc = document.getElementById('recs-n30'); if(rc) rc.innerHTML = recHtml;
   var memN30 = document.getElementById('mem-n30');
   if(memN30 && window.lhMemoriaCalculo){ memN30.innerHTML = window.lhMemoriaCalculo({
-    titulo:'Doação em vida vs herança futura: compara o ITCMD pago ao doar agora (alíquota atual do estado) com o ITCMD projetado na sucessão futura, estimando a economia de antecipar a transmissão na janela 2026.',
+    baseLegal:[{lei:'CF art. 155, I e §1º (ITCMD)'},{lei:'EC 132/2023 + LC 227/2026 (ITCMD progressivo)',link:'https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp227.htm'},{lei:'Legislação estadual do ITCMD'},{lei:'⚠️ tese sujeita a validação jurídica'}], titulo:'Doação em vida vs herança futura: compara o ITCMD pago ao doar agora (alíquota atual do estado) com o ITCMD projetado na sucessão futura, estimando a economia de antecipar a transmissão na janela 2026.',
     aliquotas:[
       {label:'Patrimônio a transmitir', valor:fmtR(valor)},
       {label:'Estado', valor:(document.getElementById('n30_estado')||{value:''}).value||'—'},
@@ -14935,7 +14955,7 @@ function exportarBackupCriptografado() {
     _metadata: {
       exportadoEm: new Date().toISOString(),
       versaoTermos: window.LGPD ? window.LGPD.versaoTermos : '1.0.0',
-      ferramenta: 'Lionheart Calc Suite Lite ' + (window.LH_VERSAO_ATUAL || 'v30.11.28'),
+      ferramenta: 'Lionheart CORE ' + (window.LH_VERSAO_ATUAL || 'v30.11.28'),
       criptografado: false, /* [v30.11.9] base64 simples, sem senha — padrão TAX LAW */
       algoritmo: 'base64 (ofuscação visual)',
       versaoBackup: '3.0.0' /* B5.4 — schema com escopos e grupos econômicos */
@@ -15790,7 +15810,7 @@ async function buscarCNPJLite() {
 
 
 // ══════════════════════════════════════════════════════════
-// LIONHEART LITE v4 — BOAS-VINDAS + MULTIEMPRESAS + CONTRATOS + MOTOR 360°
+// LIONHEART CORE v4 — BOAS-VINDAS + MULTIEMPRESAS + CONTRATOS + MOTOR 360°
 // ══════════════════════════════════════════════════════════
 
 // ── BOAS-VINDAS ──
@@ -19332,12 +19352,12 @@ function renderizarProdutosProposta() {
         // Recorrente
         html += '<div>';
         html += '<label style="display:flex;align-items:center;gap:5px;font-size:0.72em;color:'+(modRec?'#10b981':'rgba(200,215,235,0.45)')+';margin-bottom:4px;cursor:pointer;">';
-        html += '<input type="checkbox" '+(modRec?'checked':'')+' onchange="toggleModalidade(\''+p.id+'\',\'recorrente\',this.checked)" style="cursor:pointer;accent-color:#10b981;"> Recorrente/mês ' + (editadoR?'<span style="color:#c9a227" title="Editado do padrão R$ '+precoBase.r.toLocaleString('pt-BR')+'/mês"></span>':'') + '</label>';
+        html += '<input type="checkbox" '+(modRec?'checked':'')+' onchange="toggleModalidade(\''+p.id+'\',\'recorrente\',this.checked)" style="cursor:pointer;accent-color:#10b981;"> 🔁 Recorrência (cada vez) ' + (editadoR?'<span style="color:#c9a227" title="Editado do padrão R$ '+precoBase.r.toLocaleString('pt-BR')+'/mês">✎</span>':'') + '</label>';
         html += '<div style="display:flex;align-items:center;gap:4px;">';
         html += '<span style="color:rgba(200,215,235,0.45);font-size:0.78em">R$</span>';
         html += '<input type="number" min="0" value="'+valorRecCustom+'" '+(modRec?'':'disabled')+' onchange="atualizarPrecoCustom(\''+p.id+'\',\'recorrente\',this.value)" style="flex:1;background:'+(modRec?'#132840':'rgba(255,255,255,0.03)')+';border:1px solid '+(modRec?'rgba(16,185,129,0.35)':'rgba(255,255,255,0.05)')+';border-radius:5px;padding:5px 8px;color:#e8edf5;font-size:0.85em;font-family:monospace;outline:none;'+(modRec?'':'opacity:0.4;cursor:not-allowed;')+'">';
         html += '</div>';
-        html += '<div style="font-size:0.66em;color:rgba(200,215,235,0.35);margin-top:2px">padrão R$ '+precoBase.r.toLocaleString('pt-BR')+'/mês</div>';
+        html += '<div style="font-size:0.66em;color:rgba(200,215,235,0.35);margin-top:2px">sugestão R$ '+Math.round(valorPontualCustom*0.5).toLocaleString('pt-BR')+' · 50% do pontual</div>';
         html += '</div>';
 
         // Periodicidade por linha (de quantos em quantos meses a calc se REPETE no LTV)
@@ -19369,7 +19389,7 @@ function renderizarProdutosProposta() {
             }
             html += '<span style="color:#c9a227;font-weight:700">Pontual: R$ '+Math.round(subPontual).toLocaleString('pt-BR')+'</span>';
           }
-          if(subRec > 0) html += '<span style="color:#10b981;font-weight:700">Recorrente: R$ '+subRec.toLocaleString('pt-BR')+'/mês</span>';
+          if(subRec > 0) html += '<span style="color:#10b981;font-weight:700">Recorrência: R$ '+subRec.toLocaleString('pt-BR')+' / vez</span>';
           html += '</div>';
         }
 
@@ -19424,7 +19444,7 @@ function aplicarBundle(bundleId) {
     // Aplicar bundle (sobrepõe seleções atuais)
     window.PROPOSTA_ESTADO.bundleAtivo = bundleId;
     bundle.calcs.forEach(function(cid){
-      window.PROPOSTA_ESTADO.selecoes[cid] = { modalidade: 'pontual' };
+      window.PROPOSTA_ESTADO.selecoes[cid] = { modalidade: 'pontual', periodicidade: (window.PERIODICIDADE_PADRAO && window.PERIODICIDADE_PADRAO[cid]!=null) ? window.PERIODICIDADE_PADRAO[cid] : 0 };
     });
   }
   renderizarProdutosProposta();
@@ -19433,9 +19453,11 @@ function aplicarBundle(bundleId) {
 }
 
 // Toggle produto
+window.PERIODICIDADE_PADRAO = {a06:3, cr03:3, cr05:3, n33:3, c01:3, prontidao:3, cockpit:4, calc03:4, c02:4, c04:4, cr01:6, cr02:6, cr04:6, iss118:6, icmsst1125:6, monofasico:6, credpresumido:6, difal:6, a02:6, n32:6, seletivo:6, c11:6, n04:6, n25:6, n26:6, c05:12, c06:12, n29:12, lei15270:12, planimob:12, n15:24, n16:24, n17:24, n30:24, n14:24, a08:24, a01:0, a03:0, a04:0, decisor:0, transacao:0, n18:0, n19:0, a07:0, a09:0, imob_ret:0, imobref:0, n20:0, n28:0, a10:0};
+window.LH_RECORRENCIA_DESCONTO = 0.5; /* recorr\u00eancia = 50% do 1\u00ba pontual (reanalise mais leve) */
 function togglProduto(id, marcado) {
   if(marcado) {
-    if(!window.PROPOSTA_ESTADO.selecoes[id]) window.PROPOSTA_ESTADO.selecoes[id] = { modalidade: 'pontual' };
+    if(!window.PROPOSTA_ESTADO.selecoes[id]) window.PROPOSTA_ESTADO.selecoes[id] = { modalidade: 'pontual', periodicidade: (window.PERIODICIDADE_PADRAO && window.PERIODICIDADE_PADRAO[id]!=null) ? window.PERIODICIDADE_PADRAO[id] : 0 };
   } else {
     delete window.PROPOSTA_ESTADO.selecoes[id];
     window.PROPOSTA_ESTADO.bundleAtivo = null; // cancela bundle se desmarcar item
@@ -19925,11 +19947,11 @@ function gerarPDFProposta() {
   // Footer v26 M-12: aviso legal fortalecido com base legal de cada calc + recomendação confirmação profissional
   html += '<div style="margin-top:30px;padding-top:14px;border-top:2px solid #c9a227;background:#fafafa;padding:14px;border-radius:6px;font-size:9px;color:#555;line-height:1.5;">';
   html += '<div style="font-weight:700;color:#1a2540;font-size:10px;margin-bottom:6px;">AVISO LEGAL E TÉCNICO</div>';
-  html += '<p style="margin:0 0 5px;"><strong>Versão da ferramenta:</strong> Lionheart Calc Suite Lite v30.11.28 · <strong>Legislação atualizada em:</strong> maio/2026</p>';
+  html += '<p style="margin:0 0 5px;"><strong>Versão da ferramenta:</strong> Lionheart CORE v30.11.28 · <strong>Legislação atualizada em:</strong> maio/2026</p>';
   html += '<p style="margin:0 0 5px;"><strong>Base legal:</strong> LC 214/2025 (Reforma Tributária — CBS/IBS) · LC 224/2025 (presunção LP majorada + JCP 17,5%) · Lei 15.270/2025 (IRPF 2026 + IRPFM 2027) · EC 132/2023 (origem da progressividade do ITCMD) + LC 227/2026 (regulamentação do ITCMD por quinhão) · LC 123/2006 (Simples Nacional) · RIR/2018 · Lei 9.249/95 (art. 10 dividendos / art. 9 JCP) · IN RFB 84/2001 (ganho de capital).</p>';
   html += '<p style="margin:0 0 5px;"><strong>Natureza das projeções:</strong> Os valores apresentados são estimativas baseadas em premissas técnicas e podem variar em função de: (i) dados reais do cliente confirmados em LALUR, ECD/ECF, DEFIS; (ii) alíquotas municipais/estaduais específicas; (iii) regulamentação pendente do Comitê Gestor do IBS (alíquotas definitivas a serem fixadas); (iv) alterações legislativas posteriores à emissão deste relatório.</p>';
   html += '<p style="margin:0 0 5px;"><strong>Recomendação:</strong> Este relatório <strong>NÃO substitui análise contábil/jurídica profissional</strong>. Antes de qualquer decisão de impacto patrimonial ou tributário (mudança de regime, abertura de holding, planejamento sucessório, distribuição de dividendos), recomendamos: (a) confirmação com LALUR atualizado; (b) parecer de advogado tributarista; (c) validação da alíquota ISS municipal real; (d) revisão de ECD/ECF do exercício anterior.</p>';
-  html += '<p style="margin:0;text-align:center;font-style:italic;color:#999;">Proposta gerada em '+hoje+' · Lionheart Calc Suite Lite · Documento confidencial · Uso restrito ao cliente</p>';
+  html += '<p style="margin:0;text-align:center;font-style:italic;color:#999;">Proposta gerada em '+hoje+' · Lionheart CORE · Documento confidencial · Uso restrito ao cliente</p>';
   html += '</div>';
 
   html += '</div>';
@@ -20545,7 +20567,7 @@ function buildHeaderPaginaInterna(numPagina, titulo, config, paleta) {
 
 function buildFooterPaginaInterna(numPagina, config, paleta) {
   var html = '<div style="position:absolute;bottom:24px;left:48px;right:48px;display:flex;justify-content:space-between;font-size:9px;color:'+paleta.textoEscuro+'88;border-top:1px solid #e5e7eb;padding-top:10px;">';
-  html += '<div>'+(config.escritorio||'Lionheart Calc Suite Lite')+(config.contador?' · '+config.contador:'')+'</div>';
+  html += '<div>'+(config.escritorio||'Lionheart CORE')+(config.contador?' · '+config.contador:'')+'</div>';
   html += '<div>Página '+numPagina+'</div>';
   html += '</div>';
   return html;
@@ -23682,13 +23704,12 @@ window.LH_RADAR = (function(){
     if(!emp) {
       var temClientes = window.LH_GRUPO && Object.keys(window.LH_GRUPO.getEntidades()).length > 0;
       var hue = '';
-      hue += '<div style="background:linear-gradient(135deg,rgba(184,148,31,0.12),rgba(15,39,68,0.06));border:1.5px solid rgba(184,148,31,0.35);border-radius:14px;padding:24px 28px;margin-bottom:18px;">';
+      hue += '<div style="background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:22px 26px;margin-bottom:18px;">';
       hue += '<h2 style="font-family:\'Syne\',sans-serif;font-size:1.55em;font-weight:800;color:#c9a227;line-height:1.2;margin:0 0 8px;">Diagnóstico Lionheart</h2>';
-      hue += '<p style="font-size:0.92em;color:var(--text2);line-height:1.55;margin:0 0 14px;">Diagnóstico em '+PERGUNTAS.length+' perguntas — gera score de exposição fiscal e ranking de calculadoras prioritárias por cliente.</p>';
       hue += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
-      hue += '<span style="background:rgba(184,148,31,0.15);border:1px solid rgba(184,148,31,0.30);padding:5px 12px;border-radius:14px;font-size:0.78em;color:#c9a227;font-weight:600;">'+PERGUNTAS.length+' perguntas</span>';
-      hue += '<span style="background:rgba(184,148,31,0.15);border:1px solid rgba(184,148,31,0.30);padding:5px 12px;border-radius:14px;font-size:0.78em;color:#c9a227;font-weight:600;">'+Object.keys(PILARES).length+' pilares</span>';
-      hue += '<span style="background:rgba(184,148,31,0.15);border:1px solid rgba(184,148,31,0.30);padding:5px 12px;border-radius:14px;font-size:0.78em;color:#c9a227;font-weight:600;">~10 minutos</span>';
+      hue += '<span style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);padding:5px 12px;border-radius:10px;font-size:0.77em;color:var(--text2);font-weight:500;">'+PERGUNTAS.length+' perguntas</span>';
+      hue += '<span style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);padding:5px 12px;border-radius:10px;font-size:0.77em;color:var(--text2);font-weight:500;">'+Object.keys(PILARES).length+' pilares</span>';
+      hue += '<span style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);padding:5px 12px;border-radius:10px;font-size:0.77em;color:var(--text2);font-weight:500;">~10 minutos</span>';
       hue += '</div></div>';
 
       /* Card de início — input manual da razão social */
@@ -23719,7 +23740,7 @@ window.LH_RADAR = (function(){
     var html = '';
 
     /* === B6 · HERO no padrão TAX LAW === */
-    html += '<div style="background:linear-gradient(135deg,rgba(184,148,31,0.12),rgba(15,39,68,0.06));border:1.5px solid rgba(184,148,31,0.35);border-radius:14px;padding:24px 28px;margin-bottom:18px;">';
+    html += '<div style="background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:22px 26px;margin-bottom:18px;">';
 
     /* B5.4.5 — Selo do escopo de análise */
     var escAtual = window.LH_ESCOPO ? window.LH_ESCOPO.get() : { tipo:'entidade' };
@@ -23735,24 +23756,21 @@ window.LH_RADAR = (function(){
       corEsc = '#c9a227'; icoEsc = '';
       txtEsc = 'DIAGNÓSTICO DA ENTIDADE · ' + (emp.nome || 'individual');
     }
-    html += '<div style="display:inline-flex;align-items:center;gap:7px;background:' + corEsc + '22;border:1px solid ' + corEsc + '60;padding:5px 14px;border-radius:14px;margin-bottom:10px;font-size:0.75em;font-weight:800;letter-spacing:.04em;color:' + corEsc + ';">';
+    html += '<div style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);padding:5px 13px;border-radius:12px;margin-bottom:12px;font-size:0.72em;font-weight:600;letter-spacing:.05em;color:var(--text2);">';
     html += icoEsc + ' ' + txtEsc;
     html += '<a onclick="if(window.LH_ESCOPO_UI)LH_ESCOPO_UI.abrirDropdown(this)" style="margin-left:6px;color:' + corEsc + ';text-decoration:underline;cursor:pointer;font-weight:600;">trocar escopo</a>';
     html += '</div>';
 
-    html += '<h2 style="font-family:\'Syne\',sans-serif;font-size:1.55em;font-weight:800;color:#c9a227;line-height:1.2;margin:0 0 8px;">Diagnóstico Lionheart · '+(emp.nome||'—')+'</h2>';
-    html += '<p style="font-size:0.92em;color:var(--text2);line-height:1.55;margin:0 0 14px;">Diagnóstico em '+PERGUNTAS.length+' perguntas — gera score de exposição fiscal e ranking de calculadoras prioritárias para este cliente. <strong>Rode ANTES do Motor 360°</strong> (Motor faz o quantitativo, o Diagnóstico faz o qualitativo).</p>';
+    html += '<h2 style="font-family:\'Syne\',sans-serif;font-size:1.55em;font-weight:700;color:var(--text);line-height:1.2;margin:0 0 10px;">Diagnóstico Lionheart <span style="color:var(--text3);font-weight:400;">·</span> <span style="color:#c9a227;">'+(emp.nome||'—')+'</span></h2>';
     html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">';
-    html += '<span style="background:rgba(184,148,31,0.15);border:1px solid rgba(184,148,31,0.30);padding:5px 12px;border-radius:14px;font-size:0.78em;color:#c9a227;font-weight:600;">'+PERGUNTAS.length+' perguntas</span>';
-    html += '<span style="background:rgba(184,148,31,0.15);border:1px solid rgba(184,148,31,0.30);padding:5px 12px;border-radius:14px;font-size:0.78em;color:#c9a227;font-weight:600;">'+Object.keys(PILARES).length+' pilares</span>';
-    html += '<span style="background:rgba(184,148,31,0.15);border:1px solid rgba(184,148,31,0.30);padding:5px 12px;border-radius:14px;font-size:0.78em;color:#c9a227;font-weight:600;">~10 minutos</span>';
-    html += '<span style="background:rgba(184,148,31,0.15);border:1px solid rgba(184,148,31,0.30);padding:5px 12px;border-radius:14px;font-size:0.78em;color:#c9a227;font-weight:600;">Salvo por cliente</span>';
+    html += '<span style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);padding:5px 12px;border-radius:10px;font-size:0.77em;color:var(--text2);font-weight:500;">'+PERGUNTAS.length+' perguntas</span>';
+    html += '<span style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);padding:5px 12px;border-radius:10px;font-size:0.77em;color:var(--text2);font-weight:500;">'+Object.keys(PILARES).length+' pilares</span>';
+    html += '<span style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);padding:5px 12px;border-radius:10px;font-size:0.77em;color:var(--text2);font-weight:500;">~10 minutos</span>';
+    html += '<span style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);padding:5px 12px;border-radius:10px;font-size:0.77em;color:var(--text2);font-weight:500;">Salvo por cliente</span>';
+    html += '<button onclick="LH_RADAR.novoDiagnostico()" style="padding:8px 16px;background:rgba(255,255,255,0.04);color:var(--text2);border:1px solid rgba(255,255,255,0.12);border-radius:7px;font-weight:600;font-size:0.8em;cursor:pointer;font-family:Inter,sans-serif;">+ Diagnóstico de outro cliente</button>';
+   
     html += '</div>';
-    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">';
-    html += '<button onclick="LH_RADAR.novoDiagnostico()" style="padding:8px 16px;background:rgba(0,0,0,0.25);color:#e8b020;border:1px solid rgba(184,148,31,0.40);border-radius:7px;font-weight:700;font-size:0.8em;cursor:pointer;font-family:Inter,sans-serif;">+ Diagnóstico de outro cliente</button>';
-    html += '<button onclick="if(window.abrirModal){abrirModal(\'modal-clientes\');}" style="padding:8px 16px;background:rgba(22,196,124,0.12);color:#16c47c;border:1px solid rgba(22,196,124,0.40);border-radius:7px;font-weight:700;font-size:0.8em;cursor:pointer;font-family:Inter,sans-serif;">Trocar cliente</button>';
-    html += '<button onclick="window.LH_salvarDiagnostico && window.LH_salvarDiagnostico()" style="padding:8px 16px;background:linear-gradient(135deg,#c9a227,#e8b020);color:#0c1628;border:none;border-radius:7px;font-weight:800;font-size:0.8em;cursor:pointer;font-family:Inter,sans-serif;">Salvar Diagnóstico</button>';
-    html += '</div>';
+    
     html += '</div>';
 
     /* v30.11.81 — Estrutura do Grupo Econômico (espelho do TAX): define abas do Excel */
@@ -23779,16 +23797,47 @@ window.LH_RADAR = (function(){
     /* v30.11.83 — Potencial Estimado MOVIDO para a Proposta Comercial (é ferramenta comercial). */
 
     /* v30.11.22 — MODO CONSULTOR: Excel da Planilha do Diagnóstico */
-    html += '<div style="background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(15,39,68,0.03));border:1px solid rgba(16,185,129,0.30);border-radius:10px;padding:16px 20px;margin-bottom:18px;">';
-    html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">';
-    html += '<div style="flex:1;min-width:240px;">';
-    html += '<div style="font-family:\'Syne\',sans-serif;font-size:1em;font-weight:700;color:#10b981;margin-bottom:3px;">Modo Consultor · Planilha do Cliente</div>';
-    html += '<div style="font-size:0.82em;color:var(--text2);line-height:1.5;">Não tem os dados do cliente? Gere a planilha customizada com os campos das calcs sugeridas, mande pro cliente/contador preencher, e importe de volta. Tudo se popula automaticamente.</div>';
+    
+
+    /* QUESTIONÁRIO — perguntas agrupadas por pilar */
+    html += '<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:18px;">';
+    html += '<div style="font-family:\'Syne\',sans-serif;font-size:1.05em;font-weight:700;color:var(--gold);margin-bottom:4px;">Questionário Diagnóstico</div>';
+    html += '<div style="font-size:0.82em;color:var(--text2);margin-bottom:14px;line-height:1.5;">'+PERGUNTAS.length+' perguntas em '+Object.keys(PILARES).length+' pilares. As respostas atualizam o score e a missão de calcs em tempo real. Pode responder em qualquer ordem.</div>';
+    Object.keys(PILARES).forEach(function(pid){
+      var pl = PILARES[pid];
+      var perguntasPilar = PERGUNTAS.filter(function(q){return q.pilar===pid;});
+      html += '<div style="margin-top:18px;padding-top:14px;border-top:1px dashed var(--border);">';
+      html += '<div style="font-size:0.92em;font-weight:700;color:'+pl.cor+';margin-bottom:4px;">'+pl.titulo+'</div>';
+      html += '<div style="font-size:0.78em;color:var(--text3);margin-bottom:12px;font-style:italic;">'+pl.desc+'</div>';
+      perguntasPilar.forEach(function(q){
+        var resposta = respostas[q.id];
+        html += '<div style="margin-bottom:14px;padding:12px 14px;background:rgba(0,0,0,0.15);border-radius:8px;">';
+        html += '<div style="font-size:0.88em;color:var(--text);margin-bottom:8px;font-weight:600;">'+q.texto+'</div>';
+        html += '<div style="display:flex;flex-direction:column;gap:5px;">';
+        q.opcoes.forEach(function(o, idx){
+          var marcada = resposta === idx;
+          var bg = marcada ? 'rgba(184,148,31,0.15)' : 'rgba(255,255,255,0.02)';
+          var bd = marcada ? 'rgba(184,148,31,0.50)' : 'var(--border)';
+          var corTxt = marcada ? 'var(--gold)' : 'var(--text2)';
+          html += '<label style="display:flex;align-items:center;gap:9px;padding:7px 11px;background:'+bg+';border:1px solid '+bd+';border-radius:7px;cursor:pointer;font-size:0.83em;color:'+corTxt+';transition:all .15s;">';
+          html += '<input type="radio" name="'+q.id+'" '+(marcada?'checked':'')+' onchange="LH_RADAR.responder(\''+q.id+'\','+idx+')" style="accent-color:var(--gold);cursor:pointer;flex-shrink:0;">';
+          html += '<span style="flex:1;">'+o.txt+'</span>';
+          if(o.score > 0) html += '<span style="background:rgba(255,255,255,0.06);color:var(--text3);padding:1px 7px;border-radius:8px;font-size:0.75em;font-weight:700;">+'+o.score+'</span>';
+          html += '</label>';
+        });
+        html += '</div></div>';
+      });
+      html += '</div>';
+    });
     html += '</div>';
-    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
-    html += '<button onclick="LH_RADAR_Excel.gerar()" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.45);color:#10b981;padding:8px 14px;border-radius:8px;font-size:0.82em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">Exportar Planilha</button>';
-    html += '<button onclick="LH_RADAR_Excel.importar()" style="background:rgba(30,95,168,0.12);border:1px solid rgba(30,95,168,0.45);color:#06b6d4;padding:8px 14px;border-radius:8px;font-size:0.82em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">Importar Preenchida</button>';
-    html += '</div></div></div>';
+
+    /* AÇÕES */
+    html += '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">';
+    if(score.respondidas > 0) {
+      html += '<button onclick="LH_RADAR.limpar()" style="padding:10px 18px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.35);color:#f87171;border-radius:8px;font-weight:700;font-size:0.85em;cursor:pointer;">Limpar Respostas</button>';
+    }
+    html += '<button onclick="LH_RADAR.renderizar()" style="padding:10px 18px;background:rgba(184,148,31,0.10);border:1px solid rgba(184,148,31,0.35);color:var(--gold);border-radius:8px;font-weight:700;font-size:0.85em;cursor:pointer;">Atualizar</button>';
+    html += '</div>';
 
     /* === B6 · SCORE BLOCK estilo TAX LAW (número gigante + tag + barras) === */
     var corScore = score.pct < 30 ? '#10b981' : (score.pct < 60 ? '#e8b020' : '#ef4444');
@@ -23842,16 +23891,10 @@ window.LH_RADAR = (function(){
       if(missao.feitas.length > 0){
         html += '<button onclick="abrirPagina(\'motor360\',null)" style="padding:10px 20px;background:linear-gradient(135deg,#c9a227,#e8b020);color:#0a0a0a;border:none;border-radius:8px;font-weight:800;font-size:0.86em;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0;">→ Consolidar no Motor 360°</button>';
       }
-      /* Botão Proposta SEMPRE visível quando há missão (mesmo sem calcs rodadas) */
-      if(missao.pendentes.length > 0 || missao.feitas.length > 0){
-        var temFeitas = missao.feitas.length > 0;
-        var labelProp = temFeitas ? 'Gerar Proposta Comercial' : 'Abrir Proposta Comercial';
-        var titleProp = temFeitas ? 'Pré-preenche a Proposta com os resultados das calcs já rodadas' : 'Abre a Proposta — preencha após rodar as calcs pra ter ROI projetado';
-        html += '<button onclick="LH_RADAR.gerarPropostaDoMotor()" title="' + titleProp + '" style="padding:10px 20px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;font-weight:800;font-size:0.86em;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0;margin-left:8px;">' + labelProp + '</button>';
-      }
+      
       /* B5.3.6 — Botão único orquestrador (aparece quando há missão) */
       if(missao.pendentes.length > 0 || missao.feitas.length > 0){
-        html += '<button onclick="LH_RADAR.executarFluxoCompleto()" title="Roda tudo em cascata: propaga inputs → calcula tudo → consolida Motor → gera Proposta + Roadmap LTV" style="padding:10px 20px;background:linear-gradient(135deg,#c9a227,#c9a227);color:#fff;border:none;border-radius:8px;font-weight:800;font-size:0.86em;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0;margin-left:8px;box-shadow:0 4px 14px rgba(201,162,39,0.30);">Executar Diagnóstico Completo</button>';
+        html += '';
       }
       html += '</div>';
 
@@ -23898,47 +23941,22 @@ window.LH_RADAR = (function(){
 
     html += (window.LH_flaggedCards_html ? window.LH_flaggedCards_html(missao) : '');
 
-    /* QUESTIONÁRIO — perguntas agrupadas por pilar */
-    html += '<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:18px;">';
-    html += '<div style="font-family:\'Syne\',sans-serif;font-size:1.05em;font-weight:700;color:var(--gold);margin-bottom:4px;">Questionário Diagnóstico</div>';
-    html += '<div style="font-size:0.82em;color:var(--text2);margin-bottom:14px;line-height:1.5;">'+PERGUNTAS.length+' perguntas em '+Object.keys(PILARES).length+' pilares. As respostas atualizam o score e a missão de calcs em tempo real. Pode responder em qualquer ordem.</div>';
-    Object.keys(PILARES).forEach(function(pid){
-      var pl = PILARES[pid];
-      var perguntasPilar = PERGUNTAS.filter(function(q){return q.pilar===pid;});
-      html += '<div style="margin-top:18px;padding-top:14px;border-top:1px dashed var(--border);">';
-      html += '<div style="font-size:0.92em;font-weight:700;color:'+pl.cor+';margin-bottom:4px;">'+pl.titulo+'</div>';
-      html += '<div style="font-size:0.78em;color:var(--text3);margin-bottom:12px;font-style:italic;">'+pl.desc+'</div>';
-      perguntasPilar.forEach(function(q){
-        var resposta = respostas[q.id];
-        html += '<div style="margin-bottom:14px;padding:12px 14px;background:rgba(0,0,0,0.15);border-radius:8px;">';
-        html += '<div style="font-size:0.88em;color:var(--text);margin-bottom:8px;font-weight:600;">'+q.texto+'</div>';
-        html += '<div style="display:flex;flex-direction:column;gap:5px;">';
-        q.opcoes.forEach(function(o, idx){
-          var marcada = resposta === idx;
-          var bg = marcada ? 'rgba(184,148,31,0.15)' : 'rgba(255,255,255,0.02)';
-          var bd = marcada ? 'rgba(184,148,31,0.50)' : 'var(--border)';
-          var corTxt = marcada ? 'var(--gold)' : 'var(--text2)';
-          html += '<label style="display:flex;align-items:center;gap:9px;padding:7px 11px;background:'+bg+';border:1px solid '+bd+';border-radius:7px;cursor:pointer;font-size:0.83em;color:'+corTxt+';transition:all .15s;">';
-          html += '<input type="radio" name="'+q.id+'" '+(marcada?'checked':'')+' onchange="LH_RADAR.responder(\''+q.id+'\','+idx+')" style="accent-color:var(--gold);cursor:pointer;flex-shrink:0;">';
-          html += '<span style="flex:1;">'+o.txt+'</span>';
-          if(o.score > 0) html += '<span style="background:rgba(255,255,255,0.06);color:var(--text3);padding:1px 7px;border-radius:8px;font-size:0.75em;font-weight:700;">+'+o.score+'</span>';
-          html += '</label>';
-        });
-        html += '</div></div>';
-      });
-      html += '</div>';
-    });
-    html += '</div>';
-
-    /* AÇÕES */
-    html += '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">';
-    if(score.respondidas > 0) {
-      html += '<button onclick="LH_RADAR.limpar()" style="padding:10px 18px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.35);color:#f87171;border-radius:8px;font-weight:700;font-size:0.85em;cursor:pointer;">Limpar Respostas</button>';
-    }
-    html += '<button onclick="LH_RADAR.renderizar()" style="padding:10px 18px;background:rgba(184,148,31,0.10);border:1px solid rgba(184,148,31,0.35);color:var(--gold);border-radius:8px;font-weight:700;font-size:0.85em;cursor:pointer;">Atualizar</button>';
-    html += '</div>';
-
     html += (window.LH_listaB_html ? window.LH_listaB_html(missao) : '');
+    /* 🦁 BOTÕES CONSOLIDADOS NO RODAPÉ */
+    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">';
+    html += '<button onclick="LH_RADAR_Excel.gerar()" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.45);color:#10b981;padding:8px 14px;border-radius:8px;font-size:0.82em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">Exportar Planilha</button>';
+    html += '<button onclick="LH_RADAR_Excel.importar()" style="background:rgba(30,95,168,0.12);border:1px solid rgba(30,95,168,0.45);color:#06b6d4;padding:8px 14px;border-radius:8px;font-size:0.82em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">Importar Preenchida</button>';
+    html += '<button onclick="if(window.abrirModal){abrirModal(\'modal-clientes\');}" style="padding:8px 16px;background:rgba(22,196,124,0.12);color:#16c47c;border:1px solid rgba(22,196,124,0.40);border-radius:7px;font-weight:700;font-size:0.8em;cursor:pointer;font-family:Inter,sans-serif;">Trocar cliente</button>';
+    html += '<button onclick="window.LH_salvarDiagnostico && window.LH_salvarDiagnostico()" style="padding:8px 16px;background:linear-gradient(135deg,#c9a227,#e8b020);color:#0c1628;border:none;border-radius:7px;font-weight:800;font-size:0.8em;cursor:pointer;font-family:Inter,sans-serif;">Salvar Diagnóstico</button>';
+    /* Botão Proposta SEMPRE visível quando há missão (mesmo sem calcs rodadas) */
+      if(missao.pendentes.length > 0 || missao.feitas.length > 0){
+        var temFeitas = missao.feitas.length > 0;
+        var labelProp = temFeitas ? 'Gerar Proposta Comercial' : 'Abrir Proposta Comercial';
+        var titleProp = temFeitas ? 'Pré-preenche a Proposta com os resultados das calcs já rodadas' : 'Abre a Proposta — preencha após rodar as calcs pra ter ROI projetado';
+        html += '<button onclick="LH_RADAR.gerarPropostaDoMotor()" title="' + titleProp + '" style="padding:10px 20px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;font-weight:800;font-size:0.86em;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0;margin-left:8px;">' + labelProp + '</button>';
+      }
+    html += '</div>';
+    
       box.innerHTML = html;
   }
 
@@ -26625,7 +26643,7 @@ window.LH_SAUDE = (function(){
   'use strict';
 
   if(window.LH_GRUPO && window.LH_GRUPO._instalado){
-    console.log('[LH_GRUPO LITE] já instalado');
+    console.log('[LH_GRUPO CORE] já instalado');
     return;
   }
 
@@ -26778,8 +26796,8 @@ window.LH_SAUDE = (function(){
 
     gravarLSraw('lite_migrado_v_b52', 'true');
     gravarLSraw('lite_migrado_v_b52_data', new Date().toISOString());
-    console.log('[LH_GRUPO LITE] ✓ Migração B5.2 concluída · ' + migrados + ' empresas viraram grupos solo');
-    console.log('[LH_GRUPO LITE] Backup em lite_backup_pre_b52 · use LH_ROLLBACK_B52() pra reverter');
+    console.log('[LH_GRUPO CORE] ✓ Migração B5.2 concluída · ' + migrados + ' empresas viraram grupos solo');
+    console.log('[LH_GRUPO CORE] Backup em lite_backup_pre_b52 · use LH_ROLLBACK_B52() pra reverter');
     return { migrado: true, total: migrados };
   }
 
@@ -26800,12 +26818,12 @@ window.LH_SAUDE = (function(){
   };
 
   /* ── CRUD de Grupo ── */
-  function criarGrupo(nome, observacoes){
+  function criarGrupo(nome, observacoes, tipoGrupo){
     if(!nome || nome.trim().length < 2) throw new Error('Nome do grupo inválido');
     var grupos = getGrupos();
     var id = geradorId('grp');
     grupos[id] = {
-      id: id, nome: nome.trim(), tipo: 'grupo_economico',
+      id: id, nome: nome.trim(), tipo: tipoGrupo || 'grupo_economico',
       cnpjRaiz: null, criadoEm: new Date().toISOString(),
       observacoes: observacoes || '', entidades: []
     };
@@ -26938,8 +26956,8 @@ window.LH_SAUDE = (function(){
     executarMigracao: executarMigracao
   };
 
-  console.log('[LH_GRUPO LITE] ✓ Biblioteca dormante carregada (B5.2 · v30.11.38)');
-  console.log('[LH_GRUPO LITE] API disponível: window.LH_GRUPO · NÃO está ativa nas calcs ainda');
+  console.log('[LH_GRUPO CORE] ✓ Biblioteca dormante carregada (B5.2 · v30.11.38)');
+  console.log('[LH_GRUPO CORE] API disponível: window.LH_GRUPO · NÃO está ativa nas calcs ainda');
 })();
 
 /* ════════════════════════════════════════════════════════════════
@@ -27821,7 +27839,7 @@ window.LH_SAUDE = (function(){
 
     try {
       // Cria grupo solo
-      var grupoId = window.LH_GRUPO.criarGrupo(nome.trim(), obs.trim());
+      var grupoId = window.LH_GRUPO.criarGrupo(nome.trim(), obs.trim(), 'solo');
       // Mantém como 'solo'
       // Cria entidade solo
       var dadosEnt = {
@@ -29860,7 +29878,7 @@ function calcularISS118(){
       {label:'Total '+meses+' meses (nominal)', valor:_lhFmt(nom)},
       {label:'Corrigido pela SELIC (SICALC/RFB)', valor:_lhFmt(cor)}
     ],
-    baseLegal:[{label:'STF \u00b7 Tema 118 (RE 592.616)'},{label:'Tema 69 (RE 574.706)'},{label:'LC 7/70'},{label:'LC 70/91'}]
+    baseLegal:[{lei:'STF \u00b7 Tema 118 (RE 592.616)'},{lei:'Tema 69 (RE 574.706)'},{lei:'LC 7/70'},{lei:'LC 70/91'}]
   }):(mem+leg));
   var viaHTML=(window.lhNotaConsultiva?lhNotaConsultiva({
     confianca:{nivel:'M\u00e9dia', motivo:'O Tema 118 est\u00e1 em pauta no STF e o resultado \u00e9 incerto. H\u00e1 assimetria favor\u00e1vel: ajuizar resguarda os 5 anos sem penalidade se perder; n\u00e3o ajuizar pode fazer perder o passado.'},
@@ -30668,6 +30686,10 @@ window.LH_HIST_DIAGNOSTICOS = (function(){
   function setDiags(o){ try{ localStorage.setItem('lh_radar_v1', JSON.stringify(o)); }catch(e){} }
   function getMeta(){ try{ return JSON.parse(localStorage.getItem('lh_diag_meta_v1')||'{}'); }catch(e){ return {}; } }
   function setMeta(o){ try{ localStorage.setItem('lh_diag_meta_v1', JSON.stringify(o)); }catch(e){} }
+  function getHist(){ try{ var a=JSON.parse(localStorage.getItem('lh_diag_hist_v1')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function setHist(a){ try{ localStorage.setItem('lh_diag_hist_v1', JSON.stringify(a)); }catch(e){} }
+  function novoId(){ return 'd'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+  function registrar(){ try{ var chave=(window.LH_RADAR&&typeof LH_RADAR.chaveAtual==='function')?LH_RADAR.chaveAtual():null; if(!chave) return; var resp=(window.LH_RADAR&&typeof LH_RADAR.getRespostasAtuais==='function')?LH_RADAR.getRespostasAtuais():(getDiags()[chave]||{}); var h=getHist(); h.push({id:novoId(),chave:chave,nome:labelChave(chave),savedAt:Date.now(),n:nResp(resp),snapshot:resp}); setHist(h); }catch(e){} }
   function labelChave(c){
     if(!c) return 'Diagn\u00f3stico';
     if(c.indexOf('grupo-')===0){ var gid=c.slice(6); var g=window.LH_GRUPO&&LH_GRUPO.getGrupos&&LH_GRUPO.getGrupos()[gid]; return g?('\ud83d\udc65 '+(g.nome||'Grupo')+' (consolidado)'):'\ud83d\udc65 Grupo'; }
@@ -30684,27 +30706,30 @@ window.LH_HIST_DIAGNOSTICOS = (function(){
   function render(){
     var box=document.getElementById('hist-diag-lista'); var cont=document.getElementById('hist-diag-contador');
     if(!box) return;
-    var diags=getDiags(); var meta=getMeta(); var chaves=Object.keys(diags);
+    var hist=getHist().slice();
     var q=String(filtro||'').toLowerCase().trim();
-    if(q) chaves=chaves.filter(function(c){ return labelChave(c).toLowerCase().indexOf(q)>=0; });
-    chaves.sort(function(a,b){ return ((meta[b]&&meta[b].savedAt)||0)-((meta[a]&&meta[a].savedAt)||0); });
-    if(cont) cont.textContent=chaves.length+' diagn\u00f3stico'+(chaves.length!==1?'s':'');
-    if(chaves.length===0){ box.innerHTML='<div style="text-align:center;padding:50px 20px;color:rgba(200,215,235,0.6);"><div style="font-size:3em;margin-bottom:14px;">\ud83e\ude7a</div><div style="font-family:Syne,sans-serif;font-size:1.1em;color:rgba(200,215,235,0.85);margin-bottom:8px;">'+(q?'Nenhum diagn\u00f3stico com esse filtro':'Nenhum diagn\u00f3stico salvo ainda')+'</div>'+(q?'':'<div style="font-size:0.85em;max-width:430px;margin:0 auto;line-height:1.6;">V\u00e1 pro <strong style="color:#06b6d4;">Diagn\u00f3stico</strong>, responda as perguntas do cliente e clique em <strong style="color:#10b981;">Salvar Diagn\u00f3stico</strong>.</div>')+'</div>'; return; }
+    if(q) hist=hist.filter(function(h){ return String(h.nome||labelChave(h.chave)).toLowerCase().indexOf(q)>=0; });
+    hist.sort(function(a,b){ return (b.savedAt||0)-(a.savedAt||0); });
+    if(cont) cont.textContent=hist.length+' diagn\u00f3stico'+(hist.length!==1?'s':'');
+    if(hist.length===0){ box.innerHTML='<div style="text-align:center;padding:50px 20px;color:rgba(200,215,235,0.6);"><div style="font-size:3em;margin-bottom:14px;">\ud83e\ude7a</div><div style="font-family:Syne,sans-serif;font-size:1.1em;color:rgba(200,215,235,0.85);margin-bottom:8px;">'+(q?'Nenhum diagn\u00f3stico com esse filtro':'Nenhum diagn\u00f3stico salvo ainda')+'</div>'+(q?'':'<div style="font-size:0.85em;max-width:430px;margin:0 auto;line-height:1.6;">V\u00e1 pro <strong style="color:#06b6d4;">Diagn\u00f3stico</strong>, responda as perguntas do cliente e clique em <strong style="color:#10b981;">Salvar Diagn\u00f3stico</strong>.</div>')+'</div>'; return; }
     var html='';
-    chaves.forEach(function(c){
-      var r=diags[c]; var m=meta[c]||{}; var n=nResp(r);
+    hist.forEach(function(h){
+      var c=h.chave; var m={savedAt:h.savedAt}; var n=(typeof h.n==='number')?h.n:nResp(h.snapshot);
       html+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">';
       html+='<div style="flex:1;min-width:200px;"><div style="font-family:Syne,sans-serif;font-weight:700;font-size:0.98em;color:var(--text);">'+labelChave(c)+'</div>';
       html+='<div style="font-size:0.78em;color:rgba(200,215,235,0.6);margin-top:3px;">'+n+' resposta'+(n!==1?'s':'')+(m.savedAt?(' \u00b7 salvo em '+fmtData(m.savedAt)):'')+'</div></div>';
       html+='<div style="display:flex;gap:8px;">';
-      html+='<button onclick="LH_HIST_DIAGNOSTICOS.abrir(\''+c+'\')" style="padding:7px 14px;background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.82em;">Abrir</button>';
-      html+='<button onclick="LH_HIST_DIAGNOSTICOS.excluir(\''+c+'\')" title="Excluir" style="padding:7px 11px;background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:8px;cursor:pointer;font-size:0.82em;">\ud83d\uddd1</button>';
+      html+='<button onclick="LH_HIST_DIAGNOSTICOS.abrir(\''+h.id+'\')" style="padding:7px 14px;background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.82em;">Abrir</button>';
+      html+='<button onclick="LH_HIST_DIAGNOSTICOS.excluir(\''+h.id+'\')" title="Excluir" style="padding:7px 11px;background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:8px;cursor:pointer;font-size:0.82em;">\ud83d\uddd1</button>';
       html+='</div></div>';
     });
     box.innerHTML=html;
   }
   function filtrar(v){ filtro=v; render(); }
-  function abrir(chave){
+  function abrir(id){
+    var hist=getHist(); var h=null; for(var i=0;i<hist.length;i++){ if(hist[i].id===id){ h=hist[i]; break; } }
+    if(!h) return; var chave=h.chave;
+    try{ var d=getDiags(); d[chave]=h.snapshot||d[chave]||{}; setDiags(d); }catch(e){}
     try{
       if(chave.indexOf('grupo-')===0 && window.LH_ESCOPO && LH_ESCOPO.definirGrupo){ LH_ESCOPO.definirGrupo(chave.slice(6)); }
       else if(chave.indexOf('emp')===0){ var idx=parseInt(chave.slice(3),10); if(!isNaN(idx)) window.empresaAtivaIdx=idx; }
@@ -30712,10 +30737,11 @@ window.LH_HIST_DIAGNOSTICOS = (function(){
     try{ if(typeof LH_atualizarClienteTopbar==='function') LH_atualizarClienteTopbar(); }catch(e){}
     try{ if(typeof abrirPagina==='function') abrirPagina('radar', null); }catch(e){}
   }
-  function excluir(chave){
-    if(typeof confirm==='function' && !confirm('Excluir o diagn\u00f3stico de "'+labelChave(chave)+'"?')) return;
-    var d=getDiags(); delete d[chave]; setDiags(d);
-    var m=getMeta(); delete m[chave]; setMeta(m);
+  function excluir(id){
+    var hist=getHist(); var h=null; for(var i=0;i<hist.length;i++){ if(hist[i].id===id){ h=hist[i]; break; } }
+    if(!h) return;
+    if(typeof confirm==='function' && !confirm('Excluir este diagn\u00f3stico salvo de "'+(h.nome||labelChave(h.chave))+'"?')) return;
+    setHist(getHist().filter(function(x){ return x.id!==id; }));
     render();
     if(typeof toast==='function') toast('Diagn\u00f3stico exclu\u00eddo','success');
   }
@@ -30742,7 +30768,7 @@ window.LH_HIST_DIAGNOSTICOS = (function(){
   var origSalvar = window.LH_salvarDiagnostico;
   window.LH_salvarDiagnostico = function(){
     var r = (typeof origSalvar==='function') ? origSalvar.apply(this, arguments) : undefined;
-    try{ var chave=(window.LH_RADAR && typeof LH_RADAR.chaveAtual==='function')?LH_RADAR.chaveAtual():null; if(chave){ var m=getMeta(); m[chave]={savedAt:Date.now(),nome:labelChave(chave)}; setMeta(m); } }catch(e){}
+    try{ registrar(); }catch(e){}
     return r;
   };
   /* hook abrirPagina */
@@ -31311,6 +31337,84 @@ window.LH_scoreMotor = function(){
       b.addEventListener('click',function(){gerarPdfCalc(b);}); sec.appendChild(b); n++;
     }); window.__pdfBtns=n; }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',inject); else inject();
+})();
+</script>
+
+<!-- 🦁 MODAL + SCRIPT DE BACKUP (fase beta) -->
+<div id="lhBkpModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.65);align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)lhBkpFechar()">
+  <div style="background:#0d1626;border:1px solid rgba(201,162,39,.4);border-radius:16px;max-width:420px;width:100%;padding:26px;color:#eef2f8;font-family:system-ui,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div style="font-size:1.3em;font-weight:800;color:#f4cc4a;margin-bottom:6px">💾 Backup dos seus dados</div>
+    <p style="font-size:.9em;color:rgba(238,242,248,.7);margin:0 0 4px">Estamos em fase beta. Baixe um backup para não perder seus clientes, cenários e propostas — e guarde o arquivo em local seguro.</p>
+    <p id="lhBkpInfo" style="font-size:.82em;color:#c9a227;margin:8px 0 18px"></p>
+    <button onclick="lhBkpBaixar()" style="width:100%;background:linear-gradient(135deg,#f4cc4a,#c9a227);color:#1a1407;font-weight:700;border:none;border-radius:10px;padding:13px;cursor:pointer;font-size:.95em;margin-bottom:10px">⬇️ Baixar backup agora</button>
+    <label style="display:block;text-align:center;background:transparent;color:#eef2f8;border:1px solid rgba(201,162,39,.4);border-radius:10px;padding:12px;cursor:pointer;font-size:.92em">⬆️ Restaurar de um arquivo
+      <input type="file" accept="application/json,.json" onchange="lhBkpRestaurar(this)" style="display:none">
+    </label>
+    <div id="lhBkpMsg" style="font-size:.85em;color:#34d399;margin-top:12px;min-height:1.2em;text-align:center"></div>
+    <button onclick="lhBkpFechar()" style="width:100%;background:none;border:none;color:rgba(238,242,248,.5);margin-top:10px;cursor:pointer;font-size:.85em">Fechar</button>
+  </div>
+</div>
+<script>
+function lhBkpColeta(){var o={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);o[k]=localStorage.getItem(k);}return o;}
+function lhBkpBaixar(){
+  try{
+    var pacote={_app:'Lionheart',_versao:1,_data:new Date().toISOString(),dados:lhBkpColeta()};
+    var blob=new Blob([JSON.stringify(pacote,null,2)],{type:'application/json'});
+    var d=new Date(),p=function(n){return String(n).padStart(2,'0');};
+    var nome='lionheart-backup-'+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'.json';
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nome;document.body.appendChild(a);a.click();a.remove();
+    lhBkpAviso('\u2705 Backup baixado! Guarde o arquivo em local seguro.');
+  }catch(e){lhBkpAviso('\u274C Erro ao gerar backup: '+e.message);}
+}
+function lhBkpRestaurar(input){
+  var f=input.files[0];if(!f)return;
+  if(!confirm('Restaurar vai SUBSTITUIR os dados atuais pelos do arquivo. Deseja continuar?')){input.value='';return;}
+  var r=new FileReader();
+  r.onload=function(){
+    try{
+      var pp=JSON.parse(r.result),dados=pp.dados||pp;
+      Object.keys(dados).forEach(function(k){localStorage.setItem(k,dados[k]);});
+      lhBkpAviso('\u2705 Dados restaurados! Recarregando...');
+      setTimeout(function(){location.reload();},1200);
+    }catch(e){lhBkpAviso('\u274C Arquivo inv\u00e1lido: '+e.message);}
+  };
+  r.readAsText(f);
+}
+function lhBkpAbrir(){document.getElementById('lhBkpModal').style.display='flex';lhBkpContar();}
+function lhBkpFechar(){document.getElementById('lhBkpModal').style.display='none';}
+function lhBkpContar(){try{var el=document.getElementById('lhBkpInfo');if(el)el.textContent=localStorage.length+' itens guardados no navegador.';}catch(e){}}
+function lhBkpAviso(m){try{if(window.mostrarToast){mostrarToast(m);return;}}catch(e){}var el=document.getElementById('lhBkpMsg');if(el){el.textContent=m;}else{alert(m);}}
+</script>
+
+<script>
+/* E2 — PDF com contêineres ABERTOS: envolve html2canvas pra expandir todos os
+   <details> (lh-acc/chart-card/rec-card) antes de capturar e fechar depois.
+   Conserta per-calc, Proposta e Motor 360 de uma vez. Idempotente. */
+(function(){
+  function wrap(){
+    if(!window.html2canvas || window.html2canvas._lhWrapped) return;
+    var orig = window.html2canvas;
+    var w = function(el, opts){
+      var abertos = [];
+      try{
+        var root = (el && el.querySelectorAll) ? el : document.body;
+        root.querySelectorAll('details:not([open])').forEach(function(d){
+          d.setAttribute('open',''); abertos.push(d);
+        });
+      }catch(e){}
+      var restore = function(){ try{ abertos.forEach(function(d){ d.removeAttribute('open'); }); }catch(e){} };
+      var p;
+      try{ p = orig(el, opts); }catch(e){ restore(); throw e; }
+      return (p && p.then) ? p.then(function(c){ restore(); return c; }, function(e){ restore(); throw e; }) : (restore(), p);
+    };
+    for(var k in orig){ try{ w[k] = orig[k]; }catch(e){} }
+    w._lhWrapped = true;
+    window.html2canvas = w;
+  }
+  if(window.html2canvas){ wrap(); }
+  else if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', wrap); }
+  else { wrap(); }
+  window.addEventListener('load', wrap);
 })();
 </script>
 </body>
