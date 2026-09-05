@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v708";</script>
+<body><script>window.LH_VERSAO="v709";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3666,6 +3666,19 @@ window.LH_PONTE = (function(){
       esperado:function(r){ return (r&&r.ltv)?{ margem:Number(r.margem_rs), custo:Number(r.custo_do_cliente), alvo:Number(r.honorario_alvo), ltv:Number(r.ltv.conservador), ltv_liq:Number(r.ltv.liquido_de_cac) }:null; },
       /* kpi-c09 (R$): [0] margem · [1] custo alocado · [2] custo-hora "R$ 95,00/h" · [3] honorário alvo · [4] break-even · [5] LTV · [6] LTV líquido · [7] CAC */
       local:function(){ var R=LH_PONTE._rsNum; return { margem:R('kpi-c09',0), custo:R('kpi-c09',1), alvo:R('kpi-c09',3), ltv:R('kpi-c09',5), ltv_liq:R('kpi-c09',6) }; } },
+    /* ═══ v709 · Fator R (page-fatorR — R maiúsculo, por isso o censo não achava) ═══
+       fn_fator_r devolve LINHA (folha_total, fator_r, anexo, limite, falta_folha, margem_folga), não jsonb.
+       O DAS por anexo (III × V) a tela calcula pela SN_ANEXOS_LITE — não está na função; fica fora da comparação. */
+    calcularFatorR: { calc:'fator-r',
+      entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
+        return { receita12:f('fatR_receita'), prolabore:f('fatR_prolabore'), salarios:f('fatR_salarios'), encargos:f('fatR_encargos') }; },
+      esperado:function(r){ if(!r) return null; var x=Array.isArray(r)?r[0]:r; if(!x||x.fator_r==null) return null;
+        return { fator_pct:+(Number(x.fator_r)*100).toFixed(2), folha:Number(x.folha_total), ajuste:+(Number(x.falta_folha)||0)>0?Number(x.falta_folha):Number(x.margem_folga)*0 }; },
+      /* kpi-fatorR: [0] "26,25%" fator · [1] R$ falta na folha (ou margem de folga em %) · [2] R$ folha total */
+      local:function(){ var t=((document.getElementById('kpi-fatorR')||{}).textContent||'').replace(/\s+/g,' ');
+        var pct=t.match(/(-?[\d.]+,\d{1,2})\s*%/); var falta=t.match(/Falta na Folha\s*R\$\s*([\d.]+,\d{2})/); var folha=t.match(/Folha Total[^R]*R\$\s*([\d.]+,\d{2})/);
+        var n=function(m){ return m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null; };
+        return { fator_pct:n(pct), folha:n(folha), ajuste:(falta?n(falta):0) }; } },
 
     /* ═══ v701 · PATRIMONIAL 2 — Valuation, Reorganização (n18), Regime Imobiliário, Construção ═══
        Fora, com motivo (todas têm aba no Mestre — próximo bloco é lá):
@@ -65773,7 +65786,7 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
    DEPOIS do cálculo local, que é a única exigência do modo sombra.
    Se a tela ainda não existir, window[n] é undefined e nada acontece. */
 (function(){
-  ['dxhCalc','calcularC05','calcularCR01','fpCalc','calcularBares','calcularHotel','calcularAgViagem','calcularPSaude','calcularApostas','calcularFinanceiro','calcularClassificador','calcularRaioX360','calcularCoop','calcularAgroIns','calcularTelecom','calcularMedicamento','calcularTransPax','calcularLogCarga','calcularHotelEv','calcularC02','calcularC11','calcularN33','calcularCalc03','calcularSeletivo','calcularAntecip','calcularAliqRef','calcularIND01','calcularIND02','calcularIND03','calcularIND04','calcularIND05','calcularIND06','calcularIND07','calcularIND08','calcularIND09','calcularIND10','calcularIND11','calcularIND12','calcularISS118','calcularICMSST1125','calcularRET','calcularINS','calcularS962','calcularMonofasico','calcularCredPresumido','calcularDUP','calcularCR02','calcularCR03','calcularCR04','calcularCR05','calcularCR06','calcularTransacao','calcularPrescricao','calcularMultaJuros','calcularAutuacao','calcularRefis','calcularCompensacao','calcularDecisor','calcularCP01','calcularCP02','calcularCP03','calcularC06','calcularExport','calcularImport','calcularDrawback','calcularPortos','calcularDIFAL','calcularN29','calcularC08','calcularAGRO02','calcularAGRO04','calcularAGRO05','calcularAGRO06','calcularAGRO07','calcularAGRO08','calcularAGRO10','calcularAGRO11','calcularAGRO12','lhAg21Calc','lhAg22Calc','calcularAgroSuper1','calcularAgroSuper2','calcularAgroSuper3','calcularAgroSuper4','calcularAGRO03','calcularStockOptions','calcularN16','calcularN17','calcularAluguelPFPJ','calcularValuation','calcularN18','calcularImobReforma','calcularObra','calcularImobRET','calcularMA','calcularN30','calcularN15','calcularSucessorio','calcularAGRO09','lhAg14Calc','ctcCalc','calcularC09'].forEach(function(n){
+  ['dxhCalc','calcularC05','calcularCR01','fpCalc','calcularBares','calcularHotel','calcularAgViagem','calcularPSaude','calcularApostas','calcularFinanceiro','calcularClassificador','calcularRaioX360','calcularCoop','calcularAgroIns','calcularTelecom','calcularMedicamento','calcularTransPax','calcularLogCarga','calcularHotelEv','calcularC02','calcularC11','calcularN33','calcularCalc03','calcularSeletivo','calcularAntecip','calcularAliqRef','calcularIND01','calcularIND02','calcularIND03','calcularIND04','calcularIND05','calcularIND06','calcularIND07','calcularIND08','calcularIND09','calcularIND10','calcularIND11','calcularIND12','calcularISS118','calcularICMSST1125','calcularRET','calcularINS','calcularS962','calcularMonofasico','calcularCredPresumido','calcularDUP','calcularCR02','calcularCR03','calcularCR04','calcularCR05','calcularCR06','calcularTransacao','calcularPrescricao','calcularMultaJuros','calcularAutuacao','calcularRefis','calcularCompensacao','calcularDecisor','calcularCP01','calcularCP02','calcularCP03','calcularC06','calcularExport','calcularImport','calcularDrawback','calcularPortos','calcularDIFAL','calcularN29','calcularC08','calcularAGRO02','calcularAGRO04','calcularAGRO05','calcularAGRO06','calcularAGRO07','calcularAGRO08','calcularAGRO10','calcularAGRO11','calcularAGRO12','lhAg21Calc','lhAg22Calc','calcularAgroSuper1','calcularAgroSuper2','calcularAgroSuper3','calcularAgroSuper4','calcularAGRO03','calcularStockOptions','calcularN16','calcularN17','calcularAluguelPFPJ','calcularValuation','calcularN18','calcularImobReforma','calcularObra','calcularImobRET','calcularMA','calcularN30','calcularN15','calcularSucessorio','calcularAGRO09','lhAg14Calc','ctcCalc','calcularC09','calcularFatorR'].forEach(function(n){
     try{
       var f = window[n];
       if (typeof f !== 'function' || f.__lhSombra) return;
