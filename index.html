@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v706";</script>
+<body><script>window.LH_VERSAO="v707";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3641,6 +3641,21 @@ window.LH_PONTE = (function(){
       local:function(){ var t=((document.getElementById('ag14_kpis')||{}).textContent||'').replace(/\s+/g,' ');
         var n=function(rx){ var m=t.match(rx); return m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null; };
         return { projetada:n(/Receita projetada\s*R\$\s*([\d.]+,\d{2})/), excesso:n(/excesso\s*R\$\s*([\d.]+,\d{2})/) }; } },
+    /* ═══ v707 · Analisador de Contrato (reequilíbrio) ═══
+       A tela e fn_contrato batem no centavo. O resultado vive na TABELA (ctc_tab), não em KPI:
+       colunas ANO · só indexado · indexado+reequilíbrio · Δ. A ponte lê a linha de 2027 e a de 2033.
+       'ctc_reeq' (sim/nao/nd) é a cláusula existente — não muda o cálculo, muda a leitura jurídica;
+       o servidor recebe 'integral' porque é o cenário que a tela projeta. */
+    ctcCalc: { calc:'contrato',
+      entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
+        return { preco:f('ctc_preco'), pct_dentro:f('ctc_dentro'), aliquota_plena:f('ctc_balde')||26.5, inflacao_aa:f('ctc_infl'),
+                 desconto:f('ctc_desc'), reequilibrio:'integral' }; },
+      esperado:function(r){ if(!r||!r.projecao) return null; var m={}; r.projecao.forEach(function(p){ m[String(p.ano)]=Number(p.preco_total); });
+        return { a2027:m['2027'], a2033:m['2033'] }; },
+      local:function(){ var t=((document.getElementById('ctc_tab')||{}).textContent||'').replace(/\s+/g,' ');
+        var n=function(ano){ var re=new RegExp(ano+'\\s*R\\$\\s*[\\d.]+,\\d{2}\\s*R\\$\\s*([\\d.]+,\\d{2})');
+          var m=t.match(re); return m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null; };
+        return { a2027:n(2027), a2033:n(2033) }; } },
 
     /* ═══ v701 · PATRIMONIAL 2 — Valuation, Reorganização (n18), Regime Imobiliário, Construção ═══
        Fora, com motivo (todas têm aba no Mestre — próximo bloco é lá):
@@ -3786,7 +3801,14 @@ window.LH_PONTE = (function(){
        calcularMA (vendedor 15% flat no servidor × progressivo Lei 13.259 na tela) · calcularOffshore (A08) ·
        calcularImobRET (bases de comparação diferentes) · calcularN30 · calcularN15 · calcularSucessorio ·
        calcularAgroSuper5 · calcularAgroSuper6 (sem aba: criar). */
-  var RECONCILIAR = ['calcularOffshore','calcularAgroSuper5','calcularAgroSuper6'];   /* v704: Sucessório reconciliada (Mestre N14 = servidor a custo histórico) */   /* v703: N30 (servidor reescrito pelo Mestre) e N15 (tela na tabela 2026 + economia bruta) reconciliadas */
+  /* v707 · calcularC04: o Mestre C04 (carimbo 25/07, "régua unificada com a C02") desmente OS DOIS lados.
+     Carga atual do LP: Mestre 8,65% · CORE e servidor 11,5%. Decaimento do velho: Mestre 55% federal
+     (extinto já em 2027) + 45% estadual (só em 2026); CORE e servidor usam 60/40 com o estadual vivo até 2032.
+     Persona 6 mi · varejo · LP · mix 60/20/20: Mestre atual 519.000 e 2029 358.377; servidor 690.000 e 349.872;
+     tela 690.000 e 753.780. Os três já concordam em 2033 (254.400), onde o velho zera — a divergência é toda
+     na transição. Descer a régua do Mestre para os dois lados é bloco próprio (mexe em C01, C02, N33 e
+     formação de preço, que leem a mesma tabela). */
+  var RECONCILIAR = ['calcularOffshore','calcularAgroSuper5','calcularAgroSuper6','calcularC04'];   /* v704: Sucessório reconciliada (Mestre N14 = servidor a custo histórico) */   /* v703: N30 (servidor reescrito pelo Mestre) e N15 (tela na tabela 2026 + economia bruta) reconciliadas */
 
   return {
     _kpiNum: kpiNum,
@@ -65737,7 +65759,7 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
    DEPOIS do cálculo local, que é a única exigência do modo sombra.
    Se a tela ainda não existir, window[n] é undefined e nada acontece. */
 (function(){
-  ['dxhCalc','calcularC05','calcularCR01','fpCalc','calcularBares','calcularHotel','calcularAgViagem','calcularPSaude','calcularApostas','calcularFinanceiro','calcularClassificador','calcularRaioX360','calcularCoop','calcularAgroIns','calcularTelecom','calcularMedicamento','calcularTransPax','calcularLogCarga','calcularHotelEv','calcularC02','calcularC11','calcularN33','calcularCalc03','calcularSeletivo','calcularAntecip','calcularAliqRef','calcularIND01','calcularIND02','calcularIND03','calcularIND04','calcularIND05','calcularIND06','calcularIND07','calcularIND08','calcularIND09','calcularIND10','calcularIND11','calcularIND12','calcularISS118','calcularICMSST1125','calcularRET','calcularINS','calcularS962','calcularMonofasico','calcularCredPresumido','calcularDUP','calcularCR02','calcularCR03','calcularCR04','calcularCR05','calcularCR06','calcularTransacao','calcularPrescricao','calcularMultaJuros','calcularAutuacao','calcularRefis','calcularCompensacao','calcularDecisor','calcularCP01','calcularCP02','calcularCP03','calcularC06','calcularExport','calcularImport','calcularDrawback','calcularPortos','calcularDIFAL','calcularN29','calcularC08','calcularAGRO02','calcularAGRO04','calcularAGRO05','calcularAGRO06','calcularAGRO07','calcularAGRO08','calcularAGRO10','calcularAGRO11','calcularAGRO12','lhAg21Calc','lhAg22Calc','calcularAgroSuper1','calcularAgroSuper2','calcularAgroSuper3','calcularAgroSuper4','calcularAGRO03','calcularStockOptions','calcularN16','calcularN17','calcularAluguelPFPJ','calcularValuation','calcularN18','calcularImobReforma','calcularObra','calcularImobRET','calcularMA','calcularN30','calcularN15','calcularSucessorio','calcularAGRO09','lhAg14Calc'].forEach(function(n){
+  ['dxhCalc','calcularC05','calcularCR01','fpCalc','calcularBares','calcularHotel','calcularAgViagem','calcularPSaude','calcularApostas','calcularFinanceiro','calcularClassificador','calcularRaioX360','calcularCoop','calcularAgroIns','calcularTelecom','calcularMedicamento','calcularTransPax','calcularLogCarga','calcularHotelEv','calcularC02','calcularC11','calcularN33','calcularCalc03','calcularSeletivo','calcularAntecip','calcularAliqRef','calcularIND01','calcularIND02','calcularIND03','calcularIND04','calcularIND05','calcularIND06','calcularIND07','calcularIND08','calcularIND09','calcularIND10','calcularIND11','calcularIND12','calcularISS118','calcularICMSST1125','calcularRET','calcularINS','calcularS962','calcularMonofasico','calcularCredPresumido','calcularDUP','calcularCR02','calcularCR03','calcularCR04','calcularCR05','calcularCR06','calcularTransacao','calcularPrescricao','calcularMultaJuros','calcularAutuacao','calcularRefis','calcularCompensacao','calcularDecisor','calcularCP01','calcularCP02','calcularCP03','calcularC06','calcularExport','calcularImport','calcularDrawback','calcularPortos','calcularDIFAL','calcularN29','calcularC08','calcularAGRO02','calcularAGRO04','calcularAGRO05','calcularAGRO06','calcularAGRO07','calcularAGRO08','calcularAGRO10','calcularAGRO11','calcularAGRO12','lhAg21Calc','lhAg22Calc','calcularAgroSuper1','calcularAgroSuper2','calcularAgroSuper3','calcularAgroSuper4','calcularAGRO03','calcularStockOptions','calcularN16','calcularN17','calcularAluguelPFPJ','calcularValuation','calcularN18','calcularImobReforma','calcularObra','calcularImobRET','calcularMA','calcularN30','calcularN15','calcularSucessorio','calcularAGRO09','lhAg14Calc','ctcCalc'].forEach(function(n){
     try{
       var f = window[n];
       if (typeof f !== 'function' || f.__lhSombra) return;
