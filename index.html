@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v713";</script>
+<body><script>window.LH_VERSAO="v714";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3729,6 +3729,22 @@ window.LH_PONTE = (function(){
       esperado:function(r){ return r?{ honorario:Number(r.honorario_sugerido_mes), piso:Number(r.piso_tecnico), exito:Number(r.componente_exito_mes) }:null; },
       /* kpi-c10 (R$): [0] honorário/mês · [1] anual · [2] piso · [3] custo-hora "R$ 95,00/h" · [4] êxito · [5] ganho */
       local:function(){ var R=LH_PONTE._rsNum; return { honorario:R('kpi-c10',0), piso:R('kpi-c10',2), exito:R('kpi-c10',4) }; } },
+    /* ═══ v714 · SIMULADOR DE NOTAS — primeira tela de LINHA na ponte (multi-chamada) ═══
+       Uma chamada por item da nota: fn_simnotas(valor, regime do emitente, alíquota do balde, ano). Compara-se o
+       IBS+CBS DESTACADO somado (a parte que o servidor modela). O "velho" (ICMS/ISS na transição) é camada só da
+       tela — fica fora. P1: nome do fornecedor (snc_forn_nome) e nome do item manual (snc_mnome) NÃO viajam.
+       PENDÊNCIA de modelo (Mestre): crédito sobre fornecedor do Simples — a tela usa 20% do cheio ("padrão-casa"),
+       o servidor usa a fatia do DAS (art. 47 §9º II, ~15,5% do valor). Por isso o crédito não entra na comparação. */
+    snRenderC: { calc:'simnotas',
+      entradas:function(G){ var reg=((G.el('snc_forn_reg')||{}).value)||'regular'; var ano=(typeof window.SN_ANO==='number')?window.SN_ANO:2027;
+        return (window.SN_C||[]).map(function(it){ return { valor:+(it.tot||0), regime_emitente:reg, aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano }; }); },   /* manda a alíquota que a TELA usou (NaN → 0), para comparar motor com motor */
+      esperado:function(lista){ if(!Array.isArray(lista)) return null; var d=0; lista.forEach(function(r){ d+=Number((r&&r.nota_de_venda&&r.nota_de_venda.ibs_cbs_destacado)||0); }); return { destacado:+d.toFixed(2) }; },
+      local:function(){ var d=0; (window.SN_C||[]).forEach(function(it){ d+=(+it.cbs||0)+(+it.ibs||0); }); return { destacado:+d.toFixed(2) }; } },
+    snRenderV: { calc:'simnotas',
+      entradas:function(G){ var ano=(typeof window.SN_ANO==='number')?window.SN_ANO:2027;
+        return (window.SN_V||[]).map(function(it){ return { valor:+(it.tot||0), regime_emitente:'regular', aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano }; }); },
+      esperado:function(lista){ if(!Array.isArray(lista)) return null; var d=0; lista.forEach(function(r){ d+=Number((r&&r.nota_de_venda&&r.nota_de_venda.ibs_cbs_destacado)||0); }); return { destacado:+d.toFixed(2) }; },
+      local:function(){ var d=0; (window.SN_V||[]).forEach(function(it){ d+=(+it.cbs||0)+(+it.ibs||0); }); return { destacado:+d.toFixed(2) }; } },
 
     /* ═══ v701 · PATRIMONIAL 2 — Valuation, Reorganização (n18), Regime Imobiliário, Construção ═══
        Fora, com motivo (todas têm aba no Mestre — próximo bloco é lá):
@@ -3904,7 +3920,16 @@ window.LH_PONTE = (function(){
       try { ent = m.entradas(G); } catch(e){ return; }
       var loc;
       try { loc = m.local(); } catch(e){ return; }
-      chamar(m.calc, ent).then(function(res){
+      /* ★ v714 · PONTE MULTI-CHAMADA: se entradas() devolve um ARRAY, cada elemento vira uma chamada ao
+         servidor e esperado() recebe o array de resultados (na mesma ordem). É o que as telas de LINHA
+         (Simulador de Notas) e os orquestradores (Centrais) precisam. Uma falha em qualquer chamada
+         reprova o lote inteiro — lote parcial não é lote. */
+      var promessa = Array.isArray(ent)
+        ? Promise.all(ent.map(function(e){ return chamar(m.calc, e); })).then(function(lista){
+            var ruim = null; lista.forEach(function(r){ if(!ruim && (!r || !r.ok)) ruim = r; });
+            return ruim ? { ok:false, motivo:(ruim && ruim.motivo) || 'sem resposta em uma das chamadas' } : { ok:true, resultado:lista.map(function(r){ return r.resultado; }) }; })
+        : chamar(m.calc, ent);
+      promessa.then(function(res){
         var reg = { quando:new Date().toISOString(), tela:nomeFn, calc:m.calc, entradas:ent };
         if (!res || !res.ok){
           reg.status = 'falha'; reg.motivo = (res && res.motivo) || 'sem resposta';
@@ -65778,7 +65803,7 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
    DEPOIS do cálculo local, que é a única exigência do modo sombra.
    Se a tela ainda não existir, window[n] é undefined e nada acontece. */
 (function(){
-  ['dxhCalc','calcularC05','calcularCR01','fpCalc','calcularBares','calcularHotel','calcularAgViagem','calcularPSaude','calcularApostas','calcularFinanceiro','calcularClassificador','calcularRaioX360','calcularCoop','calcularAgroIns','calcularTelecom','calcularMedicamento','calcularTransPax','calcularLogCarga','calcularHotelEv','calcularC02','calcularC11','calcularN33','calcularCalc03','calcularSeletivo','calcularAntecip','calcularAliqRef','calcularIND01','calcularIND02','calcularIND03','calcularIND04','calcularIND05','calcularIND06','calcularIND07','calcularIND08','calcularIND09','calcularIND10','calcularIND11','calcularIND12','calcularISS118','calcularICMSST1125','calcularRET','calcularINS','calcularS962','calcularMonofasico','calcularCredPresumido','calcularDUP','calcularCR02','calcularCR03','calcularCR04','calcularCR05','calcularCR06','calcularTransacao','calcularPrescricao','calcularMultaJuros','calcularAutuacao','calcularRefis','calcularCompensacao','calcularDecisor','calcularCP01','calcularCP02','calcularCP03','calcularC06','calcularExport','calcularImport','calcularDrawback','calcularPortos','calcularDIFAL','calcularN29','calcularC08','calcularAGRO02','calcularAGRO04','calcularAGRO05','calcularAGRO06','calcularAGRO07','calcularAGRO08','calcularAGRO10','calcularAGRO11','calcularAGRO12','lhAg21Calc','lhAg22Calc','calcularAgroSuper1','calcularAgroSuper2','calcularAgroSuper3','calcularAgroSuper4','calcularAGRO03','calcularStockOptions','calcularN16','calcularN17','calcularAluguelPFPJ','calcularValuation','calcularN18','calcularImobReforma','calcularObra','calcularImobRET','calcularMA','calcularN30','calcularN15','calcularSucessorio','calcularAGRO09','lhAg14Calc','ctcCalc','calcularC09','calcularFatorR','calcularC04','calcularOffshore','calcularAgroSuper5','calcularAgroSuper6','calcularC10'].forEach(function(n){
+  ['dxhCalc','calcularC05','calcularCR01','fpCalc','calcularBares','calcularHotel','calcularAgViagem','calcularPSaude','calcularApostas','calcularFinanceiro','calcularClassificador','calcularRaioX360','calcularCoop','calcularAgroIns','calcularTelecom','calcularMedicamento','calcularTransPax','calcularLogCarga','calcularHotelEv','calcularC02','calcularC11','calcularN33','calcularCalc03','calcularSeletivo','calcularAntecip','calcularAliqRef','calcularIND01','calcularIND02','calcularIND03','calcularIND04','calcularIND05','calcularIND06','calcularIND07','calcularIND08','calcularIND09','calcularIND10','calcularIND11','calcularIND12','calcularISS118','calcularICMSST1125','calcularRET','calcularINS','calcularS962','calcularMonofasico','calcularCredPresumido','calcularDUP','calcularCR02','calcularCR03','calcularCR04','calcularCR05','calcularCR06','calcularTransacao','calcularPrescricao','calcularMultaJuros','calcularAutuacao','calcularRefis','calcularCompensacao','calcularDecisor','calcularCP01','calcularCP02','calcularCP03','calcularC06','calcularExport','calcularImport','calcularDrawback','calcularPortos','calcularDIFAL','calcularN29','calcularC08','calcularAGRO02','calcularAGRO04','calcularAGRO05','calcularAGRO06','calcularAGRO07','calcularAGRO08','calcularAGRO10','calcularAGRO11','calcularAGRO12','lhAg21Calc','lhAg22Calc','calcularAgroSuper1','calcularAgroSuper2','calcularAgroSuper3','calcularAgroSuper4','calcularAGRO03','calcularStockOptions','calcularN16','calcularN17','calcularAluguelPFPJ','calcularValuation','calcularN18','calcularImobReforma','calcularObra','calcularImobRET','calcularMA','calcularN30','calcularN15','calcularSucessorio','calcularAGRO09','lhAg14Calc','ctcCalc','calcularC09','calcularFatorR','calcularC04','calcularOffshore','calcularAgroSuper5','calcularAgroSuper6','calcularC10','snRenderC','snRenderV'].forEach(function(n){
     try{
       var f = window[n];
       if (typeof f !== 'function' || f.__lhSombra) return;
