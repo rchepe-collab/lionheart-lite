@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v717";</script>
+<body><script>window.LH_VERSAO="v718";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3434,9 +3434,10 @@ window.LH_PONTE = (function(){
       local:function(){ return { carga_ano:LH_PONTE._rsNum('kpi-agro02',1) }; } },
     calcularAGRO04: { calc:'agro04',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var a=f('agro04_area');
-        return { area_total:a, valor_terra_nua:f('agro04_vtn'), area_aproveitavel:a, area_utilizada:a*f('agro04_gu')/100 }; },
+        return { area_total:a, valor_terra_nua:f('agro04_vtn'), area_aproveitavel:a, area_utilizada:a*f('agro04_gu')/100 }; },   /* v718: em modo servidor a tela manda o mesmo objeto via executar() */
       esperado:function(r){ return r?{ itr:Number(r.itr_devido), pior:Number(r.pior_cenario&&r.pior_cenario.itr) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { itr:R('kpi-agro04',0), pior:R('kpi-agro04',1) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { itr:R('kpi-agro04',0), pior:R('kpi-agro04',1) }; },
+      render:function(r, ent, motivo){ agro04Render(r, ent, motivo); } },
     calcularAGRO05: { calc:'agro05',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { credito_acumulado:f('agro05_cred'), desagio_pct:f('agro05_des'), selic_anual_pct:f('agro05_selic'), prazo_atual_meses:f('agro05_prazo'), prazo_novo_dias:f('agro05_novo') }; },
@@ -53752,26 +53753,44 @@ function calcularAGRO03(){
   try{ lhAgroEntrega('agro03', [{label:'Base do IRPF (menor entre real e 20%)',valor:fmtR(base)},{label:'IRPF anual',valor:fmtR(irpf)},{label:'Funrural PF 1,63%',valor:fmtR(funPF)},{label:'CARGA PF',valor:fmtR(cargaPF)},{label:'IRPJ presumido',valor:fmtR(irpj)},{label:'CSLL presumida',valor:fmtR(csll)},{label:'Funrural PJ 2,23%',valor:fmtR(funPJ)},{label:'CARGA PJ',valor:fmtR(cargaPJ)},{label:'Diferença',valor:fmtR(dif)}]); }catch(_e){}
 }
 
-function calcularAGRO04(){
+/* ═══ v718 · CUTOVER, tela 2 — ITR (AGRO04): ler · calcular (chaves de fn_agro04, incl. curva_gu) · desenhar ═══ */
+function agro04LerEntradas(){
   var area=parseFloat(document.getElementById('agro04_area').value)||0;
   var vtn=parseFloat(document.getElementById('agro04_vtn').value)||0;
   var gu=(parseFloat(document.getElementById('agro04_gu').value)||0)/100;
-  if(area<=0||vtn<=0){ mostrarToast('Informe área e VTN','error'); return; }
-  var al=LH_AGRO.aliqITR(area,gu), itr=vtn*al;
-  var alOc=LH_AGRO.aliqITR(area,0.20), itrOc=vtn*alOc;
+  if(area<=0||vtn<=0){ mostrarToast('Informe área e VTN','error'); return null; }
+  return { area_total:area, valor_terra_nua:vtn, area_aproveitavel:area, area_utilizada:area*gu, _gu:gu };
+}
+function agro04CalcularLocal(ent){
+  var area=ent.area_total, vtn=ent.valor_terra_nua, gu=ent._gu;
+  var al=LH_AGRO.aliqITR(area,gu), itr=vtn*al, alOc=LH_AGRO.aliqITR(area,0.20), itrOc=vtn*alOc;
+  return { ok:true, itr_devido:itr, aliquota_pct:al*100, grau_utilizacao_pct:gu*100,
+           pior_cenario:{ itr:itrOc, aliquota_pct:alOc*100 },
+           curva_gu:[90,75,60,40,20].map(function(g){ return { gu_pct:g, itr:vtn*LH_AGRO.aliqITR(area,g/100) }; }) };
+}
+function agro04Render(r, ent, motivo){
+  var box=document.getElementById('kpi-agro04'); if(!box) return;
+  if(motivo==='aguardando'){ box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var area=ent.area_total, gu=ent._gu;
+  var itr=+r.itr_devido, al=+r.aliquota_pct/100, itrOc=+(r.pior_cenario&&r.pior_cenario.itr), alOc=+(r.pior_cenario&&r.pior_cenario.aliquota_pct)/100;
   var mult=itr>0?itrOc/itr:0;
-  document.getElementById('kpi-agro04').innerHTML =
+  box.innerHTML =
     '<div class="kpi-card kpi-ok"><div class="kpi-label">ITR devido</div><div class="kpi-value">'+fmtR(itr)+'</div><div class="kpi-sub">alíquota de '+fmtPct(al*100)+' — GU de '+fmtPct(gu*100)+'</div></div>'+
     '<div class="kpi-card kpi-alerta"><div class="kpi-label">ITR se a terra ficasse ociosa</div><div class="kpi-value">'+fmtR(itrOc)+'</div><div class="kpi-sub">alíquota de '+fmtPct(alOc*100)+' com GU ≤30%</div></div>'+
     '<div class="kpi-card kpi-destaque"><div class="kpi-label">Multiplicador da terra parada</div><div class="kpi-value">'+fmtN(mult,1)+'×</div><div class="kpi-sub">o que a ociosidade custa na mesma terra</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">ITR por hectare</div><div class="kpi-value">'+fmtR(area>0?itr/area:0)+'</div><div class="kpi-sub">custo anual de manter o hectare</div></div>';
-  var fx=[0.90,0.75,0.60,0.40,0.20], lab=['GU 90%','GU 75%','GU 60%','GU 40%','GU 20%'];
-  lhGraficoAGRO('chart-agro04','bar',lab,fx.map(function(g){return vtn*LH_AGRO.aliqITR(area,g);}),'ITR anual por grau de utilização (R$)');
+  var curva=Array.isArray(r.curva_gu)?r.curva_gu:[];
+  lhGraficoAGRO('chart-agro04','bar',curva.map(function(c){return 'GU '+c.gu_pct+'%';}),curva.map(function(c){return +c.itr;}),'ITR anual por grau de utilização (R$)');
   document.getElementById('recs-agro04').innerHTML=
     '<div class="rec-card"><b>⚖ Base legal:</b> Lei 9.393/96 art. 11 e Anexo — matriz de 6 faixas de área × 5 de grau de utilização, de 0,03% a 20%. <b>Pontos conferidos contra publicação:</b> imóvel acima de 5.000 ha com GU entre 50% e 60% → 6,4%; até 50 ha → de 0,03% a 1,00%.'+
     '<br><b>Leitura estratégica:</b> o ITR é o único tributo que <i>premia</i> a produção. Arrendar, plantar ou formalizar a área de preservação muda o GU e derruba a alíquota — e a economia costuma superar o custo da regularização.</div>';
-
   try{ lhAgroEntrega('agro04', [{label:'Alíquota pelo grau de utilização',valor:fmtPct(al*100)},{label:'ITR devido',valor:fmtR(itr)},{label:'Alíquota se ocioso (GU 20%)',valor:fmtPct(alOc*100)},{label:'ITR se ocioso',valor:fmtR(itrOc)},{label:'Custo de deixar parada',valor:fmtR(itrOc-itr)}]); }catch(_e){}
+}
+function calcularAGRO04(){
+  var ent=agro04LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAGRO04')){ LH_PONTE.executar('calcularAGRO04', ent); return; }
+  agro04Render(agro04CalcularLocal(ent), ent, null);
 }
 
 function calcularAGRO08(){
