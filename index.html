@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v719";</script>
+<body><script>window.LH_VERSAO="v720";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3442,17 +3442,20 @@ window.LH_PONTE = (function(){
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { credito_acumulado:f('agro05_cred'), desagio_pct:f('agro05_des'), selic_anual_pct:f('agro05_selic'), prazo_atual_meses:f('agro05_prazo'), prazo_novo_dias:f('agro05_novo') }; },
       esperado:function(r){ return (r&&r.hoje)?{ sangria:Number(r.hoje.sangria_anual), desagio:Number(r.hoje.perda_no_desagio), espera:Number(r.hoje.custo_da_espera) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { sangria:R('kpi-agro05',0), desagio:R('kpi-agro05',1), espera:R('kpi-agro05',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { sangria:R('kpi-agro05',0), desagio:R('kpi-agro05',1), espera:R('kpi-agro05',2) }; },
+      render:function(r, ent, motivo){ agro05Render(r, ent, motivo); } },
     calcularAGRO06: { calc:'agro06',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { capital:f('agro06_cap'), taxa_banco_pct:f('agro06_banco'), taxa_lca_pct:f('agro06_lca'), desagio_cpr_pct:f('agro06_des'), prazo_meses:f('agro06_prazo') }; },
       esperado:function(r){ if(!r||!r.opcoes) return null; var m={}; r.opcoes.forEach(function(o){ m[o.fonte]=Number(o.custo); }); return { banco:m['Banco livre'], lca:m['Custeio via LCA'], cpr:m['CPR financeira'] }; },
-      local:function(){ var R=LH_PONTE._rsNum; return { banco:R('kpi-agro06',0), lca:R('kpi-agro06',1), cpr:R('kpi-agro06',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { banco:R('kpi-agro06',0), lca:R('kpi-agro06',1), cpr:R('kpi-agro06',2) }; },
+      render:function(r, ent, motivo){ agro06Render(r, ent, motivo); } },
     calcularAGRO07: { calc:'agro07',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { valor_justo:f('agro07_vj'), custo_acumulado:f('agro07_custo'), meses_diferimento:f('agro07_meses'), selic_anual_pct:f('agro07_selic'), aliquota_pct:34 }; },
       esperado:function(r){ return r?{ avj:Number(r.avj), imposto:Number(r.imposto_irpj_csll), ganho:Number(r.ganho_do_diferimento) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { avj:R('kpi-agro07',0), imposto:R('kpi-agro07',1), ganho:R('kpi-agro07',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { avj:R('kpi-agro07',0), imposto:R('kpi-agro07',1), ganho:R('kpi-agro07',2) }; },
+      render:function(r, ent, motivo){ agro07Render(r, ent, motivo); } },
     calcularAGRO08: { calc:'agro08',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { area:f('agro08_area'), valor_mercado_ha:f('agro08_mercado'), valor_historico_ha:f('agro08_hist'), herdeiros:parseInt((G.el('agro08_herd')||{}).value,10)||1, uf:((G.el('agro08_uf')||{}).value)||'RS' }; },
@@ -54005,16 +54008,31 @@ function calcularAGRO12(){
 ['agro02','agro09','agro11','agro12'].forEach(function(id){ window.LH_VERT_MAPA[id]=['agro']; });
 
 /* ══════ v190 — PACOTE AGRO · LOTE 3 (espelhado do mestre v45) ══════ */
-function calcularAGRO05(){
+/* ═══ v720 · CUTOVER — calcularAGRO05: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function agro05LerEntradas(){
   var cred=parseFloat(document.getElementById('agro05_cred').value)||0;
   var des=(parseFloat(document.getElementById('agro05_des').value)||0)/100;
   var selic=(parseFloat(document.getElementById('agro05_selic').value)||0)/100;
   var prazo=parseFloat(document.getElementById('agro05_prazo').value)||0;
   var novo=parseFloat(document.getElementById('agro05_novo').value)||60;
-  if(cred<=0){ mostrarToast('Informe o crédito acumulado','error'); return; }
-  var perdaDes=cred*des, custoEspera=cred*selic*prazo/12, sangria=perdaDes+custoEspera;
+  if(cred<=0){ mostrarToast('Informe o crédito acumulado','error'); return null; }
+  
+  return { credito_acumulado:cred, desagio_pct:des*100, selic_anual_pct:selic*100, prazo_atual_meses:prazo, prazo_novo_dias:novo, _des:des, _selic:selic };
+}
+function agro05CalcularLocal(ent){
+  var cred=ent.credito_acumulado, des=ent.desagio_pct, selic=ent.selic_anual_pct, prazo=ent.prazo_atual_meses, novo=ent.prazo_novo_dias, des=ent._des, selic=ent._selic;
+var perdaDes=cred*des, custoEspera=cred*selic*prazo/12, sangria=perdaDes+custoEspera;
   var custoNovo=cred*selic*novo/365, ganho=sangria-custoNovo;
-  document.getElementById('kpi-agro05').innerHTML=
+  
+  return { ok:true, credito_acumulado:cred, hoje:{ sangria_anual:sangria, perda_no_desagio:perdaDes, custo_da_espera:custoEspera }, modelo_lc214:{ custo:custoNovo, prazo_dias:novo }, ganho_anual_da_virada:ganho, ganho_pct_do_credito:(cred>0?ganho/cred*100:0) };
+}
+function agro05Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-agro05'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var cred=ent.credito_acumulado, des=ent.desagio_pct, selic=ent.selic_anual_pct, prazo=ent.prazo_atual_meses, novo=ent.prazo_novo_dias, des=ent._des, selic=ent._selic;
+  var des=ent._des, selic=ent._selic; var perdaDes=+r.hoje.perda_no_desagio, custoEspera=+r.hoje.custo_da_espera, sangria=+r.hoje.sangria_anual, custoNovo=+r.modelo_lc214.custo, ganho=+r.ganho_anual_da_virada;
+document.getElementById('kpi-agro05').innerHTML=
     '<div class="kpi-card kpi-alerta"><div class="kpi-label">Sangria anual hoje</div><div class="kpi-value">'+fmtR(sangria)+'</div><div class="kpi-sub">deságio '+fmtR(perdaDes)+' + espera '+fmtR(custoEspera)+'</div></div>'+
     '<div class="kpi-card kpi-ok"><div class="kpi-label">Custo no modelo da LC 214</div><div class="kpi-value">'+fmtR(custoNovo)+'</div><div class="kpi-sub">ressarcimento em '+novo+' dias com Selic</div></div>'+
     '<div class="kpi-card kpi-destaque"><div class="kpi-label">Ganho anual da virada</div><div class="kpi-value">'+fmtR(ganho)+'</div><div class="kpi-sub">'+fmtPct(cred>0?ganho/cred*100:0)+' do crédito acumulado</div></div>'+
@@ -54026,21 +54044,42 @@ function calcularAGRO05(){
     '<br><b>⚡ Mesa FARSUL:</b> para o exportador de grão, esta é a maior conquista prática da Reforma — o crédito deixa de ser ativo podre e vira recebível com prazo e correção. Vale citar em qualquer conversa com cooperativa exportadora.</div>';
 
   try{ lhAgroEntrega('agro05', [{label:'Crédito acumulado',valor:fmtR(cred)},{label:'Perda no deságio da venda',valor:fmtR(perdaDes)},{label:'Custo de esperar '+prazo+' meses',valor:fmtR(custoEspera)},{label:'SANGRIA ANUAL HOJE',valor:fmtR(sangria)},{label:'Custo no modelo LC 214 ('+novo+' dias)',valor:fmtR(custoNovo)},{label:'Ganho da virada',valor:fmtR(ganho)}]); }catch(_e){}
+
+}
+function calcularAGRO05(){
+  var ent=agro05LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAGRO05')){ LH_PONTE.executar('calcularAGRO05', ent); return; }
+  agro05Render(agro05CalcularLocal(ent), ent, null);
 }
 
-function calcularAGRO06(){
+/* ═══ v720 · CUTOVER — calcularAGRO06: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function agro06LerEntradas(){
   var cap=parseFloat(document.getElementById('agro06_cap').value)||0;
   var tb=(parseFloat(document.getElementById('agro06_banco').value)||0)/100;
   var tl=(parseFloat(document.getElementById('agro06_lca').value)||0)/100;
   var des=(parseFloat(document.getElementById('agro06_des').value)||0)/100;
   var pz=parseFloat(document.getElementById('agro06_prazo').value)||1;
-  if(cap<=0){ mostrarToast('Informe o capital de custeio','error'); return; }
-  var banco=cap*tb, lca=cap*tl;
+  if(cap<=0){ mostrarToast('Informe o capital de custeio','error'); return null; }
+  
+  return { capital:cap, taxa_banco_pct:tb*100, taxa_lca_pct:tl*100, desagio_cpr_pct:des*100, prazo_meses:pz, _tb:tb, _tl:tl, _des:des };
+}
+function agro06CalcularLocal(ent){
+  var cap=ent.capital, tb=ent.taxa_banco_pct, tl=ent.taxa_lca_pct, des=ent.desagio_cpr_pct, pz=ent.prazo_meses, tb=ent._tb, tl=ent._tl, des=ent._des;
+var banco=cap*tb, lca=cap*tl;
   var taxaCPR=Math.pow(1/(1-des),12/pz)-1, cpr=cap*taxaCPR;
   var vals=[banco,lca,cpr], nomes=['BANCO LIVRE','CUSTEIO VIA LCA','CPR FINANCEIRA'];
   var min=Math.min.apply(null,vals), max=Math.max.apply(null,vals);
   var vence=nomes[vals.indexOf(min)];
-  document.getElementById('kpi-agro06').innerHTML=
+  
+  return { ok:true, capital:cap, prazo_meses:pz, opcoes:[{fonte:'Banco livre',custo:banco,taxa_aa_pct:tb*100},{fonte:'Custeio via LCA',custo:lca,taxa_aa_pct:tl*100},{fonte:'CPR financeira',custo:cpr,taxa_aa_pct:taxaCPR*100}], mais_barata:vence, mais_cara:nomes[vals.indexOf(max)], economia_vs_pior:max-min };
+}
+function agro06Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-agro06'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var cap=ent.capital, tb=ent.taxa_banco_pct, tl=ent.taxa_lca_pct, des=ent.desagio_cpr_pct, pz=ent.prazo_meses, tb=ent._tb, tl=ent._tl, des=ent._des;
+  var tb=ent._tb, tl=ent._tl, des=ent._des; var _o=function(n){ var o=(r.opcoes||[]).filter(function(x){return x.fonte===n;})[0]||{}; return o; }; var banco=+_o('Banco livre').custo, lca=+_o('Custeio via LCA').custo, cpr=+_o('CPR financeira').custo, taxaCPR=(+_o('CPR financeira').taxa_aa_pct)/100; var vals=[banco,lca,cpr], nomes=['BANCO LIVRE','CUSTEIO VIA LCA','CPR FINANCEIRA']; var min=Math.min.apply(null,vals), max=Math.max.apply(null,vals); var vence=String(r.mais_barata||nomes[vals.indexOf(min)]);
+document.getElementById('kpi-agro06').innerHTML=
     '<div class="kpi-card '+(banco===min?'kpi-ok':'')+'"><div class="kpi-label">Banco livre</div><div class="kpi-value">'+fmtR(banco)+'</div><div class="kpi-sub">'+fmtPct(tb*100)+' a.a.</div></div>'+
     '<div class="kpi-card '+(lca===min?'kpi-ok':'')+'"><div class="kpi-label">Custeio via LCA</div><div class="kpi-value">'+fmtR(lca)+'</div><div class="kpi-sub">'+fmtPct(tl*100)+' a.a. — LCA segue isenta</div></div>'+
     '<div class="kpi-card '+(cpr===max?'kpi-alerta':'')+'"><div class="kpi-label">CPR financeira</div><div class="kpi-value">'+fmtR(cpr)+'</div><div class="kpi-sub">deságio de '+fmtPct(des*100)+' em '+pz+' meses = <b>'+fmtPct(taxaCPR*100)+' a.a.</b></div></div>'+
@@ -54052,17 +54091,38 @@ function calcularAGRO06(){
     '<br><b>Atualização de julho/2026:</b> a MP 1.303/2025, que propunha tributar novas LCAs em 5%, <b>caducou no Congresso</b> — LCI, LCA e CRA seguem isentas. O governo sinalizou retomar o tema: emissões longas merecem cláusula de repactuação.</div>';
 
   try{ lhAgroEntrega('agro06', [{label:'Custo banco livre',valor:fmtR(banco)},{label:'Custo via LCA',valor:fmtR(lca)},{label:'Custo da CPR (anualizado)',valor:fmtR(cpr)},{label:'Mais barato',valor:vence},{label:'Economia vs pior',valor:fmtR(max-min)}]); }catch(_e){}
+
+}
+function calcularAGRO06(){
+  var ent=agro06LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAGRO06')){ LH_PONTE.executar('calcularAGRO06', ent); return; }
+  agro06Render(agro06CalcularLocal(ent), ent, null);
 }
 
-function calcularAGRO07(){
+/* ═══ v720 · CUTOVER — calcularAGRO07: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function agro07LerEntradas(){
   var vj=parseFloat(document.getElementById('agro07_vj').value)||0;
   var custo=parseFloat(document.getElementById('agro07_custo').value)||0;
   var meses=parseFloat(document.getElementById('agro07_meses').value)||0;
   var selic=(parseFloat(document.getElementById('agro07_selic').value)||0)/100;
-  if(vj<=0){ mostrarToast('Informe o valor justo','error'); return; }
+  if(vj<=0){ mostrarToast('Informe o valor justo','error'); return null; }
   /* v592 CONSERTO: perda de AVJ (custo > valor justo) não gera diferimento — trava em 0 (espelha mestre v119 AGRO07) */
-  var avj=vj-custo, imposto=Math.max(0,avj)*0.34, ganho=imposto*selic*meses/12;
-  document.getElementById('kpi-agro07').innerHTML=
+  
+  return { valor_justo:vj, custo_acumulado:custo, meses_diferimento:meses, selic_anual_pct:selic*100, aliquota_pct:34, _selic:selic };
+}
+function agro07CalcularLocal(ent){
+  var vj=ent.valor_justo, custo=ent.custo_acumulado, meses=ent.meses_diferimento, selic=ent.selic_anual_pct, selic=ent._selic;
+var avj=vj-custo, imposto=Math.max(0,avj)*0.34, ganho=imposto*selic*meses/12;
+  
+  return { ok:true, valor_justo:vj, custo_acumulado:custo, avj:avj, base_tributavel:Math.max(0,avj), imposto_irpj_csll:imposto, ganho_do_diferimento:ganho, margem_implicita_pct:(vj>0?avj/vj*100:0), e_perda:(avj<0) };
+}
+function agro07Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-agro07'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var vj=ent.valor_justo, custo=ent.custo_acumulado, meses=ent.meses_diferimento, selic=ent.selic_anual_pct, selic=ent._selic;
+  var selic=ent._selic; var avj=+r.avj, imposto=+r.imposto_irpj_csll, ganho=+r.ganho_do_diferimento;
+document.getElementById('kpi-agro07').innerHTML=
     '<div class="kpi-card"><div class="kpi-label">Ganho de AVJ</div><div class="kpi-value">'+fmtR(avj)+'</div><div class="kpi-sub">valor justo − custo acumulado</div></div>'+
     '<div class="kpi-card kpi-alerta"><div class="kpi-label">IRPJ/CSLL sobre o AVJ</div><div class="kpi-value">'+fmtR(imposto)+'</div><div class="kpi-sub">34% — antecipado se a subconta falhar</div></div>'+
     '<div class="kpi-card kpi-destaque"><div class="kpi-label">Ganho financeiro do diferimento</div><div class="kpi-value">'+fmtR(ganho)+'</div><div class="kpi-sub">'+meses+' meses de Selic sobre o imposto adiado</div></div>'+
@@ -54073,6 +54133,12 @@ function calcularAGRO07(){
     '<br><b>⚠ O risco real:</b> a safra em formação valoriza no balanço e a empresa paga imposto sobre lucro que ainda está no campo. Este é um dos erros contábeis mais caros do agro — e o mais fácil de evitar.</div>';
 
   try{ lhAgroEntrega('agro07', [{label:'Valor justo',valor:fmtR(vj)},{label:'Custo acumulado',valor:fmtR(custo)},{label:'Ganho de AVJ',valor:fmtR(avj)},{label:'IRPJ/CSLL 34% sobre o AVJ',valor:fmtR(imposto)},{label:'Meses de diferimento',valor:String(meses)},{label:'Ganho financeiro',valor:fmtR(ganho)}]); }catch(_e){}
+
+}
+function calcularAGRO07(){
+  var ent=agro07LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAGRO07')){ LH_PONTE.executar('calcularAGRO07', ent); return; }
+  agro07Render(agro07CalcularLocal(ent), ent, null);
 }
 
 function calcularAGRO10(){
