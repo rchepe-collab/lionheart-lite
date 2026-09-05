@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v700";</script>
+<body><script>window.LH_VERSAO="v706";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3570,7 +3570,111 @@ window.LH_PONTE = (function(){
                  vai_vender:(((G.el('al_vender')||{}).value)==='sim'), ano:2026 }; },
       esperado:function(r){ return (r&&r.pessoa_fisica)?{ pf:Number(r.pessoa_fisica.imposto), pj:Number(r.pessoa_juridica.total), diferenca:Number(r.diferenca_anual) }:null; },
       /* kpi-aluguelpfpj (R$): [0] PF · [1] PJ · [2] economia/ano · [3] custo constituição · [4] 10 anos */
-      local:function(){ var R=LH_PONTE._rsNum; return { pf:R('kpi-aluguelpfpj',0), pj:R('kpi-aluguelpfpj',1), diferenca:R('kpi-aluguelpfpj',2) }; } }
+      local:function(){ var R=LH_PONTE._rsNum; return { pf:R('kpi-aluguelpfpj',0), pj:R('kpi-aluguelpfpj',1), diferenca:R('kpi-aluguelpfpj',2) }; } },
+    /* v702 · Incorporação/RET reconciliada: o modelo (totais renda+consumo) já era o do Mestre; a divergência era
+       a base CBS em branco virando 0% na tela. Mestre = CORE = banco: RET 800.000 · LP 3.218.000 · LR 4.302.000. */
+    calcularImobRET: { calc:'imob-ret',
+      entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
+        var b=v('ret_base'), rs=v('ret_redsocial'), cr=v('ret_credreal');
+        return { receita:f('ret_receita'), tipo:v('ret_tipo')||'geral', margem_pct:f('ret_margem'), patrimonio_afetacao:(v('ret_afet')!=='nao'), meses:parseInt(v('ret_meses'),10)||12,
+                 aliq_ref_pct:f('ret_aliqref')||26.5, base_pct:(b===''?undefined:f('ret_base')), redutor_social:(rs===''?undefined:f('ret_redsocial')), credito_real_pct:(cr===''?undefined:f('ret_credreal')) }; },
+      esperado:function(r){ if(!r||!r.ret) return null; var lista=[Number(r.ret.total),Number(r.presumido.total),Number(r.real.total)].filter(function(x){return !isNaN(x);}).sort(function(a,b){return a-b;});
+        return { otimo:lista[0], economia:+(lista[1]-lista[0]).toFixed(2), pior:lista[lista.length-1] }; },
+      local:function(){ var R=LH_PONTE._rsNum; return { otimo:R('kpi-imob_ret',0), economia:R('kpi-imob_ret',1), pior:R('kpi-imob_ret',2) }; } },
+    /* v702 · M&A: fn_ma passou ao ganho de capital progressivo do vendedor (Lei 13.259) — 1.275.000 nos dois lados. */
+    calcularMA: { calc:'ma',
+      entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
+        return { preco:f('ma_preco'), pl_alvo:f('ma_pl'), mais_valia:f('ma_maisvalia'), forma:v('ma_forma')||'quotas', incorpora:(v('ma_incorpora')!=='nao'), independentes:(v('ma_independentes')!=='nao'), tem_laudo:(v('ma_laudo')!=='nao'),
+                 lucro_comprador:f('ma_lucrocomprador'), custo_vendedor:f('ma_custovendedor'), contingencias:f('ma_contingente'), prob_contingencia:f('ma_probcont'), taxa_anual:f('ma_taxa')||14 }; },
+      esperado:function(r){ return (r&&r.agio&&r.vendedor)?{ agio_vp:Number(r.agio.valor_presente), custo_efetivo:Number(r.custo_efetivo_da_aquisicao), imposto_vendedor:Number(r.vendedor.imposto) }:null; },
+      /* kpi-ma (R$): [0] preço · [1] ágio por rentabilidade · [2] benefício do ágio (VP) · [3] custo efetivo · [4] imposto do vendedor · [5] líquido */
+      local:function(){ var R=LH_PONTE._rsNum; return { agio_vp:R('kpi-ma',2), custo_efetivo:R('kpi-ma',3), imposto_vendedor:R('kpi-ma',4) }; } },
+    /* ═══ v703 · N30 e N15 pelo Mestre ═══
+       N30: fn_n30 reescrita no modelo da aba (janela 2026: doar hoje pela alíquota atual × herdar pela regra
+       nova com imóveis antigos a mercado). Assinatura nova → despachante v6.
+       N15: a tela usava a tabela IRPF de 2025 e subtraía a manutenção da "economia anual" (Mestre B23 é bruta;
+       custos vão ao saldo B38/B39). Corrigida. fn_n15 ainda não recebe o ANO: para 2027+ a tela aplica CBS/IBS
+       (−70%, art. 261) — fn_n15 ganhou p_ano em 04/09 (v705/despachante v6). */
+    calcularN30: { calc:'n30',
+      entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
+        return { uf:String(v('n30_estado')||'RS').toUpperCase(), valor:f('n30_valor'), herdeiros:parseInt(v('n30_herdeiros'),10)||1, aliq_atual_pct:f('n30_aliq_atual'),
+                 pct_imoveis_antigos:f('n30_pct_imoveis'), ajuste_vm_pct:f('n30_ajuste_vm'), usufruto:(v('n30_usufruto')==='sim'), anos:parseInt(v('n30_anos'),10)||20 }; },
+      esperado:function(r){ return (r&&r.doar_agora)?{ agora:Number(r.doar_agora.itcmd_com_usufruto), futura:Number(r.heranca_futura.itcmd), economia:Number(r.economia) }:null; },
+      local:function(){ var R=LH_PONTE._rsNum; return { agora:R('kpi-n30',0), futura:R('kpi-n30',1), economia:R('kpi-n30',2) }; } },
+    calcularN15: { calc:'n15',
+      entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
+        return { uf:String(v('n15_estado')||'RS').toUpperCase(), patrimonio_imoveis:f('n15_patrim_imov'), patrimonio_societario:f('n15_patrim_soc'), patrimonio_outros:f('n15_patrim_outros'),
+                 renda_aluguel:f('n15_renda_aluguel'), dividendos:f('n15_dividendos'), herdeiros:parseInt(v('n15_herdeiros'),10)||2, horizonte_anos:parseInt(v('n15_horizonte'),10)||10,
+                 custo_abertura:f('n15_custo_abertura'), custo_manutencao:f('n15_custo_manutencao'), itbi_pct:f('n15_itbi'), ajuste_vm_pct:f('n15_reducao_holding'), ano:parseInt(v('n15_ano'),10)||2026 }; },   /* v705 · fn_n15 ganhou p_ano (despachante v6) */
+      esperado:function(r){ return (r&&r.renda&&r.sucessao)?{ economia:Number(r.renda.economia_anual), itcmd_sem:Number(r.sucessao.itcmd_sem_holding), itcmd_com:Number(r.sucessao.itcmd_com_holding) }:null; },
+      /* kpi-n15 (R$): [0] economia anual (bruta) · [1] líquida · [2] custo abertura · [3] economia ITCMD · [4] patrimônio · [5] ITCMD sem holding · [6] com holding */
+      local:function(){ var R=LH_PONTE._rsNum; return { economia:R('kpi-n15',0), itcmd_sem:R('kpi-n15',5), itcmd_com:R('kpi-n15',6) }; } },
+    /* v704 · Sucessório: Mestre N14 = ITCMD marginal + inventário ~4%. O servidor já era isso, com dois extras fora do
+       Mestre (ganho de capital latente se transmitir a mercado; inventário judicial). A ponte manda o cenário do
+       Mestre (custo histórico, extrajudicial). O % de inventário da tela vai como informação; se diferir de 4%, diverge. */
+    calcularSucessorio: { calc:'sucessorio',
+      entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
+        return { uf:String(v('su_uf')||'RS').toUpperCase(), imoveis:f('su_imoveis'), custo_imoveis:f('su_imoveis'), participacoes:f('su_partic'), custo_participacoes:f('su_partic'),
+                 financeiro:f('su_aplic')+f('su_outros'), herdeiros:parseInt(v('su_herdeiros'),10)||1, judicial:false, vende_apos:false, valor_mercado_transmissao:false,
+                 _custo_inventario_pct_tela:f('su_custoinv') }; },
+      esperado:function(r){ return (r&&r.inventario)?{ itcmd:Number(r.itcmd), custo_sem_planejamento:Number(r.custo_total_da_transmissao) }:null; },
+      /* kpi-sucessorio (R$): [0] patrimônio · [1] quinhão · [2] custo sem planejamento · [3] com doação fracionada · [4] economia — o ITCMD sai da tabela */
+      local:function(){ var R=LH_PONTE._rsNum; var t=((document.getElementById('tabela-sucessorio')||{}).textContent||'').replace(/\s+/g,' ');
+        var m=t.match(/ITCMD[^R]{0,60}R\$\s*([\d.]+,\d{2})/); return { itcmd:(m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null), custo_sem_planejamento:R('kpi-sucessorio',2) }; } },
+    /* ═══ v706 · AGRO fechado: Crédito Presumido do Produtor (art. 168) e Sentinela do Teto (art. 164) ═══ */
+    calcularAGRO09: { calc:'agro09',
+      entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
+        return { compras_pf:f('agro09_pf'), compras_regular:f('agro09_reg'), ano:parseInt((G.el('agro09_ano')||{}).value,10)||2027, reducao:f('agro09_red'), coeficiente:f('agro09_cp'),
+                 aplica_lc224:(((G.el('agro09_lc224')||{}).value)!=='0') }; },
+      esperado:function(r){ return (r&&r.compra_de_pf)?{ cred_pf:Number(r.compra_de_pf.credito) }:null; },
+      /* kpi-agro09 (R$): [0] crédito presumido (compras de PF) · [1] crédito normal (regime regular) */
+      local:function(){ return { cred_pf:LH_PONTE._rsNum('kpi-agro09',0) }; } },
+    lhAg14Calc: { calc:'agro-sentinela',
+      /* série mensal: campo vazio = null (o servidor projeta pela média, como a tela). limite e tolerância
+         vêm de LH_AGRO_PARAM — a fonte única do art. 164 no CORE. */
+      entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
+        var m=[]; for(var i=0;i<12;i++){ var e=G.el('ag14_m'+i); var v=e?String(e.value).trim():''; m.push(v===''?null:(parseFloat(v)||0)); }
+        var P=window.LH_AGRO_PARAM||{};
+        return { meses:m, outras_receitas:f('ag14_outras'), receitas_grupo:f('ag14_grupo'), limite:P.limiteArt164||3600000, tolerancia:(P.tolPar3!=null?P.tolPar3:0.2) }; },
+      esperado:function(r){ return r?{ projetada:Number(r.receita_projetada), excesso:Number(r.excesso) }:null; },
+      /* ag14_kpis (R$): [0] receita projetada · [1] "R$ 3,6 mi" (não casa com centavos, mas casa com _rsNum!) · [2] excesso */
+      local:function(){ var t=((document.getElementById('ag14_kpis')||{}).textContent||'').replace(/\s+/g,' ');
+        var n=function(rx){ var m=t.match(rx); return m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null; };
+        return { projetada:n(/Receita projetada\s*R\$\s*([\d.]+,\d{2})/), excesso:n(/excesso\s*R\$\s*([\d.]+,\d{2})/) }; } },
+
+    /* ═══ v701 · PATRIMONIAL 2 — Valuation, Reorganização (n18), Regime Imobiliário, Construção ═══
+       Fora, com motivo (todas têm aba no Mestre — próximo bloco é lá):
+       offshore  → patrimônio final na melhor estrutura 10.794.625 × 9.925.431 (A08)
+       M&A       → o servidor tributa o vendedor a 15% flat; a tela (e a Lei 13.259) é progressiva: 1.275.000 × 1.200.000
+       imob_ret  → a tela compara RET total (renda+consumo) com presumido só renda — bases diferentes (ImobRET)
+       n30 · n15 · sucessório → modelos distintos (N30, N15, N14) */
+    calcularValuation: { calc:'valuation',
+      entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
+        return { receita:f('vl_receita'), ebitda:f('vl_ebitda'), lucro:f('vl_lucro'), patrimonio_liquido:f('vl_pl'), divida_liquida:f('vl_divida'), multiplo:f('vl_multiplo'),
+                 crescimento_aa:f('vl_cresc'), taxa_desconto:f('vl_desconto'), desagio_pct:f('vl_desagio'), participacao_pct:f('vl_participacao'), finalidade:((G.el('vl_finalidade')||{}).value)||'itcmd' }; },
+      /* a tela mostra a faixa JÁ com o deságio; o servidor devolve a faixa cheia + desagio_pct */
+      esperado:function(r){ if(!r||!r.faixa) return null; var d=1-Number(r.desagio_pct||0)/100;
+        return { menor:+(Number(r.faixa.minimo)*d).toFixed(2), media:+(Number(r.faixa.medio)*d).toFixed(2), maior:+(Number(r.faixa.maximo)*d).toFixed(2) }; },
+      local:function(){ var R=LH_PONTE._rsNum; return { menor:R('kpi-valuation',0), media:R('kpi-valuation',1), maior:R('kpi-valuation',2) }; } },
+    calcularN18: { calc:'n18',
+      entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
+        return { tipo:v('n18_tipo')||'cisao_parcial', pl:f('n18_pl'), valor_contabil:f('n18_contabil'), valor_mercado:f('n18_mercado'), pct_cindido:f('n18_pct'), criterio:v('n18_criterio')||'contabil',
+                 imoveis:f('n18_imoveis'), itbi_pct:f('n18_itbi'), preponderante:(v('n18_preponderante')==='1'), prejuizo_fiscal:f('n18_prejuizo'), lucro_real:(v('n18_lr')!=='0') }; },
+      esperado:function(r){ return r?{ irpj_csll:+(Number(r.irpj)+Number(r.csll)).toFixed(2), itbi:Number(r.itbi) }:null; },
+      /* kpi-n18 (R$): [0] patrimônio na operação · [1] ganho realizado · [2] PL · [3] IRPJ+CSLL · [4] ITBI · [5] carga total */
+      local:function(){ var R=LH_PONTE._rsNum; return { irpj_csll:R('kpi-n18',3), itbi:R('kpi-n18',4) }; } },
+    calcularImobReforma: { calc:'imob-reforma',
+      entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
+        return { operacao:v('imobref_op')||'venda', valor:f('imobref_valor'), custo:f('imobref_custo'), tipo_imovel:v('imobref_tipoimovel')||'res_novo', unidades:parseInt(v('imobref_unid'),10)||1,
+                 regime_regular:(v('imobref_regime')!=='nao'), aliq_ref_pct:f('imobref_aliqref')||26.5 }; },
+      esperado:function(r){ return r?{ ibs_cbs:Number(r.ibs_cbs), base:Number(r.base_de_calculo), economia:Number(r.economia_do_regime) }:null; },
+      local:function(){ var R=LH_PONTE._rsNum; return { ibs_cbs:R('kpi-imobref',0), base:R('kpi-imobref',1), economia:R('kpi-imobref',2) }; } },
+    calcularObra: { calc:'obra',
+      entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
+        return { faturamento:f('obra_fat'), pct_material:f('obra_pct_mat'), pct_outros:f('obra_pct_out'), contratante:v('obra_contratante')||'contribuinte', regime:v('obra_regime')||'lp',
+                 pis_pct:f('obra_pis'), cofins_pct:f('obra_cofins'), iss_pct:f('obra_iss'), icms_pct:f('obra_icms'), ipi_pct:f('obra_ipi'), aliq_ref_pct:26.5 }; },
+      esperado:function(r){ return r?{ hoje:Number(r.imposto_atual), imposto_2033:Number(r.imposto_2033), variacao:Number(r.variacao) }:null; },
+      local:function(){ var R=LH_PONTE._rsNum; return { hoje:R('kpi-obra',0), imposto_2033:R('kpi-obra',1), variacao:R('kpi-obra',2) }; } }
   };
 
   var G = {
@@ -3678,7 +3782,11 @@ window.LH_PONTE = (function(){
   /* v696 · N29 e C08 reconciliadas pelo Mestre. Stock Options: CORE alinhado ao Mestre A07
      (27,5% flat no exercício); o SERVIDOR ainda devolve outro número — fn_stockoptions precisa
      seguir o Mestre antes de mapear. */
-  var RECONCILIAR = [];   /* v699 · Stock Options: fn_stockoptions rederivada pelo Mestre A07 — lista vazia */
+  /* v701 · patrimoniais com aba no Mestre e divergência aberta — próximo bloco é no Mestre:
+       calcularMA (vendedor 15% flat no servidor × progressivo Lei 13.259 na tela) · calcularOffshore (A08) ·
+       calcularImobRET (bases de comparação diferentes) · calcularN30 · calcularN15 · calcularSucessorio ·
+       calcularAgroSuper5 · calcularAgroSuper6 (sem aba: criar). */
+  var RECONCILIAR = ['calcularOffshore','calcularAgroSuper5','calcularAgroSuper6'];   /* v704: Sucessório reconciliada (Mestre N14 = servidor a custo histórico) */   /* v703: N30 (servidor reescrito pelo Mestre) e N15 (tela na tabela 2026 + economia bruta) reconciliadas */
 
   return {
     _kpiNum: kpiNum,
@@ -18046,7 +18154,11 @@ function calcularImobRET(){
   var reg = document.getElementById('ret_reg').value;
   var meses = parseInt(document.getElementById('ret_meses').value)||1;
   var aliqref = (parseFloat(document.getElementById('ret_aliqref').value)||0)/100;
-  var basePct = (parseFloat(document.getElementById('ret_base').value)||0)/100;
+  var _baseRaw=String((document.getElementById('ret_base')||{}).value||'').trim();
+  /* ★ v702 · CAMPO EM BRANCO NÃO É ZERO — base CBS em branco virava 0% e o consumo do LP/LR sumia:
+     o regime "ótimo" passava a ser Lucro Presumido só renda (568.000) contra RET completo (800.000).
+     Mestre ImobRET B12: base padrão 100% da receita. Em branco = 100%, e o rodapé diz isso. */
+  var _baseBranco=(_baseRaw===''); var basePct = _baseBranco ? 1 : (parseFloat(_baseRaw.replace(',','.'))||0)/100;
   var redSocial = parseFloat(document.getElementById('ret_redsocial').value)||0;
   var credReal = (parseFloat(document.getElementById('ret_credreal').value)||0)/100;
   if(receita<=0){ mostrarToast('Informe a receita recebida no período','error'); return; }
@@ -24435,16 +24547,14 @@ function calcularSucessorio(){
   var teto = (uf==='OUTRO' && aliqMax>0) ? aliqMax/100 : (TETO[uf]||0.08);
 
   function itcmd(base){
+    /* ★ v704 · FONTE ÚNICA — esta tela tinha tabela própria (50k 2% · 200k 4% · 600k 6% · 8%) com teto por UF:
+       a "faixa flat própria" que a nota v29 da aba N14 do Mestre diz ter sido SUBSTITUÍDA pela 🏛️ ITCMD ESTADOS.
+       A tela não recebeu a substituição e dava ITCMD 195.000 onde o Mestre, o n16 e o servidor dão 105.000
+       (quinhão 1.166.667 no RS = 3%). Agora usa calcITCMD, a mesma de n16/n15/n30. Para 'OUTRO' com alíquota
+       máxima informada, aplica-se a alíquota flat informada. */
     if(base<=0) return 0;
-    var acc=0, ant=0;
-    for(var i=0;i<FAIXAS.length;i++){
-      var lim=FAIXAS[i][0], al=Math.min(FAIXAS[i][1], teto);
-      var trecho=Math.min(base,lim)-ant;
-      if(trecho>0) acc += trecho*al;
-      ant=lim;
-      if(base<=lim) break;
-    }
-    return acc;
+    if(uf==='OUTRO' && aliqMax>0) return base*(aliqMax/100);
+    return calcITCMD(base, uf);
   }
 
   /* ── meação: separa metade antes da partilha ── */
@@ -28999,12 +29109,15 @@ function calcularN15(){
   // v26 FIX C-02: usa calcularIRPF2026 unificada — sem duplicar tabela
   // A isenção da Lei 15.270/2025 já está embutida em calcularIRPF2026 via dedução
   // ESPELHAMENTO: IRPF anual sobre aluguel (tabela anual, alinhado ao Excel-mestre)
+  /* ★ v703 · TABELA ANUAL 2026 (Mestre N15 B18 / APOIO Folha IRPF 2026): a tela usava a de 2025
+     (isenção 27.408 · parcela 10.770,40). Mestre: 29.145,60 / 33.919,80 / 45.012,60 / 55.976,16 ·
+     deduções 2.185,92 / 4.729,41 / 8.105,10 / 10.904,76 — mesma régua de fn_irpf_anual. */
   const ir_aluguel_pf = (function(b){
-    if(b<=27408) return 0;
-    if(b<=33888) return b*0.075-2055.6;
-    if(b<=45012) return b*0.15-4595.7;
-    if(b<=55976) return b*0.225-7969.6;
-    return b*0.275-10770.4;
+    if(b<=29145.6) return 0;
+    if(b<=33919.8) return b*0.075-2185.92;
+    if(b<=45012.6) return b*0.15-4729.41;
+    if(b<=55976.16) return b*0.225-8105.10;
+    return Math.max(0,b*0.275-10904.76);
   })(rendaAluguel);
   const itcmd_sem=calcITCMD(patrimonioTotal/herdeiros,estado)*herdeiros;
   // v26 FIX GRAVE-06: N15 holding — assumir LP serviços imobiliários
@@ -29038,7 +29151,9 @@ function calcularN15(){
   var irpfm_semHolding = calcularIRPFM(rendaPF_semHolding);
   var irpfm_comHolding = calcularIRPFM(rendaPF_comHolding);
   const ec_irpfm_anual = Math.max(0, irpfm_semHolding - irpfm_comHolding);
-  const economiaTotalAnual=ec_aluguel+ec_irpfm_anual-custoMaint;
+  /* ★ v703 · Mestre N15 B23: economia anual = ganho BRUTO na renda (IRPF PF − holding); custos vão ao SALDO (B38/B39). */
+  const economiaBrutaAnual=ec_aluguel+ec_irpfm_anual;
+  const economiaTotalAnual=economiaBrutaAnual-custoMaint;   /* líquida de manutenção — break-even e acumulado */
   // v30.21 — Aviso quando não há renda que gere economia
   var avisoSemEconomia = (rendaAluguel <= 0 && dividendos <= 0)
     ? 'Sem renda de aluguel ou dividendos informados, a holding só apresenta custos. A economia real aparece quando você informa a renda de aluguel (tributada melhor na PJ) ou os dividendos. Preencha esses campos para a análise fazer sentido.'
@@ -29051,7 +29166,7 @@ function calcularN15(){
   const custoAcum=anos.map(a=>custoAbert+itbi+custoMaint*a);
   document.getElementById('kpi-n15').innerHTML=`
     <div class="kpi-card ${vantajosa?'kpi-ok':'kpi-alerta'}"><div class="kpi-label">Holding Patrimonial</div><div class="kpi-value" style="font-size:0.85em">${vantajosa?'VALE A PENA':'Avaliar com cautela'}</div><div class="kpi-sub">${vantajosa?'Economia supera os custos':'Custos superam a economia anual'}</div></div>
-    <div class="kpi-card kpi-ok"><div class="kpi-label">Economia Anual Estimada</div><div class="kpi-value">${fmtR(economiaTotalAnual)}</div><div class="kpi-sub">IR aluguel + IRPFM − manutenção</div></div>
+    <div class="kpi-card kpi-ok"><div class="kpi-label">Economia Anual Estimada</div><div class="kpi-value">${fmtR(economiaBrutaAnual)}</div><div class="kpi-sub">IR aluguel + IRPFM (Mestre N15) · líquida de manutenção: ${fmtR(economiaTotalAnual)}</div></div>
     <div class="kpi-card kpi-destaque"><div class="kpi-label">Break-Even</div><div class="kpi-value">${breakEvenAnos===Infinity?'N/A':breakEvenAnos+' anos'}</div><div class="kpi-sub">Custo abertura: ${fmtR(custoAbert+itbi)}</div></div>
     <div class="kpi-card kpi-alerta"><div class="kpi-label">Economia ITCMD na Transmissão</div><div class="kpi-value">${fmtR(ec_itcmd)}</div><div class="kpi-sub">${nomeEstado} — redução ${(pctReducaoHolding*100).toFixed(0)}% base</div></div>
     <div class="kpi-card"><div class="kpi-label">Patrimônio Total Analisado</div><div class="kpi-value">${fmtR(patrimonioTotal)}</div><div class="kpi-sub">ITCMD sem holding: ${fmtR(itcmd_sem)}</div></div>
@@ -65622,7 +65737,7 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
    DEPOIS do cálculo local, que é a única exigência do modo sombra.
    Se a tela ainda não existir, window[n] é undefined e nada acontece. */
 (function(){
-  ['dxhCalc','calcularC05','calcularCR01','fpCalc','calcularBares','calcularHotel','calcularAgViagem','calcularPSaude','calcularApostas','calcularFinanceiro','calcularClassificador','calcularRaioX360','calcularCoop','calcularAgroIns','calcularTelecom','calcularMedicamento','calcularTransPax','calcularLogCarga','calcularHotelEv','calcularC02','calcularC11','calcularN33','calcularCalc03','calcularSeletivo','calcularAntecip','calcularAliqRef','calcularIND01','calcularIND02','calcularIND03','calcularIND04','calcularIND05','calcularIND06','calcularIND07','calcularIND08','calcularIND09','calcularIND10','calcularIND11','calcularIND12','calcularISS118','calcularICMSST1125','calcularRET','calcularINS','calcularS962','calcularMonofasico','calcularCredPresumido','calcularDUP','calcularCR02','calcularCR03','calcularCR04','calcularCR05','calcularCR06','calcularTransacao','calcularPrescricao','calcularMultaJuros','calcularAutuacao','calcularRefis','calcularCompensacao','calcularDecisor','calcularCP01','calcularCP02','calcularCP03','calcularC06','calcularExport','calcularImport','calcularDrawback','calcularPortos','calcularDIFAL','calcularN29','calcularC08','calcularAGRO02','calcularAGRO04','calcularAGRO05','calcularAGRO06','calcularAGRO07','calcularAGRO08','calcularAGRO10','calcularAGRO11','calcularAGRO12','lhAg21Calc','lhAg22Calc','calcularAgroSuper1','calcularAgroSuper2','calcularAgroSuper3','calcularAgroSuper4','calcularAGRO03','calcularStockOptions','calcularN16','calcularN17','calcularAluguelPFPJ'].forEach(function(n){
+  ['dxhCalc','calcularC05','calcularCR01','fpCalc','calcularBares','calcularHotel','calcularAgViagem','calcularPSaude','calcularApostas','calcularFinanceiro','calcularClassificador','calcularRaioX360','calcularCoop','calcularAgroIns','calcularTelecom','calcularMedicamento','calcularTransPax','calcularLogCarga','calcularHotelEv','calcularC02','calcularC11','calcularN33','calcularCalc03','calcularSeletivo','calcularAntecip','calcularAliqRef','calcularIND01','calcularIND02','calcularIND03','calcularIND04','calcularIND05','calcularIND06','calcularIND07','calcularIND08','calcularIND09','calcularIND10','calcularIND11','calcularIND12','calcularISS118','calcularICMSST1125','calcularRET','calcularINS','calcularS962','calcularMonofasico','calcularCredPresumido','calcularDUP','calcularCR02','calcularCR03','calcularCR04','calcularCR05','calcularCR06','calcularTransacao','calcularPrescricao','calcularMultaJuros','calcularAutuacao','calcularRefis','calcularCompensacao','calcularDecisor','calcularCP01','calcularCP02','calcularCP03','calcularC06','calcularExport','calcularImport','calcularDrawback','calcularPortos','calcularDIFAL','calcularN29','calcularC08','calcularAGRO02','calcularAGRO04','calcularAGRO05','calcularAGRO06','calcularAGRO07','calcularAGRO08','calcularAGRO10','calcularAGRO11','calcularAGRO12','lhAg21Calc','lhAg22Calc','calcularAgroSuper1','calcularAgroSuper2','calcularAgroSuper3','calcularAgroSuper4','calcularAGRO03','calcularStockOptions','calcularN16','calcularN17','calcularAluguelPFPJ','calcularValuation','calcularN18','calcularImobReforma','calcularObra','calcularImobRET','calcularMA','calcularN30','calcularN15','calcularSucessorio','calcularAGRO09','lhAg14Calc'].forEach(function(n){
     try{
       var f = window[n];
       if (typeof f !== 'function' || f.__lhSombra) return;
