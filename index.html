@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v718";</script>
+<body><script>window.LH_VERSAO="v719";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3556,7 +3556,8 @@ window.LH_PONTE = (function(){
                  pct_holding:f('n16_holding'), ajuste_vm:f('n16_reducao_holding'), parcelas:parseInt((G.el('n16_parcelas')||{}).value,10)||5, isencao:f('n16_isencao') }; },
       esperado:function(r){ return (r&&r.transmissao_direta)?{ direta:Number(r.transmissao_direta.itcmd), parcelada:Number(r.doacao_parcelada.itcmd_total) }:null; },
       /* kpi-n16 (R$): [0] transmissão direta · [1] doação parcelada · [2] economia · [3] maior economia */
-      local:function(){ var R=LH_PONTE._rsNum; return { direta:R('kpi-n16',0), parcelada:R('kpi-n16',1) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { direta:R('kpi-n16',0), parcelada:R('kpi-n16',1) }; },
+      render:function(r, ent, motivo){ n16Render(r, ent, motivo); } },
     calcularN17: { calc:'n17',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
         return { tipo:v('n17_tipo')||'imovel_resid', custo:f('n17_custo'), venda:f('n17_venda'), benfeitorias:f('n17_benfeit'),
@@ -29136,35 +29137,48 @@ function atualizarNomeEstadoN16(){
     nomeEl.textContent = '— ' + (est || '');
   }
 }
-function calcularN16(){
+/* ═══ v719 · CUTOVER, tela 3 — ITCMD progressivo (N16): ler · calcular (chaves de fn_n16) · desenhar ═══ */
+function n16LerEntradas(){
   const estado=(document.getElementById('n16_estado').value||'').toUpperCase();
   const valor=parseFloat(document.getElementById('n16_valor').value)||0;
   const herdeiros=parseInt(document.getElementById('n16_herdeiros').value)||1;
-  const pctHolding=Math.max(0,Math.min(100,parseFloat(document.getElementById('n16_holding').value)||0))/100; const comHolding=pctHolding>0;
-  const redHolding=(parseFloat(document.getElementById('n16_reducao_holding').value)||0)/100; // ajuste a valor de mercado (0 = valor real); zero é válido
+  const pctHolding=Math.max(0,Math.min(100,parseFloat(document.getElementById('n16_holding').value)||0));
+  const ajusteVM=parseFloat(document.getElementById('n16_reducao_holding').value)||0;
   const parcelas=parseInt(document.getElementById('n16_parcelas').value)||5;
   const isencao=parseFloat(document.getElementById('n16_isencao').value)||0;
-  if(valor<=0){ mostrarToast('Informe o valor do patrimônio','error'); return; }
+  if(valor<=0){ mostrarToast('Informe o valor do patrimônio','error'); return null; }
+  return { uf:estado, valor:valor, herdeiros:herdeiros, pct_holding:pctHolding, ajuste_vm:ajusteVM, parcelas:parcelas, isencao:isencao };
+}
+function n16CalcularLocal(ent){
+  const estado=ent.uf, valor=ent.valor, herdeiros=ent.herdeiros, pctHolding=ent.pct_holding/100, ajusteVM=ent.ajuste_vm/100, parcelas=ent.parcelas, isencao=ent.isencao;
   const cfg=ITCMD_ESTADOS[estado]||ITCMD_ESTADOS.outros;
   const basePorHerd=Math.max(0,valor/herdeiros-isencao);
-  // ESPELHAMENTO LC 227/2026: holding NÃO reduz mais a base do ITCMD.
-  // A base é o valor de mercado das cotas (ajuste pode aumentar, nunca reduzir abaixo do valor real).
-  const ajusteVM = redHolding; // agora interpretado como AJUSTE a valor de mercado (0 = valor real)
-  const baseHolding=Math.max(0, (valor*pctHolding*(1+ajusteVM)+valor*(1-pctHolding))/herdeiros - isencao);
+  const baseHolding=Math.max(0,(valor*pctHolding*(1+ajusteVM)+valor*(1-pctHolding))/herdeiros-isencao);
   const baseParcela=Math.max(0,(valor/parcelas)/herdeiros-isencao);
-  const itcmd_heranca=calcITCMD(basePorHerd,estado)*herdeiros;
-  const itcmd_holding=calcITCMD(baseHolding,estado)*herdeiros;
-  const itcmd_parcelado=calcITCMD(baseParcela,estado)*herdeiros*parcelas;
-  const aliq_ef_h=valor>0?itcmd_heranca/valor*100:0;
-  const aliq_ef_hol=valor>0?itcmd_holding/valor*100:0;
-  const aliq_ef_parc=valor>0?itcmd_parcelado/valor*100:0;
-  const ecoHolding=itcmd_heranca-itcmd_holding;
-  const ecoParc=itcmd_heranca-itcmd_parcelado;
-  document.getElementById('kpi-n16').innerHTML=`
-    <div class="kpi-card kpi-alerta"><div class="kpi-label">ITCMD — Transmissão Direta</div><div class="kpi-value">${fmtR(itcmd_heranca)}</div><div class="kpi-sub">Alíq. efetiva: ${fmtPct(aliq_ef_h)} — ${(cfg.tipo==="prog"?"progressivo":"fixo")}</div></div>
-    ${comHolding?`<div class="kpi-card kpi-ok"><div class="kpi-label">ITCMD via Holding</div><div class="kpi-value">${fmtR(itcmd_holding)}</div><div class="kpi-sub">Alíq. efetiva: ${fmtPct(aliq_ef_hol)} — economia ${fmtR(ecoHolding)}</div></div>`:''}
-    <div class="kpi-card kpi-ok"><div class="kpi-label">Doação Parcelada (${parcelas} anos)</div><div class="kpi-value">${fmtR(itcmd_parcelado)}</div><div class="kpi-sub">Alíq. efetiva: ${fmtPct(aliq_ef_parc)} — economia ${fmtR(ecoParc)}</div></div>
-    <div class="kpi-card kpi-destaque"><div class="kpi-label">Maior Economia Possível</div><div class="kpi-value">${fmtR(itcmd_heranca-Math.min(itcmd_parcelado,comHolding?itcmd_holding:itcmd_heranca))}</div><div class="kpi-sub">vs. transmissão direta sem planejamento</div></div>`;
+  const h=calcITCMD(basePorHerd,estado)*herdeiros, hol=calcITCMD(baseHolding,estado)*herdeiros, par=calcITCMD(baseParcela,estado)*herdeiros*parcelas;
+  return { ok:true, uf:estado, progressivo:(cfg.tipo==='prog'), herdeiros:herdeiros, patrimonio:valor,
+           transmissao_direta:{ itcmd:h, base_por_herdeiro:basePorHerd, aliquota_efetiva_pct:(valor>0?h/valor*100:0) },
+           via_holding:{ itcmd:hol, base_por_herdeiro:baseHolding, pct_em_holding:ent.pct_holding, ajuste_valor_mercado_pct:ent.ajuste_vm, diferenca_vs_direta:hol-h },
+           doacao_parcelada:{ itcmd_total:par, parcelas:parcelas, base_por_parcela_herdeiro:baseParcela, economia_vs_direta:h-par } };
+}
+function n16Render(r, ent, motivo){
+  const box=document.getElementById('kpi-n16'); if(!box) return;
+  if(motivo==='aguardando'){ box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  const comHolding=ent.pct_holding>0, parcelas=ent.parcelas, valor=ent.valor;
+  const H=+r.transmissao_direta.itcmd, HOL=+r.via_holding.itcmd, PAR=+r.doacao_parcelada.itcmd_total;
+  const aliq_ef_h=+r.transmissao_direta.aliquota_efetiva_pct, aliq_ef_hol=valor>0?HOL/valor*100:0, aliq_ef_parc=valor>0?PAR/valor*100:0;
+  /* nomes que o resto do render (memória, tabela, gráfico, recs, motor) usa — todos derivados de r/ent, nunca recalculados */
+  const ecoHolding=H-HOL, ecoParc=H-PAR;
+  const estado=ent.uf, herdeiros=ent.herdeiros, isencao=ent.isencao, pctHolding=ent.pct_holding/100, redHolding=ent.ajuste_vm/100;
+  const cfg={ tipo:(r.progressivo?'prog':'fixo') };
+  const basePorHerd=+r.transmissao_direta.base_por_herdeiro, baseHolding=+r.via_holding.base_por_herdeiro, baseParcela=+r.doacao_parcelada.base_por_parcela_herdeiro;
+  const itcmd_heranca=H, itcmd_holding=HOL, itcmd_parcelado=PAR;
+  box.innerHTML=`
+    <div class="kpi-card kpi-alerta"><div class="kpi-label">ITCMD — Transmissão Direta</div><div class="kpi-value">${fmtR(H)}</div><div class="kpi-sub">Alíq. efetiva: ${fmtPct(aliq_ef_h)} — ${(r.progressivo?"progressivo":"fixo")}</div></div>
+    ${comHolding?`<div class="kpi-card kpi-ok"><div class="kpi-label">ITCMD via Holding</div><div class="kpi-value">${fmtR(HOL)}</div><div class="kpi-sub">Alíq. efetiva: ${fmtPct(aliq_ef_hol)} — economia ${fmtR(H-HOL)}</div></div>`:''}
+    <div class="kpi-card kpi-ok"><div class="kpi-label">Doação Parcelada (${parcelas} anos)</div><div class="kpi-value">${fmtR(PAR)}</div><div class="kpi-sub">Alíq. efetiva: ${fmtPct(aliq_ef_parc)} — economia ${fmtR(H-PAR)}</div></div>
+    <div class="kpi-card kpi-destaque"><div class="kpi-label">Maior Economia Possível</div><div class="kpi-value">${fmtR(H-Math.min(PAR,comHolding?HOL:H))}</div><div class="kpi-sub">vs. transmissão direta sem planejamento</div></div>`;
   // v30.11.98 — Memória de Cálculo N16
   try {
     var memN16 = document.getElementById('mem-n16');
@@ -29176,17 +29190,17 @@ function calcularN16(){
       {label:'Estado', valor: (document.getElementById('n16_estado')||{value:''}).value || '—'},
       {label:'Herdeiros', valor: String(parseInt((document.getElementById('n16_herdeiros')||{value:0}).value)||0)}
     ],
-    nota:'Viabilidade: ITCMD na herança direta de '+fmtR(itcmd_heranca)+' contra '+fmtR(itcmd_holding)+' via holding — economia de '+fmtR(Math.max(0,itcmd_heranca-itcmd_holding))+'.'
+    nota:'Viabilidade: ITCMD na herança direta de '+fmtR(r.transmissao_direta.itcmd)+' contra '+fmtR(r.via_holding.itcmd)+' via holding — economia de '+fmtR(Math.max(0,r.transmissao_direta.itcmd-r.via_holding.itcmd))+'.'
   }) : '');
   memN16.innerHTML = window.lhMemoriaCalculo({
         titulo:'ITCMD na sucessão: compara a transmissão direta, o parcelamento entre herdeiros e a via holding, considerando a progressividade obrigatória da LC 227/2026.',
         aliquotas:[
-          {label:'Patrimônio a transmitir', valor:fmtR(valor)},
-          {label:'Estado', valor:(estado||'—')},
-          {label:'Nº de herdeiros', valor:String(herdeiros)},
-          {label:'ITCMD transmissão direta', valor:fmtR(itcmd_heranca)},
-          {label:'ITCMD parcelado/herdeiro', valor:fmtR(itcmd_parcelado)},
-          {label:'ITCMD via holding', valor:fmtR(itcmd_holding)}
+          {label:'Patrimônio a transmitir', valor:fmtR(ent.valor)},
+          {label:'Estado', valor:(ent.uf||'—')},
+          {label:'Nº de herdeiros', valor:String(ent.herdeiros)},
+          {label:'ITCMD transmissão direta', valor:fmtR(r.transmissao_direta.itcmd)},
+          {label:'ITCMD parcelado/herdeiro', valor:fmtR(r.doacao_parcelada.itcmd_total)},
+          {label:'ITCMD via holding', valor:fmtR(r.via_holding.itcmd)}
         ],
         porque:'Com a progressividade obrigatória (LC 227/2026), dividir a base entre herdeiros ou usar holding pode baixar a alíquota efetiva, já que cada parcela cai numa faixa menor. A maior economia vem de planejar a transmissão em vez de fazê-la direta e integral.',
         baseLegal:[window.LH_BASE_LEGAL.itcmd]
@@ -29194,13 +29208,13 @@ function calcularN16(){
     }
   } catch(e){ console.warn('mem N16:', e); }
   const cenarios=[
-    {nome:'Herança / Doação direta',base:basePorHerd,total:itcmd_heranca,aliq:aliq_ef_h,ec:0},
-    ...(comHolding?[{nome:`Via Holding (redução ${Math.round(redHolding*100)}%)`,base:baseHolding,total:itcmd_holding,aliq:aliq_ef_hol,ec:ecoHolding}]:[]),
-    {nome:`Doação parcelada em ${parcelas} anos`,base:baseParcela,total:itcmd_parcelado,aliq:aliq_ef_parc,ec:ecoParc},
+    {nome:'Herança / Doação direta',base:+r.transmissao_direta.base_por_herdeiro,total:r.transmissao_direta.itcmd,aliq:+r.transmissao_direta.aliquota_efetiva_pct,ec:0},
+    ...(ent.pct_holding>0?[{nome:`Via Holding (ajuste ${Math.round(ent.ajuste_vm)}%)`,base:+r.via_holding.base_por_herdeiro,total:r.via_holding.itcmd,aliq:(ent.valor>0?r.via_holding.itcmd/ent.valor*100:0),ec:(r.transmissao_direta.itcmd-r.via_holding.itcmd)}]:[]),
+    {nome:`Doação parcelada em ${ent.parcelas} anos`,base:+r.doacao_parcelada.base_por_parcela_herdeiro,total:r.doacao_parcelada.itcmd_total,aliq:(ent.valor>0?r.doacao_parcelada.itcmd_total/ent.valor*100:0),ec:(r.transmissao_direta.itcmd-r.doacao_parcelada.itcmd_total)},
   ];
   const tbody=document.querySelector('#tabela-n16 tbody');
   tbody.innerHTML=cenarios.map((c,i)=>`<tr ${i>0?'class="destaque"':''}>
-    <td><strong>${c.nome}</strong></td><td>${fmtR(c.base)}</td><td>${fmtR(c.total/herdeiros)}</td>
+    <td><strong>${c.nome}</strong></td><td>${fmtR(c.base)}</td><td>${fmtR(c.total/ent.herdeiros)}</td>
     <td><strong>${fmtR(c.total)}</strong></td><td>${fmtPct(c.aliq)}</td>
     <td style="color:${c.ec>0?'var(--green)':'var(--text2)'}">${c.ec>0?''+fmtR(c.ec):'—'}</td></tr>`).join('');
   if(chartN16) chartN16.destroy();
@@ -29210,7 +29224,7 @@ function calcularN16(){
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'ITCMD: '+fmtR(c.raw)}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'R$ '+fmtN(v)}}}}});
   document.getElementById('recs-n16').innerHTML=`
     <div class="rec-card rec-atencao"><h5>LC 227/2026 — Progressividade Obrigatória</h5><p>A LC 227/2026 exige que todos os estados adotem alíquotas <strong>progressivas</strong> de ITCMD — o que pode ter aumentado a carga em relação a estados que tinham alíquota fixa. Confirme as alíquotas atuais do estado com o advogado tributarista.</p></div>
-    ${estado==='SP'?`<div class="rec-card rec-atencao" style="border-left:4px solid #c9a227"><h5>ATENÇÃO SP — PL em tramitação para progressividade</h5><p>São Paulo mantém ITCMD de 4% FIXO, mas há <strong>Projeto de Lei estadual em tramitação</strong> (PL 7/2024) para adotar progressividade até <strong>8%</strong>. Acompanhe — a aprovação pode ocorrer a qualquer momento e impactar o planejamento sucessório. Para clientes paulistas com patrimônio acima de R$ 5 milhões, é prudente <strong>acelerar a estruturação da holding</strong> e doações em vida ANTES da nova lei entrar em vigor.</p></div>`:''}
+    ${ent.uf==='SP'?`<div class="rec-card rec-atencao" style="border-left:4px solid #c9a227"><h5>ATENÇÃO SP — PL em tramitação para progressividade</h5><p>São Paulo mantém ITCMD de 4% FIXO, mas há <strong>Projeto de Lei estadual em tramitação</strong> (PL 7/2024) para adotar progressividade até <strong>8%</strong>. Acompanhe — a aprovação pode ocorrer a qualquer momento e impactar o planejamento sucessório. Para clientes paulistas com patrimônio acima de R$ 5 milhões, é prudente <strong>acelerar a estruturação da holding</strong> e doações em vida ANTES da nova lei entrar em vigor.</p></div>`:''}
     <div class="rec-card rec-info" style="border-left:4px solid #06b6d4"><h5>Alíquotas atualizadas em mai/2026</h5><p>As alíquotas de ITCMD aqui consideradas refletem a legislação vigente em <strong>maio de 2026</strong>. Como cada estado pode atualizar sua tabela, <strong>confirme com a legislação estadual atualizada</strong> antes de cada consulta com cliente.</p></div>
     ${comHolding?`<div class="rec-card rec-oport"><h5>Holding Gera Economia de ${fmtR(ecoHolding)}</h5><p>Pela redução da base de cálculo por avaliação de cotas. Atenção: esta redução é uma estimativa — depende de laudo de avaliação e pode ser questionada pelo Fisco estadual.</p></div>`:''}
     <div class="rec-card rec-info"><h5>Doação Parcelada — Estratégia Mais Segura</h5><p>Fracionar a doação em ${parcelas} anos reduz a base por herdeiro, aplicando alíquotas menores. A economia estimada de <strong>${fmtR(ecoParc)}</strong> é garantida juridicamente, sem necessidade de holding.</p></div>`;
@@ -29226,12 +29240,18 @@ function calcularN16(){
     valorAnual: 0,                                                  // NÃO soma como anual
     valorUnico: maiorEconomia,                                      // mostrado em KPI separado
     contexto: 'Planejamento sucessório — ' + estado + ' (' + (cfg.tipo==='prog'?'progressivo':'fixo') + ') — economia ÚNICA (one-time)',
-    descricao: 'Patrimônio de ' + fmtR(valor) + ' transmitido diretamente paga ' + fmtR(itcmd_heranca) + ' de ITCMD (alíq. efetiva ' + fmtPct(aliq_ef_h) + '). ' + (comHolding ? 'Via Holding: ' + fmtR(itcmd_holding) + ' (economia ' + fmtR(ecoHolding) + '). ' : '') + 'Doação parcelada em ' + parcelas + ' anos: ' + fmtR(itcmd_parcelado) + ' (economia ' + fmtR(ecoParc) + '). Economia ÚNICA (paga uma vez na transmissão sucessória) — não é recorrente.',
+    descricao: 'Patrimônio de ' + fmtR(ent.valor) + ' transmitido diretamente paga ' + fmtR(r.transmissao_direta.itcmd) + ' de ITCMD (alíq. efetiva ' + fmtPct(aliq_ef_h) + '). ' + (comHolding ? 'Via Holding: ' + fmtR(r.via_holding.itcmd) + ' (economia ' + fmtR(ecoHolding) + '). ' : '') + 'Doação parcelada em ' + parcelas + ' anos: ' + fmtR(r.doacao_parcelada.itcmd_total) + ' (economia ' + fmtR(ecoParc) + '). Economia ÚNICA (paga uma vez na transmissão sucessória) — não é recorrente.',
     recomendacao: melhorEstrategia === 'holding'
       ? 'Estruturar Holding Patrimonial e integralizar bens. Combinar com doação parcelada para maximizar economia. Consultar advogado tributarista.'
       : 'Implementar doação parcelada em ' + parcelas + ' anos com reserva de usufruto. Estratégia juridicamente mais segura que holding.'
   });
   mostrarToast('✓ ITCMD calculado','success');
+
+}
+function calcularN16(){
+  const ent=n16LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularN16')){ LH_PONTE.executar('calcularN16', ent); return; }
+  n16Render(n16CalcularLocal(ent), ent, null);
 }
 
 // ══════════════════════════════════════════
