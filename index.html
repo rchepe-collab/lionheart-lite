@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v721";</script>
+<body><script>window.LH_VERSAO="v722";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3468,18 +3468,21 @@ window.LH_PONTE = (function(){
         return { receita_anual:f('agro10_rec'), aquisicoes_pf:f('agro10_aq'), folha_anual:f('agro10_folha'), rat:f('agro10_rat')||2, meses_sem_reter:f('agro10_meses') }; },
       esperado:function(r){ return (r&&r.funrural_proprio)?{ funrural:Number(r.funrural_proprio.valor), folha:Number(r.se_fosse_pela_folha.valor), diferenca:Number(r.se_fosse_pela_folha.diferenca), passivo:Number(r.sub_rogacao.passivo_total) }:null; },
       /* kpi-agro10 (R$): [0] Funrural · [1] se fosse pela folha · [2] diferença · [3] .. · [4] passivo sub-rogação */
-      local:function(){ var R=LH_PONTE._rsNum; return { funrural:R('kpi-agro10',0), folha:R('kpi-agro10',1), diferenca:R('kpi-agro10',2), passivo:R('kpi-agro10',4) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { funrural:R('kpi-agro10',0), folha:R('kpi-agro10',1), diferenca:R('kpi-agro10',2), passivo:R('kpi-agro10',4) }; },
+      render:function(r, ent, motivo){ agro10Render(r, ent, motivo); } },
     calcularAGRO11: { calc:'agro11',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { gasto_insumos:f('agro11_gasto'), carga_hoje_pct:f('agro11_hoje'), e_contribuinte:(((G.el('agro11_contrib')||{}).value)==='Sim'), ano:parseInt((G.el('agro11_ano')||{}).value,10)||2027, diferido:(((G.el('agro11_dif')||{}).value)==='Sim') }; },
       esperado:function(r){ return r?{ hoje:Number(r.custo_embutido_hoje), destacado:Number(r.ibs_cbs_destacado), liquido:Number(r.custo_liquido), variacao:Number(r.variacao_vs_hoje) }:null; },
       /* kpi-agro11 (R$): [0] custo hoje · [1] destacado · [2] custo LÍQUIDO (destacado − crédito) · [3] variação */
-      local:function(){ var R=LH_PONTE._rsNum; return { hoje:R('kpi-agro11',0), destacado:R('kpi-agro11',1), liquido:R('kpi-agro11',2), variacao:R('kpi-agro11',3) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { hoje:R('kpi-agro11',0), destacado:R('kpi-agro11',1), liquido:R('kpi-agro11',2), variacao:R('kpi-agro11',3) }; },
+      render:function(r, ent, motivo){ agro11Render(r, ent, motivo); } },
     calcularAGRO12: { calc:'agro12',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { ato_cooperativo:f('agro12_ato'), ato_terceiros:f('agro12_terc'), ano:parseInt((G.el('agro12_ano')||{}).value,10)||2027, opcao_art271:(((G.el('agro12_opcao')||{}).value)==='Sim') }; },
       esperado:function(r){ return r?{ com:Number(r.irpj_csll_com_segregacao), sem:Number(r.irpj_csll_sem_segregacao), valor:Number(r.valor_da_segregacao_contabil), ibs:Number(r.ibs_cbs_terceiros) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { com:R('kpi-agro12',0), sem:R('kpi-agro12',1), valor:R('kpi-agro12',2), ibs:R('kpi-agro12',4) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { com:R('kpi-agro12',0), sem:R('kpi-agro12',1), valor:R('kpi-agro12',2), ibs:R('kpi-agro12',4) }; },
+      render:function(r, ent, motivo){ agro12Render(r, ent, motivo); } },
     lhAg21Calc: { calc:'agro21',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var c=f('ag21_c');
         /* coeficiente em branco → a tela calcula com ZERO (crédito zero, sem aviso). O servidor tem
@@ -53991,13 +53994,19 @@ function calcularAGRO09(){
     '<br><b>🟡 Premissa declarada:</b> '+fmtPct(cp*100)+' — substituir pelo ato oficial quando publicado.</div>';
 }
 
-function calcularAGRO11(){
+/* ═══ v722 · CUTOVER — calcularAGRO11: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function agro11LerEntradas(){
   var g=parseFloat(document.getElementById('agro11_gasto').value)||0;
   var hj=(parseFloat(document.getElementById('agro11_hoje').value)||0)/100;
   var contrib=document.getElementById('agro11_contrib').value;
   var ano=parseFloat(document.getElementById('agro11_ano').value);
-  if(g<=0){ mostrarToast('Informe o gasto com insumos','error'); return; }
-  var custoHoje=g*hj;
+  if(g<=0){ mostrarToast('Informe o gasto com insumos','error'); return null; }
+  
+  return { gasto_insumos:g, carga_hoje_pct:hj*100, e_contribuinte:(contrib==='Sim'), ano:ano, diferido:(((document.getElementById('agro11_dif')||{}).value||'Sim')==='Sim'), _hj:hj, _contrib:contrib };
+}
+function agro11CalcularLocal(ent){
+  var g=ent.gasto_insumos, hj=ent.carga_hoje_pct, ano=ent.ano, hj=ent._hj, contrib=ent._contrib;
+var custoHoje=g*hj;
   var al=LH_AGRO.curva(ano);
   /* v591 CONSERTO LEGAL: insumo do Anexo IX é DIFERIDO (art. 138 §2º) — sem destaque e sem crédito no ato. */
   var _fEl=document.getElementById('agro11_dif'); var dif11=_fEl?_fEl.value:'Sim';
@@ -54005,7 +54014,16 @@ function calcularAGRO11(){
   var credito=(contrib==='Sim')?destaque:0;
   var liquido=destaque-credito;
   var variacao=liquido-custoHoje;
-  document.getElementById('kpi-agro11').innerHTML=
+  
+  return { ok:true, ano:ano, aliquota_ano:al, custo_embutido_hoje:custoHoje, ibs_cbs_destacado:destaque, credito_apropriado:credito, custo_liquido:liquido, variacao_vs_hoje:variacao, diferido_art138:(dif11==='Sim') };
+}
+function agro11Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-agro11'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var g=ent.gasto_insumos, hj=ent.carga_hoje_pct, ano=ent.ano, hj=ent._hj, contrib=ent._contrib;
+  var hj=ent._hj, contrib=ent._contrib; var custoHoje=+r.custo_embutido_hoje, al=+r.aliquota_ano, destaque=+r.ibs_cbs_destacado, credito=+r.credito_apropriado, liquido=+r.custo_liquido, variacao=+r.variacao_vs_hoje, dif11=(r.diferido_art138?'Sim':'Nao');
+document.getElementById('kpi-agro11').innerHTML=
     '<div class="kpi-card"><div class="kpi-label">Custo tributário embutido hoje</div><div class="kpi-value">'+fmtR(custoHoje)+'</div><div class="kpi-sub">'+fmtPct(hj*100)+' sobre o insumo</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">IBS/CBS destacado em '+ano+'</div><div class="kpi-value">'+fmtR(destaque)+'</div><div class="kpi-sub">alíquota de '+fmtPct(al*100)+' com redução de 60%</div></div>'+
     '<div class="kpi-card '+(liquido>custoHoje?'kpi-alerta':'kpi-ok')+'"><div class="kpi-label">Custo líquido do insumo</div><div class="kpi-value">'+fmtR(liquido)+'</div><div class="kpi-sub">'+(credito>0?'crédito recuperado integralmente':'sem crédito — vira custo cheio')+'</div></div>'+
@@ -54015,22 +54033,43 @@ function calcularAGRO11(){
   document.getElementById('recs-agro11').innerHTML=
     '<div class="rec-card"><b>⚖ Base legal:</b> LC 214/2025, Anexo IX — insumos agropecuários com redução de 60% da alíquota. O crédito só existe para quem é <b>contribuinte do regime regular</b> (arts. 164-168).'+
     '<br><b>⚡ A conta que decide a porteira:</b> ficar não contribuinte é simples, mas o imposto do insumo vira <b>custo definitivo</b>. Optar pelo regime regular dá crédito integral e crédito ao comprador — em troca de obrigação acessória. Rode esta tela junto com o Crédito Presumido e o PF × PJ Rural: as três respondem a mesma pergunta por ângulos diferentes.</div>';
+
+}
+function calcularAGRO11(){
+  var ent=agro11LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAGRO11')){ LH_PONTE.executar('calcularAGRO11', ent); return; }
+  agro11Render(agro11CalcularLocal(ent), ent, null);
 }
 
-function calcularAGRO12(){
+/* ═══ v722 · CUTOVER — calcularAGRO12: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function agro12LerEntradas(){
   var ato=parseFloat(document.getElementById('agro12_ato').value)||0;
   var terc=parseFloat(document.getElementById('agro12_terc').value)||0;
   var ano=parseFloat(document.getElementById('agro12_ano').value);
   var opcao=document.getElementById('agro12_opcao').value;
-  if(ato<=0&&terc<=0){ mostrarToast('Informe o movimento da cooperativa','error'); return; }
-  var irpjT=LH_AGRO.irpjPresumido(terc,0.08), csllT=terc*0.12*0.09;
+  if(ato<=0&&terc<=0){ mostrarToast('Informe o movimento da cooperativa','error'); return null; }
+  
+  return { ato_cooperativo:ato, ato_terceiros:terc, ano:ano, opcao_art271:(opcao==='Sim'), _opcao:opcao };
+}
+function agro12CalcularLocal(ent){
+  var ato=ent.ato_cooperativo, terc=ent.ato_terceiros, ano=ent.ano, opcao=ent._opcao;
+var irpjT=LH_AGRO.irpjPresumido(terc,0.08), csllT=terc*0.12*0.09;
   var cargaHoje=irpjT+csllT;
   var tudo=LH_AGRO.irpjPresumido(ato+terc,0.08)+(ato+terc)*0.12*0.09;
   var valorSegreg=tudo-cargaHoje;
   var al=LH_AGRO.curva(ano);
   var ibsTerc=terc*al*0.4;
   var ibsAto=(opcao==='Sim')?0:ato*al*0.4;
-  document.getElementById('kpi-agro12').innerHTML=
+  
+  return { ok:true, ano:ano, aliquota_ano:al, irpj_csll_com_segregacao:cargaHoje, irpj_csll_sem_segregacao:tudo, valor_da_segregacao_contabil:valorSegreg, ibs_cbs_terceiros:ibsTerc, ibs_cbs_ato_cooperativo:ibsAto, opcao_art271_exercida:(opcao==='Sim') };
+}
+function agro12Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-agro12'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var ato=ent.ato_cooperativo, terc=ent.ato_terceiros, ano=ent.ano, opcao=ent._opcao;
+  var opcao=ent._opcao; var cargaHoje=+r.irpj_csll_com_segregacao, tudo=+r.irpj_csll_sem_segregacao, valorSegreg=+r.valor_da_segregacao_contabil, al=+r.aliquota_ano, ibsTerc=+r.ibs_cbs_terceiros, ibsAto=+r.ibs_cbs_ato_cooperativo;
+document.getElementById('kpi-agro12').innerHTML=
     '<div class="kpi-card kpi-ok"><div class="kpi-label">IRPJ/CSLL com segregação</div><div class="kpi-value">'+fmtR(cargaHoje)+'</div><div class="kpi-sub">só os atos com terceiros são tributados</div></div>'+
     '<div class="kpi-card kpi-alerta"><div class="kpi-label">Se tudo virasse receita</div><div class="kpi-value">'+fmtR(tudo)+'</div><div class="kpi-sub">cenário sem segregação contábil</div></div>'+
     '<div class="kpi-card kpi-destaque"><div class="kpi-label">Valor da segregação contábil</div><div class="kpi-value">'+fmtR(valorSegreg)+'</div><div class="kpi-sub">o que a contabilidade correta economiza por ano</div></div>'+
@@ -54047,6 +54086,12 @@ function calcularAGRO12(){
     '<br><b>⚖ O detalhe que vale milhões:</b> a opção é deliberada em ata e comunicada <b>no ano-calendário anterior</b>. Cooperativa que esquecer a deliberação em 2026 tributa o ato cooperativo em 2027 inteiro. Isso é item de pauta de assembleia, não de contabilidade.</div>';
 
   try{ lhAgroEntrega('agro12', [{label:'Carga hoje (só terceiros)',valor:fmtR(cargaHoje)},{label:'Se tudo fosse tributado',valor:fmtR(tudo)},{label:'Valor da segregação',valor:fmtR(valorSegreg)},{label:'IBS/CBS sobre terceiros',valor:fmtR(ibsTerc)},{label:'IBS/CBS sobre ato cooperativo',valor:fmtR(ibsAto)}]); }catch(_e){}
+
+}
+function calcularAGRO12(){
+  var ent=agro12LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAGRO12')){ LH_PONTE.executar('calcularAGRO12', ent); return; }
+  agro12Render(agro12CalcularLocal(ent), ent, null);
 }
 
 ['agro02','agro09','agro11','agro12'].forEach(function(id){ window.LH_VERT_MAPA[id]=['agro']; });
@@ -54185,15 +54230,21 @@ function calcularAGRO07(){
   agro07Render(agro07CalcularLocal(ent), ent, null);
 }
 
-function calcularAGRO10(){
+/* ═══ v722 · CUTOVER — calcularAGRO10: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function agro10LerEntradas(){
   var rec=parseFloat(document.getElementById('agro10_rec').value)||0;
   var aq=parseFloat(document.getElementById('agro10_aq').value)||0;
   var folha=parseFloat(document.getElementById('agro10_folha').value)||0;
   var rat=(parseFloat(document.getElementById('agro10_rat').value)||2)/100;
   var meses=parseFloat(document.getElementById('agro10_meses').value)||0;
   var vig=parseFloat(document.getElementById('agro10_vig').value);
-  if(rec<=0){ mostrarToast('Informe a receita da agroindústria','error'); return; }
-  var alAgro=(vig<2026.25)?0.0285:0.0311;
+  if(rec<=0){ mostrarToast('Informe a receita da agroindústria','error'); return null; }
+  
+  return { receita_anual:rec, aquisicoes_pf:aq, folha_anual:folha, rat:rat*100, meses_sem_reter:meses, data_base:(vig<2026.25?'2026-01-01':'2026-09-05'), _vig:vig, _rat:rat };
+}
+function agro10CalcularLocal(ent){
+  var rec=ent.receita_anual, aq=ent.aquisicoes_pf, folha=ent.folha_anual, rat=ent.rat, meses=ent.meses_sem_reter, vig=ent._vig, rat=ent._rat;
+var alAgro=(vig<2026.25)?0.0285:0.0311;
   var propria=rec*alAgro;
   var porFolha=folha*(0.20+rat+0.058);
   var dif=propria-porFolha;
@@ -54202,7 +54253,16 @@ function calcularAGRO10(){
   var exposicao=reter*meses/12;
   var multaJuros=exposicao*0.75+exposicao*0.0108*meses;
   var passivo=exposicao+multaJuros;
-  document.getElementById('kpi-agro10').innerHTML=
+  
+  return { ok:true, funrural_proprio:{ valor:propria, aliquota:alAgro, inferencia_lc224:(vig>=2026.25) }, se_fosse_pela_folha:{ valor:porFolha, diferenca:dif }, sub_rogacao:{ aliquota_pf:alPF, a_reter_por_ano:reter, exposicao:exposicao, multa:exposicao*0.75, juros:exposicao*0.0108*meses, passivo_total:passivo } };
+}
+function agro10Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-agro10'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var rec=ent.receita_anual, aq=ent.aquisicoes_pf, folha=ent.folha_anual, rat=ent.rat, meses=ent.meses_sem_reter, vig=ent._vig, rat=ent._rat;
+  var vig=ent._vig, rat=ent._rat; var propria=+r.funrural_proprio.valor, alAgro=+r.funrural_proprio.aliquota, porFolha=+r.se_fosse_pela_folha.valor, dif=propria-porFolha; var alPF=+r.sub_rogacao.aliquota_pf, reter=+r.sub_rogacao.a_reter_por_ano, passivo=+r.sub_rogacao.passivo_total, multaJuros=(+r.sub_rogacao.multa)+(+r.sub_rogacao.juros), exposicao=passivo-multaJuros;
+document.getElementById('kpi-agro10').innerHTML=
     '<div class="kpi-card '+(dif<0?'kpi-ok':'kpi-alerta')+'"><div class="kpi-label">Funrural agroindustrial</div><div class="kpi-value">'+fmtR(propria)+'</div><div class="kpi-sub">'+fmtPct(alAgro*100)+' da receita'+(vig>=2026.25?' — 🟡 inferência LC 224':'')+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Se fosse pela folha</div><div class="kpi-value">'+fmtR(porFolha)+'</div><div class="kpi-sub">20% + RAT + 5,8% terceiros — '+(dif<0?'receita economiza '+fmtR(-dif):'folha seria melhor em '+fmtR(dif))+'</div></div>'+
     '<div class="kpi-card kpi-alerta"><div class="kpi-label">Funrural a RETER do produtor PF</div><div class="kpi-value">'+fmtR(reter)+'</div><div class="kpi-sub">'+fmtPct(alPF*100)+' das aquisições — obrigação do comprador</div></div>'+
@@ -54216,6 +54276,12 @@ function calcularAGRO10(){
     '<br><b>Nota de método:</b> juros pela Selic-proxy de 1,08%/mês — para valor exato de DARF, usar o SicalcWeb.</div>';
 
   try{ lhAgroEntrega('agro10', [{label:'Contribuição própria (receita)',valor:fmtR(propria)},{label:'Se optasse pela folha',valor:fmtR(porFolha)},{label:'Diferença',valor:fmtR(dif)},{label:'A reter do produtor PF (subrogação)',valor:fmtR(reter)},{label:'Multa + juros',valor:fmtR(multaJuros)},{label:'PASSIVO TOTAL',valor:fmtR(passivo)}]); }catch(_e){}
+
+}
+function calcularAGRO10(){
+  var ent=agro10LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAGRO10')){ LH_PONTE.executar('calcularAGRO10', ent); return; }
+  agro10Render(agro10CalcularLocal(ent), ent, null);
 }
 
 ['agro05','agro06','agro07','agro10'].forEach(function(id){ window.LH_VERT_MAPA[id]=['agro']; });
