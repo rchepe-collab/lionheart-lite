@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v720";</script>
+<body><script>window.LH_VERSAO="v721";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3461,7 +3461,8 @@ window.LH_PONTE = (function(){
         return { area:f('agro08_area'), valor_mercado_ha:f('agro08_mercado'), valor_historico_ha:f('agro08_hist'), herdeiros:parseInt((G.el('agro08_herd')||{}).value,10)||1, uf:((G.el('agro08_uf')||{}).value)||'RS' }; },
       esperado:function(r){ return r?{ mercado:Number(r.itcmd_base_mercado), historico:Number(r.itcmd_base_historica), esperar:Number(r.custo_de_esperar) }:null; },
       /* kpi-agro08 (R$): [0] ITCMD mercado · [1] quinhão · [2] ITCMD histórico · [3] quinhão hist · [4] custo de esperar */
-      local:function(){ var R=LH_PONTE._rsNum; return { mercado:R('kpi-agro08',0), historico:R('kpi-agro08',2), esperar:R('kpi-agro08',4) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { mercado:R('kpi-agro08',0), historico:R('kpi-agro08',2), esperar:R('kpi-agro08',4) }; },
+      render:function(r, ent, motivo){ agro08Render(r, ent, motivo); } },
     calcularAGRO10: { calc:'agro10',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { receita_anual:f('agro10_rec'), aquisicoes_pf:f('agro10_aq'), folha_anual:f('agro10_folha'), rat:f('agro10_rat')||2, meses_sem_reter:f('agro10_meses') }; },
@@ -3677,13 +3678,14 @@ window.LH_PONTE = (function(){
     calcularFatorR: { calc:'fator-r',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { receita12:f('fatR_receita'), prolabore:f('fatR_prolabore'), salarios:f('fatR_salarios'), encargos:f('fatR_encargos') }; },
-      esperado:function(r){ if(!r) return null; var x=Array.isArray(r)?r[0]:r; if(!x||x.fator_r==null) return null;
-        return { fator_pct:+(Number(x.fator_r)*100).toFixed(2), folha:Number(x.folha_total), ajuste:+(Number(x.falta_folha)||0)>0?Number(x.falta_folha):Number(x.margem_folga)*0 }; },
+      esperado:function(r){ if(!r) return null; var x=Array.isArray(r)?r[0]:r; if(!x||x.fator_r==null) return null;   /* v721: fn_fator_r devolve jsonb */
+        return { fator_pct:+(Number(x.fator_r)*100).toFixed(2), folha:Number(x.folha_total), ajuste:(Number(x.falta_folha)||0) }; },
       /* kpi-fatorR: [0] "26,25%" fator · [1] R$ falta na folha (ou margem de folga em %) · [2] R$ folha total */
       local:function(){ var t=((document.getElementById('kpi-fatorR')||{}).textContent||'').replace(/\s+/g,' ');
         var pct=t.match(/(-?[\d.]+,\d{1,2})\s*%/); var falta=t.match(/Falta na Folha\s*R\$\s*([\d.]+,\d{2})/); var folha=t.match(/Folha Total[^R]*R\$\s*([\d.]+,\d{2})/);
         var n=function(m){ return m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null; };
-        return { fator_pct:n(pct), folha:n(folha), ajuste:(falta?n(falta):0) }; } },
+        return { fator_pct:n(pct), folha:n(folha), ajuste:(falta?n(falta):0) }; },
+      render:function(r, ent, motivo){ fatorRRender(r, ent, motivo); } },
     /* ═══ v710 · Alíquota por Setor/Atividade (c04) — reconciliada pelo Mestre C04 ═══
        A tela lia uma tabela privada (6,5/11,5/13) e o servidor tinha a mesma copiada, mais 40/60 no velho.
        Mestre: 6/8,65/14,25 e 55% estadual / 45% federal. Os dois lados desceram. Mesmo mix → mesmo crédito
@@ -23144,7 +23146,8 @@ try {
 // v30.11.15 — CALC FATOR R · Anexo III vs V (LC 123/2006 §25)
 // Fórmula: R = (Salários + Pró-labore + Encargos) / Receita Bruta 12m
 // Se R >= 28% → Anexo III (vantajoso). Senão → Anexo V (oneroso).
-function calcularFatorR() {
+/* ═══ v721 · CUTOVER — calcularFatorR: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function fatorRLerEntradas(){
   var salarios = parseFloat((document.getElementById('fatR_salarios')||{value:0}).value) || 0;
   var prolabore = parseFloat((document.getElementById('fatR_prolabore')||{value:0}).value) || 0;
   var encargos = parseFloat((document.getElementById('fatR_encargos')||{value:0}).value) || 0;
@@ -23152,9 +23155,14 @@ function calcularFatorR() {
 
   if(receita <= 0) {
     mostrarToast('Informe a Receita Bruta de 12 meses (> 0)', 'error');
-    return;
+    return null;
   }
 
+
+  return { receita12:receita, prolabore:prolabore, salarios:salarios, encargos:encargos };
+}
+function fatorRCalcularLocal(ent){
+  var receita=ent.receita12, prolabore=ent.prolabore, salarios=ent.salarios, encargos=ent.encargos;
   var folha = salarios + prolabore + encargos;
   var fatorR = folha / receita;
   var fatorRPct = fatorR * 100;
@@ -23175,6 +23183,15 @@ function calcularFatorR() {
   var statusCor = fatorR >= 0.28 ? '#10b981' : '#dc2626';
   var statusIco = fatorR >= 0.28 ? '✓' : '';
 
+
+  return { ok:true, folha_total:folha, fator_r:fatorR, fator_r_pct:fatorRPct, anexo:anexo, limite:0.28, falta_folha:Math.max(0,receita*0.28-folha), margem_folga:Math.max(0,fatorR-0.28), das_anexo_iii:dasIII_fr, das_anexo_v:dasV_fr, diferenca_v_iii:difIIIV_fr };
+}
+function fatorRRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-fatorR'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var receita=ent.receita12, prolabore=ent.prolabore, salarios=ent.salarios, encargos=ent.encargos;
+  var receita=ent.receita12; var folha=+r.folha_total, fatorR=+r.fator_r, fatorRPct=+r.fator_r_pct, anexo=String(r.anexo), dasIII_fr=+r.das_anexo_iii, dasV_fr=+r.das_anexo_v, difIIIV_fr=+r.diferenca_v_iii; var distanciaPct=(fatorR-0.28)*100; var statusCor = fatorR >= 0.28 ? '#10b981' : '#dc2626'; var statusIco = fatorR >= 0.28 ? '✓' : '';
   /* KPI cards */
   var kpis = '';
   kpis += '<div class="kpi-card kpi-destaque" style="border-color:'+statusCor+';"><div class="kpi-label">Fator R</div><div class="kpi-value" style="color:'+statusCor+';">'+fmtPct(fatorRPct)+'</div><div class="kpi-sub">'+statusIco+' '+(fatorR>=0.28?'Acima de 28% — Anexo III':'Abaixo de 28% — Anexo V')+'</div></div>';
@@ -23246,6 +23263,12 @@ function calcularFatorR() {
       try{ setMotorResultado('fatorR', { tipo:'info', valor:0, valorReferencia:0, contexto:'Fator R — enquadramento Anexo III × V', descricao:'Fator R atual: '+(fatorR*100).toFixed(1)+'% — enquadrado no '+anexo+'.', recomendacao:'Calibrar folha/pró-labore para otimizar o enquadramento (Anexo III vs V).' }); }catch(e){}
   if(window.LGPD) window.LGPD.log('calc_executada', { calc:'fatorR', resultado:'Anexo '+anexo });
   mostrarToast('✓ Fator R: '+fmtPct(fatorRPct)+' — Anexo '+anexo, 'success');
+
+}
+function calcularFatorR(){
+  var ent=fatorRLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularFatorR')){ LH_PONTE.executar('calcularFatorR', ent); return; }
+  fatorRRender(fatorRCalcularLocal(ent), ent, null);
 }
 
 // v30.11.16 — CALC SUBLIMITE DO SIMPLES NACIONAL (LC 123/2006 arts. 3º, 19, 20)
@@ -53816,17 +53839,32 @@ function calcularAGRO04(){
   agro04Render(agro04CalcularLocal(ent), ent, null);
 }
 
-function calcularAGRO08(){
+/* ═══ v721 · CUTOVER — calcularAGRO08: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function agro08LerEntradas(){
   var area=parseFloat(document.getElementById('agro08_area').value)||0;
   var vm=parseFloat(document.getElementById('agro08_mercado').value)||0;
   var vh=parseFloat(document.getElementById('agro08_hist').value)||0;
   var herd=parseInt(document.getElementById('agro08_herd').value)||1;
   var uf=document.getElementById('agro08_uf').value;
-  if(area<=0||vm<=0){ mostrarToast('Informe área e valor de mercado','error'); return; }
-  var patM=area*vm, quinM=patM/herd, itcM=LH_AGRO.itcmdMarginal(quinM,uf)*herd;
+  if(area<=0||vm<=0){ mostrarToast('Informe área e valor de mercado','error'); return null; }
+  
+  return { area:area, valor_mercado_ha:vm, valor_historico_ha:vh, herdeiros:herd, uf:uf };
+}
+function agro08CalcularLocal(ent){
+  var area=ent.area, vm=ent.valor_mercado_ha, vh=ent.valor_historico_ha, herd=ent.herdeiros, uf=ent.uf;
+var patM=area*vm, quinM=patM/herd, itcM=LH_AGRO.itcmdMarginal(quinM,uf)*herd;
   var patH=area*vh, quinH=patH/herd, itcH=LH_AGRO.itcmdMarginal(quinH,uf)*herd;
   var custo=itcM-itcH;
-  document.getElementById('kpi-agro08').innerHTML =
+  
+  return { ok:true, uf:uf, area:area, herdeiros:herd, patrimonio_mercado:patM, quinhao_mercado:quinM, itcmd_base_mercado:itcM, patrimonio_historico:patH, itcmd_base_historica:itcH, custo_de_esperar:custo };
+}
+function agro08Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-agro08'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var area=ent.area, vm=ent.valor_mercado_ha, vh=ent.valor_historico_ha, herd=ent.herdeiros, uf=ent.uf;
+  var vm=ent.valor_mercado_ha, vh=ent.valor_historico_ha, herd=ent.herdeiros; var patM=+r.patrimonio_mercado, quinM=+r.quinhao_mercado, itcM=+r.itcmd_base_mercado, patH=+r.patrimonio_historico, quinH=patH/herd, itcH=+r.itcmd_base_historica, custo=+r.custo_de_esperar;
+document.getElementById('kpi-agro08').innerHTML =
     '<div class="kpi-card kpi-alerta"><div class="kpi-label">ITCMD na base de MERCADO</div><div class="kpi-value">'+fmtR(itcM)+'</div><div class="kpi-sub">quinhão de '+fmtR(quinM)+' por herdeiro</div></div>'+
     '<div class="kpi-card kpi-ok"><div class="kpi-label">ITCMD na base HISTÓRICA</div><div class="kpi-value">'+fmtR(itcH)+'</div><div class="kpi-sub">quinhão de '+fmtR(quinH)+' por herdeiro</div></div>'+
     '<div class="kpi-card kpi-destaque"><div class="kpi-label">O custo de esperar</div><div class="kpi-value">'+fmtR(custo)+'</div><div class="kpi-sub">diferença entre planejar agora ou depois</div></div>'+
@@ -53838,6 +53876,12 @@ function calcularAGRO08(){
     '<br><b>🟡 Premissa:</b> a tabela de alíquotas de cada UF deve ser conferida na SEFAZ antes de decisão definitiva.</div>';
 
   try{ lhAgroEntrega('agro08', [{label:'UF',valor:uf},{label:'ITCMD na base de mercado',valor:fmtR(itcM)},{label:'ITCMD na base histórica',valor:fmtR(itcH)},{label:'Custo de esperar',valor:fmtR(custo)}]); }catch(_e){}
+
+}
+function calcularAGRO08(){
+  var ent=agro08LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAGRO08')){ LH_PONTE.executar('calcularAGRO08', ent); return; }
+  agro08Render(agro08CalcularLocal(ent), ent, null);
 }
 
 /* gráfico padronizado do pacote agro */
