@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v712";</script>
+<body><script>window.LH_VERSAO="v713";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3720,6 +3720,15 @@ window.LH_PONTE = (function(){
       esperado:function(r){ return (r&&r.exposicao)?{ tributo:Number(r.exposicao.tributo), encargos:+(Number(r.exposicao.juros)+Number(r.exposicao.multa)).toFixed(2) }:null; },
       /* kpi-agroSuper6 (R$): [0] manteve · [1] exposta · [2] tributo · [3] encargos · [4] exposição total */
       local:function(){ var R=LH_PONTE._rsNum; return { tributo:R('kpi-agroSuper6',2), encargos:R('kpi-agroSuper6',3) }; } },
+    /* ═══ v713 · Precificação de Honorários — tela redesenhada no modelo do Mestre C10 (última da lista) ═══ */
+    calcularC10: { calc:'c10',
+      entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'').replace(',','.'));return isNaN(v)?null:v;};
+        var ch=f('c10_custohora'); if(ch==null){ var cf=f('c10_custofixo'), hp=f('c10_horasprod'); if(cf&&hp) ch=cf/hp; }
+        return { horas_mes:f('c10_horas')||0, custo_hora:ch||0, margem_alvo_pct:(f('c10_margem')!=null?f('c10_margem'):45), complexidade:((G.el('c10_complexidade')||{}).value)||'media',
+                 ganho_anual_cliente:f('c10_ganho')||0, pct_exito:f('c10_exito')||0 }; },
+      esperado:function(r){ return r?{ honorario:Number(r.honorario_sugerido_mes), piso:Number(r.piso_tecnico), exito:Number(r.componente_exito_mes) }:null; },
+      /* kpi-c10 (R$): [0] honorário/mês · [1] anual · [2] piso · [3] custo-hora "R$ 95,00/h" · [4] êxito · [5] ganho */
+      local:function(){ var R=LH_PONTE._rsNum; return { honorario:R('kpi-c10',0), piso:R('kpi-c10',2), exito:R('kpi-c10',4) }; } },
 
     /* ═══ v701 · PATRIMONIAL 2 — Valuation, Reorganização (n18), Regime Imobiliário, Construção ═══
        Fora, com motivo (todas têm aba no Mestre — próximo bloco é lá):
@@ -3876,7 +3885,7 @@ window.LH_PONTE = (function(){
      (1 simples · 1,5 média · 2 alta) + ganho anual × % êxito ÷ 12. A tela usa a MÉDIA do escritório (custo total ÷ clientes),
      fatores 0,7 / 1 / 1,5 e a régua velha de tributos (6,5 / 11,5 / 13). fn_c10 já nasceu no modelo do Mestre;
      a tela precisa ganhar os inputs dele (horas, custo-hora, ganho, % êxito) — redesenho de tela, bloco próprio. */
-  var RECONCILIAR = ['calcularC10'];   /* v712: Super5 e Super6 reconciliadas (Mestre v115, abas AG-S5 e AG-S6) */   /* v711: Offshore reconciliada (Mestre A08 v114) */   /* v710: c04 reconciliada pelo Mestre (régua 6/8,65/14,25 · 55/45) */   /* v704: Sucessório reconciliada (Mestre N14 = servidor a custo histórico) */   /* v703: N30 (servidor reescrito pelo Mestre) e N15 (tela na tabela 2026 + economia bruta) reconciliadas */
+  var RECONCILIAR = [];   /* v713: c10 redesenhada pelo Mestre C10 — lista vazia */   /* v712: Super5 e Super6 reconciliadas (Mestre v115, abas AG-S5 e AG-S6) */   /* v711: Offshore reconciliada (Mestre A08 v114) */   /* v710: c04 reconciliada pelo Mestre (régua 6/8,65/14,25 · 55/45) */   /* v704: Sucessório reconciliada (Mestre N14 = servidor a custo histórico) */   /* v703: N30 (servidor reescrito pelo Mestre) e N15 (tela na tabela 2026 + economia bruta) reconciliadas */
 
   return {
     _kpiNum: kpiNum,
@@ -10376,48 +10385,20 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         </div>
     </div>
     <div class="input-card">
-      <h3>Estrutura do Escritório</h3>
+      <h3>Este cliente</h3>
       <div class="input-grid-3">
-        <div class="input-group">
-          <label>Faturamento Total Mensal do Escritório (R$)</label>
-          <input type="number" id="c10_faturamento" placeholder="80000">
-        </div>
-        <div class="input-group">
-          <label>Nº Total de Clientes Ativos</label>
-          <input type="number" id="c10_clientes" min="1" placeholder="40">
-        </div>
-        <div class="input-group">
-          <label>Regime do Escritório</label>
-          <select id="c10_regime">
-            <option value="simples" selected>Simples Nacional</option>
-            <option value="lp">Lucro Presumido</option>
-            <option value="lr">Lucro Real</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label>Folha Mensal Total (R$)</label>
-          <input type="number" id="c10_folha" placeholder="25000">
-        </div>
-        <div class="input-group">
-          <label>Aluguel e Infraestrutura Mensal (R$)</label>
-          <input type="number" id="c10_aluguel" placeholder="4000">
-        </div>
-        <div class="input-group">
-          <label>Sistemas, Softwares e Outros (R$/mês)</label>
-          <input type="number" id="c10_sistemas" placeholder="3000">
-        </div>
-        <div class="input-group">
-          <label>Margem Desejada (%)</label>
-          <input type="number" id="c10_margem" step="0.5" placeholder="25">
-        </div>
-        <div class="input-group">
-          <label>Complexidade do Cliente a Precificar</label>
-          <select id="c10_complexidade">
-            <option value="simples">Simples — MEI / pequena empresa</option>
-            <option value="media" selected>Média — empresa de médio porte</option>
-            <option value="alta">Alta — empresa complexa / LP / LR</option>
-          </select>
-        </div>
+        <div class="input-group"><label>Horas estimadas por mês neste cliente</label><input type="number" id="c10_horas" min="0" step="0.5" placeholder="15"></div>
+        <div class="input-group"><label>Complexidade do cliente</label>
+          <select id="c10_complexidade"><option value="simples">Simples (fator 1,0) — MEI / pequena</option><option value="media" selected>Média (fator 1,5) — médio porte</option><option value="alta">Alta (fator 2,0) — LP / LR / grupo</option></select></div>
+        <div class="input-group"><label>Margem alvo (%)</label><input type="number" id="c10_margem" step="0.5" placeholder="45"></div>
+        <div class="input-group"><label>Ganho anual estimado gerado ao cliente (R$) <span class="lh-hint" data-hint="Teses e economias apontadas pelas calculadoras para este cliente. Alimenta o componente de êxito." onclick="lhHint(event,this)">?</span></label><input type="number" id="c10_ganho" placeholder="60000"></div>
+        <div class="input-group"><label>% de êxito sobre o ganho (consultivo)</label><input type="number" id="c10_exito" step="0.5" placeholder="15"></div>
+      </div>
+      <h3 style="margin-top:14px">Custo-hora do escritório</h3>
+      <div class="input-grid-3">
+        <div class="input-group"><label>Custo-hora (R$/h) <span class="lh-hint" data-hint="Folha + estrutura ÷ horas produtivas. Se deixar em branco, é derivado dos três campos ao lado. BPO médio: R$ 95/h (Mestre C10)." onclick="lhHint(event,this)">?</span></label><input type="number" id="c10_custohora" step="0.5" placeholder="95"></div>
+        <div class="input-group"><label>Folha + estrutura + sistemas (R$/mês)</label><input type="number" id="c10_custofixo" placeholder="32000"></div>
+        <div class="input-group"><label>Horas produtivas do escritório (h/mês)</label><input type="number" id="c10_horasprod" placeholder="340"></div>
       </div>
     </div>
     <button class="btn-calcular" onclick="calcularC10()">Calcular Honorários</button>
@@ -29510,85 +29491,37 @@ function calcularN17(){
 // C-10: PRECIFICAÇÃO DE HONORÁRIOS
 // ══════════════════════════════════════════
 function calcularC10(){
-  const fat=parseFloat(document.getElementById('c10_faturamento').value)||0;
-  const clientes=parseInt(document.getElementById('c10_clientes').value)||1;
-  const regime=document.getElementById('c10_regime').value;
-  const folha=parseFloat(document.getElementById('c10_folha').value)||0;
-  const aluguel=parseFloat(document.getElementById('c10_aluguel').value)||0;
-  const sistemas=parseFloat(document.getElementById('c10_sistemas').value)||0;
-  const margem=parseFloat(document.getElementById('c10_margem').value)/100||0.25;
-  const complexidade=document.getElementById('c10_complexidade').value;
-  if(fat<=0||clientes<=0){ mostrarToast('Informe faturamento e nº de clientes','error'); return; }
-  const aliqTributos={simples:0.065,lp:0.115,lr:0.130}[regime]||0.065;
-  const tributosEscritorio=fat*aliqTributos;
-  const custoTotal=folha+aluguel+sistemas+tributosEscritorio;
-  const custoMedioCliente=custoTotal/clientes;
-  const multComp={simples:0.7,media:1.0,alta:1.5}[complexidade]||1.0;
-  const custoCliente=custoMedioCliente*multComp;
-  const honorarioMinimo=custoCliente/(1-margem);
-  const honorarioAtual=fat/clientes;
-  const margemAtual=(honorarioAtual-custoCliente)/honorarioAtual*100;
-  const clientesLucrativos=margemAtual>0;
-  document.getElementById('kpi-c10').innerHTML=`
-    <div class="kpi-card kpi-destaque"><div class="kpi-label">Honorário Mínimo (com ${fmtPct(margem*100)} de margem)</div><div class="kpi-value">${fmtR(honorarioMinimo)}</div><div class="kpi-sub">Para complexidade ${complexidade}</div></div>
-    <div class="kpi-card ${clientesLucrativos?'kpi-ok':'kpi-critico'}"><div class="kpi-label">Honorário Médio Atual</div><div class="kpi-value">${fmtR(honorarioAtual)}</div><div class="kpi-sub">Margem atual estimada: ${fmtPct(margemAtual)}</div></div>
-    <div class="kpi-card"><div class="kpi-label">Custo Total Mensal</div><div class="kpi-value">${fmtR(custoTotal)}</div><div class="kpi-sub">Folha + Infra + Sistemas + Tributos</div></div>
-    <div class="kpi-card ${margemAtual>=margem*100?'kpi-ok':'kpi-alerta'}"><div class="kpi-label">Gap de Precificação</div><div class="kpi-value">${fmtR(Math.abs(honorarioMinimo-honorarioAtual))}</div><div class="kpi-sub">${honorarioMinimo>honorarioAtual?'Abaixo do mínimo necessário':'Acima do mínimo'}</div></div>`;
-  // v30.11.98 — Memória de Cálculo C10 (indicador de gestão)
-  try {
-    var memC10 = document.getElementById('mem-c10');
-    if(memC10 && window.lhMemoriaCalculo){
-      document.getElementById('viab-c10').innerHTML = (window.lhNotaConsultiva ? window.lhNotaConsultiva({
-    confianca:{ nivel:'Média', motivo:'O honorário mínimo cobre o custo médio por cliente + margem-alvo + tributos. Depende do rateio de custos (folha, aluguel, sistemas) e da carga do regime informado.' },
-    premissas:[
-      {label:'Faturamento do escritório', valor: fmtR(parseFloat((document.getElementById('c10_faturamento')||{value:0}).value)||0)},
-      {label:'Nº de clientes', valor: String(parseInt((document.getElementById('c10_clientes')||{value:0}).value)||0)},
-      {label:'Margem-alvo', valor: ((parseFloat((document.getElementById('c10_margem')||{value:0}).value)||0))+'%'},
-      {label:'Regime', valor: (document.getElementById('c10_regime')||{value:''}).value || '—'}
-    ],
-    nota:'Viabilidade: o honorário mínimo para a margem-alvo é '+fmtR(honorarioMinimo)+' — compare com o que você cobra hoje e reajuste se estiver abaixo.'
-  }) : '');
-  memC10.innerHTML = window.lhMemoriaCalculo({
-        titulo:'Precificação de honorários: calcula o honorário mínimo para cobrir o custo de atender o cliente e ainda atingir a margem-alvo do escritório.',
-        aliquotas:[
-          {label:'Custo médio por cliente', valor:fmtR(custoMedioCliente)},
-          {label:'Margem-alvo', valor:fmtPct(margem*100)},
-          {label:'Honorário atual', valor:fmtR(honorarioAtual)},
-          {label:'Honorário mínimo necessário', valor:fmtR(honorarioMinimo)},
-          {label:'Complexidade do cliente', valor:'×'+multComp.toFixed(2)}
-        ],
-        porque:'O honorário mínimo = custo de atender o cliente ÷ (1 − margem-alvo), ajustado pela complexidade. Se o honorário atual ('+fmtR(honorarioAtual)+') está abaixo do mínimo ('+fmtR(honorarioMinimo)+'), o escritório opera com margem menor que a desejada nesse cliente. <em>Indicador de gestão — não é cálculo tributário.</em>',
-        baseLegal:[]
-      });
-    }
-  } catch(e){ console.warn('mem C10:', e); }
-  if(chartC10) chartC10.destroy();
-  chartC10=new Chart(document.getElementById('chart-c10').getContext('2d'),{
-    type:'doughnut',
-    data:{labels:['Folha de Pagamento','Aluguel/Infraestrutura','Sistemas/Softwares','Tributos do Escritório','Margem Pretendida'],
-      datasets:[{data:[folha,aluguel,sistemas,tributosEscritorio,honorarioMinimo*clientes-custoTotal],
-        backgroundColor:['rgba(30,95,168,0.75)','rgba(168,108,255,0.88)','rgba(22,196,124,0.88)','rgba(220,38,38,0.65)','rgba(232,160,32,0.75)'],borderWidth:2}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right'},tooltip:{callbacks:{label:c=>c.label+': '+fmtR(c.raw)}}}}});
-  document.getElementById('recs-c10').innerHTML = window.lhCards([{tipo:(honorarioMinimo>honorarioAtual?'critico':'oport'),aberto:false,titulo:'Quanto cobrar',corpo:(honorarioMinimo>honorarioAtual? '<p>Você cobra em média <strong>'+fmtR(honorarioAtual)+'/cliente</strong>, mas o mínimo para a margem-alvo é <strong>'+fmtR(honorarioMinimo)+'</strong> — <strong>'+fmtR(honorarioMinimo-honorarioAtual)+'</strong> abaixo. O escritório pode estar trabalhando no prejuízo.</p>': '<p>Honorário médio atual de <strong>'+fmtR(honorarioAtual)+'/cliente</strong> cobre o custo (<strong>'+fmtR(custoCliente)+'</strong>) com margem. Mínimo para a margem-alvo: <strong>'+fmtR(honorarioMinimo)+'</strong>.</p>')},{tipo:'info',aberto:false,titulo:'Como o preço é formado',corpo:'<p>Custo total do escritório: <strong>'+fmtR(custoTotal)+'/mês</strong> (folha + aluguel + sistemas + tributos) ÷ <strong>'+clientes+'</strong> clientes = <strong>'+fmtR(custoMedioCliente)+'/cliente</strong>, ajustado pela complexidade para <strong>'+fmtR(custoCliente)+'</strong>.</p>'+'<p>Honorário mínimo = custo por cliente ÷ (1 − margem-alvo) = <strong>'+fmtR(honorarioMinimo)+'</strong>. Margem atual estimada: <strong>'+margemAtual.toFixed(1)+'%</strong>.</p>'},{tipo:'oport',aberto:false,titulo:'Como apresentar ao cliente',corpo:'<p>Cobre por <strong>valor entregue</strong>, não por hora: o cliente paga pela tranquilidade fiscal e pela economia que o BPO gera (recuperação de crédito, regime ótimo, prontidão para a Reforma).</p>'+'<p>Justifique o reajuste pela complexidade real (volume de notas, regime, folha) e pelo trabalho extra que a transição da Reforma vai exigir em 2026-2027 — ótimo gancho para revisar a tabela de preços.</p>'}]);
-  document.getElementById('res-c10').classList.add('visible');
-  // ── Motor 360°: gap de precificação do escritório ──
-  // FIX v13 — C10 mede saúde do ESCRITÓRIO DO CONTADOR, não da empresa cliente.
-  // Quando contador roda Lite pra analisar uma empresa, C10 é qualitativo no contexto.
-  // Não pode somar como "economia anual da empresa analisada" pois é métrica BPO do escritório.
-  var gapPrec = honorarioMinimo - honorarioAtual;
-  setMotorResultado('c10', {
-    tipo: 'info',                                       // sempre qualitativo no Motor 360
-    valor: Math.abs(gapPrec),
-    valorAnual: 0,                                      // ZERO no somatório de economia
-    valorReferencia: gapPrec > 0 ? Math.abs(gapPrec) * 12 * clientes : 0,
-    contexto: gapPrec > 0 ? 'Escritório precificando abaixo do custo' : 'Precificação adequada',
-    descricao: gapPrec > 0
-      ? 'Honorário médio atual: ' + fmtR(honorarioAtual) + '/cliente. Mínimo necessário p/ ' + fmtPct(margem*100) + ' de margem: ' + fmtR(honorarioMinimo) + '. Gap: ' + fmtR(gapPrec) + '/cliente/mês. Em ' + clientes + ' clientes: perda de ' + fmtR(gapPrec*clientes) + '/mês = ' + fmtR(gapPrec*clientes*12) + '/ano. Métrica do ESCRITÓRIO do contador (não somada na economia da empresa analisada).'
-      : 'Honorário atual de ' + fmtR(honorarioAtual) + ' cobre custos com margem de ' + fmtPct(margemAtual) + '. Precificação adequada para complexidade ' + complexidade + '.',
-    recomendacao: gapPrec > 0
-      ? 'URGENTE (para o escritório): reajustar honorários para ' + fmtR(honorarioMinimo) + '/cliente. Comunicar como adequação técnica (LC 214/2025 + IRPFM 2027 aumentam complexidade do trabalho contábil).'
-      : 'Manter precificação. Monitorar margem mensalmente.'
-  });
+  /* ★ v713 · TELA REDESENHADA no modelo do Mestre C10 (OURO #58, 25/07): precifica POR CLIENTE.
+     piso técnico = horas × custo-hora ÷ (1 − margem) × fator (1 simples · 1,5 média · 2 alta)
+     + componente de êxito = ganho anual × % êxito ÷ 12. Sanidade: ticket anual ÷ ganho > 0,5 come o valor.
+     A versão anterior usava a média do escritório (custo total ÷ nº de clientes), fatores 0,7/1/1,5 e a
+     régua velha de tributos (6,5/11,5/13) — nada disso está no Mestre. Mesma fórmula de fn_c10. */
+  const V=function(id){ const e=document.getElementById(id); const v=e?parseFloat(String(e.value).replace(',','.')):NaN; return isNaN(v)?null:v; };
+  const horas=V('c10_horas')||0, margem=(V('c10_margem')!=null?V('c10_margem'):45)/100, ganho=V('c10_ganho')||0, exito=(V('c10_exito')||0)/100;
+  const complexidade=(document.getElementById('c10_complexidade')||{value:'media'}).value;
+  const fator={simples:1.0,media:1.5,alta:2.0}[complexidade]||1.5;
+  let custoHora=V('c10_custohora');
+  if(custoHora==null){ const cf=V('c10_custofixo'), hp=V('c10_horasprod'); if(cf&&hp) custoHora=cf/hp; }
+  if(horas<=0||!custoHora||custoHora<=0){ mostrarToast('Informe as horas do cliente e o custo-hora (ou folha+estrutura e horas produtivas)','error'); return; }
+  if(margem>=1){ mostrarToast('Margem alvo tem que ser menor que 100%','error'); return; }
+  const piso=horas*custoHora/(1-margem)*fator;
+  const compExito=ganho*exito/12;
+  const honorario=piso+compExito, anual=honorario*12;
+  const sanidade=ganho>0?anual/ganho:null;
+  const alerta=(sanidade!=null&&sanidade>0.5);
+  document.getElementById('kpi-c10').innerHTML=
+    '<div class="kpi-card kpi-destaque"><div class="kpi-label">Honorário sugerido / mês</div><div class="kpi-value">'+fmtR(honorario)+'</div><div class="kpi-sub">'+fmtR(anual)+' / ano</div></div>'+
+    '<div class="kpi-card"><div class="kpi-label">Piso técnico</div><div class="kpi-value">'+fmtR(piso)+'</div><div class="kpi-sub">'+horas+'h × '+fmtR(custoHora)+'/h ÷ (1 − '+fmtPct(margem*100)+') × '+fator+'</div></div>'+
+    '<div class="kpi-card"><div class="kpi-label">Componente de êxito</div><div class="kpi-value">'+fmtR(compExito)+'</div><div class="kpi-sub">'+fmtR(ganho)+' × '+fmtPct(exito*100)+' ÷ 12</div></div>'+
+    '<div class="kpi-card '+(alerta?'kpi-alerta':'')+'"><div class="kpi-label">Ticket ÷ ganho do cliente</div><div class="kpi-value" style="'+(alerta?'color:#dc2626':'')+'">'+(sanidade!=null?(sanidade*100).toFixed(1).replace('.',',')+'%':'—')+'</div><div class="kpi-sub">'+(alerta?'> 50%: o preço come o valor entregue — rever':'sanidade ok (Mestre C10)')+'</div></div>';
+  const recs=document.getElementById('recs-c10'); if(recs) recs.innerHTML='<div class="rec-item"><strong>Base:</strong> Mestre C10 (OURO #58) · Resolução OAB 02/2023 · CPC art. 85. Custo-hora BPO médio R$ 95/h. Fator de complexidade e custo-hora são parâmetros do escritório — valide os seus.</div>';
+  const mem=document.getElementById('mem-c10'); if(mem) mem.innerHTML='';
+  const viab=document.getElementById('viab-c10'); if(viab) viab.innerHTML='';
+  try{ const cv=document.getElementById('chart-c10'); if(cv&&typeof Chart!=='undefined'){ if(window._chartC10){ try{ window._chartC10.destroy(); }catch(_e){} }
+    window._chartC10=new Chart(cv.getContext('2d'),{type:'bar',data:{labels:['Custo das horas','Margem','Êxito'],datasets:[{data:[horas*custoHora*fator, piso-horas*custoHora*fator, compExito],backgroundColor:['#64748b','#b8941f','#16c47c']}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}}); } }catch(_e){}
+  if(typeof setMotorResultado==='function'){ setMotorResultado('c10',{ tipo:'info', valor:honorario, valorAnual:0, valorReferencia:anual, contexto:'Honorário sugerido para este cliente',
+    descricao:'Piso técnico '+fmtR(piso)+' + êxito '+fmtR(compExito)+' = '+fmtR(honorario)+'/mês ('+fmtR(anual)+'/ano). Métrica do ESCRITÓRIO, não entra na economia da empresa analisada.',
+    recomendacao: alerta?'Ticket acima de 50% do ganho gerado: reduzir o % de êxito ou revisar as horas.':'Precificação consistente com o Mestre C10.' }); }
   mostrarToast('✓ Honorário calculado','success');
 }
 
@@ -65845,7 +65778,7 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
    DEPOIS do cálculo local, que é a única exigência do modo sombra.
    Se a tela ainda não existir, window[n] é undefined e nada acontece. */
 (function(){
-  ['dxhCalc','calcularC05','calcularCR01','fpCalc','calcularBares','calcularHotel','calcularAgViagem','calcularPSaude','calcularApostas','calcularFinanceiro','calcularClassificador','calcularRaioX360','calcularCoop','calcularAgroIns','calcularTelecom','calcularMedicamento','calcularTransPax','calcularLogCarga','calcularHotelEv','calcularC02','calcularC11','calcularN33','calcularCalc03','calcularSeletivo','calcularAntecip','calcularAliqRef','calcularIND01','calcularIND02','calcularIND03','calcularIND04','calcularIND05','calcularIND06','calcularIND07','calcularIND08','calcularIND09','calcularIND10','calcularIND11','calcularIND12','calcularISS118','calcularICMSST1125','calcularRET','calcularINS','calcularS962','calcularMonofasico','calcularCredPresumido','calcularDUP','calcularCR02','calcularCR03','calcularCR04','calcularCR05','calcularCR06','calcularTransacao','calcularPrescricao','calcularMultaJuros','calcularAutuacao','calcularRefis','calcularCompensacao','calcularDecisor','calcularCP01','calcularCP02','calcularCP03','calcularC06','calcularExport','calcularImport','calcularDrawback','calcularPortos','calcularDIFAL','calcularN29','calcularC08','calcularAGRO02','calcularAGRO04','calcularAGRO05','calcularAGRO06','calcularAGRO07','calcularAGRO08','calcularAGRO10','calcularAGRO11','calcularAGRO12','lhAg21Calc','lhAg22Calc','calcularAgroSuper1','calcularAgroSuper2','calcularAgroSuper3','calcularAgroSuper4','calcularAGRO03','calcularStockOptions','calcularN16','calcularN17','calcularAluguelPFPJ','calcularValuation','calcularN18','calcularImobReforma','calcularObra','calcularImobRET','calcularMA','calcularN30','calcularN15','calcularSucessorio','calcularAGRO09','lhAg14Calc','ctcCalc','calcularC09','calcularFatorR','calcularC04','calcularOffshore','calcularAgroSuper5','calcularAgroSuper6'].forEach(function(n){
+  ['dxhCalc','calcularC05','calcularCR01','fpCalc','calcularBares','calcularHotel','calcularAgViagem','calcularPSaude','calcularApostas','calcularFinanceiro','calcularClassificador','calcularRaioX360','calcularCoop','calcularAgroIns','calcularTelecom','calcularMedicamento','calcularTransPax','calcularLogCarga','calcularHotelEv','calcularC02','calcularC11','calcularN33','calcularCalc03','calcularSeletivo','calcularAntecip','calcularAliqRef','calcularIND01','calcularIND02','calcularIND03','calcularIND04','calcularIND05','calcularIND06','calcularIND07','calcularIND08','calcularIND09','calcularIND10','calcularIND11','calcularIND12','calcularISS118','calcularICMSST1125','calcularRET','calcularINS','calcularS962','calcularMonofasico','calcularCredPresumido','calcularDUP','calcularCR02','calcularCR03','calcularCR04','calcularCR05','calcularCR06','calcularTransacao','calcularPrescricao','calcularMultaJuros','calcularAutuacao','calcularRefis','calcularCompensacao','calcularDecisor','calcularCP01','calcularCP02','calcularCP03','calcularC06','calcularExport','calcularImport','calcularDrawback','calcularPortos','calcularDIFAL','calcularN29','calcularC08','calcularAGRO02','calcularAGRO04','calcularAGRO05','calcularAGRO06','calcularAGRO07','calcularAGRO08','calcularAGRO10','calcularAGRO11','calcularAGRO12','lhAg21Calc','lhAg22Calc','calcularAgroSuper1','calcularAgroSuper2','calcularAgroSuper3','calcularAgroSuper4','calcularAGRO03','calcularStockOptions','calcularN16','calcularN17','calcularAluguelPFPJ','calcularValuation','calcularN18','calcularImobReforma','calcularObra','calcularImobRET','calcularMA','calcularN30','calcularN15','calcularSucessorio','calcularAGRO09','lhAg14Calc','ctcCalc','calcularC09','calcularFatorR','calcularC04','calcularOffshore','calcularAgroSuper5','calcularAgroSuper6','calcularC10'].forEach(function(n){
     try{
       var f = window[n];
       if (typeof f !== 'function' || f.__lhSombra) return;
