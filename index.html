@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v716";</script>
+<body><script>window.LH_VERSAO="v717";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3778,7 +3778,8 @@ window.LH_PONTE = (function(){
         return { faturamento:f('obra_fat'), pct_material:f('obra_pct_mat'), pct_outros:f('obra_pct_out'), contratante:v('obra_contratante')||'contribuinte', regime:v('obra_regime')||'lp',
                  pis_pct:f('obra_pis'), cofins_pct:f('obra_cofins'), iss_pct:f('obra_iss'), icms_pct:f('obra_icms'), ipi_pct:f('obra_ipi'), aliq_ref_pct:26.5 }; },
       esperado:function(r){ return r?{ hoje:Number(r.imposto_atual), imposto_2033:Number(r.imposto_2033), variacao:Number(r.variacao) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { hoje:R('kpi-obra',0), imposto_2033:R('kpi-obra',1), variacao:R('kpi-obra',2) }; } }
+      local:function(){ var R=LH_PONTE._rsNum; return { hoje:R('kpi-obra',0), imposto_2033:R('kpi-obra',1), variacao:R('kpi-obra',2) }; },
+      render:function(r, ent, motivo){ obraRender(r, ent, motivo); } }
   };
 
   var G = {
@@ -3908,8 +3909,40 @@ window.LH_PONTE = (function(){
     _rsNum:  rsNum,
     reconciliar: function(){ return RECONCILIAR; },
     modo:      function(){ return modo; },
-    definir:   function(m){ if(['local','sombra','remoto'].indexOf(m)<0) return 'modo inválido';
+    definir:   function(m){ if(['local','sombra','remoto','servidor'].indexOf(m)<0) return 'modo inválido';
                             modo = m; return 'modo: ' + modo; },
+
+    /* ═══ v717 · CUTOVER — modo 'servidor' ═══════════════════════════════════════════════════
+       Uma tela CONVERTIDA tem, no MAPA, além de entradas/esperado/local, um render(resultado, ent, motivo):
+       desenha o KPI a partir do resultado do SERVIDOR. Em modo 'servidor', a função da tela chama
+       LH_PONTE.executar(nome, ent) e NÃO calcula localmente. Regras:
+         • sem sessão, sem cota, servidor fora → a tela DIZ (card vermelho); nunca cai no cálculo local
+           em silêncio (isso devolveria a lógica ao navegador pela porta dos fundos)
+         • tela ainda não convertida (sem render) continua exatamente como antes (local + sombra)
+         • o resultado local (modo 'local'/'sombra') tem as MESMAS chaves do servidor — a convenção única
+       A virada global (definir('servidor')) só acontece quando todas as telas tiverem render.        */
+    convertida: function(nomeFn){ var m = MAPA[nomeFn]; return !!(m && typeof m.render === 'function'); },
+    executar: function(nomeFn, ent){
+      var m = MAPA[nomeFn]; if(!m || typeof m.render !== 'function') return false;
+      try { m.render(null, ent, 'aguardando'); } catch(e){}
+      var promessa = Array.isArray(ent)
+        ? Promise.all(ent.map(function(e){ return chamar(m.calc, e); })).then(function(lista){
+            var ruim = null; lista.forEach(function(r){ if(!ruim && (!r || !r.ok)) ruim = r; });
+            return ruim ? { ok:false, motivo:(ruim && ruim.motivo) || 'sem resposta em uma das chamadas' } : { ok:true, resultado:lista.map(function(r){ return r.resultado; }) }; })
+        : chamar(m.calc, ent);
+      promessa.then(function(res){
+        if (!res || !res.ok){ try { m.render(null, ent, (res && res.motivo) || 'sem resposta do servidor'); } catch(e){} return; }
+        try { m.render(res.resultado, ent, null); } catch(e){ try { console.error('[LH_PONTE] render falhou em '+nomeFn, e); } catch(_e){} }
+        registrar({ quando:new Date().toISOString(), tela:nomeFn, calc:m.calc, entradas:ent, status:'servidor' });
+      });
+      return true;
+    },
+    cardErro: function(motivo){
+      return '<div class="kpi-card" style="grid-column:1/-1;border-color:rgba(220,38,38,.55);background:rgba(220,38,38,.08)"><div class="kpi-label" style="color:#fca5a5">Não foi possível calcular</div><div class="kpi-value" style="font-size:1rem;color:#fecaca">'+String(motivo||'servidor indisponível')+'</div><div class="kpi-sub">O cálculo roda no servidor Lionheart. Verifique a sessão (login) ou tente de novo em instantes.</div></div>';
+    },
+    cardAguardando: function(){
+      return '<div class="kpi-card" style="grid-column:1/-1"><div class="kpi-label">Calculando no servidor…</div><div class="kpi-value" style="font-size:1rem">⏳</div></div>';
+    },
     cobertura: function(){ return Object.keys(MAPA); },
 
     /* chamado pelas telas DEPOIS do cálculo local */
@@ -27199,58 +27232,62 @@ function calcularPortos(){
   }catch(_e){}
   var res=document.getElementById('res-portos'); if(res) res.style.display='block';
 }
-function calcularObra(){
+/* ═══ v717 · CUTOVER, tela 1 de 117 — Obra separada em três: ler entradas · calcular (mesmas chaves do
+   servidor, fn_obra) · desenhar. Em modo 'servidor' a função não calcula: pede ao servidor e desenha
+   o que voltou. A convenção única de tela começa aqui. */
+function obraLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var mod=(document.getElementById('obra_mod')||{value:''}).value;
   var fat=V('obra_fat',0);
   var red=parseFloat((document.getElementById('obra_tipo')||{value:'0'}).value)||0;
-  var pctMat=V('obra_pct_mat',0)/100, pctOut=V('obra_pct_out',0)/100;
   var contrat=(document.getElementById('obra_contratante')||{value:'contribuinte'}).value;
   var regime=(document.getElementById('obra_regime')||{value:'lp'}).value;
-
-  if(fat<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o faturamento anual de obras','error'); return; }
-  if(lhValorSuspeito(fat,1000,'Faturamento anual de obras')) return;
-  if(mod==='incorporacao'){ if(typeof mostrarToast==='function') mostrarToast('Incorporação usa o regime imobiliário — veja o aviso acima','error'); obraModChange(); return; }
-
-  /* carga atual = soma dos 5 tributos substituídos (itemizada e editável) */
-  var pis=V('obra_pis',0)/100, cof=V('obra_cofins',0)/100, iss=V('obra_iss',0)/100,
-      icms=V('obra_icms',0)/100, ipi=V('obra_ipi',0)/100;
-  var cargaAtual = pis+cof+iss+icms+ipi;       /* B18 */
-  var impAtual   = fat*cargaAtual;             /* B19 */
-
-  /* novo — 2033 pleno */
-  var aliqBruta  = LH_REF_PLENA()*(1-red);              /* B21 */
-  var pctCred    = pctMat+pctOut;              /* B22 */
-  if(pctCred>1) pctCred=1;
-  var aliqEfet   = aliqBruta*(1-pctCred);      /* B23 */
-  var impNovo    = fat*aliqEfet;               /* B24 */
-  var variacao   = impNovo-impAtual;           /* B25 */
-
+  if(fat<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o faturamento anual de obras','error'); return null; }
+  if(lhValorSuspeito(fat,1000,'Faturamento anual de obras')) return null;
+  if(mod==='incorporacao'){ if(typeof mostrarToast==='function') mostrarToast('Incorporação usa o regime imobiliário — veja o aviso acima','error'); obraModChange(); return null; }
+  return { faturamento:fat, reducao:red, pct_material:V('obra_pct_mat',0), pct_outros:V('obra_pct_out',0), contratante:contrat, regime:regime,
+           pis_pct:V('obra_pis',0), cofins_pct:V('obra_cofins',0), iss_pct:V('obra_iss',0), icms_pct:V('obra_icms',0), ipi_pct:V('obra_ipi',0),
+           aliq_ref_pct:LH_REF_PLENA()*100 };
+}
+function obraCalcularLocal(ent){
+  var cargaAtual=(ent.pis_pct+ent.cofins_pct+ent.iss_pct+ent.icms_pct+ent.ipi_pct)/100;
+  var impAtual=ent.faturamento*cargaAtual;
+  var aliqBruta=(ent.aliq_ref_pct/100)*(1-ent.reducao);
+  var pctCred=Math.min(1,(ent.pct_material+ent.pct_outros)/100);
+  var aliqEfet=aliqBruta*(1-pctCred);
+  var impNovo=ent.faturamento*aliqEfet;
+  return { ok:true, carga_atual_pct:cargaAtual*100, imposto_atual:impAtual, aliquota_bruta_pct:aliqBruta*100, credito_pct:pctCred*100,
+           aliquota_efetiva_pct:aliqEfet*100, imposto_2033:impNovo, variacao:impNovo-impAtual, alivia:(impNovo<impAtual) };
+}
+function obraRender(r, ent, motivo){
+  var box=document.getElementById('kpi-obra'); if(!box) return;
+  if(motivo==='aguardando'){ box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
   var pc=function(x){ return (x*100).toFixed(3).replace(/0+$/,'').replace(/[.,]$/,'').replace('.',',')+'%'; };
   var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
-
-  document.getElementById('kpi-obra').innerHTML =
-    '<div class="kpi-card"><div class="kpi-label">Carga atual (5 tributos)</div><div class="kpi-value">'+pc(cargaAtual)+'</div></div>'+
-    '<div class="kpi-card"><div class="kpi-label">Imposto hoje / ano</div><div class="kpi-value">'+R(impAtual)+'</div></div>'+
-    '<div class="kpi-card"><div class="kpi-label">Alíquota bruta 2033</div><div class="kpi-value">'+pc(aliqBruta)+'</div></div>'+
-    '<div class="kpi-card"><div class="kpi-label">Alíquota efetiva líquida de crédito</div><div class="kpi-value">'+pc(aliqEfet)+'</div></div>'+
-    '<div class="kpi-card"><div class="kpi-label">Imposto 2033 / ano</div><div class="kpi-value">'+R(impNovo)+'</div></div>'+
-    '<div class="kpi-card'+(variacao<0?' kpi-destaque':'')+'"><div class="kpi-label">Variação</div><div class="kpi-value">'+(variacao<0?'−':'+')+R(Math.abs(variacao)).replace('R$ ','R$ ')+'</div></div>';
-
+  r={ carga_atual_pct:+r.carga_atual_pct, imposto_atual:+r.imposto_atual, aliquota_bruta_pct:+r.aliquota_bruta_pct, credito_pct:+r.credito_pct,
+      aliquota_efetiva_pct:+r.aliquota_efetiva_pct, imposto_2033:+r.imposto_2033, variacao:+r.variacao };
+  box.innerHTML =
+    '<div class="kpi-card"><div class="kpi-label">Carga atual (5 tributos)</div><div class="kpi-value">'+pc(r.carga_atual_pct/100)+'</div></div>'+
+    '<div class="kpi-card"><div class="kpi-label">Imposto hoje / ano</div><div class="kpi-value">'+R(r.imposto_atual)+'</div></div>'+
+    '<div class="kpi-card"><div class="kpi-label">Alíquota bruta 2033</div><div class="kpi-value">'+pc(r.aliquota_bruta_pct/100)+'</div></div>'+
+    '<div class="kpi-card"><div class="kpi-label">Alíquota efetiva líquida de crédito</div><div class="kpi-value">'+pc(r.aliquota_efetiva_pct/100)+'</div></div>'+
+    '<div class="kpi-card"><div class="kpi-label">Imposto 2033 / ano</div><div class="kpi-value">'+R(r.imposto_2033)+'</div></div>'+
+    '<div class="kpi-card'+(r.variacao<0?' kpi-destaque':'')+'"><div class="kpi-label">Variação</div><div class="kpi-value">'+(r.variacao<0?'−':'+')+R(Math.abs(r.variacao)).replace('R$ ','R$ ')+'</div></div>';
   var alerta='';
-  if(contrat==='nao_contribuinte'){
+  if(ent.contratante==='nao_contribuinte'){
     alerta='<div style="margin-top:10px;padding:12px 14px;border-radius:10px;background:rgba(224,138,46,.10);border:1px solid rgba(224,138,46,.45);color:#e8b877;font-size:.9em">'+
       '⚠ <b>Trava do art. 252.</b> Com contratante não-contribuinte (pessoa física, condomínio, órgão público), o crédito do prestador fica <b>limitado ao valor do débito da operação</b>. '+
       'O crédito de materiais acima do débito não se aproveita — o alívio calculado aqui é o teto, não a garantia.</div>';
   }
-  if(regime==='simples'){
+  if(ent.regime==='simples'){
     alerta+='<div style="margin-top:10px;padding:12px 14px;border-radius:10px;background:rgba(224,138,46,.10);border:1px solid rgba(224,138,46,.45);color:#e8b877;font-size:.9em">'+
       '⚠ <b>Simples Nacional:</b> os tributos estão dentro do DAS e o crédito transferido é limitado. Compare também em <a onclick="abrirPagina(\'dxh\',null)" style="color:#c9a227;cursor:pointer;text-decoration:underline">Dentro × Híbrido</a>.</div>';
   }
 
-  var veredito = (variacao<0)
-    ? '<div class="lh-acc t-ok" style="margin-top:10px;padding:14px 16px;border-radius:10px"><b>🟢 ALIVIA</b> — o crédito de materiais vence a alta da alíquota. Economia de '+R(Math.abs(variacao))+'/ano.</div>'
-    : '<div class="lh-acc t-warn" style="margin-top:10px;padding:14px 16px;border-radius:10px"><b>🔴 ENCARECE</b> em '+R(variacao)+'/ano — mix de materiais creditáveis baixo. Caminhos: formalizar a cadeia (subempreiteiro MEI ou informal não gera crédito), renegociar fornecedores para PJ do regime regular e revisar cláusula de reequilíbrio nos contratos longos.</div>';
+  var veredito = (r.variacao<0)
+    ? '<div class="lh-acc t-ok" style="margin-top:10px;padding:14px 16px;border-radius:10px"><b>🟢 ALIVIA</b> — o crédito de materiais vence a alta da alíquota. Economia de '+R(Math.abs(r.variacao))+'/ano.</div>'
+    : '<div class="lh-acc t-warn" style="margin-top:10px;padding:14px 16px;border-radius:10px"><b>🔴 ENCARECE</b> em '+R(r.variacao)+'/ano — mix de materiais creditáveis baixo. Caminhos: formalizar a cadeia (subempreiteiro MEI ou informal não gera crédito), renegociar fornecedores para PJ do regime regular e revisar cláusula de reequilíbrio nos contratos longos.</div>';
   document.getElementById('recs-obra').innerHTML = veredito+alerta;
 
   /* cenários do setor (mesmos do Mestre) */
@@ -27266,14 +27303,14 @@ function calcularObra(){
       document.getElementById('mem-obra').innerHTML=window.lhMemoriaCalculo({
         titulo:'Memória de cálculo — obra',
         linhas:[
-          ['Faturamento anual de obras', R(fat)],
-          ['Carga atual = PIS + COFINS + ISS + ICMS + IPI', pc(pis)+' + '+pc(cof)+' + '+pc(iss)+' + '+pc(icms)+' + '+pc(ipi)+' = '+pc(cargaAtual)],
-          ['Imposto hoje', R(fat)+' × '+pc(cargaAtual)+' = '+R(impAtual)],
-          ['Alíquota bruta 2033 (26,5% − redução)', '26,5% × (1 − '+(red*100)+'%) = '+pc(aliqBruta)],
-          ['% creditável (materiais + outros)', (pctMat*100).toFixed(1)+'% + '+(pctOut*100).toFixed(1)+'% = '+(pctCred*100).toFixed(1)+'%'],
-          ['Alíquota efetiva líquida de crédito', pc(aliqBruta)+' × (1 − '+(pctCred*100).toFixed(1)+'%) = '+pc(aliqEfet)],
-          ['Imposto 2033', R(fat)+' × '+pc(aliqEfet)+' = '+R(impNovo)],
-          ['Variação', R(variacao)]
+          ['Faturamento anual de obras', R(ent.faturamento)],
+          ['Carga atual = PIS + COFINS + ISS + ICMS + IPI', pc(pis)+' + '+pc(cof)+' + '+pc(iss)+' + '+pc(icms)+' + '+pc(ipi)+' = '+pc((r.carga_atual_pct/100))],
+          ['Imposto hoje', R(ent.faturamento)+' × '+pc((r.carga_atual_pct/100))+' = '+R(r.imposto_atual)],
+          ['Alíquota bruta 2033 (26,5% − redução)', '26,5% × (1 − '+(red*100)+'%) = '+pc((r.aliquota_bruta_pct/100))],
+          ['% creditável (materiais + outros)', ((ent.pct_material/100)*100).toFixed(1)+'% + '+((ent.pct_outros/100)*100).toFixed(1)+'% = '+((r.credito_pct/100)*100).toFixed(1)+'%'],
+          ['Alíquota efetiva líquida de crédito', pc((r.aliquota_bruta_pct/100))+' × (1 − '+((r.credito_pct/100)*100).toFixed(1)+'%) = '+pc((r.aliquota_efetiva_pct/100))],
+          ['Imposto 2033', R(ent.faturamento)+' × '+pc((r.aliquota_efetiva_pct/100))+' = '+R(r.imposto_2033)],
+          ['Variação', R(r.variacao)]
         ]
       });
     }
@@ -27285,6 +27322,12 @@ function calcularObra(){
     }
   }catch(_e){}
   var res=document.getElementById('res-obra'); if(res) res.style.display='block';
+
+}
+function calcularObra(){
+  var ent=obraLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularObra')){ LH_PONTE.executar('calcularObra', ent); return; }
+  obraRender(obraCalcularLocal(ent), ent, null);
 }
 function calcularArt127(){
   var fat  = parseFloat((document.getElementById('art127_fat')||{value:0}).value) || 0;
