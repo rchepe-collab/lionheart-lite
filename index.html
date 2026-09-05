@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v709";</script>
+<body><script>window.LH_VERSAO="v710";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3679,6 +3679,18 @@ window.LH_PONTE = (function(){
         var pct=t.match(/(-?[\d.]+,\d{1,2})\s*%/); var falta=t.match(/Falta na Folha\s*R\$\s*([\d.]+,\d{2})/); var folha=t.match(/Folha Total[^R]*R\$\s*([\d.]+,\d{2})/);
         var n=function(m){ return m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null; };
         return { fator_pct:n(pct), folha:n(folha), ajuste:(falta?n(falta):0) }; } },
+    /* ═══ v710 · Alíquota por Setor/Atividade (c04) — reconciliada pelo Mestre C04 ═══
+       A tela lia uma tabela privada (6,5/11,5/13) e o servidor tinha a mesma copiada, mais 40/60 no velho.
+       Mestre: 6/8,65/14,25 e 55% estadual / 45% federal. Os dois lados desceram. Mesmo mix → mesmo crédito
+       (LP 100% · SN 20% · exterior 100%); sem mix, os dois usam o % legado de insumos. */
+    calcularC04: { calc:'c04',
+      entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
+        return { setor:v('c04_cnae')||'comercio_varejo', regime:v('c04_regime')||'lp', faturamento:f('c04_faturamento'), mix_lp:f('c04_creditos_lp'), mix_sn:f('c04_creditos_sn'), mix_ext:f('c04_creditos_ext'),
+                 pct_insumos_legado:f('c04_insumos')||35 }; },
+      esperado:function(r){ if(!r||!r.projecao) return null; var m={}; r.projecao.forEach(function(p){ m[String(p.ano)]=Number(p.imposto); }); return { atual:Number(r.imposto_atual), a2029:m['2029'], a2033:m['2033'] }; },
+      /* kpi-c04 (R$): [0] imposto atual · [1] imposto 2029 · [2] variação · a linha de 2033 vem da tabela */
+      local:function(){ var R=LH_PONTE._rsNum; var t=((document.getElementById('tabela-c04')||{}).textContent||'').replace(/\s+/g,' ');
+        var m=t.match(/2033[^R]{0,80}R\$\s*([\d.]+,\d{2})/); return { atual:R('kpi-c04',0), a2029:R('kpi-c04',1), a2033:(m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null) }; } },
 
     /* ═══ v701 · PATRIMONIAL 2 — Valuation, Reorganização (n18), Regime Imobiliário, Construção ═══
        Fora, com motivo (todas têm aba no Mestre — próximo bloco é lá):
@@ -3835,7 +3847,7 @@ window.LH_PONTE = (function(){
      (1 simples · 1,5 média · 2 alta) + ganho anual × % êxito ÷ 12. A tela usa a MÉDIA do escritório (custo total ÷ clientes),
      fatores 0,7 / 1 / 1,5 e a régua velha de tributos (6,5 / 11,5 / 13). fn_c10 já nasceu no modelo do Mestre;
      a tela precisa ganhar os inputs dele (horas, custo-hora, ganho, % êxito) — redesenho de tela, bloco próprio. */
-  var RECONCILIAR = ['calcularOffshore','calcularAgroSuper5','calcularAgroSuper6','calcularC04','calcularC10'];   /* v704: Sucessório reconciliada (Mestre N14 = servidor a custo histórico) */   /* v703: N30 (servidor reescrito pelo Mestre) e N15 (tela na tabela 2026 + economia bruta) reconciliadas */
+  var RECONCILIAR = ['calcularOffshore','calcularAgroSuper5','calcularAgroSuper6','calcularC10'];   /* v710: c04 reconciliada pelo Mestre (régua 6/8,65/14,25 · 55/45) */   /* v704: Sucessório reconciliada (Mestre N14 = servidor a custo histórico) */   /* v703: N30 (servidor reescrito pelo Mestre) e N15 (tela na tabela 2026 + economia bruta) reconciliadas */
 
   return {
     _kpiNum: kpiNum,
@@ -20656,7 +20668,14 @@ function calcularC02(){
 // ══════════════════════════════════════════
 // C-04: ALÍQUOTA EFETIVA POR CNAE
 // ══════════════════════════════════════════
-const CARGA_ATUAL_C04 = { simples:{base:0.065,label:'Simples Nacional'}, lp:{base:0.115,label:'Lucro Presumido'}, lr:{base:0.130,label:'Lucro Real'} };
+/* ★ v710 · FONTE ÚNICA — esta tela tinha tabela própria (6,5 / 11,5 / 13). O Mestre C04 (carimbo 25/07,
+   "régua unificada com a C02") e a IMPOSTOS_ATUAIS deste mesmo arquivo dizem 6 / 8,65 / 14,25.
+   A tabela privada ficou para trás quando a régua foi unificada. Agora lê a fonte única; os
+   literais abaixo são só rede de segurança se IMPOSTOS_ATUAIS não existir. Persona do Mestre
+   (6 mi · varejo · LP · 84% crédito): atual 519.000 · 2029 358.377 · 2033 254.400. */
+const CARGA_ATUAL_C04 = (function(){ var IA=(typeof IMPOSTOS_ATUAIS!=='undefined')?IMPOSTOS_ATUAIS:{};
+  var g=function(k,d){ var v=IA[k]; return (typeof v==='number')?v:((v&&typeof v.total==='number')?v.total:d); };
+  return { simples:{base:g('simples',0.06),label:'Simples Nacional'}, lp:{base:g('lp',0.0865),label:'Lucro Presumido'}, lr:{base:g('lr',0.1425),label:'Lucro Real'} }; })();
 const CONFIG_CNAE = {
   servicos_tec:{aliqBase:0.265,reducao:0.00,label:'Serviços de TI'},
   servicos_prof:{aliqBase:0.265,reducao:0.00,label:'Serviços Profissionais'},
@@ -20688,12 +20707,22 @@ function calcularC04(){
   // v30.8 ONDA 1.18 — Usa crédito efetivo do MIX (LP×100 + SN×20 + Ext×100) ÷ 100
   // Se o mix não foi preenchido, faz fallback pro hidden c04_insumos legado
   let pctIns;
-  const elMixEfet = document.getElementById('c04_credito_efetivo');
-  if(elMixEfet && elMixEfet.value) {
-    pctIns = parseFloat(elMixEfet.value) / 100;
-  } else {
-    pctIns = parseFloat(document.getElementById('c04_insumos').value)/100 || 0.35;
-  }
+   const elMixEfet = document.getElementById('c04_credito_efetivo');
+   /* ★ v710 · o hidden c04_credito_efetivo só era preenchido por evento de digitação; mix importado
+      ou preenchido por script deixava-o vazio e a tela caía no % legado (35%) mesmo com o mix na tela.
+      Agora: se o mix tem valor, o crédito é derivado dele (LP×100 + SN×20 + Ext×100) — a mesma regra
+      do servidor. Só sem mix vale o % legado. */
+   const _mLP=parseFloat((document.getElementById('c04_creditos_lp')||{value:''}).value)||0,
+         _mSN=parseFloat((document.getElementById('c04_creditos_sn')||{value:''}).value)||0,
+         _mEX=parseFloat((document.getElementById('c04_creditos_ext')||{value:''}).value)||0;
+   if(_mLP+_mSN+_mEX > 0) {
+     pctIns = (_mLP*1.00 + _mSN*0.20 + _mEX*1.00) / 100;
+     if(elMixEfet) elMixEfet.value = String(Math.round(pctIns*10000)/100);
+   } else if(elMixEfet && elMixEfet.value) {
+     pctIns = parseFloat(elMixEfet.value) / 100;
+   } else {
+     pctIns = parseFloat(document.getElementById('c04_insumos').value)/100 || 0.35;
+   }
   // Pegar dados do mix pra mostrar nas recomendações
   const mixLP = parseFloat((document.getElementById('c04_creditos_lp')||{value:0}).value) || 0;
   const mixSN = parseFloat((document.getElementById('c04_creditos_sn')||{value:0}).value) || 0;
@@ -65786,7 +65815,7 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
    DEPOIS do cálculo local, que é a única exigência do modo sombra.
    Se a tela ainda não existir, window[n] é undefined e nada acontece. */
 (function(){
-  ['dxhCalc','calcularC05','calcularCR01','fpCalc','calcularBares','calcularHotel','calcularAgViagem','calcularPSaude','calcularApostas','calcularFinanceiro','calcularClassificador','calcularRaioX360','calcularCoop','calcularAgroIns','calcularTelecom','calcularMedicamento','calcularTransPax','calcularLogCarga','calcularHotelEv','calcularC02','calcularC11','calcularN33','calcularCalc03','calcularSeletivo','calcularAntecip','calcularAliqRef','calcularIND01','calcularIND02','calcularIND03','calcularIND04','calcularIND05','calcularIND06','calcularIND07','calcularIND08','calcularIND09','calcularIND10','calcularIND11','calcularIND12','calcularISS118','calcularICMSST1125','calcularRET','calcularINS','calcularS962','calcularMonofasico','calcularCredPresumido','calcularDUP','calcularCR02','calcularCR03','calcularCR04','calcularCR05','calcularCR06','calcularTransacao','calcularPrescricao','calcularMultaJuros','calcularAutuacao','calcularRefis','calcularCompensacao','calcularDecisor','calcularCP01','calcularCP02','calcularCP03','calcularC06','calcularExport','calcularImport','calcularDrawback','calcularPortos','calcularDIFAL','calcularN29','calcularC08','calcularAGRO02','calcularAGRO04','calcularAGRO05','calcularAGRO06','calcularAGRO07','calcularAGRO08','calcularAGRO10','calcularAGRO11','calcularAGRO12','lhAg21Calc','lhAg22Calc','calcularAgroSuper1','calcularAgroSuper2','calcularAgroSuper3','calcularAgroSuper4','calcularAGRO03','calcularStockOptions','calcularN16','calcularN17','calcularAluguelPFPJ','calcularValuation','calcularN18','calcularImobReforma','calcularObra','calcularImobRET','calcularMA','calcularN30','calcularN15','calcularSucessorio','calcularAGRO09','lhAg14Calc','ctcCalc','calcularC09','calcularFatorR'].forEach(function(n){
+  ['dxhCalc','calcularC05','calcularCR01','fpCalc','calcularBares','calcularHotel','calcularAgViagem','calcularPSaude','calcularApostas','calcularFinanceiro','calcularClassificador','calcularRaioX360','calcularCoop','calcularAgroIns','calcularTelecom','calcularMedicamento','calcularTransPax','calcularLogCarga','calcularHotelEv','calcularC02','calcularC11','calcularN33','calcularCalc03','calcularSeletivo','calcularAntecip','calcularAliqRef','calcularIND01','calcularIND02','calcularIND03','calcularIND04','calcularIND05','calcularIND06','calcularIND07','calcularIND08','calcularIND09','calcularIND10','calcularIND11','calcularIND12','calcularISS118','calcularICMSST1125','calcularRET','calcularINS','calcularS962','calcularMonofasico','calcularCredPresumido','calcularDUP','calcularCR02','calcularCR03','calcularCR04','calcularCR05','calcularCR06','calcularTransacao','calcularPrescricao','calcularMultaJuros','calcularAutuacao','calcularRefis','calcularCompensacao','calcularDecisor','calcularCP01','calcularCP02','calcularCP03','calcularC06','calcularExport','calcularImport','calcularDrawback','calcularPortos','calcularDIFAL','calcularN29','calcularC08','calcularAGRO02','calcularAGRO04','calcularAGRO05','calcularAGRO06','calcularAGRO07','calcularAGRO08','calcularAGRO10','calcularAGRO11','calcularAGRO12','lhAg21Calc','lhAg22Calc','calcularAgroSuper1','calcularAgroSuper2','calcularAgroSuper3','calcularAgroSuper4','calcularAGRO03','calcularStockOptions','calcularN16','calcularN17','calcularAluguelPFPJ','calcularValuation','calcularN18','calcularImobReforma','calcularObra','calcularImobRET','calcularMA','calcularN30','calcularN15','calcularSucessorio','calcularAGRO09','lhAg14Calc','ctcCalc','calcularC09','calcularFatorR','calcularC04'].forEach(function(n){
     try{
       var f = window[n];
       if (typeof f !== 'function' || f.__lhSombra) return;
