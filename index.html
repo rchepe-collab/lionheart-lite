@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v715";</script>
+<body><script>window.LH_VERSAO="v716";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -20517,6 +20517,10 @@ function LH_curvaAtual(){
     return window.LIONHEART_TABELAS.aliquotas_transicao;
   }catch(e){ return null; }
 }
+/* ★ v716 · varredura, família 26,5: a referência plena estava escrita como 0.265 em 17 funções de cálculo. Agora
+   todas chamam LH_REF_PLENA(), que é LH_refPlena() com rede de segurança. Quando a resolução do Senado fixar a
+   alíquota (art. 349 — flag aberta 28% × 26,5%), muda-se em UM lugar: LIONHEART_TABELAS.cenarios_aliquota. */
+function LH_REF_PLENA(){ try{ var r=LH_refPlena(); if(typeof r==='number' && r>0) return r; }catch(_e){} return 0.265; }
 function LH_refPlena(){
   try{
     var C = window.LIONHEART_TABELAS && window.LIONHEART_TABELAS.cenarios_aliquota;
@@ -20805,7 +20809,7 @@ function calcularC04(){
   const anos=[2026,2027,2028,2029,2030,2031,2032,2033];
   const resultados=anos.map(ano=>{
     const t = getAliq(ano);
-    const pctTrans=t.total/0.265;
+    const pctTrans=t.total/LH_REF_PLENA();
     // LADO NOVO: CBS+IBS efetivo do ano, líquido de créditos sobre insumos
     const aliqBruta=cnae.aliqBase*(1-cnae.reducao)*pctTrans;
     const creditoInsums=aliqBruta*pctIns;
@@ -20943,8 +20947,8 @@ function calcularCoop(){
   const anos=[2026,2027,2028,2029,2030,2031,2032,2033];
   const resultados=anos.map(function(ano){
     var pctTrans;
-    try{ pctTrans=getAliq(ano).total/0.265; }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); }
-    var aliqBruta=0.265*(1-reducao)*pctTrans;
+    try{ pctTrans=getAliq(ano).total/LH_REF_PLENA(); }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); }
+    var aliqBruta=LH_REF_PLENA()*(1-reducao)*pctTrans;
     var aliqEfet=Math.max(0,aliqBruta*(1-pctCred));
     var impostoNovo=baseTrib*aliqEfet;
     return {ano:ano,aliqEfet:aliqEfet,impostoNovo:impostoNovo,varVs:impostoNovo-impostoAtual};
@@ -21016,8 +21020,8 @@ function calcularAgroIns(){
   var impostoAtual=fat*atual;
   var anos=[2026,2027,2028,2029,2030,2031,2032,2033];
   var resultados=anos.map(function(ano){
-    var pctTrans; try{ pctTrans=getAliq(ano).total/0.265; }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); }
-    var aliqEfet=Math.max(0,0.265*(1-red)*pctTrans*(1-cred));
+    var pctTrans; try{ pctTrans=getAliq(ano).total/LH_REF_PLENA(); }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); }
+    var aliqEfet=Math.max(0,LH_REF_PLENA()*(1-red)*pctTrans*(1-cred));
     var impostoNovo=fat*aliqEfet;
     return {ano:ano,aliqEfet:aliqEfet,impostoNovo:impostoNovo,varVs:impostoNovo-impostoAtual};
   });
@@ -21057,8 +21061,8 @@ function calcularImport(){
   var base=cif+iiValor;
   var anos=[2026,2027,2028,2029,2030,2031,2032,2033];
   var resultados=anos.map(function(ano){
-    var pctTrans; try{ pctTrans=getAliq(ano).total/0.265; }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); }
-    var bruto=base*0.265*pctTrans*(1-susp);
+    var pctTrans; try{ pctTrans=getAliq(ano).total/LH_REF_PLENA(); }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); }
+    var bruto=base*LH_REF_PLENA()*pctTrans*(1-susp);
     var liq=bruto*(1-cred);
     return {ano:ano,bruto:bruto,liq:liq};
   });
@@ -21229,8 +21233,8 @@ try{var _pg=document.getElementById('page-cp03');if(_pg&&window.lhMemoriaCalculo
 function _lhProjSetor(fat,red,cred,impostoAtual){
   var anos=[2026,2027,2028,2029,2030,2031,2032,2033];
   return anos.map(function(ano){
-    var pctTrans; try{ pctTrans=getAliq(ano).total/0.265; }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); }
-    var aliqEfet=Math.max(0,0.265*(1-red)*pctTrans*(1-cred));
+    var pctTrans; try{ pctTrans=getAliq(ano).total/LH_REF_PLENA(); }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); }
+    var aliqEfet=Math.max(0,LH_REF_PLENA()*(1-red)*pctTrans*(1-cred));
     var impostoNovo=fat*aliqEfet;
     return {ano:ano,aliqEfet:aliqEfet,impostoNovo:impostoNovo,varVs:impostoNovo-impostoAtual};
   });
@@ -21394,13 +21398,13 @@ function calcularPSaude(){
   var mod=document.getElementById('ps_mod').value;
   var rec=parseFloat(document.getElementById('ps_rec').value)||0;
   var sin=parseFloat(document.getElementById('ps_sin').value)||0;
-  var _aliqRaw=String((document.getElementById('ps_aliq')||{}).value||'').trim(); var _aliqBranco=(_aliqRaw===''); var aliq=_aliqBranco?((typeof LH_refPlena==='function')?LH_refPlena():0.265):((parseFloat(_aliqRaw.replace(',','.'))||0)/100); var _aliqNota=_aliqBranco?' · alíq. de referência '+(aliq*100).toFixed(1).replace('.',',')+'% (campo em branco)':''; /* ★ v681 · CAMPO EM BRANCO NÃO É ZERO — ps_aliq/ap_aliq/fin_aliq são lh-def: placeholder 26.5 e valor vazio. parseFloat('') = 0 → imposto novo R$ 0,00 e veredito 'GANHA' com a tela no estado padrão. O Mestre (F2-02/F2-03/F2-06) pinta a alíquota do regime na referência (aba TRANSIÇÃO C17). Em branco, usa LH_refPlena() e DIZ isso no KPI; a ferramenta não escreve no campo. Digitado, respeita o digitado (o regime financeiro tem alíquota própria, art. 181+, ainda não fixada). */
+  var _aliqRaw=String((document.getElementById('ps_aliq')||{}).value||'').trim(); var _aliqBranco=(_aliqRaw===''); var aliq=_aliqBranco?((typeof LH_refPlena==='function')?LH_refPlena():LH_REF_PLENA()):((parseFloat(_aliqRaw.replace(',','.'))||0)/100); var _aliqNota=_aliqBranco?' · alíq. de referência '+(aliq*100).toFixed(1).replace('.',',')+'% (campo em branco)':''; /* ★ v681 · CAMPO EM BRANCO NÃO É ZERO — ps_aliq/ap_aliq/fin_aliq são lh-def: placeholder 26.5 e valor vazio. parseFloat('') = 0 → imposto novo R$ 0,00 e veredito 'GANHA' com a tela no estado padrão. O Mestre (F2-02/F2-03/F2-06) pinta a alíquota do regime na referência (aba TRANSIÇÃO C17). Em branco, usa LH_refPlena() e DIZ isso no KPI; a ferramenta não escreve no campo. Digitado, respeita o digitado (o regime financeiro tem alíquota própria, art. 181+, ainda não fixada). */
   var cred=(parseFloat(document.getElementById('ps_cred').value)||0)/100;
   var atual=(parseFloat(document.getElementById('ps_atual').value)||0)/100;
   if(rec<=0){ mostrarToast('Informe a receita','error'); return; }
   var impostoAtual=rec*atual; var base=Math.max(rec-sin,0);
   var anos=[2026,2027,2028,2029,2030,2031,2032,2033];
-  var res=anos.map(function(ano){ var pctTrans; try{ pctTrans=getAliq(ano).total/0.265; }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); } var a=Math.max(0,aliq*pctTrans*(1-cred)); /* 🦁 v38: operadora SEM −60% (regime da margem, art. 234+) — padrão mestre */ var imp=base*a; if(mod==='autogestao')imp=0; return {ano:ano,impostoNovo:imp,aliqEfet:(rec>0?imp/rec:0),varVs:imp-impostoAtual}; });
+  var res=anos.map(function(ano){ var pctTrans; try{ pctTrans=getAliq(ano).total/LH_REF_PLENA(); }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); } var a=Math.max(0,aliq*pctTrans*(1-cred)); /* 🦁 v38: operadora SEM −60% (regime da margem, art. 234+) — padrão mestre */ var imp=base*a; if(mod==='autogestao')imp=0; return {ano:ano,impostoNovo:imp,aliqEfet:(rec>0?imp/rec:0),varVs:imp-impostoAtual}; });
   var r33=res[7]; var ganha=r33.impostoNovo<impostoAtual;
   document.getElementById('kpi-psaude').innerHTML='<div class="kpi-card kpi-destaque"><div class="kpi-label">Imposto novo 2033</div><div class="kpi-value">'+fmtR(r33.impostoNovo)+'</div><div class="kpi-sub">sobre a margem'+_aliqNota+'</div></div>'+
     '<div class="kpi-card '+(ganha?'kpi-ok':'kpi-alerta')+'"><div class="kpi-label">Carga atual</div><div class="kpi-value">'+fmtR(impostoAtual)+'</div><div class="kpi-sub">'+(ganha?'GANHA':'PERDE')+'</div></div>'+
@@ -21421,12 +21425,12 @@ function calcularApostas(){
   var modo=document.getElementById('ap_modo').value;
   var rec=parseFloat(document.getElementById('ap_rec').value)||0;
   var prem=parseFloat(document.getElementById('ap_prem').value)||0;
-  var _aliqRaw=String((document.getElementById('ap_aliq')||{}).value||'').trim(); var _aliqBranco=(_aliqRaw===''); var aliq=_aliqBranco?((typeof LH_refPlena==='function')?LH_refPlena():0.265):((parseFloat(_aliqRaw.replace(',','.'))||0)/100); var _aliqNota=_aliqBranco?' · alíq. de referência '+(aliq*100).toFixed(1).replace('.',',')+'% (campo em branco)':''; /* ★ v681 · CAMPO EM BRANCO NÃO É ZERO — ps_aliq/ap_aliq/fin_aliq são lh-def: placeholder 26.5 e valor vazio. parseFloat('') = 0 → imposto novo R$ 0,00 e veredito 'GANHA' com a tela no estado padrão. O Mestre (F2-02/F2-03/F2-06) pinta a alíquota do regime na referência (aba TRANSIÇÃO C17). Em branco, usa LH_refPlena() e DIZ isso no KPI; a ferramenta não escreve no campo. Digitado, respeita o digitado (o regime financeiro tem alíquota própria, art. 181+, ainda não fixada). */
+  var _aliqRaw=String((document.getElementById('ap_aliq')||{}).value||'').trim(); var _aliqBranco=(_aliqRaw===''); var aliq=_aliqBranco?((typeof LH_refPlena==='function')?LH_refPlena():LH_REF_PLENA()):((parseFloat(_aliqRaw.replace(',','.'))||0)/100); var _aliqNota=_aliqBranco?' · alíq. de referência '+(aliq*100).toFixed(1).replace('.',',')+'% (campo em branco)':''; /* ★ v681 · CAMPO EM BRANCO NÃO É ZERO — ps_aliq/ap_aliq/fin_aliq são lh-def: placeholder 26.5 e valor vazio. parseFloat('') = 0 → imposto novo R$ 0,00 e veredito 'GANHA' com a tela no estado padrão. O Mestre (F2-02/F2-03/F2-06) pinta a alíquota do regime na referência (aba TRANSIÇÃO C17). Em branco, usa LH_refPlena() e DIZ isso no KPI; a ferramenta não escreve no campo. Digitado, respeita o digitado (o regime financeiro tem alíquota própria, art. 181+, ainda não fixada). */
   var cred=(parseFloat(document.getElementById('ap_cred').value)||0)/100;
   if(rec<=0){ mostrarToast('Informe a arrecadação','error'); return; }
   var base=(modo==='saf')?rec:Math.max(rec-prem,0);
   var anos=[2026,2027,2028,2029,2030,2031,2032,2033];
-  var res=anos.map(function(ano){ var pctTrans; try{ pctTrans=getAliq(ano).total/0.265; }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); } var a=Math.max(0,aliq*pctTrans*(1-cred)); var imp=base*a; return {ano:ano,impostoNovo:imp}; });
+  var res=anos.map(function(ano){ var pctTrans; try{ pctTrans=getAliq(ano).total/LH_REF_PLENA(); }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); } var a=Math.max(0,aliq*pctTrans*(1-cred)); var imp=base*a; return {ano:ano,impostoNovo:imp}; });
   var r33=res[7]; var margem=(rec>0?base/rec:0);
   document.getElementById('kpi-apostas').innerHTML='<div class="kpi-card kpi-destaque"><div class="kpi-label">IBS/CBS sobre GGR 2033</div><div class="kpi-value">'+fmtR(r33.impostoNovo)+'</div><div class="kpi-sub">'+(modo==='saf'?'base = receita SAF':'base = GGR')+_aliqNota+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Base ('+(modo==='saf'?'receita':'GGR')+')</div><div class="kpi-value">'+fmtR(base)+'</div><div class="kpi-sub">'+fmtPct(margem*100)+' da arrecadação</div></div>'+
@@ -21465,7 +21469,7 @@ function calcularFinanceiro(){
   var interm=parseFloat(document.getElementById('fin_interm').value)||0;
   var funding=parseFloat(document.getElementById('fin_funding').value)||0; /* 🦁 v38 padrão mestre: R$ absoluto */
   var serv=parseFloat(document.getElementById('fin_serv').value)||0;
-  var _aliqRaw=String((document.getElementById('fin_aliq')||{}).value||'').trim(); var _aliqBranco=(_aliqRaw===''); var aliq=_aliqBranco?((typeof LH_refPlena==='function')?LH_refPlena():0.265):((parseFloat(_aliqRaw.replace(',','.'))||0)/100); var _aliqNota=_aliqBranco?' · alíq. de referência '+(aliq*100).toFixed(1).replace('.',',')+'% (campo em branco)':''; /* ★ v681 · CAMPO EM BRANCO NÃO É ZERO — ps_aliq/ap_aliq/fin_aliq são lh-def: placeholder 26.5 e valor vazio. parseFloat('') = 0 → imposto novo R$ 0,00 e veredito 'GANHA' com a tela no estado padrão. O Mestre (F2-02/F2-03/F2-06) pinta a alíquota do regime na referência (aba TRANSIÇÃO C17). Em branco, usa LH_refPlena() e DIZ isso no KPI; a ferramenta não escreve no campo. Digitado, respeita o digitado (o regime financeiro tem alíquota própria, art. 181+, ainda não fixada). */ var cred=(parseFloat((document.getElementById('fin_cred')||{value:0}).value)||0)/100;
+  var _aliqRaw=String((document.getElementById('fin_aliq')||{}).value||'').trim(); var _aliqBranco=(_aliqRaw===''); var aliq=_aliqBranco?((typeof LH_refPlena==='function')?LH_refPlena():LH_REF_PLENA()):((parseFloat(_aliqRaw.replace(',','.'))||0)/100); var _aliqNota=_aliqBranco?' · alíq. de referência '+(aliq*100).toFixed(1).replace('.',',')+'% (campo em branco)':''; /* ★ v681 · CAMPO EM BRANCO NÃO É ZERO — ps_aliq/ap_aliq/fin_aliq são lh-def: placeholder 26.5 e valor vazio. parseFloat('') = 0 → imposto novo R$ 0,00 e veredito 'GANHA' com a tela no estado padrão. O Mestre (F2-02/F2-03/F2-06) pinta a alíquota do regime na referência (aba TRANSIÇÃO C17). Em branco, usa LH_refPlena() e DIZ isso no KPI; a ferramenta não escreve no campo. Digitado, respeita o digitado (o regime financeiro tem alíquota própria, art. 181+, ainda não fixada). */ var cred=(parseFloat((document.getElementById('fin_cred')||{value:0}).value)||0)/100;
   var atual=(parseFloat(document.getElementById('fin_atual').value)||0)/100;
   if(interm<=0&&serv<=0){ mostrarToast('Informe as receitas','error'); return; }
   var receitaTotal=interm+serv;
@@ -21473,7 +21477,7 @@ function calcularFinanceiro(){
   var base=spread+serv;
   var impostoAtual=receitaTotal*atual;
   var anos=[2026,2027,2028,2029,2030,2031,2032,2033];
-  var res=anos.map(function(ano){ var pctTrans; try{ pctTrans=getAliq(ano).total/0.265; }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); } var a=Math.max(0,aliq*pctTrans*(1-cred)); /* 🦁 v38 crédito padrão mestre */ var imp=base*a; return {ano:ano,impostoNovo:imp,aliqEfet:(receitaTotal>0?imp/receitaTotal:0),varVs:imp-impostoAtual}; });
+  var res=anos.map(function(ano){ var pctTrans; try{ pctTrans=getAliq(ano).total/LH_REF_PLENA(); }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); } var a=Math.max(0,aliq*pctTrans*(1-cred)); /* 🦁 v38 crédito padrão mestre */ var imp=base*a; return {ano:ano,impostoNovo:imp,aliqEfet:(receitaTotal>0?imp/receitaTotal:0),varVs:imp-impostoAtual}; });
   var r33=res[7]; var ganha=r33.impostoNovo<impostoAtual;
   document.getElementById('kpi-financeiro').innerHTML='<div class="kpi-card kpi-destaque"><div class="kpi-label">Imposto novo 2033</div><div class="kpi-value">'+fmtR(r33.impostoNovo)+'</div><div class="kpi-sub">sobre spread + serviços'+_aliqNota+'</div></div>'+
     '<div class="kpi-card '+(ganha?'kpi-ok':'kpi-alerta')+'"><div class="kpi-label">Carga atual</div><div class="kpi-value">'+fmtR(impostoAtual)+'</div><div class="kpi-sub">'+(ganha?'GANHA':'PERDE')+'</div></div>'+
@@ -21511,7 +21515,7 @@ function calcularCombustivel(){
     var _anos=[2026,2027,2028,2029,2030,2031,2032,2033];
     var _rows=_anos.map(function(a){
       var t; try{ t=getAliq(a); }catch(e){ t={}; }
-      var pct=(t.total||0)/0.265;
+      var pct=(t.total||0)/LH_REF_PLENA();
       var pcEst=(typeof t.pcVelhoEstadual!=='undefined')?t.pcVelhoEstadual:(a>=2033?0:1);
       var pcPC=(typeof t.pcPisCofins!=='undefined')?t.pcPisCofins:(a>=2027?0:1);
       var nv=totalNovo*pct;                         /* ad rem entrando na transicao */
@@ -21564,7 +21568,7 @@ function calcularClassificador(){
   var redEq=1-retencao;
   var impostoAtual=fat*atual;
   var res=_lhProjSetor(fat,redEq,cred,impostoAtual); var r33=res[7];
-  var brutaMix=0.265*(1-redEq); /* 🦁 bruta ponderada do mix, SEM crédito */
+  var brutaMix=LH_REF_PLENA()*(1-redEq); /* 🦁 bruta ponderada do mix, SEM crédito */
    var ganha=_lhKpisSetor('kpi-classif',r33,impostoAtual,'Mix de produtos','bruta ponderada '+fmtPct(brutaMix*100)+(cred>0?' · líquida de crédito '+fmtPct(r33.aliqEfet*100):''));
   try{
     var v=document.getElementById('viab-classif'); if(v&&window.lhNotaConsultiva) v.innerHTML=window.lhNotaConsultiva({confianca:{nivel:'M\u00e9dia',motivo:'Al\u00edquota efetiva ponderada pelo mix informado. A precis\u00e3o depende da classifica\u00e7\u00e3o correta de cada produto no balde certo (Anexos da LC 214/2025).'},premissas:[{label:'Faturamento',valor:fmtR(fat)},{label:'Mix 0% / 60% / 30% / padr\u00e3o',valor:pZ.toFixed(0)+'% / '+p60.toFixed(0)+'% / '+p30.toFixed(0)+'% / '+pP.toFixed(0)+'%'},{label:'Al\u00edquota efetiva 2033',valor:fmtPct(r33.aliqEfet*100)},{label:'Cr\u00e9dito',valor:fmtPct(cred*100)}],nota:'Cobre atividades sem regime pr\u00f3prio (varejo, supermercado, loja, padaria, com\u00e9rcio misto). Para setores de mec\u00e2nica diferente (cooperativa, plano de sa\u00fade, financeiro, apostas, combust\u00edvel, bares) use a calculadora dedicada.'});
@@ -23437,7 +23441,7 @@ function hevFatorAno(ano){
      la primeiro (v111, B19 agora derivada). */
   ano=parseInt(ano,10)||2033;
   if(typeof antFatorAno==='function') return antFatorAno(ano);
-  if(typeof getAliq==='function'){ var a=getAliq(ano); if(a&&typeof a.total==='number') return a.total/0.265; }
+  if(typeof getAliq==='function'){ var a=getAliq(ano); if(a&&typeof a.total==='number') return a.total/LH_REF_PLENA(); }
   return null;
 }
 function hevSoma(){
@@ -23466,7 +23470,7 @@ function antFatorAno(ano){
      Ano oferecido na tela precisa ter linha no modelo. */
   ano=parseInt(ano,10)||2033;
   if(typeof LH_fatorAno==='function'){ var f=LH_fatorAno(ano,false); if(typeof f==='number') return f; }
-  if(typeof getAliq==='function'){ var a=getAliq(ano); if(a&&typeof a.total==='number') return a.total/0.265; }
+  if(typeof getAliq==='function'){ var a=getAliq(ano); if(a&&typeof a.total==='number') return a.total/LH_REF_PLENA(); }
   return null;
 }
 /* ═══════════════════════════════════════════════════════════════
@@ -26925,7 +26929,7 @@ function calcularAntecip(){
   var red=parseFloat(G('ant_red','0.4'))||0, cred=V('ant_cred',0)/100;
   var regime=G('ant_regime','regular');
 
-  var aliqEfet = 0.265*(1-red)*(1-cred);
+  var aliqEfet = LH_REF_PLENA()*(1-red)*(1-cred);
   var fRec=antFatorAno(aRec), fEnt=antFatorAno(aEnt);
   var impRec = val*aliqEfet*fRec;
   var impEnt = val*aliqEfet*fEnt;
@@ -26971,8 +26975,8 @@ function calcularAntecip(){
   var anos=[2027,2028,2029,2030,2031,2032,2033], tb=document.getElementById('tabela-antecip');
   if(tb) tb.innerHTML=anos.map(function(a){
     var f=antFatorAno(a);
-    var v0=val*0.265*(1-cred)*f, v30=val*0.265*0.7*(1-cred)*f,
-        v40=val*0.265*0.6*(1-cred)*f, v60=val*0.265*0.4*(1-cred)*f;
+    var v0=val*LH_REF_PLENA()*(1-cred)*f, v30=val*LH_REF_PLENA()*0.7*(1-cred)*f,
+        v40=val*LH_REF_PLENA()*0.6*(1-cred)*f, v60=val*LH_REF_PLENA()*0.4*(1-cred)*f;
     var destaque=(a===aEnt)?' style="font-weight:700;background:rgba(201,162,39,.08)"':'';
     return '<tr'+destaque+'><td>'+a+'</td><td>'+f.toFixed(3).replace('.',',')+'</td><td>'+R(v0)+'</td><td>'+R(v30)+'</td><td>'+R(v40)+'</td><td>'+R(v60)+'</td></tr>';
   }).join('');
@@ -27013,7 +27017,7 @@ function calcularHotelEv(){
   var pHosp=V('hev_hosp',0)/100, pEv=V('hev_event',0)/100, pAB=V('hev_ab',0)/100, pOut=V('hev_outros',0)/100;
   var cred=V('hev_cred',0)/100, b2b=V('hev_b2b',0)/100;
   var ano=G('hev_ano','2033'), regime=G('hev_regime','regular');
-  var f=hevFatorAno(ano), base=0.265;
+  var f=hevFatorAno(ano), base=LH_REF_PLENA();
   var aplicaReducao = (regime!=='simples_dentro');
 
   /* cenário 1: não segrega → tudo na cheia */
@@ -27125,7 +27129,7 @@ function calcularPortos(){
   var tb=document.getElementById('tabela-portos'); if(tb) tb.innerHTML=linhas;
 
   var variacao=imp2033-impAtual;
-  var creditoB2B=fat*b2b*0.265*(1-0); /* crédito que o tomador passa a ter no pleno */
+  var creditoB2B=fat*b2b*LH_REF_PLENA()*(1-0); /* crédito que o tomador passa a ter no pleno */
 
   document.getElementById('kpi-portos').innerHTML=
     '<div class="kpi-card"><div class="kpi-label">Carga atual (5 tributos)</div><div class="kpi-value">'+pc(cargaAtual)+'</div></div>'+
@@ -27215,7 +27219,7 @@ function calcularObra(){
   var impAtual   = fat*cargaAtual;             /* B19 */
 
   /* novo — 2033 pleno */
-  var aliqBruta  = 0.265*(1-red);              /* B21 */
+  var aliqBruta  = LH_REF_PLENA()*(1-red);              /* B21 */
   var pctCred    = pctMat+pctOut;              /* B22 */
   if(pctCred>1) pctCred=1;
   var aliqEfet   = aliqBruta*(1-pctCred);      /* B23 */
@@ -27253,7 +27257,7 @@ function calcularObra(){
   var cen=[['Construção residencial',0.4,0.5],['Construção comercial',0,0.5],['Empreitada global',0,0.55],['Reforma',0,0.45],['HIS habitação social',0.6,0.5]];
   var tb=document.getElementById('tabela-obra');
   if(tb) tb.innerHTML=cen.map(function(c){
-    var ef=0.265*(1-c[1])*(1-c[2]);
+    var ef=LH_REF_PLENA()*(1-c[1])*(1-c[2]);
     return '<tr><td>'+c[0]+'</td><td>'+Math.round(c[1]*100)+'%</td><td>'+Math.round(c[2]*100)+'%</td><td>'+pc(ef)+'</td></tr>';
   }).join('');
 
@@ -51701,7 +51705,7 @@ function abrirDashCli(){
       });
     }
     // KPIs
-    var carga2033=fat*0.265*0.75, split=fat/12*0.7*0.265;
+    var carga2033=fat*LH_REF_PLENA()*0.75, split=fat/12*0.7*LH_REF_PLENA();
     var kpis=[['Faturamento/ano',fat,'#5CA8FF'],['Carga estimada 2033',carga2033,'#E8C55F'],['Split retido/mês',split,'#3ECFA5'],['Gráficos do cliente',ids.length,'#F2A65A']];
     var host=document.getElementById('dash-kpis'); if(host){
       host.innerHTML=kpis.map(function(k,i){return '<div style="background:rgba(255,255,255,.03);border:1px solid rgba(201,162,39,.18);border-radius:12px;padding:12px"><div style="font-size:.72rem;color:#8a93a0;font-weight:700">'+k[0].toUpperCase()+'</div><div id="dash-kpi-'+i+'" style="font-size:1.35rem;font-weight:800;color:'+k[2]+'">0</div></div>';}).join('');
