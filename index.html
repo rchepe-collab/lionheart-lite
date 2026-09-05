@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v714";</script>
+<body><script>window.LH_VERSAO="v715";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -15337,14 +15337,18 @@ function ctcCalc(){
  var reeq=document.getElementById('ctc_reeq').value;
  if(preco<=0){ if(typeof mostrarToast==='function')mostrarToast('Confirme o preço atual (condicionante 1)','error'); else alert('Confirme o preço atual do contrato.'); return; }
  var precoLiqDesc=preco*(1-desc);
- var F_ICMS={2026:1,2027:1,2028:1,2029:.9,2030:.8,2031:.7,2032:.6,2033:0};
- var F_IBSR={2026:0,2027:0,2028:0,2029:.1,2030:.2,2031:.3,2032:.4,2033:1};
+ var F_ICMS=LH_MAPA_ANOS('icms',{2026:1,2027:1,2028:1,2029:.9,2030:.8,2031:.7,2032:.6,2033:0});
+ var F_IBSR=LH_MAPA_ANOS('ibsr',{2026:0,2027:0,2028:0,2029:.1,2030:.2,2031:.3,2032:.4,2033:1});
  var pcFrac=(dentro>0)?Math.min(1, 0.0365/dentro):0; /* fração PIS/COFINS do "por dentro" informado (3,65 presumido) */
  var linhas='', precoIdx=precoLiqDesc, estagios=[];
  for(var ano=2026; ano<=2033; ano++){
    if(ano>2026 && infl>0) precoIdx=precoIdx*(1+infl);
    var velhoAno = dentro*( (1-pcFrac)*F_ICMS[ano] + pcFrac*(ano<=2026?1:0) );
-   var tAno = (ano===2026) ? (plena/100)*(1.0/26.5) : (plena/100)*((8.8+17.7*F_IBSR[ano])/26.5);
+   /* v715: o "8.8" já continha o IBS de 0,1% de 2027-28; somar F_IBSR derivado da tabela dobrava esse 0,1%.
+      Agora a fração do ano vem inteira da fonte única: total(ano) ÷ referência plena. */
+   var _tt = (typeof getAliq==='function') ? getAliq(ano) : null;
+   var tAno = (_tt && typeof _tt.total==='number') ? (plena/100)*(_tt.total/0.265)
+            : ((ano===2026) ? (plena/100)*(1.0/26.5) : (plena/100)*((8.8+17.7*F_IBSR[ano])/26.5));
    var baseIdx = precoIdx*(1-dentro);                         /* base líquida que o contrato entrega hoje, indexada */
    var precoReeq = (1-velhoAno)>0 ? baseIdx/(1-velhoAno) : 0; /* velhos remanescentes POR DENTRO */
    var icmsEmb = precoReeq*dentro*(1-pcFrac)*F_ICMS[ano];
@@ -19501,6 +19505,32 @@ const ALIQUOTAS_TRANSICAO = window.LIONHEART_TABELAS.aliquotas_transicao;
    cbs/ibs/total pela curva do trilho e PRESERVA os campos que só existem na
    tabela (pcVelhoEstadual, pcPisCofins, obs), usados nas telas de transição.
    No trilho A o resultado é idêntico ao de antes — provado ano a ano. */
+/* ★ v715 · VARREDURA DE LITERAIS — fatores da transição em UM lugar. Antes, a curva {2026..2033} estava copiada
+   em sete pontos do arquivo (F_ICMS/F_IBSR, _FI, FP_ICMSF ×2, TRANSF, novoPct/icmsFrac, SN_TRANS). Cada cópia era um
+   lugar para a lei mudar e a tela não. Agora todas derivam de getAliq(ano) — que lê LIONHEART_TABELAS (o espelho
+   do Mestre, aba TRANSIÇÃO CBS-IBS). O literal antigo fica só como rede de segurança se a tabela não carregar.
+   LH_MAPA_ANOS(campo, reserva) devolve {2026:...,2033:...} no mesmo formato das cópias que substitui:
+     'icms'  = fração do ICMS/ISS ainda cobrada (pcVelhoEstadual)
+     'pis'   = fração do PIS/COFINS ainda cobrada (pcPisCofins)
+     'ibsr'  = fração do IBS pleno já vigente (ibs / ibs_ref)
+     'total' = CBS+IBS do ano (fração)                               */
+function LH_MAPA_ANOS(campo, reserva){
+  var out = {}; var ok = false;
+  try {
+    var ref = (window.LIONHEART_TABELAS && window.LIONHEART_TABELAS.cenarios_aliquota && window.LIONHEART_TABELAS.cenarios_aliquota.trilhos &&
+               window.LIONHEART_TABELAS.cenarios_aliquota.trilhos[window.LIONHEART_TABELAS.cenarios_aliquota.ativo||'A']) || {};
+    var ibsRef = +ref.ibs_ref || 0.177;
+    for (var a = 2026; a <= 2033; a++) {
+      var t = getAliq(a); if (!t) continue;
+      var v = (campo==='icms') ? t.pcVelhoEstadual : (campo==='pis') ? t.pcPisCofins : (campo==='ibsr') ? (t.ibs/ibsRef) : t.total;
+      if (typeof v !== 'number' || isNaN(v)) continue;
+      out[a] = +v.toFixed(6); ok = true;
+    }
+  } catch(e){}
+  if (!ok) return reserva || {};
+  if (reserva) for (var k in reserva) if (out[k] === undefined) out[k] = reserva[k];
+  return out;
+}
 function getAliq(ano){
   var base = ALIQUOTAS_TRANSICAO[ano] || ALIQUOTAS_TRANSICAO[String(ano)]
           || ALIQUOTAS_TRANSICAO[2033] || ALIQUOTAS_TRANSICAO['2033'];
@@ -24189,10 +24219,11 @@ function calcularStockOptions(){
   /* IRPF progressivo anual */
   function irpf(base){
     if(base<=0) return 0;
-    var f=[[26963.20,0,0],[33919.80,0.075,2022.24],[45012.60,0.15,4566.23],
-           [55976.16,0.225,7942.17],[Infinity,0.275,10740.98]];
+    /* ★ v715 · varredura: tabela ANUAL de 2024 (isenção 26.963,20 · parcela 10.740,98) trocada pela de 2026 — Mestre 'APOIO Folha IRPF 2026', mesma régua de fn_irpf_anual. */
+var f=[[29145.60,0,0],[33919.80,0.075,2185.92],[45012.60,0.15,4729.41],
+           [55976.16,0.225,8105.10],[Infinity,0.275,10904.76]];
     for(var i=0;i<f.length;i++){ if(base<=f[i][0]) return Math.max(0,base*f[i][1]-f[i][2]); }
-    return Math.max(0, base*0.275-10740.98);
+    return Math.max(0, base*0.275-10904.76);
   }
 
   /* ── CENÁRIO MERCANTIL (Tema 1.226) ── */
@@ -24819,10 +24850,11 @@ function calcularAluguelPFPJ(){
   var baseAluguel=Math.max(0,bruto-desp);
   function irpfAnual(base){
     /* faixas anuais vigentes: 7,5% · 15% · 22,5% · 27,5% */
-    var f=[[26963.20,0,0],[33919.80,0.075,2022.24],[45012.60,0.15,4566.23],
-           [55976.16,0.225,7942.17],[Infinity,0.275,10740.98]];
+    /* ★ v715 · varredura: tabela ANUAL de 2024 (isenção 26.963,20 · parcela 10.740,98) trocada pela de 2026 — Mestre 'APOIO Folha IRPF 2026', mesma régua de fn_irpf_anual. */
+var f=[[29145.60,0,0],[33919.80,0.075,2185.92],[45012.60,0.15,4729.41],
+           [55976.16,0.225,8105.10],[Infinity,0.275,10904.76]];
     for(var i=0;i<f.length;i++){ if(base<=f[i][0]) return Math.max(0, base*f[i][1]-f[i][2]); }
-    return Math.max(0, base*0.275-10740.98);
+    return Math.max(0, base*0.275-10904.76);
   }
   /* o aluguel entra somado aos demais rendimentos: o imposto dele é o acréscimo */
   var irSem=irpfAnual(outros);
@@ -26054,16 +26086,19 @@ function calcularAgroSuper5(){
   /* curva de IBS+CBS por ano de aquisição.
      2026 é teste (1%); a CBS entra plena em 2027; o IBS cresce até 2033. */
   function novoPct(ano){
-    if(ano<=2026) return 1.0;                    /* fase de teste */
-    if(ano===2027||ano===2028) return 8.8;       /* CBS plena, IBS ainda simbólico */
+    /* v715: pela fonte única (getAliq → LIONHEART_TABELAS); a curva escrita à mano ficou só como reserva */
+    try{ var t=getAliq(ano); if(t && typeof t.total==='number') return t.total*100; }catch(_e){}
+    if(ano<=2026) return 1.0;
+    if(ano===2027||ano===2028) return 8.8;
     if(ano===2029) return ALIQ*0.10 + 8.8;
     if(ano===2030) return ALIQ*0.20 + 8.8;
     if(ano===2031) return ALIQ*0.30 + 8.8;
     if(ano===2032) return ALIQ*0.40 + 8.8;
-    return ALIQ;                                  /* 2033 em diante: regime pleno */
+    return ALIQ;
   }
   /* fração do ICMS ainda cobrada — e creditável pelo CIAP */
   function icmsFrac(ano){
+    try{ var _t=getAliq(ano); if(_t && typeof _t.pcVelhoEstadual==='number') return _t.pcVelhoEstadual; }catch(_e){}   /* v715: fonte única */
     if(ano<=2028) return 1;
     if(ano===2029) return 0.9;
     if(ano===2030) return 0.8;
@@ -54393,7 +54428,7 @@ function calcularIND08(){
   var variacao=precoHoje>0?(preco2033/precoHoje-1):0;
   /* v245: ano hibrido - velhos por dentro decaindo + novo por fora subindo (mesma metodologia da Formacao de Preco) */
   var anoT=+((document.getElementById('ind08_ano')||{}).value||2029);
-  var _FI={2026:1,2027:1,2028:1,2029:.9,2030:.8,2031:.7,2032:.6}[anoT]; if(_FI===undefined)_FI=1;
+  var _FI=LH_MAPA_ANOS('icms',{2026:1,2027:1,2028:1,2029:.9,2030:.8,2031:.7,2032:.6,2033:0})[anoT]; if(_FI===undefined)_FI=1;
   var _FP={2026:1}[anoT]||0;
   var _FIPI={2026:1}[anoT]||0; /* IPI ~zerado de 2027 em diante (excecao ZFM) */
   var _tA=(anoT===2026)?(ibs*(1.0/26.5)):(ibs*((8.8+17.7*({2029:.1,2030:.2,2031:.3,2032:.4}[anoT]||0))/26.5));
@@ -54769,7 +54804,7 @@ function fpCalc(){
  var plena=(_pl==="")?26.5:parseFloat(_pl); if(isNaN(plena)||plena<0)plena=26.5;  // 0 é VÁLIDO (cesta básica)
  if(!vb){alert("Preencha a venda bruta do item.");return;}
  var ano=+((document.getElementById("fp_ano")||{}).value||2027);
- var FP_ICMSF={2026:1,2027:1,2028:1,2029:.9,2030:.8,2031:.7,2032:.6,2033:0};
+ var FP_ICMSF=LH_MAPA_ANOS('icms',{2026:1,2027:1,2028:1,2029:.9,2030:.8,2031:.7,2032:.6,2033:0});
  var ehTeste=(ano===2026); /* v245: ano-teste - PIS/COFINS MANTIDOS, CBS 0,9+IBS 0,1 destacados e compensaveis (art. 348 LC 214) */
  var icmsAno=Math.round(icms*(FP_ICMSF[ano]!==undefined?FP_ICMSF[ano]:1)*100)/100;
  /* ★ v678 · CÓPIA DE CURVA REMOVIDA — a tela da Fecomércio tinha curva própria
@@ -54834,7 +54869,11 @@ window.SN_TRANS={
  2032:{c:1, i:.4, icms:.6, pis:0, tit:"2032 · IBS 40%", tx:"Último ano do sistema híbrido: IBS a 40% · ICMS/ISS a 6/10."},
  2033:{c:1, i:1, icms:0, pis:0, tit:"2033 · SISTEMA PLENO", tx:"IBS+CBS integrais (26,5% referência) · ICMS e ISS EXTINTOS."}
 };
-function SN_FAT(){return SN_TRANS[SN_ANO]||SN_TRANS[2027];}
+function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
+  /* v715: os fatores numéricos (c, i, icms, pis) vêm da fonte única; título e texto continuam da SN_TRANS */
+  try{ var t=getAliq(SN_ANO); if(t && typeof t.total==='number'){ var o={}; for(var k in f) o[k]=f[k];
+    o.c=t.cbs/0.088; o.i=t.ibs/0.177; if(typeof t.pcVelhoEstadual==='number') o.icms=t.pcVelhoEstadual; if(typeof t.pcPisCofins==='number') o.pis=t.pcPisCofins; return o; } }catch(_e){}
+  return f; }
 (function(){
  if(typeof snItem!=="function")return;
  var _snItem=snItem;
@@ -61529,7 +61568,7 @@ window.fpCalc=function(){
  var _snCen=(document.getElementById("fp_sn_cen")||{value:"dentro"}).value;
  var snDentro=(_reg==="sn" && _snCen==="dentro");
  var snHib=(_reg==="sn" && _snCen!=="dentro");
- var FP_ICMSF={2026:1,2027:1,2028:1,2029:.9,2030:.8,2031:.7,2032:.6,2033:0};
+ var FP_ICMSF=LH_MAPA_ANOS('icms',{2026:1,2027:1,2028:1,2029:.9,2030:.8,2031:.7,2032:.6,2033:0});
  var ehTeste=(ano===2026); /* v245: ano-teste - PIS/COFINS MANTIDOS, CBS 0,9+IBS 0,1 destacados e compensaveis (art. 348 LC 214) */
  var icmsAno=Math.round(icms*(FP_ICMSF[ano]!==undefined?FP_ICMSF[ano]:1)*100)/100;
  /* ★ v678 · CÓPIA DE CURVA REMOVIDA — a tela da Fecomércio tinha curva própria
@@ -62106,7 +62145,7 @@ window.fpCalc=function(){
   'IV' :{trib:'ISS', f:[[21.50,44.50],[25.00,40.00],[24.00,40.00],[23.00,40.00],[22.00,40.00],[25.00,0]]},
   'V'  :{trib:'ISS', f:[[17.15,14.00],[17.15,17.00],[18.15,19.00],[19.15,21.00],[17.15,23.50],[20.00,0]]}
  };
- var TRANSF={2026:0,2027:0,2028:0,2029:.10,2030:.20,2031:.30,2032:.40,2033:1};
+ var TRANSF={2026:0,2027:0,2028:0,2029:.10,2030:.20,2031:.30,2032:.40,2033:1};   /* v715: mantido LITERAL de propósito — é a fatia do DAS que migra para o IBS; se o 0,1% de 2027-28 entra no DAS não está carimbado no Mestre. Vai à lista. */
  function faixaDe(rbt12){
    for(var i=0;i<FAIXAS.length;i++){ if(rbt12<=FAIXAS[i]) return i+1; }
    return 6;
