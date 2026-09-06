@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v730";</script>
+<body><script>window.LH_VERSAO="v731";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3016,7 +3016,8 @@ window.LH_PONTE = (function(){
            arredondada a 4 casas perdia R$ 7 em 10 milhões */
         return { segregando:Number(p.imposto), sem_segregar:Number(p.imposto_cheio) };
       },
-      local: function(){ return { sem_segregar:LH_PONTE._kpiNum('kpi-hotelev',0), segregando:LH_PONTE._kpiNum('kpi-hotelev',1) }; }
+      local: function(){ return { sem_segregar:LH_PONTE._kpiNum('kpi-hotelev',0), segregando:LH_PONTE._kpiNum('kpi-hotelev',1) }; },
+      render:function(r, ent, motivo){ hotelevRender(r, ent, motivo); }
     },
 
     /* ═══ v686 · ONDA 5 · C02 Reprecificação de Contratos ═══
@@ -3734,7 +3735,8 @@ window.LH_PONTE = (function(){
       esperado:function(r){ if(!r||!r.projecao) return null; var m={}; r.projecao.forEach(function(p){ m[String(p.ano)]=Number(p.imposto); }); return { atual:Number(r.imposto_atual), a2029:m['2029'], a2033:m['2033'] }; },
       /* kpi-c04 (R$): [0] imposto atual · [1] imposto 2029 · [2] variação · a linha de 2033 vem da tabela */
       local:function(){ var R=LH_PONTE._rsNum; var t=((document.getElementById('tabela-c04')||{}).textContent||'').replace(/\s+/g,' ');
-        var m=t.match(/2033[^R]{0,80}R\$\s*([\d.]+,\d{2})/); return { atual:R('kpi-c04',0), a2029:R('kpi-c04',1), a2033:(m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null) }; } },
+        var m=t.match(/2033[^R]{0,80}R\$\s*([\d.]+,\d{2})/); return { atual:R('kpi-c04',0), a2029:R('kpi-c04',1), a2033:(m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null) }; },
+      render:function(r, ent, motivo){ c04Render(r, ent, motivo); } },
     /* ═══ v711 · Offshore — reconciliada pelo Mestre A08 v114 (bloco 5: projeção por estrutura) ═══
        A divergência era só a linha "PF direta": a tela aplicava come-cotas; Mestre e servidor: 15% no resgate.
        Compara-se a melhor estrutura e a distância melhor−pior (o conjunto das opções). */
@@ -20888,7 +20890,8 @@ const CONFIG_CNAE = {
   financeiro:{aliqBase:0.265,reducao:0.00,label:'Serviços Financeiros'},
   cultura:{aliqBase:0.265,reducao:0.60,label:'Cultura, Esporte e Lazer'},
   farmacia:{aliqBase:0.265,reducao:0.60,label:'Produtos Farmacêuticos'}};
-function calcularC04(){
+/* ═══ v731 · CUTOVER — calcularC04: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function c04LerEntradas(){
   const cnaeKey=document.getElementById('c04_cnae').value;
   const regime=document.getElementById('c04_regime').value;
   const fat=parseFloat(document.getElementById('c04_faturamento').value)||0;
@@ -20919,12 +20922,18 @@ function calcularC04(){
   // São as fatias das compras por origem do fornecedor — têm que totalizar no máximo 100%.
   if(mixLP + mixSN + mixExt > 100.5){
     mostrarToast('A soma do Mix de Compras passa de 100%. Ajuste LP/LR + SN + Externo para somar no máximo 100%.','error');
-    return;
+    return null;
   }
-  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return; }
+  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return null; }
   const cnae=CONFIG_CNAE[cnaeKey];
   const cargaAtual=CARGA_ATUAL_C04[regime];
   const impostoAtual=fat*cargaAtual.base;
+
+  return { setor:cnaeKey, regime:regime, faturamento:fat, mix_lp:mixLP, mix_sn:mixSN, mix_ext:mixExt, pct_insumos_legado:(pctIns*100), _pctIns:pctIns, _mixLP:mixLP, _mixSN:mixSN, _mixExt:mixExt, _cnaeKey:cnaeKey };
+}
+function c04CalcularLocal(ent){
+  var cnaeKey=ent._cnaeKey, regime=ent.regime, fat=ent.faturamento, mixLP=ent._mixLP, mixSN=ent._mixSN, mixExt=ent._mixExt, pctIns=ent._pctIns; const cnae=CONFIG_CNAE[cnaeKey]; const cargaAtual_=CARGA_ATUAL_C04[regime]; var cargaAtual=cargaAtual_; const impostoAtual=fat*cargaAtual.base;
+  
   const anos=[2026,2027,2028,2029,2030,2031,2032,2033];
   const resultados=anos.map(ano=>{
     const t = getAliq(ano);
@@ -20952,6 +20961,16 @@ function calcularC04(){
     const resultado=varVsAtual<0?'Ganha':varVsAtual===0?'Neutro':'Perde';
     return {ano,aliqBruta,creditoInsums,aliqEfetiva,aliqNovaEfetiva,aliqVelhaVigente,impostoNovo,impostoNovoSozinho,impostoVelhoVigente,varVsAtual,resultado,obs:t.obs||''};
   });
+
+  return { ok:true, imposto_atual:impostoAtual, carga_atual_pct:cargaAtual.base*100, regime:regime, projecao:resultados.map(function(x){ return { ano:x.ano, imposto:x.impostoNovo, novo_bruto_pct:x.aliqBruta*100, credito_pct:x.creditoInsums*100, novo_liquido_pct:x.aliqNovaEfetiva*100, velho_estadual_pct:x.aliqVelhaVigente*100, velho_federal_pct:0, carga_total_pct:x.aliqEfetiva*100, variacao_vs_hoje:x.varVsAtual }; }) };
+}
+function c04Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-c04'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var cnaeKey=ent._cnaeKey, regime=ent.regime, fat=ent.faturamento, mixLP=ent._mixLP, mixSN=ent._mixSN, mixExt=ent._mixExt, pctIns=ent._pctIns; const cnae=CONFIG_CNAE[cnaeKey];
+  
+  var pctIns=ent._pctIns, mixLP=ent._mixLP, mixSN=ent._mixSN, mixExt=ent._mixExt; const cargaAtual={ base:(+r.carga_atual_pct)/100, label:(CARGA_ATUAL_C04[regime]||{}).label }; const impostoAtual=+r.imposto_atual; const anos=(r.projecao||[]).map(function(p){ return +p.ano; }); const resultados=(r.projecao||[]).map(function(p){ var t={}; try{ t=getAliq(+p.ano)||{}; }catch(_e){} var aliqBruta=(+p.novo_bruto_pct)/100, creditoInsums=(+p.credito_pct)/100, aliqNovaEfetiva=(+p.novo_liquido_pct)/100, aliqVelhaVigente=((+p.velho_estadual_pct)+(+p.velho_federal_pct))/100, aliqEfetiva=(+p.carga_total_pct)/100, impostoNovo=+p.imposto; var varVsAtual=(p.variacao_vs_hoje!=null?+p.variacao_vs_hoje:impostoNovo-impostoAtual); return { ano:+p.ano, aliqBruta:aliqBruta, creditoInsums:creditoInsums, aliqEfetiva:aliqEfetiva, aliqNovaEfetiva:aliqNovaEfetiva, aliqVelhaVigente:aliqVelhaVigente, impostoNovo:impostoNovo, impostoNovoSozinho:fat*aliqNovaEfetiva, impostoVelhoVigente:fat*aliqVelhaVigente, varVsAtual:varVsAtual, resultado:(varVsAtual<0?'Ganha':varVsAtual===0?'Neutro':'Perde'), obs:t.obs||'' }; });
   // v30.8 — Salvar mix usado no _motorState pro Motor 360°
   if(window._motorState) {
     window._motorState.c04 = window._motorState.c04 || {};
@@ -21037,6 +21056,12 @@ function calcularC04(){
   mostrarToast('✓ Alíquota efetiva calculada','success');
 
   try{ if(window.LH_SAUDE_registrar){ window.LH_SAUDE_registrar('cargaCnae', { aliquota:(typeof aliqEfetiva==='number'?aliqEfetiva:null), nivel:'info', rotulo:(typeof aliqEfetiva==='number'? aliqEfetiva.toFixed(1).replace('.',',')+'%':'—') }); } }catch(e){}
+
+}
+function calcularC04(){
+  var ent=c04LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularC04')){ LH_PONTE.executar('calcularC04', ent); return; }
+  c04Render(c04CalcularLocal(ent), ent, null);
 }
 
 
@@ -27564,18 +27589,25 @@ function calcularAntecip(){
   }catch(_e){}
   var res=document.getElementById('res-antecip'); if(res) res.style.display='block';
 }
-function calcularHotelEv(){
+/* ═══ v731 · CUTOVER — calcularHotelEv: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function hotelevLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var fat=V('hev_fat',0);
-  if(fat<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o faturamento anual total','error'); return; }
-  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(fat,1000,'Faturamento anual')) return;
+  if(fat<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o faturamento anual total','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(fat,1000,'Faturamento anual')) return null;
   var soma=hevSoma();
-  if(Math.abs(soma-100)>0.1){ if(typeof mostrarToast==='function') mostrarToast('Os percentuais precisam somar 100% (hoje: '+soma.toFixed(1)+'%)','error'); return; }
+  if(Math.abs(soma-100)>0.1){ if(typeof mostrarToast==='function') mostrarToast('Os percentuais precisam somar 100% (hoje: '+soma.toFixed(1)+'%)','error'); return null; }
 
   var pHosp=V('hev_hosp',0)/100, pEv=V('hev_event',0)/100, pAB=V('hev_ab',0)/100, pOut=V('hev_outros',0)/100;
   var cred=V('hev_cred',0)/100, b2b=V('hev_b2b',0)/100;
   var ano=G('hev_ano','2033'), regime=G('hev_regime','regular');
+
+  return { faturamento:fat, mix:(regime==='simples_dentro'?[{balde:'cheia',pct:pHosp*100},{balde:'cheia',pct:pEv*100},{balde:'cheia',pct:pAB*100},{balde:'cheia',pct:pOut*100}]:[{balde:'red40',pct:pHosp*100},{balde:'red60',pct:pEv*100},{balde:'red40',pct:pAB*100},{balde:'cheia',pct:pOut*100}]), carga_atual_pct:0, credito_pct:cred*100, _ano:ano, _regime:regime, _pHosp:pHosp, _pEv:pEv, _pAB:pAB, _pOut:pOut, _cred:cred, _b2b:b2b };
+}
+function hotelevCalcularLocal(ent){
+  var fat=ent.faturamento, ano=ent._ano, regime=ent._regime, pHosp=ent._pHosp, pEv=ent._pEv, pAB=ent._pAB, pOut=ent._pOut, cred=ent._cred, b2b=ent._b2b;
+  
   var f=hevFatorAno(ano), base=LH_REF_PLENA();
   var aplicaReducao = (regime!=='simples_dentro');
 
@@ -27592,6 +27624,16 @@ function calcularHotelEv(){
   /* crédito ao cliente PJ: só eventos */
   var credCliente = fat*pEv*base*rEv*f*b2b;
 
+
+  return { ok:true, carga_atual:0, projecao:[{ ano:+ano, imposto:cen2, imposto_cheio:cen1, por_balde:[{i:0,imposto:iHosp},{i:1,imposto:iEv},{i:2,imposto:iAB},{i:3,imposto:iOut}] }], imposto_2033:(String(ano)==='2033'?cen2:undefined) };
+}
+function hotelevRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-hotelev'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento, ano=ent._ano, regime=ent._regime, pHosp=ent._pHosp, pEv=ent._pEv, pAB=ent._pAB, pOut=ent._pOut, cred=ent._cred, b2b=ent._b2b;
+  
+  var ano=ent._ano, regime=ent._regime, pHosp=ent._pHosp, pEv=ent._pEv, pAB=ent._pAB, pOut=ent._pOut, cred=ent._cred, b2b=ent._b2b; var f=hevFatorAno(ano), aplicaReducao=(regime!=='simples_dentro'); var p=null; (r.projecao||[]).forEach(function(x){ if(String(x.ano)===String(ano)) p=x; }); if(!p){ p=(r.projecao||[])[0]||{}; } var cen1=+p.imposto_cheio, cen2=+p.imposto; var pb=p.por_balde||[]; var iHosp=+(pb[0]||{}).imposto, iEv=+(pb[1]||{}).imposto, iAB=+(pb[2]||{}).imposto, iOut=+(pb[3]||{}).imposto; var economia=cen1-cen2, credCliente=iEv*b2b;
   var pc=function(x){ return (x*100).toFixed(2).replace('.',',')+'%'; };
   var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
 
@@ -27653,6 +27695,12 @@ function calcularHotelEv(){
     }
   }catch(_e){}
   var res=document.getElementById('res-hotelev'); if(res) res.style.display='block';
+
+}
+function calcularHotelEv(){
+  var ent=hotelevLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularHotelEv')){ LH_PONTE.executar('calcularHotelEv', ent); return; }
+  hotelevRender(hotelevCalcularLocal(ent), ent, null);
 }
 function calcularPortos(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
