@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v733";</script>
+<body><script>window.LH_VERSAO="v734";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3201,7 +3201,8 @@ window.LH_PONTE = (function(){
         return { st_mensal:f('icmsst-valor'), regime:(((G.el('icmsst-regime')||{}).value)==='presumido'?'lp':'lr'),
                  meses:parseInt((G.el('icmsst-meses')||{}).value,10)||0, comp_inicial:((G.el('icmsst-compini')||{}).value)||'2021-06' }; },
       esperado:function(r){ return r?{ st_total:Number(r.st_suportado_periodo), nominal:Number(r.nominal), corrigido:Number(r.corrigido) }:null; },
-      local:function(){ return { st_total:LH_PONTE._rsNum('icmsst1125-result',0), nominal:LH_PONTE._rsNum('icmsst1125-result',1), corrigido:LH_PONTE._rsNum('icmsst1125-result',2) }; } },
+      local:function(){ return { st_total:LH_PONTE._rsNum('icmsst1125-result',0), nominal:LH_PONTE._rsNum('icmsst1125-result',1), corrigido:LH_PONTE._rsNum('icmsst1125-result',2) }; },
+      render:function(r, ent, motivo){ icmsstRender(r, ent, motivo); } },
     calcularRET: { calc:'ret',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { irrf_mensal:f('ret-irrf'), csrf_mensal:f('ret-csrf'), inss_mensal:f('ret-inss'),
@@ -3247,7 +3248,8 @@ window.LH_PONTE = (function(){
                  fornecedor:((G.el('cp-fornecedor')||{}).value)||'pf', aplica_lc224:aplica,
                  meses:parseInt((G.el('cp-meses')||{}).value,10)||0, comp_inicial:((G.el('cp-compini')||{}).value)||'2021-06' }; },
       esperado:function(r){ return r?{ mensal:Number(r.credito_mensal), nominal:Number(r.nominal), corrigido:Number(r.corrigido) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { mensal:R('credpresumido-result',0), nominal:R('credpresumido-result',1), corrigido:R('credpresumido-result',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { mensal:R('credpresumido-result',0), nominal:R('credpresumido-result',1), corrigido:R('credpresumido-result',2) }; },
+      render:function(r, ent, motivo){ credpresRender(r, ent, motivo); } },
     calcularDUP: { calc:'dup',
       /* o extrato colado é texto livre; quem faz o parser é a própria tela. A ponte manda a
          LISTA JÁ INTERPRETADA (window.LH_DUP_PAGS) — reimplementar o parser aqui seria comparar
@@ -3256,7 +3258,8 @@ window.LH_PONTE = (function(){
         var p=(window.LH_DUP_PAGS||[]).map(function(x){ return { codigo:x.cod, competencia:x.comp, valor:x.val }; });
         return { pagamentos:p, honorario_pct:Math.min(60,f('dup-honor')) }; },
       esperado:function(r){ return (r&&r.nominal!=null)?{ nominal:Math.round(r.nominal), corrigido:Math.round(r.corrigido), honorario:Math.round(r.honorario) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { nominal:R('dup-result',0), corrigido:R('dup-result',1), honorario:R('dup-result',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { nominal:R('dup-result',0), corrigido:R('dup-result',1), honorario:R('dup-result',2) }; },
+      render:function(r, ent, motivo){ dupRender(r, ent, motivo); } },
 
     /* ═══ v691 · C5 · as cinco cr0x (geração nova, bloco kpi-*) ═══
        cr04 NÃO entra: divergência de modelo achada em 03/09 e ainda não reconciliada —
@@ -3296,7 +3299,8 @@ window.LH_PONTE = (function(){
                  ate_31_05_2023:((G.el('cr06_data')||{}).value)||'sim', oneroso:((G.el('cr06_oneroso')||{}).value)||'sim',
                  prazo_ato:parseInt((G.el('cr06_prazo')||{}).value,10)||2032 }; },
       esperado:function(r){ return r?{ perda:Number(r.perda_rampa_2029_2033), compensacao:Number(r.compensacao_potencial), beneficio:Number(r.beneficio_anual) }:null; },
-      local:function(){ return { perda:LH_PONTE._kpiNum('kpi-cr06',0), compensacao:LH_PONTE._kpiNum('kpi-cr06',1), beneficio:LH_PONTE._kpiNum('kpi-cr06',2) }; } },
+      local:function(){ return { perda:LH_PONTE._kpiNum('kpi-cr06',0), compensacao:LH_PONTE._kpiNum('kpi-cr06',1), beneficio:LH_PONTE._kpiNum('kpi-cr06',2) }; },
+      render:function(r, ent, motivo){ cr06Render(r, ent, motivo); } },
 
     /* ═══ v692 · CR04 reconciliada (Mestre v113 · CORE · banco = 46.508,00) ═══ */
     calcularCR04: { calc:'cr04',
@@ -21422,23 +21426,46 @@ function calcularDrawback(){
   document.getElementById('recs-drawback').innerHTML+='<div class="rec-card rec-atencao"><h5>⚠ As três modalidades — escolher errado custa caro</h5><p>Suspensão (compra sem tributo, comprova depois), Isenção/reposição (já exportou, repõe estoque sem tributo) e Restituição (raro). O ato concessório da Secex tem prazo e metas de exportação: descumpriu, paga tudo com juros — o controle do ato é tão importante quanto o benefício.</p></div>'+'<div class="rec-card rec-info"><h5>💡 Como o consultor usa</h5><p>(1) Levantar 12 meses de importações × exportações (SPED + DUs), (2) simular a economia aqui, (3) habilitar no drawback integrado, (4) implantar o controle de vinculação insumo→exportação. Honorário natural: % da economia do primeiro ciclo.</p></div>';
   mostrarToast('✓ Drawback calculado');
 try{var _pg=document.getElementById('page-drawback');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-drawback');if(!_mv){_mv=document.createElement('div');_mv.id='mem-drawback';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'Drawback-suspensão: economia vs fôlego',aliquotas:[{label:'CIF insumos',valor:''},{label:'Total suspenso',valor:''},{label:'% exportado',valor:''},{label:'Economia definitiva',valor:''}],porque:'Suspensão = CIF × (II+IPI+PIS/COFINS+ICMS×rampa). Economia definitiva = suspensão × % exportado; o restante é fôlego de caixa (recolhe ao vender no mercado interno). A rampa do ICMS decai de 2028 a 2033.',baseLegal:[{lei:'DL 37/66 art. 78; Lei 11.945/09; LC 214/2025 art. 8º'}]});}}catch(e){}}
-function calcularCR06(){
+/* ═══ v734 · CUTOVER — calcularCR06: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function cr06LerEntradas(){
   var _reg=(document.getElementById('cr06_regime')||{value:'lr'}).value;
-  if(_reg==='sn'){ var _bx=document.getElementById('recs-cr06')||document.getElementById('kpi-cr06'); if(_bx)_bx.innerHTML='<div style="background:rgba(232,185,58,.10);border:1px solid rgba(232,185,58,.35);border-radius:10px;padding:14px 18px;margin-top:10px;color:#e8b93a;line-height:1.6"><b>\u26a0 O Fundo de Compensa\u00e7\u00e3o n\u00e3o se aplica ao Simples Nacional.</b> No SN o ICMS est\u00e1 dentro do DAS \u2014 n\u00e3o h\u00e1 benef\u00edcio oneroso de ICMS a compensar.</div>'; var _t=document.getElementById('tabela-cr06'); if(_t)_t.innerHTML=''; var _k=document.getElementById('kpi-cr06'); if(_k&&_bx!==_k)_k.innerHTML=''; return; }
+  if(_reg==='sn'){ var _bx=document.getElementById('recs-cr06')||document.getElementById('kpi-cr06'); if(_bx)_bx.innerHTML='<div style="background:rgba(232,185,58,.10);border:1px solid rgba(232,185,58,.35);border-radius:10px;padding:14px 18px;margin-top:10px;color:#e8b93a;line-height:1.6"><b>\u26a0 O Fundo de Compensa\u00e7\u00e3o n\u00e3o se aplica ao Simples Nacional.</b> No SN o ICMS est\u00e1 dentro do DAS \u2014 n\u00e3o h\u00e1 benef\u00edcio oneroso de ICMS a compensar.</div>'; var _t=document.getElementById('tabela-cr06'); if(_t)_t.innerHTML=''; var _k=document.getElementById('kpi-cr06'); if(_k&&_bx!==_k)_k.innerHTML=''; return null; }
   var ben=parseFloat(document.getElementById('cr06_ben').value)||0;
-  if(ben<=0){ mostrarToast('Informe o benefício anual','error'); return; }
+  if(ben<=0){ mostrarToast('Informe o benefício anual','error'); return null; }
   var data=document.getElementById('cr06_data').value, oneroso=document.getElementById('cr06_oneroso').value;
   var prazo=parseInt(document.getElementById('cr06_prazo').value)||2032;
+
+  return { beneficio_anual:ben, regime:_reg, ate_31_05_2023:data, oneroso:oneroso, prazo_ato:prazo, _data:data, _oneroso:oneroso };
+}
+function cr06CalcularLocal(ent){
+  var ben=ent.beneficio_anual, _reg=ent.regime, data=ent._data, oneroso=ent._oneroso, prazo=ent.prazo_ato;
+  
   var anos=[2026,2027,2028,2029,2030,2031,2032,2033], vals=anos.map(function(a){ return a<=2028?ben:(a>=2033?0:ben*(1-(a-2028)*0.1)); });
   var perda=ben*5-(vals[3]+vals[4]+vals[5]+vals[6]+vals[7]);
   var eleg=(data==='sim'&&oneroso==='sim');
   var comp=eleg?perda*Math.min(1,Math.max(0,(prazo-2028))/5):0;
+
+  return { ok:true, beneficio_anual:ben, elegivel:eleg, curva_beneficio:anos.map(function(a,i){ return { ano:a, beneficio:vals[i] }; }), perda_rampa_2029_2033:perda, proporcao_prazo:Math.min(1,Math.max(0,(prazo-2028))/5), compensacao_potencial:comp };
+}
+function cr06Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-cr06'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var ben=ent.beneficio_anual, _reg=ent.regime, data=ent._data, oneroso=ent._oneroso, prazo=ent.prazo_ato;
+  
+  var ben=ent.beneficio_anual, data=ent._data, oneroso=ent._oneroso, prazo=ent.prazo_ato; var anos=(r.curva_beneficio||[]).map(function(c){ return +c.ano; }), vals=(r.curva_beneficio||[]).map(function(c){ return +c.beneficio; }); var perda=+r.perda_rampa_2029_2033, eleg=!!r.elegivel, comp=+r.compensacao_potencial;
   lhKpi('kpi-cr06',[{l:'PERDA NA RAMPA 2029-33',v:fmtR(perda),cls:'kpi-negativo',s:'vs manter o benefício cheio'},{l:'ELEGÍVEL AO FUNDO?',v:eleg?'🟢 SIM':'🔴 NÃO',s:eleg?'oneroso + até 31/05/2023':'não atende os requisitos'},{l:'COMPENSAÇÃO POTENCIAL',v:fmtR(comp),cls:comp>0?'kpi-positivo':'',s:'proporcional ao prazo do ato'},{l:'BENEFÍCIO HOJE',v:fmtR(ben)+'/ano',s:'ICMS'}]);
   try{ if(chartCR06) chartCR06.destroy(); chartCR06=new Chart(document.getElementById('chart-cr06').getContext('2d'),{type:'bar',data:{labels:anos.map(String),datasets:[{label:'Benefício mantido (R$/ano)',data:vals.map(function(v){return +v.toFixed(0);}),backgroundColor:anos.map(function(a){return a<=2028?'rgba(22,196,124,0.7)':(a>=2033?'rgba(239,68,68,0.8)':'rgba(201,162,39,0.7)');})}]},options:{responsive:true,maintainAspectRatio:false}}); }catch(e){}
   document.getElementById('recs-cr06').innerHTML=(eleg?'<div class="rec-card rec-oport"><h5>💰 A janela do Fundo</h5><p>Benefício oneroso concedido até 31/05/2023: habilitar no Fundo de Compensação e requerer a reposição da perda. O trabalho do advogado: reunir o ato concessivo, comprovar as contrapartidas (investimento/empregos) e protocolar na janela regulamentar.</p></div>':'<div class="rec-card rec-critica"><h5>⚠ Sem direito ao Fundo — plano B</h5><p>Benefício não oneroso ou pós-corte: a perda é seca. A conversa vira mitigação: reprecificar contratos (C02), maximizar créditos (P5) e rever a localização da operação antes de 2029.</p></div>');
   document.getElementById('recs-cr06').innerHTML+='<div class="rec-card rec-info"><h5>💡 O dossiê que garante a fila</h5><p>O que o Fundo vai exigir: ato concessivo original (decreto/TARE), prova das contrapartidas cumpridas (investimento, empregos), e a memória da fruição ano a ano. Montar esse dossiê AGORA — antes da regulamentação abrir a janela — é o que separa quem recebe de quem entra na fila judicial.</p></div>';
   mostrarToast('✓ CR06 calculado');
-try{var _pg=document.getElementById('page-cr06');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-cr06');if(!_mv){_mv=document.createElement('div');_mv.id='mem-cr06';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'Fundo de Compensação de Benefícios de ICMS',aliquotas:[{label:'Benefício anual',valor:''},{label:'Perda projetada',valor:''},{label:'Compensação potencial',valor:''}],porque:'Perda = benefício×5 − recebido na rampa 2029-2033. Compensação = perda × proporção do prazo remanescente, se o benefício for oneroso e formalizado.',baseLegal:[{lei:'EC 132/2023 art. 12; LC 214/2025'}]});}}catch(e){}}
+try{var _pg=document.getElementById('page-cr06');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-cr06');if(!_mv){_mv=document.createElement('div');_mv.id='mem-cr06';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'Fundo de Compensação de Benefícios de ICMS',aliquotas:[{label:'Benefício anual',valor:''},{label:'Perda projetada',valor:''},{label:'Compensação potencial',valor:''}],porque:'Perda = benefício×5 − recebido na rampa 2029-2033. Compensação = perda × proporção do prazo remanescente, se o benefício for oneroso e formalizado.',baseLegal:[{lei:'EC 132/2023 art. 12; LC 214/2025'}]});}}catch(e){}
+}
+function calcularCR06(){
+  var ent=cr06LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularCR06')){ LH_PONTE.executar('calcularCR06', ent); return; }
+  cr06Render(cr06CalcularLocal(ent), ent, null);
+}
 /* ═══ v726 · CUTOVER — calcularCP01: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
 function cp01LerEntradas(){
   var d=parseInt(document.getElementById('cp01_dctf').value)||0, e=parseInt(document.getElementById('cp01_efd').value)||0;
@@ -47107,7 +47134,9 @@ function lhInsPuxarCentral(){
 }
 window.lhInsPuxarCentral=lhInsPuxarCentral;
 /* ═══ v441 · SCANNER DE PAGAMENTO EM DUPLICIDADE (art. 165, I, CTN — operacional) ═══ */
-function calcularDUP(){
+/* ═══ v734 · CUTOVER — calcularDUP: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+/* ═══ v734 · CUTOVER — calcularDUP: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function dupLerEntradas(){
   var txt=(document.getElementById('dup-extrato')||{}).value||'';
   var honor=Math.min(60,parseFloat((document.getElementById('dup-honor')||{}).value)||0)/100;
   var linhas=txt.split(/\n/).map(function(l){return l.trim();}).filter(Boolean);
@@ -47125,10 +47154,16 @@ function calcularDUP(){
   });
   window.LH_DUP_PAGS = pags;   /* ★ v690 · a ponte manda a lista JÁ INTERPRETADA — reimplementar o parser nela seria comparar dois parsers, não dois motores */
   var el=document.getElementById('dup-result');
-  if(!pags.length){ if(el)el.innerHTML='<div class="input-card" style="margin-top:14px;color:#e8b93a">Nenhum pagamento reconhecido. Cada linha precisa ter: código de receita (4 dígitos), competência (MM/AAAA) e valor (com centavos).</div>'; return; }
+  if(!pags.length){ if(el)el.innerHTML='<div class="input-card" style="margin-top:14px;color:#e8b93a">Nenhum pagamento reconhecido. Cada linha precisa ter: código de receita (4 dígitos), competência (MM/AAAA) e valor (com centavos).</div>'; return null; }
   /* agrupar por código+competência */
   var grupos={};
   pags.forEach(function(p){ var k=p.cod+'|'+p.comp; (grupos[k]=grupos[k]||[]).push(p); });
+
+  return { pagamentos:pags.map(function(x){ return { codigo:x.cod, competencia:x.comp, valor:x.val }; }), honorario_pct:honor*100, _honor:honor, _n:pags.length };
+}
+function dupCalcularLocal(ent){
+  var honor=ent._honor;
+  var pags=window.LH_DUP_PAGS||[]; var el=document.getElementById('dup-result'); var F=function(v){ return 'R$ '+Math.round(v).toLocaleString('pt-BR'); }; var grupos={}; pags.forEach(function(p){ var k=p.cod+'|'+p.comp; (grupos[k]=grupos[k]||[]).push(p); });
   var suspeitas=[], nominal=0, corrigido=0;
   function F(v){ return 'R$ '+Math.round(v).toLocaleString('pt-BR'); }
   Object.keys(grupos).forEach(function(k){
@@ -47141,6 +47176,16 @@ function calcularDUP(){
         nominal+=rec; corrigido+=rec*(1+sa); }
     }
   });
+
+  return { ok:true, analisados:pags.length, duplicidades:suspeitas.length, detalhe:suspeitas.map(function(x){ return { codigo:x.cod, competencia:x.comp, pagamentos:x.n, soma:x.soma, recuperavel:x.rec, corrigido:x.corr }; }), nominal:nominal, corrigido:corrigido, correcao_selic:corrigido-nominal, honorario:corrigido*honor, liquido_cliente:corrigido*(1-honor) };
+}
+function dupRender(r, ent, motivo){
+  var _box=document.getElementById('dup-result'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var honor=ent._honor;
+  var pags=window.LH_DUP_PAGS||[]; var el=document.getElementById('dup-result'); var F=function(v){ return 'R$ '+Math.round(v).toLocaleString('pt-BR'); }; var grupos={}; pags.forEach(function(p){ var k=p.cod+'|'+p.comp; (grupos[k]=grupos[k]||[]).push(p); });
+  var honor=ent._honor; var suspeitas=(r.detalhe||[]).map(function(d){ return { cod:String(d.codigo), comp:String(d.competencia), n:+d.pagamentos, soma:+d.soma, rec:+d.recuperavel, corr:+d.corrigido }; }); var nominal=+(r.nominal||0), corrigido=+(r.corrigido||0);
   if(!suspeitas.length){ if(el)el.innerHTML='<div class="input-card" style="margin-top:14px;color:#10b981">\u2713 '+pags.length+' pagamentos analisados \u2014 <b>nenhuma duplicidade</b> (mesmo c\u00f3digo + mesma compet\u00eancia) encontrada. Isso \u00e9 bom sinal: sem dinheiro em duplicata neste extrato.</div>'; return; }
   var vhonor=corrigido*honor, liquido=corrigido-vhonor;
   var kpis='<div class="kpi-grid">'
@@ -47155,6 +47200,12 @@ function calcularDUP(){
     +'<div style="margin-top:12px;background:rgba(214,228,240,0.05);border:1px solid rgba(120,160,210,0.25);border-radius:10px;padding:12px 16px;font-size:.87em;color:#cdd6e4;line-height:1.55"><b style="color:#9fc">Base legal e via</b><br>Art. 165, I, CTN (restitui\u00e7\u00e3o de pagamento indevido ou a maior) \u00b7 Via: <b>PER/DCOMP</b> (DARF da DCTFWeb \u2192 PER/DCOMP Web) \u00b7 REDARF <b>n\u00e3o</b> serve para duplicidade (s\u00f3 erro formal) \u00b7 Prazo: 5 anos do pagamento (art. 168, I) \u00b7 Corre\u00e7\u00e3o: SELIC da compet\u00eancia at\u00e9 hoje (art. 39 \u00a74\u00ba, Lei 9.250/95).</div>'
     +'<div style="margin-top:10px;font-size:.8em;color:#94a3b8;font-style:italic">Crit\u00e9rio conservador: em cada grupo, assume-se que UM pagamento era devido \u2014 o excedente \u00e9 a duplicidade. Antes do PER/DCOMP, confirme na DCTF/DCTFWeb que o d\u00e9bito declarado \u00e9 menor que a soma paga (pagamento dobrado com d\u00e9bito dobrado declarado exige retifica\u00e7\u00e3o da declara\u00e7\u00e3o primeiro).</div></div>';
   if(el) el.innerHTML=kpis+det;
+
+}
+function calcularDUP(){
+  var ent=dupLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularDUP')){ LH_PONTE.executar('calcularDUP', ent); return; }
+  dupRender(dupCalcularLocal(ent), ent, null);
 }
 window.calcularDUP=calcularDUP;
 /* ═══ v440 · RETENÇÕES NA FONTE NÃO APROVEITADAS (operacional, sem tese judicial) ═══ */
@@ -47378,13 +47429,14 @@ function lhAgroPuxarCentral(){
   show((fez.length?'\u2713 Preenchi: <b>'+fez.join(', ')+'</b>. ':'')+'\u26a0 As <b>aquisi\u00e7\u00f5es de produtos agropecu\u00e1rios</b> (de PF/cooperado) v\u00eam do <b>raz\u00e3o/EFD por fornecedor</b> \u2014 digite o total mensal. Escolha a al\u00edquota (60/50/35) pela <b>SA\u00cdDA</b> da agro, n\u00e3o pela origem do insumo.', fez.length?'ok':'no');
 }
 window.lhAgroPuxarCentral=lhAgroPuxarCentral;
-function calcularCredPresumido(){
+/* ═══ v734 · CUTOVER — calcularCredPresumido: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function credpresLerEntradas(){
   function val(id){ var e=document.getElementById(id); return e?e.value:''; }
   var regime=val('cp-regime')||'lr';
   if(regime!=='lr'){
     var elx=document.getElementById('credpresumido-result');
     if(elx)elx.innerHTML='<div style="background:rgba(232,185,58,.10);border:1px solid rgba(232,185,58,.35);border-radius:10px;padding:14px 18px;margin-top:10px;color:#e8b93a;line-height:1.6"><b>\u26a0 Cr\u00e9dito presumido agro \u00e9 exclusivo do N\u00c3O-CUMULATIVO (Lucro Real).</b> '+(regime==='lp'?'No Lucro Presumido (cumulativo) n\u00e3o h\u00e1 apura\u00e7\u00e3o de cr\u00e9ditos \u2014 o art. 8\u00ba da Lei 10.925 n\u00e3o se aplica.':'No Simples Nacional o PIS/COFINS est\u00e1 no DAS \u2014 n\u00e3o h\u00e1 creditamento presumido.')+'</div>';
-    return;
+    return null;
   }
   var aquis=parseFloat(val('cp-aquisicoes'))||0;
   var tipo=val('cp-tipo')||'animal';
@@ -47409,16 +47461,32 @@ function calcularCredPresumido(){
        _av.style.cssText='margin:10px 0;padding:11px 15px;border-radius:9px;background:rgba(74,158,255,.08);border:1px solid rgba(74,158,255,.3);font-size:.86rem;color:#8fb8e8';
        _av.innerHTML='ℹ Cenário <b>sem</b> o corte da LC 224 — alíquota cheia de '+(aliqEfCheia*100).toFixed(3).replace('.',',')+'%.';
      }
-   }catch(_e){} if(!el) return; el.style.display='block';
+   }catch(_e){} if(!el) return null; el.style.display='block';
   var _forn=val('cp-fornecedor')||'pf';
-  if(_forn==='pj'){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.35);border-radius:10px;padding:14px 16px;margin-top:14px;line-height:1.55;"><b style="color:#f87171;">⚖️ Presumido NÃO aplicável — compra de PJ.</b><br>O crédito presumido do art. 8º da Lei 10.925/2004 pressupõe aquisição de <b>pessoa física ou cooperado</b> (compra SEM PIS/COFINS destacado). Na compra de PJ comum há destaque — o caminho é o <b>crédito ORDINÁRIO</b> não-cumulativo (se Lucro Real), não o presumido.</div>'; window.LH_AGRO_DETECT={aplicavel:false,motivo:'fornecedor PJ'}; return; }
-  if(aquis<=0){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:14px 16px;margin-top:14px;">Preencha o valor das aquisições de produtos agropecuários de PF/cooperativa.</div>'; return; }
+  if(_forn==='pj'){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.35);border-radius:10px;padding:14px 16px;margin-top:14px;line-height:1.55;"><b style="color:#f87171;">⚖️ Presumido NÃO aplicável — compra de PJ.</b><br>O crédito presumido do art. 8º da Lei 10.925/2004 pressupõe aquisição de <b>pessoa física ou cooperado</b> (compra SEM PIS/COFINS destacado). Na compra de PJ comum há destaque — o caminho é o <b>crédito ORDINÁRIO</b> não-cumulativo (se Lucro Real), não o presumido.</div>'; window.LH_AGRO_DETECT={aplicavel:false,motivo:'fornecedor PJ'}; return null; }
+  if(aquis<=0){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:14px 16px;margin-top:14px;">Preencha o valor das aquisições de produtos agropecuários de PF/cooperativa.</div>'; return null; }
   /* v584 — periodo tambem e dado do cliente: sem ele nao ha calculo.
      A ferramenta nao escreve valor em campo — campo em branco fica em branco,
      para que todo numero na tela seja documento ou digitacao do usuario. */
-  if(!(meses>0)){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:14px 16px;margin-top:14px;">Informe o n\u00famero de meses do per\u00edodo (a ferramenta n\u00e3o assume prazo).</div>'; return; }
+  if(!(meses>0)){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:14px 16px;margin-top:14px;">Informe o n\u00famero de meses do per\u00edodo (a ferramenta n\u00e3o assume prazo).</div>'; return null; }
+
+  return { aquisicoes_mensal:aquis, tipo:tipo, regime:regime, fornecedor:((document.getElementById('cp-fornecedor')||{}).value)||'pf', aplica_lc224:(_fLC<1), meses:meses, comp_inicial:compini, _pct:pct, _fLC:_fLC, _aliqEfCheia:aliqEfCheia, _aliqEf:aliqEf };
+}
+function credpresCalcularLocal(ent){
+  var aquis=ent.aquisicoes_mensal, tipo=ent.tipo, regime=ent.regime, meses=ent.meses, compini=ent.comp_inicial, pct=ent._pct, _fLC=ent._fLC, aliqEfCheia=ent._aliqEfCheia, aliqEf=ent._aliqEf;
+  
   var credMes=aquis*aliqEf, nom=0,cor=0;
   for(var i=0;i<meses;i++){ var comp=_lhAddMes(compini,i); nom+=credMes; cor+=credMes*(1+lhSelicAcum(comp)); }
+
+  return { ok:true, tipo:tipo, percentual_presuncao:pct, corte_lc224:(_fLC<1), aliquota_cheia_pct:aliqEfCheia*100, aliquota_aplicada_pct:aliqEf*100, credito_mensal:credMes, nominal:nom, corrigido:cor, correcao_selic:cor-nom };
+}
+function credpresRender(r, ent, motivo){
+  var _box=document.getElementById('credpresumido-result'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var aquis=ent.aquisicoes_mensal, tipo=ent.tipo, regime=ent.regime, meses=ent.meses, compini=ent.comp_inicial, pct=ent._pct, _fLC=ent._fLC, aliqEfCheia=ent._aliqEfCheia, aliqEf=ent._aliqEf;
+  
+  var aquis=ent.aquisicoes_mensal, tipo=ent.tipo, regime=ent.regime, meses=ent.meses, compini=ent.comp_inicial, pct=ent._pct, _fLC=ent._fLC, aliqEfCheia=ent._aliqEfCheia; var el=document.getElementById('credpresumido-result'); var aliqEf=(+r.aliquota_aplicada_pct)/100, credMes=+r.credito_mensal, nom=+r.nominal, cor=+r.corrigido;
   function k(l,v,s,destaque){ return '<div style="background:'+(destaque?'rgba(16,185,129,0.10)':'rgba(15,15,17,0.4)')+';border:1px solid '+(destaque?'rgba(16,185,129,0.35)':'rgba(255,255,255,0.08)')+';border-radius:10px;padding:12px 14px;"><div style="font-size:0.72em;color:#9fb0c8;text-transform:uppercase;letter-spacing:.04em;">'+l+'</div><div style="font-size:1.25em;font-weight:800;color:'+(destaque?'#10b981':'#e8e6e3')+';">'+v+'</div><div style="font-size:0.72em;color:#7a8aa0;">'+(s||'')+'</div></div>'; }
   var tipoTxt=tipo==='animal'?'origem animal (60%)':(tipo==='soja'?'soja/óleos (50%)':'demais vegetais (35%)');
   var kpis='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px;">'+
@@ -47436,7 +47504,13 @@ function calcularCredPresumido(){
   var via='<div style="background:rgba(201,162,39,0.08);border:1px solid rgba(201,162,39,0.35);border-radius:10px;padding:12px 16px;margin-top:12px;font-size:0.88em;color:#e8d9a8;line-height:1.55;"><b style="color:#c9a227;">Viabilidade — atenção ao enquadramento</b><br>Crédito sólido para <b>Lucro Real</b> (não-cumulativo) que compra de <b>PF/cooperativa</b>. O valor NOMINAL é o número seguro; a Selic só incide em ressarcimento de saldo com resistência (Súmula 411 STJ). Validar os <b>NCM</b> taxativos do art. 8º (especialmente o tier de 50%) e a origem das aquisições = do advogado.</div>';
   setMotorResultado('credpresumido', { tipo:'info', valor:0, valorReferencia:(nom||0), contexto:'Crédito presumido agroindústria (Lei 10.925/2004)', descricao:'Crédito presumido NOMINAL identificado: '+fmtR(nom||0)+' (Lei 10.925/2004 art. 8º). NÃO é economia líquida — quantificar o benefício real (abatimento de PIS/COFINS) com o cliente antes de incluir na proposta.', recomendacao:'Dimensionar o benefício líquido — nominal não entra na soma do ROI.' });
   el.innerHTML=kpis+window.lhCards([{tipo:'oport',aberto:false,titulo:'Quanto dá pra aproveitar (e de quando)',corpo:'<p><strong>Crédito presumido corrigido (SELIC): '+_lhFmt(cor)+'</strong> · nominal '+_lhFmt(nom)+' em '+meses+' meses.</p><p>Sobre aquisições de <strong>'+_lhFmt(aquis)+'/mês</strong> de insumos agropecuários.</p>'}])+leg+window.lhCards([{tipo:'atencao',aberto:false,titulo:'Como aproveitar (via e ressalva)',corpo:'<p><strong>Lei 10.925/2004 (art. 8º):</strong> a agroindústria no <strong>Lucro Real</strong> toma crédito presumido de PIS/COFINS sobre aquisições de insumos agropecuários de pessoa física/cooperativa.</p><p><strong>Via:</strong> segregar as aquisições elegíveis, levantar os últimos 5 anos, escriturar/retificar e compensar (Súmula 411 STJ — correção pela Selic no ressarcimento).</p><p><strong>Ressalva:</strong> depende do enquadramento (atividade, produto e regime) — validar antes de propor.</p>'}])+window.lhCards([{tipo:'atencao',aberto:false,titulo:'Memória de cálculo',corpo:mem}]);
-try{var _pg=document.getElementById('page-credpresumido');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-credpresumido');if(!_mv){_mv=document.createElement('div');_mv.id='mem-credpresumido';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'Crédito presumido agroindústria',aliquotas:[{label:'Aquisições de PF',valor:''},{label:'Alíquota presumida',valor:''},{label:'Crédito anual',valor:''}],porque:'Crédito = aquisições de produtor rural PF × alíquota presumida do produto (Lei 10.925/04), aproveitável contra PIS/COFINS devidos.',baseLegal:[{lei:'Lei 10.925/2004 art. 8º'}]});}}catch(e){}}
+try{var _pg=document.getElementById('page-credpresumido');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-credpresumido');if(!_mv){_mv=document.createElement('div');_mv.id='mem-credpresumido';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'Crédito presumido agroindústria',aliquotas:[{label:'Aquisições de PF',valor:''},{label:'Alíquota presumida',valor:''},{label:'Crédito anual',valor:''}],porque:'Crédito = aquisições de produtor rural PF × alíquota presumida do produto (Lei 10.925/04), aproveitável contra PIS/COFINS devidos.',baseLegal:[{lei:'Lei 10.925/2004 art. 8º'}]});}}catch(e){}
+}
+function calcularCredPresumido(){
+  var ent=credpresLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularCredPresumido')){ LH_PONTE.executar('calcularCredPresumido', ent); return; }
+  credpresRender(credpresCalcularLocal(ent), ent, null);
+}
 
 
 </script>
@@ -47444,21 +47518,38 @@ try{var _pg=document.getElementById('page-credpresumido');if(_pg&&window.lhMemor
 
 <script>
 /* ══ Lionheart · Tese ICMS-ST na base PIS/COFINS (Tema 1125 STJ) ══ */
-function calcularICMSST1125(){
+/* ═══ v734 · CUTOVER — calcularICMSST1125: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function icmsstLerEntradas(){
   function val(id){ var e=document.getElementById(id); return e?e.value:''; }
   var st=parseFloat(val('icmsst-valor'))||0;
   var regime=val('icmsst-regime')||'real';
   var rate=regime==='presumido'?0.0365:0.0925;
   var compini=val('icmsst-compini')||'2021-06';
   var meses=parseInt(val('icmsst-meses'),10)||0;
-  var el=document.getElementById('icmsst1125-result'); if(!el) return; el.style.display='block';
-  if(st<=0){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:14px 16px;margin-top:14px;">Informe o ICMS-ST suportado (média mensal).</div>'; return; }
+  var el=document.getElementById('icmsst1125-result'); if(!el) return null; el.style.display='block';
+  if(st<=0){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:14px 16px;margin-top:14px;">Informe o ICMS-ST suportado (média mensal).</div>'; return null; }
   /* v584 — periodo tambem e dado do cliente: sem ele nao ha calculo.
      A ferramenta nao escreve valor em campo — campo em branco fica em branco,
      para que todo numero na tela seja documento ou digitacao do usuario. */
-  if(!(meses>0)){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:14px 16px;margin-top:14px;">Informe o n\u00famero de meses do per\u00edodo (a ferramenta n\u00e3o assume prazo).</div>'; return; }
+  if(!(meses>0)){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:14px 16px;margin-top:14px;">Informe o n\u00famero de meses do per\u00edodo (a ferramenta n\u00e3o assume prazo).</div>'; return null; }
+
+  return { st_mensal:st, regime:(regime==='presumido'?'lp':'lr'), meses:meses, comp_inicial:compini, _regime:regime, _rate:rate };
+}
+function icmsstCalcularLocal(ent){
+  var st=ent.st_mensal, meses=ent.meses, compini=ent.comp_inicial, regime=ent._regime, rate=ent._rate;
+  
   var overMes=st*rate, stTot=0,nom=0,cor=0;
   for(var i=0;i<meses;i++){ var comp=_lhAddMes(compini,i); stTot+=st; nom+=overMes; cor+=overMes*(1+lhSelicAcum(comp)); }
+
+  return { ok:true, regime:regime, st_suportado_periodo:stTot, credito_mensal:overMes, nominal:nom, corrigido:cor, correcao_selic:cor-nom };
+}
+function icmsstRender(r, ent, motivo){
+  var _box=document.getElementById('icmsst1125-result'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var st=ent.st_mensal, meses=ent.meses, compini=ent.comp_inicial, regime=ent._regime, rate=ent._rate;
+  
+  var st=ent.st_mensal, regime=ent._regime, rate=ent._rate, meses=ent.meses, compini=ent.comp_inicial; var el=document.getElementById('icmsst1125-result'); var stTot=+r.st_suportado_periodo, overMes=+r.credito_mensal, nom=+r.nominal, cor=+r.corrigido;
   function k(l,v,s,d){ return '<div style="background:'+(d?'rgba(16,185,129,0.10)':'rgba(15,15,17,0.4)')+';border:1px solid '+(d?'rgba(16,185,129,0.35)':'rgba(255,255,255,0.08)')+';border-radius:10px;padding:12px 14px;"><div style="font-size:0.72em;color:#9fb0c8;text-transform:uppercase;letter-spacing:.04em;">'+l+'</div><div style="font-size:1.25em;font-weight:800;color:'+(d?'#10b981':'#e8e6e3')+';">'+v+'</div><div style="font-size:0.72em;color:#7a8aa0;">'+(s||'')+'</div></div>'; }
   var kpis='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px;">'+
     k('ICMS-ST suportado',_lhFmt(stTot),meses+' meses')+
@@ -47473,7 +47564,13 @@ function calcularICMSST1125(){
   var via='<div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:12px 16px;margin-top:12px;font-size:0.88em;color:#bfe9d3;line-height:1.55;"><b style="color:#10b981;">Viabilidade — tese favorável</b><br>Tese já decidida pelo STJ a favor do contribuinte, porém <b>com modulação de efeitos</b>: a janela de recuperação depende da data de ajuizamento. O advogado confirma o marco aplicável ao cliente.</div>';
   setMotorResultado('icmsst1125', { tipo:'recuperacao', valor:(typeof cor!=='undefined'?(cor||0):0), valorAnual:0, contexto:'ICMS-ST na base do PIS/COFINS (Tema 1125)', descricao:'Crédito recuperável (corrigido) de '+fmtR(typeof cor!=='undefined'?cor:0)+' — Tema 1125.', recomendacao:'' });
   el.innerHTML=kpis+window.lhCards([{tipo:'oport',aberto:false,titulo:'Quanto dá pra recuperar (e de quando)',corpo:'<p><strong>Recuperável corrigido (SELIC): '+_lhFmt(cor)+'</strong> · nominal '+_lhFmt(nom)+' em '+meses+' meses.</p><p>O substituído pagou PIS/COFINS sobre <strong>'+_lhFmt(stTot)+'</strong> de ICMS-ST que não compõe a sua receita própria.</p>'}])+leg+window.lhCards([{tipo:'oport',aberto:false,titulo:'Como recuperar (via e risco)',corpo:'<p><strong>STJ · Tema 1125 (REsp 1.896.678 e 1.958.265):</strong> o ICMS-ST não compõe a base de PIS/COFINS do substituído — <strong>tese favorável já decidida</strong>.</p><p><strong>Via:</strong> o substituído exclui o ICMS-ST da base, retifica a EFD-Contribuições dos últimos 5 anos e compensa via PER/DCOMP.</p><p><strong>Risco:</strong> mérito baixíssimo (tese pacificada no STJ); o risco é operacional — apurar o ICMS-ST por nota e segregar corretamente.</p>'}])+window.lhCards([{tipo:'atencao',aberto:false,titulo:'Memória de cálculo',corpo:mem}]);
-try{var _pg=document.getElementById('page-icmsst1125');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-icmsst1125');if(!_mv){_mv=document.createElement('div');_mv.id='mem-icmsst1125';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'ICMS-ST na base de PIS/COFINS (Tema 1.125)',aliquotas:[{label:'Compras ST',valor:''},{label:'ICMS-ST embutido',valor:''},{label:'Recuperação 5 anos',valor:''}],porque:'O substituído recupera o PIS/COFINS sobre o ICMS-ST embutido na aquisição: recuperação = compras ST × alíquota ICMS-ST × 9,25%, retroativo 5 anos.',baseLegal:[{lei:'STJ, Tema 1.125'}]});}}catch(e){}}
+try{var _pg=document.getElementById('page-icmsst1125');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-icmsst1125');if(!_mv){_mv=document.createElement('div');_mv.id='mem-icmsst1125';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'ICMS-ST na base de PIS/COFINS (Tema 1.125)',aliquotas:[{label:'Compras ST',valor:''},{label:'ICMS-ST embutido',valor:''},{label:'Recuperação 5 anos',valor:''}],porque:'O substituído recupera o PIS/COFINS sobre o ICMS-ST embutido na aquisição: recuperação = compras ST × alíquota ICMS-ST × 9,25%, retroativo 5 anos.',baseLegal:[{lei:'STJ, Tema 1.125'}]});}}catch(e){}
+}
+function calcularICMSST1125(){
+  var ent=icmsstLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularICMSST1125')){ LH_PONTE.executar('calcularICMSST1125', ent); return; }
+  icmsstRender(icmsstCalcularLocal(ent), ent, null);
+}
 </script>
 
 <script id="lh-fase2-import">
