@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v724";</script>
+<body><script>window.LH_VERSAO="v725";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3526,13 +3526,15 @@ window.LH_PONTE = (function(){
         return { aquisicoes_pf:f('s3_aquis'), compra_insumos:f('s3_insumos'), coeficiente:parseFloat((G.el('s3_cadeia')||{}).value)||9.25, meses_desde_corte:Math.max(1,f('s3_meses')||5),
                  apropriou_residual:(((G.el('s3_recupera')||{}).value)==='1'), custo_judicial:f('s3_custojud') }; },
       esperado:function(r){ if(!r||!r.cenarios) return null; var h=r.cenarios[0]||{}, p=r.cenarios[1]||{}; return { antes:Number(p.credito), hoje:Number(h.credito), perda:Math.abs(Number(h.resultado)) }; },
-      local:function(){ var R=LH_PONTE._rsNum; return { antes:R('kpi-agroSuper3',0), hoje:R('kpi-agroSuper3',1), perda:R('kpi-agroSuper3',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { antes:R('kpi-agroSuper3',0), hoje:R('kpi-agroSuper3',1), perda:R('kpi-agroSuper3',2) }; },
+      render:function(r, ent, motivo){ agroS3Render(r, ent, motivo); } },
     calcularAgroSuper4: { calc:'agrosuper4',
       entradas:function(G){ var f=function(id,d){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?(d||0):v;}; var v=function(id,d){ return ((G.el(id)||{}).value)||d; };
         return { insumos:f('s4_insumos'), receita_safra:f('s4_receita'), custeio_mensal:f('s4_custeio'), mes_plantio:parseInt(v('s4_plantio','9'),10), mes_colheita:parseInt(v('s4_colheita','3'),10),
                  prazo_recebimento_dias:f('s4_prazo',30), diferido:(v('s4_diferido','1')==='1'), destino:v('s4_destino','interno'), custo_capital_anual:f('s4_custocap',14), ano:2033 }; },
       esperado:function(r){ return (r&&r.creditos)?{ credito:Number(r.creditos.total), a_recolher:Number(r.a_recolher) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { credito:R('kpi-agroSuper4',0), a_recolher:R('kpi-agroSuper4',1) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { credito:R('kpi-agroSuper4',0), a_recolher:R('kpi-agroSuper4',1) }; },
+      render:function(r, ent, motivo){ agroS4Render(r, ent, motivo); } },
 
     /* ═══ v699 · reconciliadas pelo Mestre: agro03 (servidor usava o imposto MÍNIMO no lugar da tabela
        progressiva, e a tabela anual era a de 2024 — fn_irpf_anual agora é a de 2026, régua do Mestre)
@@ -26354,12 +26356,13 @@ function calcularAgroSuper5(){
   try{ lhAgroSuperChart('agroSuper5', ['Comprando agora','Entregando em 2027'], [vp2026, c2027.vp], ['rgba(201,162,39,0.9)','rgba(16,185,129,0.85)']); }catch(_e){ console.warn('chart s5',_e); }
 }
 
-function calcularAgroSuper4(){
+/* ═══ v725 · CUTOVER — calcularAgroSuper4: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function agroS4LerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var insumos=V('s4_insumos',0), receita=V('s4_receita',0), custeioMes=V('s4_custeio',0);
-  if(insumos<=0 && receita<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe os insumos e a receita da safra','error'); return; }
-  if(typeof lhValorSuspeito==='function' && receita>0 && lhValorSuspeito(receita,1000,'Receita da safra')) return;
+  if(insumos<=0 && receita<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe os insumos e a receita da safra','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && receita>0 && lhValorSuspeito(receita,1000,'Receita da safra')) return null;
 
   var mPlantio=parseInt(G('s4_plantio','9'),10), mColheita=parseInt(G('s4_colheita','3'),10);
   var prazo=V('s4_prazo',30);
@@ -26371,6 +26374,12 @@ function calcularAgroSuper4(){
   var ALIQ=(typeof window.LH_ALIQ_REF==='number'&&window.LH_ALIQ_REF>0)?window.LH_ALIQ_REF:26.5;
   var aliqIns=ALIQ*0.40;          /* insumo do Anexo IX: redução de 60% */
 
+
+  return { insumos:insumos, receita_safra:receita, custeio_mensal:custeioMes, mes_plantio:mPlantio, mes_colheita:mColheita, prazo_recebimento_dias:prazo, diferido:diferido, destino:destino, custo_capital_anual:custoCap*100, ano:2033, _custoCap:custoCap, _ALIQ:ALIQ, _aliqIns:aliqIns };
+}
+function agroS4CalcularLocal(ent){
+  var insumos=ent.insumos, receita=ent.receita_safra, custeioMes=ent.custeio_mensal, mPlantio=ent.mes_plantio, mColheita=ent.mes_colheita, prazo=ent.prazo_recebimento_dias, diferido=ent.diferido, destino=ent.destino, custoCap=ent._custoCap, ALIQ=ent._ALIQ, aliqIns=ent._aliqIns;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
   /* ciclo em meses, atravessando a virada do ano quando preciso */
   var cicloMeses = mColheita>mPlantio ? (mColheita-mPlantio) : (12-mPlantio+mColheita);
   var mesesRecebimento = prazo/30;
@@ -26398,6 +26407,16 @@ function calcularAgroSuper4(){
   var saidaCaixa = insumos + custeioMes*cicloMeses + (diferido?0:creditoInsumo);
   var ncg = saidaCaixa;
 
+
+  return { ok:true, ano:2033, aliquota_pct:ALIQ, aliquota_insumo_pct:aliqIns, destino:destino, ciclo:{ plantio_mes:mPlantio, colheita_mes:mColheita, meses_lavoura:cicloMeses, meses_recebimento:mesesRecebimento, ciclo_total_meses:cicloTotal }, creditos:{ de_insumos:creditoInsumo, de_custeio:creditoCusteio, total:creditoTotal, diferido_art138:diferido }, debito_na_venda:debito, compensado:compensado, saldo_credor:saldoAcumulado, a_recolher:aRecolher, custo_de_carregar_credito:custoCarrego, necessidade_capital_giro:ncg };
+}
+function agroS4Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-agroSuper4'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var insumos=ent.insumos, receita=ent.receita_safra, custeioMes=ent.custeio_mensal, mPlantio=ent.mes_plantio, mColheita=ent.mes_colheita, prazo=ent.prazo_recebimento_dias, diferido=ent.diferido, destino=ent.destino, custoCap=ent._custoCap, ALIQ=ent._ALIQ, aliqIns=ent._aliqIns;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
+  var custoCap=ent._custoCap; var ALIQ=+r.aliquota_pct, aliqIns=+r.aliquota_insumo_pct, cicloMeses=+r.ciclo.meses_lavoura, mesesRecebimento=+r.ciclo.meses_recebimento, cicloTotal=+r.ciclo.ciclo_total_meses, creditoInsumo=+r.creditos.de_insumos, creditoCusteio=+r.creditos.de_custeio, creditoTotal=+r.creditos.total, debito=+r.debito_na_venda, compensado=+r.compensado, saldoAcumulado=+r.saldo_credor, aRecolher=+r.a_recolher, mesesParado=cicloTotal, custoCarrego=+r.custo_de_carregar_credito, saidaCaixa=+r.necessidade_capital_giro, ncg=saidaCaixa, fatorInterno=(destino==='interno'?1:(destino==='misto'?0.5:0));
   document.getElementById('kpi-agroSuper4').innerHTML=
     '<div class="kpi-card"><div class="kpi-label">Ciclo até o dinheiro entrar</div><div class="kpi-value">'+cicloTotal.toFixed(1).replace('.',',')+' meses</div></div>'+
     '<div class="kpi-card'+(creditoTotal>0?' kpi-alerta':'')+'"><div class="kpi-label">Crédito imobilizado no ciclo</div><div class="kpi-value">'+R(creditoTotal)+'</div></div>'+
@@ -26485,6 +26504,12 @@ function calcularAgroSuper4(){
   var res=document.getElementById('res-agroSuper4'); if(res) res.style.display='block';
 
   try{ lhAgroSuperChart('agroSuper4', ['Crédito imobilizado no ciclo','Custo de carregar','Capital de giro necessário'], [creditoTotal, custoCarrego, ncg], ['rgba(201,162,39,0.9)','rgba(239,68,68,0.85)','rgba(74,158,255,0.7)']); }catch(_e){ console.warn('chart s4',_e); }
+
+}
+function calcularAgroSuper4(){
+  var ent=agroS4LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAgroSuper4')){ LH_PONTE.executar('calcularAgroSuper4', ent); return; }
+  agroS4Render(agroS4CalcularLocal(ent), ent, null);
 }
 
 function calcularAgroSuper2(){
@@ -26841,11 +26866,12 @@ function calcularAgroSuper1(){
   try{ lhAgroSuperChart('agroSuper1', ['Ficar fora (não contribuinte)','Optar pelo regime regular'], [totalFora, Math.abs(liquidoDentro)], ['rgba(239,68,68,0.85)','rgba(16,185,129,0.85)']); }catch(_e){ console.warn('chart s1',_e); }
 }
 
-function calcularAgroSuper3(){
+/* ═══ v725 · CUTOVER — calcularAgroSuper3: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function agroS3LerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var aquis=V('s3_aquis',0), insumos=V('s3_insumos',0);
-  if(aquis<=0 && insumos<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe as aquisições de produtor PF ou a compra de insumos','error'); return; }
-  if(typeof lhValorSuspeito==='function' && aquis>0 && lhValorSuspeito(aquis,1000,'Aquisições de produtor PF')) return;
+  if(aquis<=0 && insumos<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe as aquisições de produtor PF ou a compra de insumos','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && aquis>0 && lhValorSuspeito(aquis,1000,'Aquisições de produtor PF')) return null;
   var pct=parseFloat((document.getElementById('s3_cadeia')||{value:'9.25'}).value)||9.25;
   var meses=Math.max(1,V('s3_meses',5));
   var recuperou=(document.getElementById('s3_recupera')||{value:'0'}).value==='1';
@@ -26853,6 +26879,12 @@ function calcularAgroSuper3(){
 
   var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
 
+
+  return { aquisicoes_pf:aquis, compra_insumos:insumos, coeficiente:pct, meses_desde_corte:meses, apropriou_residual:recuperou, custo_judicial:custoJud, _pct:pct };
+}
+function agroS3CalcularLocal(ent){
+  var aquis=ent.aquisicoes_pf, insumos=ent.compra_insumos, pct=ent._pct, meses=ent.meses_desde_corte, recuperou=ent.apropriou_residual, custoJud=ent.custo_judicial;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
   /* 1) crédito presumido: antes 100%, agora 90% */
   var credCheio = aquis*(pct/100);
   var credAtual = credCheio*0.90;
@@ -26874,6 +26906,16 @@ function calcularAgroSuper3(){
     ['PLP 34/26 aprovado', credCheio, 0, 0],
     ['Tese judicial procedente', credCheio, 0, 0]
   ];
+
+  return { ok:true, credito_presumido:{ antes_do_corte:credCheio, com_o_corte_90pct:credAtual, perda_anual:perdaCred }, insumos:{ residual_0_925_pct:custoInsumo, passivo_se_apropriou:passivoCredito }, perda_total_anual:perdaAno, perda_mensal:perdaMes, ja_perdido_desde_o_corte:jaPerdido, custo_judicial:custoJud, cenarios:cen.map(function(c){ return { cenario:c[0], credito:c[1], custo_insumo:c[2], resultado:c[3] }; }) };
+}
+function agroS3Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-agroSuper3'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var aquis=ent.aquisicoes_pf, insumos=ent.compra_insumos, pct=ent._pct, meses=ent.meses_desde_corte, recuperou=ent.apropriou_residual, custoJud=ent.custo_judicial;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
+  var pct=ent._pct, meses=ent.meses_desde_corte, recuperou=ent.apropriou_residual, custoJud=ent.custo_judicial; var credCheio=+r.credito_presumido.antes_do_corte, credAtual=+r.credito_presumido.com_o_corte_90pct, perdaCred=+r.credito_presumido.perda_anual, custoInsumo=+r.insumos.residual_0_925_pct, passivoCredito=+(r.insumos.passivo_se_apropriou||0), perdaAno=+r.perda_total_anual, perdaMes=+r.perda_mensal, jaPerdido=+r.ja_perdido_desde_o_corte; var cen=(r.cenarios||[]).map(function(c){ return [c.cenario, +c.credito, +c.custo_insumo, +c.resultado]; });
   var linhas='';
   cen.forEach(function(c,i){
     var dest = (i===0) ? ' style="background:rgba(224,107,90,.08)"' : (i===1?' style="background:rgba(22,196,124,.06)"':'');
@@ -26953,6 +26995,12 @@ function calcularAgroSuper3(){
   var res=document.getElementById('res-agroSuper3'); if(res) res.style.display='block';
 
   try{ lhAgroSuperChart('agroSuper3', ['Crédito cheio (antes)','Crédito hoje (90%)','Perda no ano','Já perdido'], [credCheio, credAtual, perdaAno, jaPerdido], ['rgba(16,185,129,0.85)','rgba(201,162,39,0.9)','rgba(239,68,68,0.85)','rgba(239,68,68,0.5)']); }catch(_e){ console.warn('chart s3',_e); }
+
+}
+function calcularAgroSuper3(){
+  var ent=agroS3LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAgroSuper3')){ LH_PONTE.executar('calcularAgroSuper3', ent); return; }
+  agroS3Render(agroS3CalcularLocal(ent), ent, null);
 }
 
 function calcularAliqRef(){
