@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v723";</script>
+<body><script>window.LH_VERSAO="v724";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3492,13 +3492,15 @@ window.LH_PONTE = (function(){
            UX: o coeficiente do art. 169 depende de regulamento — em branco deveria dizer isso. */
         return { gasto_frete:f('ag21_gasto'), pct_autonomos:f('ag21_paut'), pct_condicoes_ok:f('ag21_pcond'), coeficiente:c }; },
       esperado:function(r){ return (r&&r.autonomos)?{ credito:Number(r.autonomos.credito_apropriavel), base:Number(r.autonomos.base_com_contrato_adequado), morre:Number(r.autonomos.credito_que_morre) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { credito:R('ag21_kpis',0), base:R('ag21_kpis',1), morre:R('ag21_kpis',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { credito:R('ag21_kpis',0), base:R('ag21_kpis',1), morre:R('ag21_kpis',2) }; },
+      render:function(r, ent, motivo){ ag21Render(r, ent, motivo); } },
     lhAg22Calc: { calc:'agro22',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { receita_zero:f('ag22_rz'), receita_tributada:f('ag22_rt'), aliquota_pct:f('ag22_al')||26.5, creditos_destacados:f('ag22_cd'), creditos_diferidos:f('ag22_cf'), juros_mes_pct:f('ag22_j'), prazo_meses:f('ag22_pr') }; },
       esperado:function(r){ return (r&&r.apuracao)?{ a_pagar:Number(r.apuracao.a_pagar) }:null; },
       /* ag22_kpis (R$): [0] saldo ressarcível · [1] custo de esperar · [2] ganho líquido · [3] a pagar */
-      local:function(){ return { a_pagar:LH_PONTE._rsNum('ag22_kpis',3) }; } },
+      local:function(){ return { a_pagar:LH_PONTE._rsNum('ag22_kpis',3) }; },
+      render:function(r, ent, motivo){ ag22Render(r, ent, motivo); } },
 
     /* ═══ v698 · AGRO SUPER 1–4 ═══
        As telas não têm seletor de ano e calculam na alíquota PLENA (26,5% × 40% do Anexo IX):
@@ -11172,7 +11174,8 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
 <script>
 /* ★ VENDA A ALÍQUOTA ZERO arts. 49/52 · v590 · Padrão Split · mestre v119 AGRO22 (6 casos Python×Excel) */
 window._ag22Chart = window._ag22Chart || null;
-function lhAg22Calc(){
+/* ═══ v724 · CUTOVER — lhAg22Calc: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function ag22LerEntradas(){
   var rz=parseFloat(document.getElementById('ag22_rz').value)||0;
   var rt=parseFloat(document.getElementById('ag22_rt').value)||0;
   var al=(parseFloat(document.getElementById('ag22_al').value)||0)/100;
@@ -11180,10 +11183,24 @@ function lhAg22Calc(){
   var cf=parseFloat(document.getElementById('ag22_cf').value)||0;
   var j=(parseFloat(document.getElementById('ag22_j').value)||0)/100;
   var pr=parseFloat(document.getElementById('ag22_pr').value)||2;
+
+  return { receita_zero:rz, receita_tributada:rt, aliquota_pct:al*100, creditos_destacados:cd, creditos_diferidos:cf, juros_mes_pct:j*100, prazo_meses:pr, _al:al, _j:j };
+}
+function ag22CalcularLocal(ent){
+  var rz=ent.receita_zero, rt=ent.receita_tributada, cd=ent.creditos_destacados, cf=ent.creditos_diferidos, pr=ent.prazo_meses, al=ent._al, j=ent._j;
   var deb=rt*al, credDest=cd*al, credDif=cf*al, cred=credDest+credDif;
   var saldo=Math.max(0,cred-deb), aPagar=Math.max(0,deb-cred);
   var finSaldo=saldo*j*pr, finDif=credDif*j*pr, ganho=saldo-finSaldo-finDif;
   var pctZero=(rz+rt)>0?rz/(rz+rt):0;
+
+  return { ok:true, mix:{ receita_aliquota_zero:rz, receita_tributada:rt, pct_a_zero:pctZero*100 }, apuracao:{ debito:deb, credito_destacado:credDest, credito_diferido:credDif, credito_total:cred, saldo_credor_ressarcivel:saldo, a_pagar:aPagar }, custo_de_esperar:{ sobre_o_saldo:finSaldo, sobre_o_diferido:finDif, total:finSaldo+finDif }, ganho_liquido_anual:ganho };
+}
+function ag22Render(r, ent, motivo){
+  var _box=document.getElementById('ag22_kpis'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var rz=ent.receita_zero, rt=ent.receita_tributada, cd=ent.creditos_destacados, cf=ent.creditos_diferidos, pr=ent.prazo_meses, al=ent._al, j=ent._j;
+  var al=ent._al, j=ent._j; var deb=+r.apuracao.debito, credDest=+r.apuracao.credito_destacado, credDif=+r.apuracao.credito_diferido, cred=+r.apuracao.credito_total, saldo=+r.apuracao.saldo_credor_ressarcivel, aPagar=+r.apuracao.a_pagar, finSaldo=+r.custo_de_esperar.sobre_o_saldo, finDif=+r.custo_de_esperar.sobre_o_diferido, ganho=+r.ganho_liquido_anual, pctZero=(+r.mix.pct_a_zero)/100;
   var fmt=function(v){return 'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})};
   var COR = saldo>0 ? '#10b981' : '#c9a227';
   document.getElementById('ag22_out').style.display='block';
@@ -11255,6 +11272,12 @@ function lhAg22Calc(){
       _b.onclick=function(){ window.gerarPdfCalc(_b); };
       _sec.appendChild(_b);
     } }catch(_e){}
+
+}
+function lhAg22Calc(){
+  var ent=ag22LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('lhAg22Calc')){ LH_PONTE.executar('lhAg22Calc', ent); return; }
+  ag22Render(ag22CalcularLocal(ent), ent, null);
 }
 
 </script>
@@ -11262,17 +11285,32 @@ function lhAg22Calc(){
 <script>
 /* ★ FRETE RURAL art. 169 · v589 · Padrão Split · mestre v119 AGRO21 (6 casos Python×Excel) */
 window._ag21Chart = window._ag21Chart || null;
-function lhAg21Calc(){
+/* ═══ v724 · CUTOVER — lhAg21Calc: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function ag21LerEntradas(){
   var g=parseFloat(document.getElementById('ag21_gasto').value)||0;
   var pa=(parseFloat(document.getElementById('ag21_paut').value)||0)/100;
   var pc=(parseFloat(document.getElementById('ag21_pcond').value)||0)/100;
   var C=(parseFloat(document.getElementById('ag21_c').value)||0)/100;
   pa=Math.max(0,Math.min(1,pa)); pc=Math.max(0,Math.min(1,pc));
+
+  return { gasto_frete:g, pct_autonomos:pa*100, pct_condicoes_ok:pc*100, coeficiente:C*100, _pa:pa, _pc:pc, _C:C };
+}
+function ag21CalcularLocal(ent){
+  var g=ent.gasto_frete, pa=ent._pa, pc=ent._pc, C=ent._C;
   var taxa=C/(1+C);
   var baseEleg=g*pa*pc, cp=baseEleg*taxa;
   var basePerd=g*pa*(1-pc), cpPerd=basePerd*taxa;
   var baseReg=g*(1-pa);
   var clAut=1-taxa, recup=(cp+cpPerd)>0?cp/(cp+cpPerd):1;
+
+  return { ok:true, gasto_frete:g, coeficiente_c:C, taxa_credito:taxa, autonomos:{ credito_apropriavel:cp, credito_que_morre:cpPerd, base_com_contrato_adequado:baseEleg, base_com_frete_embutido:basePerd }, transportador_regular:{ base:baseReg }, recuperacao_atual_pct:recup*100, custo_liquido_por_real_autonomo:clAut };
+}
+function ag21Render(r, ent, motivo){
+  var _box=document.getElementById('ag21_kpis'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var g=ent.gasto_frete, pa=ent._pa, pc=ent._pc, C=ent._C;
+  var pa=ent._pa, pc=ent._pc, C=ent._C; var taxa=+r.taxa_credito, cp=+r.autonomos.credito_apropriavel, cpPerd=+r.autonomos.credito_que_morre, baseEleg=+r.autonomos.base_com_contrato_adequado, basePerd=+r.autonomos.base_com_frete_embutido, baseReg=+r.transportador_regular.base, clAut=+r.custo_liquido_por_real_autonomo, recup=(+r.recuperacao_atual_pct)/100;
   var fmt=function(v){return 'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})};
   var COR = cpPerd>0 ? '#ef4444' : '#10b981';
   document.getElementById('ag21_out').style.display='block';
@@ -11334,6 +11372,12 @@ function lhAg21Calc(){
       _b.onclick=function(){ window.gerarPdfCalc(_b); };
       _sec.appendChild(_b);
     } }catch(_e){}
+
+}
+function lhAg21Calc(){
+  var ent=ag21LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('lhAg21Calc')){ LH_PONTE.executar('lhAg21Calc', ent); return; }
+  ag21Render(ag21CalcularLocal(ent), ent, null);
 }
 
 </script>
