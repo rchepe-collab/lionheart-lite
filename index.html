@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v729";</script>
+<body><script>window.LH_VERSAO="v730";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2911,7 +2911,8 @@ window.LH_PONTE = (function(){
       esperado: function(r){ return r ? { imposto_2033:Number(r.imposto_2033), carga_atual:Number(r.carga_atual), variacao:Number(r.variacao_2033) } : null; },
       /* kpi-classif: [0] imposto 2033 · [1] bruta % · [2] líquida % · [3] carga atual · [4] alíq efetiva · [5] variação
          (o sub do 1º card traz DOIS percentuais de 2 casas — por isso os índices diferem das telas-irmãs) */
-      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-classif',0), carga_atual:LH_PONTE._kpiNum('kpi-classif',3), variacao:LH_PONTE._kpiNum('kpi-classif',5) }; }
+      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-classif',0), carga_atual:LH_PONTE._kpiNum('kpi-classif',3), variacao:LH_PONTE._kpiNum('kpi-classif',5) }; },
+      render:function(r, ent, motivo){ classifRender(r, ent, motivo); }
     },
     calcularRaioX360: {
       calc: 'classificar-lote',
@@ -2957,7 +2958,8 @@ window.LH_PONTE = (function(){
       entradas: function(G){ var f=function(id){ var v=parseFloat(String((G.el(id)||{}).value||'0')); return isNaN(v)?0:v; };
         return { setor:'telecom', subtipo:'padrao', faturamento:f('tel_fat'), carga_atual_pct:f('tel_atual'), credito_pct:f('tel_cred') }; },
       esperado: function(r){ return r ? { imposto_2033:Number(r.imposto_2033), carga_atual:Number(r.carga_atual), variacao:Number(r.variacao_2033) } : null; },
-      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-telecom',0), carga_atual:LH_PONTE._kpiNum('kpi-telecom',1), variacao:LH_PONTE._kpiNum('kpi-telecom',3) }; }
+      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-telecom',0), carga_atual:LH_PONTE._kpiNum('kpi-telecom',1), variacao:LH_PONTE._kpiNum('kpi-telecom',3) }; },
+      render:function(r, ent, motivo){ telecomRender(r, ent, motivo); }
     },
     calcularMedicamento: {
       calc: 'setor',
@@ -2975,14 +2977,16 @@ window.LH_PONTE = (function(){
         var sub=G.txt('tpx_sub')||'interurbano';
         return { setor:'transpax', subtipo:sub, faturamento:f('tpx_fat'), carga_atual_pct:f('tpx_atual'), credito_pct:(sub==='urbano'?0:f('tpx_cred')) }; },
       esperado: function(r){ return r ? { imposto_2033:Number(r.imposto_2033), carga_atual:Number(r.carga_atual), variacao:Number(r.variacao_2033) } : null; },
-      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-transpax',0), carga_atual:LH_PONTE._kpiNum('kpi-transpax',2), variacao:LH_PONTE._kpiNum('kpi-transpax',4) }; }
+      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-transpax',0), carga_atual:LH_PONTE._kpiNum('kpi-transpax',2), variacao:LH_PONTE._kpiNum('kpi-transpax',4) }; },
+      render:function(r, ent, motivo){ transpaxRender(r, ent, motivo); }
     },
     calcularLogCarga: {
       calc: 'setor',
       entradas: function(G){ var f=function(id){ var v=parseFloat(String((G.el(id)||{}).value||'0')); return isNaN(v)?0:v; };
         return { setor:'logcarga', subtipo:'padrao', faturamento:f('log_fat'), carga_atual_pct:f('log_atual'), credito_pct:f('log_cred') }; },
       esperado: function(r){ return r ? { imposto_2033:Number(r.imposto_2033), carga_atual:Number(r.carga_atual), variacao:Number(r.variacao_2033) } : null; },
-      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-logcarga',0), carga_atual:LH_PONTE._kpiNum('kpi-logcarga',1), variacao:LH_PONTE._kpiNum('kpi-logcarga',3) }; }
+      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-logcarga',0), carga_atual:LH_PONTE._kpiNum('kpi-logcarga',1), variacao:LH_PONTE._kpiNum('kpi-logcarga',3) }; },
+      render:function(r, ent, motivo){ logcargaRender(r, ent, motivo); }
     },
 
     /* ═══ v684 · ONDA 4 · Hotel × Eventos — segregação de receita = mix de baldes ═══
@@ -21325,14 +21329,31 @@ function calcularHotel(){
   if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularHotel')){ LH_PONTE.executar('calcularHotel', ent); return; }
   hotelRender(hotelCalcularLocal(ent), ent, null);
 }
-function calcularLogCarga(){
+/* ═══ v730 · CUTOVER — calcularLogCarga: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function logcargaLerEntradas(){
   var fat=parseFloat(document.getElementById('log_fat').value)||0;
   var cred=(parseFloat(document.getElementById('log_cred').value)||0)/100;
   var atual=lhCoreAtualPct('log');
-  if(fat<=0){ mostrarToast('Informe a receita de fretes','error'); return; }
+  if(fat<=0){ mostrarToast('Informe a receita de fretes','error'); return null; }
   var _rs=document.getElementById('res-logcarga'); if(_rs) _rs.classList.add('visible');
+
+  return { setor:'logcarga', subtipo:'padrao', faturamento:fat, carga_atual_pct:atual*100, credito_pct:cred*100, _cred:cred, _atual:atual };
+}
+function logcargaCalcularLocal(ent){
+  var fat=ent.faturamento, cred=ent._cred, atual=ent._atual;
+  
   var red=0, impostoAtual=fat*atual;
   var res=_lhProjSetor(fat,red,cred,impostoAtual); var r33=res[7];
+
+  return _lhServidorDeRes(res, impostoAtual, { reducao_pct:0 });
+}
+function logcargaRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-logcarga'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento, cred=ent._cred, atual=ent._atual;
+  
+  var cred=ent._cred, atual=ent._atual; var red=0; var impostoAtual=+r.carga_atual; var res=_lhResDeServidor(r, impostoAtual); var r33=res[7];
   var ganha=_lhKpisSetor('kpi-logcarga',r33,impostoAtual,'Logística','regime REGULAR — sem redução; crédito é a alavanca');
   try{ _lhChartSetor('chartLogCarga','chart-logcarga',res,impostoAtual); }catch(e){ console.warn('chart log',e.message); }
   try{ _lhRecsSetor('recs-logcarga','logcarga',ganha,r33.impostoNovo,impostoAtual); }catch(e){}
@@ -21343,6 +21364,12 @@ function calcularLogCarga(){
   var v=document.getElementById('viab-logcarga');
   if(v&&window.lhNotaConsultiva) v.innerHTML=window.lhNotaConsultiva({confianca:{nivel:'media',motivo:'Premissa Lionheart — ICMS-frete efetivo varia por UF/rota; o tributarista valida.'},nota:'Variação 2033: '+(r33.impostoNovo-impostoAtual<0?'−':'+')+fmtR(Math.abs(r33.impostoNovo-impostoAtual))+'/ano. O crédito do diesel decide o sinal.',premissas:[{label:'Regime',valor:'regular, sem redução'},{label:'Curva',valor:'EC 132 · 2026-2033'}],rotuloValor:'Novo 2033',valor:fmtR(r33.impostoNovo)});
   mostrarToast('✓ Logística calculada');
+
+}
+function calcularLogCarga(){
+  var ent=logcargaLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularLogCarga')){ LH_PONTE.executar('calcularLogCarga', ent); return; }
+  logcargaRender(logcargaCalcularLocal(ent), ent, null);
 }
 
 
@@ -21632,14 +21659,31 @@ function calcularAgViagem(){
   agviagemRender(agviagemCalcularLocal(ent), ent, null);
 }
 
-function calcularTelecom(){
+/* ═══ v730 · CUTOVER — calcularTelecom: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function telecomLerEntradas(){
   var setor=document.getElementById('tel_setor').value;
   var fat=parseFloat(document.getElementById('tel_fat').value)||0;
   var cred=(parseFloat(document.getElementById('tel_cred').value)||0)/100;
   var atual=(parseFloat(document.getElementById('tel_atual').value)||0)/100;
-  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return; }
+  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return null; }
+
+  return { setor:'telecom', subtipo:'padrao', faturamento:fat, carga_atual_pct:atual*100, credito_pct:cred*100, _setor:setor, _cred:cred, _atual:atual };
+}
+function telecomCalcularLocal(ent){
+  var fat=ent.faturamento, setor=ent._setor, cred=ent._cred, atual=ent._atual;
+  
   var red=0.00, impostoAtual=fat*atual;
   var res=_lhProjSetor(fat,red,cred,impostoAtual); var r33=res[7];
+
+  return _lhServidorDeRes(res, impostoAtual, { reducao_pct:0 });
+}
+function telecomRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-telecom'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento, setor=ent._setor, cred=ent._cred, atual=ent._atual;
+  
+  var setor=ent._setor, cred=ent._cred, atual=ent._atual; var red=0.00; var impostoAtual=+r.carga_atual; var res=_lhResDeServidor(r, impostoAtual); var r33=res[7];
   var ganha=_lhKpisSetor('kpi-telecom',r33,impostoAtual,setor.replace(/_/g," "),'regime regular');
   try{ var v=document.getElementById('viab-telecom'); if(v&&window.lhNotaConsultiva) v.innerHTML=window.lhNotaConsultiva({confianca:{nivel:'Média',motivo:'Telecom e energia ficam no regime regular. O ICMS-comunicação/energia atual é alto (~25-30%) e varia por UF — ajuste a carga atual à realidade.'},premissas:[{label:'Setor',valor:setor},{label:'Faturamento',valor:fmtR(fat)},{label:'% crédito',valor:fmtPct(cred*100)},{label:'Carga atual',valor:fmtPct(atual*100)}],nota:'Quem paga ICMS alto hoje tende a ALIVIAR com o crédito amplo da Reforma — o oposto do serviço leve. Energia no mercado livre: base = liquidação CCEE.'});
     var m=document.getElementById('mem-telecom'); if(m&&window.lhMemoriaCalculo) m.innerHTML=window.lhMemoriaCalculo({titulo:'Telecom/Energia na Reforma',aliquotas:[{label:'Faturamento',valor:fmtR(fat)},{label:'Carga atual',valor:fmtPct(atual*100)},{label:'Alíquota efetiva 2033',valor:fmtPct(r33.aliqEfet*100)},{label:'Imposto novo 2033',valor:fmtR(r33.impostoNovo)}],porque:'Telecom e energia ficam no regime regular (26,5% pleno, não-cumulatividade). Como o ICMS atual é elevado, o crédito amplo do novo sistema pode reduzir a carga efetiva. Energia no mercado livre tem base na liquidação da CCEE.',baseLegal:[{lei:'LC 214/2025 · art. 12 §9 (LC 227/2026)'}]});
@@ -21650,6 +21694,12 @@ function calcularTelecom(){
   document.getElementById('res-telecom').classList.add('visible');
   try{ if(window.setMotorResultado) setMotorResultado('telecom',{tipo:r33.varVs<0?'economia_anual':'custo_imposto',valor:Math.abs(r33.varVs),valorAnual:Math.abs(r33.varVs),contexto:ganha?'Setor ganha':'Setor perde',descricao:'Telecom/energia '+setor+': imposto novo 2033 '+fmtR(r33.impostoNovo)+' vs '+fmtR(impostoAtual)+'.',recomendacao:'Maximizar crédito de rede/energia comprada.'}); }catch(e){}
   mostrarToast('✓ Impacto calculado','success');
+
+}
+function calcularTelecom(){
+  var ent=telecomLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularTelecom')){ LH_PONTE.executar('calcularTelecom', ent); return; }
+  telecomRender(telecomCalcularLocal(ent), ent, null);
 }
 
 /* ═══ v729 · CUTOVER — calcularPSaude: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
@@ -21902,24 +21952,41 @@ function calcularBares(){
 
 
 
-function calcularClassificador(){
+/* ═══ v730 · CUTOVER — calcularClassificador: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function classifLerEntradas(){
   var fat=parseFloat(document.getElementById('classif_fat').value)||0;
   var atual=(parseFloat(document.getElementById('classif_atual').value)||0)/100;
   var cred=(parseFloat(document.getElementById('classif_cred').value)||0)/100;
-  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return; }
+  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return null; }
   var mix=window.LH_classifMix||[];
-  if(!mix.length){ mostrarToast('Adicione ao menos um produto na lista','error'); return; }
+  if(!mix.length){ mostrarToast('Adicione ao menos um produto na lista','error'); return null; }
   var pZ=0,p60=0,p30=0,pP=0;
   mix.forEach(function(m){ if(m.b==='ZERO')pZ+=m.pct; else if(m.b==='60')p60+=m.pct; else if(m.b==='30')p30+=m.pct; else pP+=m.pct; });
   var soma=pZ+p60+p30+pP;
-  if(soma<99||soma>101){ mostrarToast('A soma dos produtos deve ser 100% (atual: '+soma.toFixed(0)+'%)','error'); return; }
+  if(soma<99||soma>101){ mostrarToast('A soma dos produtos deve ser 100% (atual: '+soma.toFixed(0)+'%)','error'); return null; }
   var fZ=pZ/soma, f60=p60/soma, f30=p30/soma, fP=pP/soma;
+
+  return { faturamento:fat, mix:(window.LH_classifMix||[]).map(function(m){ var mapa={ZERO:'zero','60':'red60','30':'red30'}; return { balde:(mapa[m.b]||'cheia'), pct:Number(m.pct)||0 }; }), carga_atual_pct:atual*100, credito_pct:cred*100, _atual:atual, _cred:cred, _fZ:fZ, _f60:f60, _f30:f30, _fP:fP, _soma:soma };
+}
+function classifCalcularLocal(ent){
+  var fat=ent.faturamento, atual=ent._atual, cred=ent._cred, fZ=ent._fZ, f60=ent._f60, f30=ent._f30, fP=ent._fP, soma=ent._soma;
+  
   var retencao=0*fZ+0.4*f60+0.7*f30+1.0*fP;
   var redEq=1-retencao;
   var impostoAtual=fat*atual;
   var res=_lhProjSetor(fat,redEq,cred,impostoAtual); var r33=res[7];
   var brutaMix=LH_REF_PLENA()*(1-redEq); /* 🦁 bruta ponderada do mix, SEM crédito */
-   var ganha=_lhKpisSetor('kpi-classif',r33,impostoAtual,'Mix de produtos','bruta ponderada '+fmtPct(brutaMix*100)+(cred>0?' · líquida de crédito '+fmtPct(r33.aliqEfet*100):''));
+ 
+  return _lhServidorDeRes(res, impostoAtual, { retencao_ponderada:retencao, reducao_equivalente_pct:redEq*100, aliquota_bruta_2033_pct:brutaMix*100 });
+}
+function classifRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-classif'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento, atual=ent._atual, cred=ent._cred, fZ=ent._fZ, f60=ent._f60, f30=ent._f30, fP=ent._fP, soma=ent._soma;
+  
+  var atual=ent._atual, cred=ent._cred, fZ=ent._fZ, f60=ent._f60, f30=ent._f30, fP=ent._fP, soma=ent._soma; var mix=window.LH_classifMix||[]; var retencao=+(r.retencao_ponderada!=null?r.retencao_ponderada:(0*fZ+0.4*f60+0.7*f30+1.0*fP)); var redEq=(r.reducao_equivalente_pct!=null?(+r.reducao_equivalente_pct)/100:1-retencao); var impostoAtual=+r.carga_atual; var res=_lhResDeServidor(r, impostoAtual); var r33=res[7]; var brutaMix=(r.aliquota_bruta_2033_pct!=null?(+r.aliquota_bruta_2033_pct)/100:LH_REF_PLENA()*(1-redEq));
+  var ganha=_lhKpisSetor('kpi-classif',r33,impostoAtual,'Mix de produtos','bruta ponderada '+fmtPct(brutaMix*100)+(cred>0?' · líquida de crédito '+fmtPct(r33.aliqEfet*100):''));
   try{
     var v=document.getElementById('viab-classif'); if(v&&window.lhNotaConsultiva) v.innerHTML=window.lhNotaConsultiva({confianca:{nivel:'M\u00e9dia',motivo:'Al\u00edquota efetiva ponderada pelo mix informado. A precis\u00e3o depende da classifica\u00e7\u00e3o correta de cada produto no balde certo (Anexos da LC 214/2025).'},premissas:[{label:'Faturamento',valor:fmtR(fat)},{label:'Mix 0% / 60% / 30% / padr\u00e3o',valor:pZ.toFixed(0)+'% / '+p60.toFixed(0)+'% / '+p30.toFixed(0)+'% / '+pP.toFixed(0)+'%'},{label:'Al\u00edquota efetiva 2033',valor:fmtPct(r33.aliqEfet*100)},{label:'Cr\u00e9dito',valor:fmtPct(cred*100)}],nota:'Cobre atividades sem regime pr\u00f3prio (varejo, supermercado, loja, padaria, com\u00e9rcio misto). Para setores de mec\u00e2nica diferente (cooperativa, plano de sa\u00fade, financeiro, apostas, combust\u00edvel, bares) use a calculadora dedicada.'});
     var m=document.getElementById('mem-classif');
@@ -21935,6 +22002,12 @@ function calcularClassificador(){
   document.getElementById('res-classif').classList.add('visible');
   try{ if(window.setMotorResultado) setMotorResultado('classificador',{tipo:r33.varVs<0?'economia_anual':'custo_imposto',valor:Math.abs(r33.varVs),valorAnual:Math.abs(r33.varVs),contexto:ganha?'Mix favor\u00e1vel':'Mix puxa carga',descricao:'Mix de produtos: al\u00edquota efetiva '+fmtPct(r33.aliqEfet*100)+', imposto novo 2033 '+fmtR(r33.impostoNovo)+' vs '+fmtR(impostoAtual)+'.',recomendacao:'Revisar classifica\u00e7\u00e3o dos produtos nos baldes da LC 214 para otimizar a carga.'}); }catch(e){}
   mostrarToast('\u2713 Al\u00edquota efetiva calculada','success');
+
+}
+function calcularClassificador(){
+  var ent=classifLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularClassificador')){ LH_PONTE.executar('calcularClassificador', ent); return; }
+  classifRender(classifCalcularLocal(ent), ent, null);
 }
 
 /* ═══ v729 · CUTOVER — calcularMedicamento: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
@@ -22013,16 +22086,33 @@ function tpxSubChange(){
     } else { box.style.display='none'; }
   }
 }
-function calcularTransPax(){
+/* ═══ v730 · CUTOVER — calcularTransPax: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function transpaxLerEntradas(){
   var REDUC={urbano:1.00,interurbano:0.40,aereo_regional:0.40,fretamento:0.00};
   var sub=document.getElementById('tpx_sub').value;
   var fat=parseFloat(document.getElementById('tpx_fat').value)||0;
   var cred=(parseFloat(document.getElementById('tpx_cred').value)||0)/100;
   if(sub==='urbano') cred=0;   /* art. 157/285: crédito vedado */
   var atual=(parseFloat(document.getElementById('tpx_atual').value)||0)/100;
-  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return; }
+  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return null; }
+
+  return { setor:'transpax', subtipo:sub||'interurbano', faturamento:fat, carga_atual_pct:atual*100, credito_pct:cred*100, _sub:sub, _cred:cred, _atual:atual };
+}
+function transpaxCalcularLocal(ent){
+  var fat=ent.faturamento, sub=ent._sub, cred=ent._cred, atual=ent._atual;
+  var REDUC={urbano:1.00,interurbano:0.40,aereo_regional:0.40,fretamento:0.00};
   var red=REDUC[sub]||0, impostoAtual=fat*atual;
   var res=_lhProjSetor(fat,red,cred,impostoAtual); var r33=res[7];
+
+  return _lhServidorDeRes(res, impostoAtual, { reducao_pct:red*100 });
+}
+function transpaxRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-transpax'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento, sub=ent._sub, cred=ent._cred, atual=ent._atual;
+  var REDUC={urbano:1.00,interurbano:0.40,aereo_regional:0.40,fretamento:0.00};
+  var sub=ent._sub, cred=ent._cred, atual=ent._atual; var REDUC={urbano:1.00,interurbano:0.40,aereo_regional:0.40,fretamento:0.00}; var red=(r.reducao_pct!=null?(+r.reducao_pct)/100:(REDUC[sub]||0)); var impostoAtual=+r.carga_atual; var res=_lhResDeServidor(r, impostoAtual); var r33=res[7];
   var ganha=_lhKpisSetor('kpi-transpax',r33,impostoAtual,sub.replace(/_/g," "),'redução '+fmtPct(red*100));
   try{ var v=document.getElementById('viab-transpax'); if(v&&window.lhNotaConsultiva) v.innerHTML=window.lhNotaConsultiva({confianca:{nivel:'Média-alta',motivo:'A modalidade define a redução E o direito ao crédito: urbano/metropolitano tem alíquota zero mas crédito VEDADO (arts. 157 e 285); intermunicipal/interestadual e aéreo regional têm −40% COM crédito para o adquirente (arts. 286/287); fretamento/turismo fica no regime regular. A incerteza está no enquadramento da modalidade, não na alíquota.'},premissas:[{label:'Modalidade',valor:sub},{label:'Faturamento',valor:fmtR(fat)},{label:'Redução',valor:fmtPct(red*100)},{label:'% crédito',valor:fmtPct(cred*100)}],nota:'Não confundir com transporte de CARGAS, que fica no regime regular com crédito pleno. No urbano, alíquota zero sem crédito: o custo de diesel, pneus e peças sobe porque o tributo embutido deixa de ser recuperável — efeito que pesa mais em frota elétrica ou a hidrogênio, cuja cadeia carrega mais tributo embutido que a do diesel.'});
     var m=document.getElementById('mem-transpax'); if(m&&window.lhMemoriaCalculo) m.innerHTML=window.lhMemoriaCalculo({titulo:'Transporte de passageiros na Reforma',aliquotas:[{label:'Faturamento',valor:fmtR(fat)},{label:'Modalidade',valor:sub},{label:'Redução',valor:fmtPct(red*100)},{label:'Alíquota efetiva 2033',valor:fmtPct(r33.aliqEfet*100)},{label:'Imposto novo 2033',valor:fmtR(r33.impostoNovo)},{label:'Carga atual',valor:fmtR(impostoAtual)}],porque:'A LC 214/2025 isenta (redução 100%) o transporte público coletivo urbano, semiurbano e metropolitano ferroviário e hidroviário (art. 285); reduz em 40% o intermunicipal e interestadual rodoviário/ferroviário/hidroviário (art. 286) e o aéreo regional (art. 287). ATENÇÃO à assimetria do crédito: no urbano a alíquota zero vem acompanhada de VEDAÇÃO ao crédito — o prestador não recupera o tributo embutido nos insumos (diesel, pneus, peças, energia) e o adquirente não se credita, o que neutraliza boa parte da desoneração. Já na redução de 40% (arts. 286 e 287) o adquirente PODE se apropriar do crédito, na forma dos arts. 47 a 56.',baseLegal:[{lei:'LC 214/2025 art. 285, 286, 287'}]});
@@ -22033,6 +22123,12 @@ function calcularTransPax(){
   document.getElementById('res-transpax').classList.add('visible');
   try{ if(window.setMotorResultado) setMotorResultado('transpax',{tipo:r33.varVs<0?'economia_anual':'custo_imposto',valor:Math.abs(r33.varVs),valorAnual:Math.abs(r33.varVs),contexto:ganha?'Alivia':'Encarece',descricao:'Transporte passageiros '+sub+': imposto novo 2033 '+fmtR(r33.impostoNovo)+' vs '+fmtR(impostoAtual)+'.',recomendacao:'Confirmar a modalidade (urbano isento vs interurbano −40%).'}); }catch(e){}
   mostrarToast('✓ Impacto calculado','success');
+
+}
+function calcularTransPax(){
+  var ent=transpaxLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularTransPax')){ LH_PONTE.executar('calcularTransPax', ent); return; }
+  transpaxRender(transpaxCalcularLocal(ent), ent, null);
 }
 
 // ══════════════════════════════════════════
