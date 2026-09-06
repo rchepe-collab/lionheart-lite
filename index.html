@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v738";</script>
+<body><script>window.LH_VERSAO="v739";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3656,7 +3656,8 @@ window.LH_PONTE = (function(){
                  lucro_comprador:f('ma_lucrocomprador'), custo_vendedor:f('ma_custovendedor'), contingencias:f('ma_contingente'), prob_contingencia:f('ma_probcont'), taxa_anual:f('ma_taxa')||14 }; },
       esperado:function(r){ return (r&&r.agio&&r.vendedor)?{ agio_vp:Number(r.agio.valor_presente), custo_efetivo:Number(r.custo_efetivo_da_aquisicao), imposto_vendedor:Number(r.vendedor.imposto) }:null; },
       /* kpi-ma (R$): [0] preço · [1] ágio por rentabilidade · [2] benefício do ágio (VP) · [3] custo efetivo · [4] imposto do vendedor · [5] líquido */
-      local:function(){ var R=LH_PONTE._rsNum; return { agio_vp:R('kpi-ma',2), custo_efetivo:R('kpi-ma',3), imposto_vendedor:R('kpi-ma',4) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { agio_vp:R('kpi-ma',2), custo_efetivo:R('kpi-ma',3), imposto_vendedor:R('kpi-ma',4) }; },
+      render:function(r, ent, motivo){ maRender(r, ent, motivo); } },
     /* ═══ v703 · N30 e N15 pelo Mestre ═══
        N30: fn_n30 reescrita no modelo da aba (janela 2026: doar hoje pela alíquota atual × herdar pela regra
        nova com imóveis antigos a mercado). Assinatura nova → despachante v6.
@@ -3772,7 +3773,8 @@ window.LH_PONTE = (function(){
       esperado:function(r){ if(!r||!r.opcoes) return null; var fins=r.opcoes.map(function(o){ return Number(o.patrimonio_final); }).filter(function(x){ return !isNaN(x); });
         return { melhor:Math.max.apply(null,fins), amplitude:+(Math.max.apply(null,fins)-Math.min.apply(null,fins)).toFixed(2) }; },
       /* kpi-offshore (R$): [0] patrimônio hoje · [1] sem imposto · [2] melhor estrutura · [3] melhor − pior · [4] imposto na melhor */
-      local:function(){ var R=LH_PONTE._rsNum; return { melhor:R('kpi-offshore',2), amplitude:R('kpi-offshore',3) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { melhor:R('kpi-offshore',2), amplitude:R('kpi-offshore',3) }; },
+      render:function(r, ent, motivo){ offshoreRender(r, ent, motivo); } },
     /* ═══ v712 · Agro Super5 e Super6 — reconciliadas pelas abas novas do Mestre v115 (AG-S5, AG-S6) ═══
        S5: fn_agrosuper5 ganhou o REGIME (só o LR credita PIS/COFINS sobre imobilizado) — assinatura nova (v8).
            A tela não tem seletor de ano-base: usa o ano corrente; manda-se o mesmo ao servidor.
@@ -24705,12 +24707,13 @@ function calcularAgroSuper7(){
    Vedada a amortização do ágio gerado entre partes dependentes.
    Vendedor pessoa física: ganho de capital a 15% a 22,5% (Lei 13.259).
    ═══════════════════════════════════════════════════════════════ */
-function calcularMA(){
+/* ═══ v739 · CUTOVER — calcularMA: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function maLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var preco=V('ma_preco',0);
-  if(preco<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o preço de aquisição','error'); return; }
-  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(preco,10000,'Preço de aquisição')) return;
+  if(preco<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o preço de aquisição','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(preco,10000,'Preço de aquisição')) return null;
   var pl=V('ma_pl',0), maisValia=V('ma_maisvalia',0);
   var forma=G('ma_forma','quotas');
   var incorpora=G('ma_incorpora','sim')==='sim';
@@ -24722,6 +24725,12 @@ function calcularMA(){
   var taxa=V('ma_taxa',14)/100;
   var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
 
+
+  return { preco:preco, pl_alvo:pl, mais_valia:maisValia, forma:forma, incorpora:incorpora, independentes:independentes, tem_laudo:temLaudo, lucro_comprador:lucroComprador, custo_vendedor:custoVendedor, contingencias:conting, prob_contingencia:probCont*100, taxa_anual:taxa*100, _probCont:probCont, _taxa:taxa };
+}
+function maCalcularLocal(ent){
+  var preco=ent.preco, pl=ent.pl_alvo, maisValia=ent.mais_valia, forma=ent.forma, incorpora=ent.incorpora, independentes=ent.independentes, temLaudo=ent.tem_laudo, lucroComprador=ent.lucro_comprador, custoVendedor=ent.custo_vendedor, conting=ent.contingencias, probCont=ent._probCont, taxa=ent._taxa;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
   /* desdobramento do custo — art. 20 */
   var agio=Math.max(0, preco-pl-maisValia);
   var deságio=Math.max(0, pl+maisValia-preco);
@@ -24781,6 +24790,16 @@ function calcularMA(){
   if(deságio>0) ln('Deságio (compra abaixo do PL)', deságio, 'ganho por compra vantajosa — receita tributável', '<span style="color:#e06b5a">−'+R(deságio*IRCS)+'</span>','#e06b5a');
   if(conting>0) ln('Passivos contingentes', conting, forma==='quotas'?('herdados — '+(probCont*100).toFixed(0)+'% de chance'):'não seguem na compra de ativos',
      forma==='quotas'?('<span style="color:#e06b5a">−'+R(exposicaoCont)+'</span>'):'<span style="color:#16c47c">isolados</span>');
+
+  return { ok:true, preco:preco, forma:forma, desdobramento_art20:{ patrimonio_liquido:pl, mais_valia:maisValia, agio:agio, desagio:deságio }, agio:{ amortizavel:podeAmortizar, motivo_veda:(motivoVeda||null), amortizacao_anual:amortAno, absorcao_pelo_lucro_pct:absorve*100, beneficio_fiscal_34pct:beneficioReal, valor_presente:vpBeneficio }, mais_valia:{ beneficio:beneficioMaisValia, valor_presente:vpMaisValia }, vendedor:{ ganho:ganhoVendedor, imposto:impostoVendedor, ganho_de_capital_15pct:impostoVendedor }, contingencias_esperadas:exposicaoCont, custo_efetivo_da_aquisicao:custoEfetivo, desconto_efetivo_pct:(preco>0?(1-custoEfetivo/preco)*100:0) };
+}
+function maRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-ma'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var preco=ent.preco, pl=ent.pl_alvo, maisValia=ent.mais_valia, forma=ent.forma, incorpora=ent.incorpora, independentes=ent.independentes, temLaudo=ent.tem_laudo, lucroComprador=ent.lucro_comprador, custoVendedor=ent.custo_vendedor, conting=ent.contingencias, probCont=ent._probCont, taxa=ent._taxa;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
+  var preco=ent.preco, pl=ent.pl_alvo, maisValia=ent.mais_valia, forma=ent.forma, incorpora=ent.incorpora, independentes=ent.independentes, temLaudo=ent.tem_laudo, lucroComprador=ent.lucro_comprador, custoVendedor=ent.custo_vendedor, conting=ent.contingencias, probCont=ent._probCont, taxa=ent._taxa; var IRCS=0.34; var agio=+r.desdobramento_art20.agio, deságio=+r.desdobramento_art20.desagio; var podeAmortizar=!!r.agio.amortizavel; var motivoVeda=''; if(agio>0 && !podeAmortizar){ if(forma!=='quotas') motivoVeda='a compra de ativos não gera ágio de participação — o sobrepreço vira custo do próprio ativo'; else if(!independentes) motivoVeda='ágio entre partes dependentes não é amortizável'; else if(!incorpora) motivoVeda='sem incorporação, fusão ou cisão o ágio permanece no investimento, sem amortização fiscal'; else if(!temLaudo) motivoVeda='sem laudo de avaliação protocolado, a amortização é glosada'; } var amortAno=+r.agio.amortizacao_anual, absorve=(+r.agio.absorcao_pelo_lucro_pct)/100, beneficioReal=+r.agio.beneficio_fiscal_34pct, beneficioAgio=podeAmortizar?agio*IRCS:0, vpBeneficio=+r.agio.valor_presente; var beneficioMaisValia=+r.mais_valia.beneficio, vpMaisValia=+r.mais_valia.valor_presente; var ganhoVendedor=+r.vendedor.ganho, impostoVendedor=+r.vendedor.imposto, liquidoVendedor=preco-impostoVendedor; var exposicaoCont=+r.contingencias_esperadas, custoEfetivo=+r.custo_efetivo_da_aquisicao; var linhas=''; function ln(comp,val,trat,efeito,cor){ linhas+='<tr><td><b>'+comp+'</b></td><td>'+R(val)+'</td><td style="font-size:.86em">'+trat+'</td>'+ '<td'+(cor?(' style="color:'+cor+'"'):'')+'>'+efeito+'</td></tr>'; } ln('Valor patrimonial', pl, 'custo do investimento', '—'); ln('Mais-valia de ativos', maisValia, 'amortiza pela vida útil do ativo', beneficioMaisValia>0?('+'+R(vpMaisValia)+' em VP'):'sem efeito', beneficioMaisValia>0?'#16c47c':''); ln('Ágio por rentabilidade futura', agio, podeAmortizar?'1/60 avos ao mês — 5 anos (art. 22)':(motivoVeda||'—'), podeAmortizar?('+'+R(vpBeneficio)+' em VP'):'<span style="color:#e06b5a">sem benefício</span>', podeAmortizar?'#16c47c':''); if(deságio>0) ln('Deságio (compra abaixo do PL)', deságio, 'ganho por compra vantajosa — receita tributável', '<span style="color:#e06b5a">−'+R(deságio*IRCS)+'</span>','#e06b5a'); if(conting>0) ln('Passivos contingentes', conting, forma==='quotas'?('herdados — '+(probCont*100).toFixed(0)+'% de chance'):'não seguem na compra de ativos', forma==='quotas'?('<span style="color:#e06b5a">−'+R(exposicaoCont)+'</span>'):'<span style="color:#16c47c">isolados</span>');
   document.getElementById('tab-ma').innerHTML=linhas;
 
   document.getElementById('kpi-ma').innerHTML=
@@ -24871,6 +24890,12 @@ function calcularMA(){
     }
   }catch(_e){}
   var res=document.getElementById('res-ma'); if(res) res.style.display='block';
+
+}
+function calcularMA(){
+  var ent=maLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularMA')){ LH_PONTE.executar('calcularMA', ent); return; }
+  maRender(maCalcularLocal(ent), ent, null);
 }
 
 function calcularStockOptions(){
@@ -25225,12 +25250,13 @@ function calcularValuation(){
   valuationRender(valuationCalcularLocal(ent), ent, null);
 }
 
-function calcularOffshore(){
+/* ═══ v739 · CUTOVER — calcularOffshore: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function offshoreLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var P=V('of_patrimonio',0);
-  if(P<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o patrimônio investido','error'); return; }
-  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(P,10000,'Patrimônio investido')) return;
+  if(P<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o patrimônio investido','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(P,10000,'Patrimônio investido')) return null;
   var r=V('of_retorno',10)/100, anos=Math.max(1,V('of_anos',15));
   var jur=G('of_jurisdicao','ptf');
   var impExt=V('of_impext',0)/100;
@@ -25266,6 +25292,12 @@ function calcularOffshore(){
     return v;
   }
 
+
+  return { patrimonio:P, retorno_aa:r*100, anos:anos, jurisdicao:jur, imposto_exterior_pct:impExt*100, custo_offshore:custoOff, custo_fundo:custoFundo, perfil_fundo:perfil, _r:r, _impExt:impExt, _verSucessao:verSucessao };
+}
+function offshoreCalcularLocal(ent){
+  var P=ent.patrimonio, anos=ent.anos, jur=ent.jurisdicao, custoOff=ent.custo_offshore, custoFundo=ent.custo_fundo, perfil=ent.perfil_fundo, r=ent._r, impExt=ent._impExt, verSucessao=ent._verSucessao;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }; var P=ent.patrimonio, r=ent._r, anos=ent.anos, impExt=ent._impExt, custoOff=ent.custo_offshore, custoFundo=ent.custo_fundo, perfil=ent.perfil_fundo, jur=ent.jurisdicao; function anual(aliq, custoAno, creditoExt){ var v=P; for(var a=0;a<anos;a++){ var rend=v*r; var imp=Math.max(0, rend*aliq - rend*creditoExt); v = v + rend - imp - custoAno; } return v; } function noResgate(aliq, custoAno){ var v=P; for(var a=0;a<anos;a++){ v = v + v*r - custoAno; } var ganho=Math.max(0, v-P); return v - ganho*aliq; } function comeCotas(aliq, custoAno){ var v=P, rs=Math.pow(1+r,0.5)-1; for(var a=0;a<anos*2;a++){ var rend=v*rs; v = v + rend - rend*aliq - custoAno/2; } return v; }
   var ops=[];
   var automatico = (jur==='ptf'||jur==='normal');
 
@@ -25300,6 +25332,16 @@ function calcularOffshore(){
       '<td style="font-size:.86em">'+o.trib+'</td><td>'+R(Math.max(0,o.imposto))+'</td>'+
       '<td>'+(o.custo>0?R(o.custo):'—')+'</td><td><b>'+R(o.fim)+'</b></td></tr>';
   });
+
+  return { ok:true, patrimonio:P, retorno_aa_pct:r*100, anos:anos, jurisdicao:jur, regime_automatico:automatico, opcoes:ops.map(function(o){ return { opcao:o.nome, quando:o.trib, nota:o.obs, patrimonio_final:o.fim }; }), melhor:{ opcao:melhor.nome, patrimonio_final:melhor.fim }, diferenca_melhor_vs_pior:(melhor.fim-ops.reduce(function(a,b){ return b.fim<a.fim?b:a; }).fim) };
+}
+function offshoreRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-offshore'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var P=ent.patrimonio, anos=ent.anos, jur=ent.jurisdicao, custoOff=ent.custo_offshore, custoFundo=ent.custo_fundo, perfil=ent.perfil_fundo, r=ent._r, impExt=ent._impExt, verSucessao=ent._verSucessao;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }; var P=ent.patrimonio, r=ent._r, anos=ent.anos, impExt=ent._impExt, custoOff=ent.custo_offshore, custoFundo=ent.custo_fundo, perfil=ent.perfil_fundo, jur=ent.jurisdicao; function anual(aliq, custoAno, creditoExt){ var v=P; for(var a=0;a<anos;a++){ var rend=v*r; var imp=Math.max(0, rend*aliq - rend*creditoExt); v = v + rend - imp - custoAno; } return v; } function noResgate(aliq, custoAno){ var v=P; for(var a=0;a<anos;a++){ v = v + v*r - custoAno; } var ganho=Math.max(0, v-P); return v - ganho*aliq; } function comeCotas(aliq, custoAno){ var v=P, rs=Math.pow(1+r,0.5)-1; for(var a=0;a<anos*2;a++){ var rend=v*rs; v = v + rend - rend*aliq - custoAno/2; } return v; }
+  var P=ent.patrimonio, r_=ent._r, anos=ent.anos, jur=ent.jurisdicao, impExt=ent._impExt, custoOff=ent.custo_offshore, custoFundo=ent.custo_fundo, perfil=ent.perfil_fundo, verSucessao=ent._verSucessao; var r=r_; var automatico=(jur==='ptf'||jur==='normal'); var aliqF = perfil==='curto'?0.20:0.15; var _fim=function(rx){ var o=(r.opcoes||[]).filter(function(x){ return rx.test(String(x.opcao||'')); })[0]; return o?+o.patrimonio_final:0; }; var ops=[]; if(automatico){ ops.push({nome:'Offshore — tributação anual (art. 5º)', trib:'15% em 31/12, mesmo sem distribuir', fim:_fim(/anual/i), custo:custoOff*anos, obs:'regime automático'}); } else { ops.push({nome:'Offshore — tributação na disponibilização (art. 6º)', trib:'15% quando distribuir', fim:_fim(/disponibiliza/i), custo:custoOff*anos, obs:'atividade operacional afasta o automático'}); } ops.push({nome:'Offshore — transparência fiscal (art. 8º)', trib:'ativos tributados direto na PF', fim:_fim(/transpar/i), custo:custoOff*anos, obs:'opção IRREVOGÁVEL'}); if(perfil==='entidade'){ ops.push({nome:'Fundo — entidade de investimento', trib:'15% só no resgate, sem come-cotas', fim:_fim(/entidade/i), custo:custoFundo*anos, obs:'FIDC, FIP, FIA ou ETF que cumpram os requisitos'}); } else { ops.push({nome:'Fundo exclusivo — come-cotas', trib:(aliqF*100)+'% em maio e novembro', fim:_fim(/come-cotas/i), custo:custoFundo*anos, obs:perfil==='curto'?'carteira de curto prazo':'carteira de longo prazo'}); } ops.push({nome:'Investimento direto na PF', trib:'15% no resgate (>720 dias)', fim:_fim(/direta/i), custo:0, obs:'sem estrutura, sem custo de manutenção'}); var melhor=ops.reduce(function(a,b){ return b.fim>a.fim?b:a; }); var linhas=''; ops.forEach(function(o){ o.imposto = (P*Math.pow(1+r,anos)) - o.fim - o.custo; var dest=(o===melhor)?' style="background:rgba(22,196,124,.10);font-weight:600"':''; linhas+='<tr'+dest+'><td>'+o.nome+(o===melhor?' <span style="color:#16c47c">★</span>':'')+ '<br><span style="font-size:.8em;color:var(--text3)">'+o.obs+'</span></td>'+ '<td style="font-size:.86em">'+o.trib+'</td><td>'+R(Math.max(0,o.imposto))+'</td>'+ '<td>'+(o.custo>0?R(o.custo):'—')+'</td><td><b>'+R(o.fim)+'</b></td></tr>'; });
   document.getElementById('tab-offshore').innerHTML=linhas;
 
   var brutoSemImposto=P*Math.pow(1+r,anos);
@@ -25374,6 +25416,12 @@ function calcularOffshore(){
     }
   }catch(_e){}
   var res=document.getElementById('res-offshore'); if(res) res.style.display='block';
+
+}
+function calcularOffshore(){
+  var ent=offshoreLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularOffshore')){ LH_PONTE.executar('calcularOffshore', ent); return; }
+  offshoreRender(offshoreCalcularLocal(ent), ent, null);
 }
 
 function calcularSucessorio(){
