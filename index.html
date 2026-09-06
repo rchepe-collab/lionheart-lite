@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v737";</script>
+<body><script>window.LH_VERSAO="v738";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3637,7 +3637,8 @@ window.LH_PONTE = (function(){
                  vai_vender:(((G.el('al_vender')||{}).value)==='sim'), ano:2026 }; },
       esperado:function(r){ return (r&&r.pessoa_fisica)?{ pf:Number(r.pessoa_fisica.imposto), pj:Number(r.pessoa_juridica.total), diferenca:Number(r.diferenca_anual) }:null; },
       /* kpi-aluguelpfpj (R$): [0] PF · [1] PJ · [2] economia/ano · [3] custo constituição · [4] 10 anos */
-      local:function(){ var R=LH_PONTE._rsNum; return { pf:R('kpi-aluguelpfpj',0), pj:R('kpi-aluguelpfpj',1), diferenca:R('kpi-aluguelpfpj',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { pf:R('kpi-aluguelpfpj',0), pj:R('kpi-aluguelpfpj',1), diferenca:R('kpi-aluguelpfpj',2) }; },
+      render:function(r, ent, motivo){ aluguelRender(r, ent, motivo); } },
     /* v702 · Incorporação/RET reconciliada: o modelo (totais renda+consumo) já era o do Mestre; a divergência era
        a base CBS em branco virando 0% na tela. Mestre = CORE = banco: RET 800.000 · LP 3.218.000 · LR 4.302.000. */
     calcularImobRET: { calc:'imob-ret',
@@ -3829,14 +3830,16 @@ window.LH_PONTE = (function(){
       /* a tela mostra a faixa JÁ com o deságio; o servidor devolve a faixa cheia + desagio_pct */
       esperado:function(r){ if(!r||!r.faixa) return null; var d=1-Number(r.desagio_pct||0)/100;
         return { menor:+(Number(r.faixa.minimo)*d).toFixed(2), media:+(Number(r.faixa.medio)*d).toFixed(2), maior:+(Number(r.faixa.maximo)*d).toFixed(2) }; },
-      local:function(){ var R=LH_PONTE._rsNum; return { menor:R('kpi-valuation',0), media:R('kpi-valuation',1), maior:R('kpi-valuation',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { menor:R('kpi-valuation',0), media:R('kpi-valuation',1), maior:R('kpi-valuation',2) }; },
+      render:function(r, ent, motivo){ valuationRender(r, ent, motivo); } },
     calcularN18: { calc:'n18',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
         return { tipo:v('n18_tipo')||'cisao_parcial', pl:f('n18_pl'), valor_contabil:f('n18_contabil'), valor_mercado:f('n18_mercado'), pct_cindido:f('n18_pct'), criterio:v('n18_criterio')||'contabil',
                  imoveis:f('n18_imoveis'), itbi_pct:f('n18_itbi'), preponderante:(v('n18_preponderante')==='1'), prejuizo_fiscal:f('n18_prejuizo'), lucro_real:(v('n18_lr')!=='0') }; },
       esperado:function(r){ return r?{ irpj_csll:+(Number(r.irpj)+Number(r.csll)).toFixed(2), itbi:Number(r.itbi) }:null; },
       /* kpi-n18 (R$): [0] patrimônio na operação · [1] ganho realizado · [2] PL · [3] IRPJ+CSLL · [4] ITBI · [5] carga total */
-      local:function(){ var R=LH_PONTE._rsNum; return { irpj_csll:R('kpi-n18',3), itbi:R('kpi-n18',4) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { irpj_csll:R('kpi-n18',3), itbi:R('kpi-n18',4) }; },
+      render:function(r, ent, motivo){ n18Render(r, ent, motivo); } },
     calcularImobReforma: { calc:'imob-reforma',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
         return { operacao:v('imobref_op')||'venda', valor:f('imobref_valor'), custo:f('imobref_custo'), tipo_imovel:v('imobref_tipoimovel')||'res_novo', unidades:parseInt(v('imobref_unid'),10)||1,
@@ -24211,12 +24214,13 @@ var LH_LIMITE_PRODUTOR = 3600000;   /* corrigido pelo IPCA — art. 164 */
    realização de capital e em reorganização, salvo se a adquirente tiver
    atividade imobiliária preponderante.
    ═══════════════════════════════════════════════════════════════ */
-function calcularN18(){
+/* ═══ v738 · CUTOVER — calcularN18: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function n18LerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var pl=V('n18_pl',0), contabil=V('n18_contabil',0), mercado=V('n18_mercado',0);
-  if(pl<=0 && contabil<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o patrimônio líquido e o valor dos ativos','error'); return; }
-  if(typeof lhValorSuspeito==='function' && pl>0 && lhValorSuspeito(pl,1000,'Patrimônio líquido')) return;
+  if(pl<=0 && contabil<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o patrimônio líquido e o valor dos ativos','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && pl>0 && lhValorSuspeito(pl,1000,'Patrimônio líquido')) return null;
 
   var tipo=G('n18_tipo','cisao_parcial');
   var pct=V('n18_pct',100)/100;
@@ -24230,6 +24234,12 @@ function calcularN18(){
 
   var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
 
+
+  return { tipo:tipo, pl:pl, valor_contabil:contabil, valor_mercado:mercado, pct_cindido:pct*100, criterio:criterio, imoveis:imoveis, itbi_pct:itbiAliq*100, preponderante:preponderante, prejuizo_fiscal:prejuizo, lucro_real:noLR, _pct:pct, _itbiAliq:itbiAliq, _passivo:passivo };
+}
+function n18CalcularLocal(ent){
+  var tipo=ent.tipo, pl=ent.pl, contabil=ent.valor_contabil, mercado=ent.valor_mercado, criterio=ent.criterio, imoveis=ent.imoveis, preponderante=ent.preponderante, prejuizo=ent.prejuizo_fiscal, noLR=ent.lucro_real, pct=ent._pct, itbiAliq=ent._itbiAliq, passivo=ent._passivo;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
   /* ganho de capital: só existe se a transferência for a mercado */
   var ganhoPotencial=Math.max(0, mercado-contabil);
   var aMercado=(criterio==='mercado');
@@ -24259,6 +24269,16 @@ function calcularN18(){
   var patrTransferido = pl*pct;
   var aliqEfetiva = patrTransferido>0 ? cargaTotal/patrTransferido*100 : 0;
 
+
+  return { ok:true, tipo:tipo, criterio:criterio, pct_cindido:pct*100, ganho_potencial:ganhoPotencial, ganho_realizado:ganhoRealizado, irpj:irpj, csll:csll, itbi:itbi, prejuizo_fiscal_perdido:perdaPrejuizo, carga_total:cargaTotal, comparacao:{ a_valor_contabil:cargaContabil, a_valor_de_mercado:cargaMercado, diferenca:cargaMercado-cargaContabil, irpj_a_mercado:irpjSobre(ganhoPotencial), csll_a_mercado:ganhoPotencial*0.09 }, patrimonio_transferido:patrTransferido, aliquota_efetiva_pct:aliqEfetiva, neutra:neutra, melhor:(cargaContabil<=cargaMercado?'A VALOR CONTÁBIL':'A VALOR DE MERCADO') };
+}
+function n18Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-n18'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var tipo=ent.tipo, pl=ent.pl, contabil=ent.valor_contabil, mercado=ent.valor_mercado, criterio=ent.criterio, imoveis=ent.imoveis, preponderante=ent.preponderante, prejuizo=ent.prejuizo_fiscal, noLR=ent.lucro_real, pct=ent._pct, itbiAliq=ent._itbiAliq, passivo=ent._passivo;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
+  var tipo=ent.tipo, pl=ent.pl, contabil=ent.valor_contabil, mercado=ent.valor_mercado, criterio=ent.criterio, imoveis=ent.imoveis, preponderante=ent.preponderante, prejuizo=ent.prejuizo_fiscal, noLR=ent.lucro_real, pct=ent._pct, itbiAliq=ent._itbiAliq, passivo=ent._passivo; var ganhoPotencial=+r.ganho_potencial, aMercado=(criterio==='mercado'), ganhoRealizado=+r.ganho_realizado, irpj=+r.irpj, csll=+r.csll, itbi=+r.itbi, perdaPrejuizo=+r.prejuizo_fiscal_perdido, cargaContabil=+r.comparacao.a_valor_contabil, cargaMercado=+r.comparacao.a_valor_de_mercado, cargaTotal=+r.carga_total, neutra=(ganhoRealizado<=0), patrTransferido=+(r.patrimonio_transferido!=null?r.patrimonio_transferido:pl*pct), aliqEfetiva=+(r.aliquota_efetiva_pct!=null?r.aliquota_efetiva_pct:(patrTransferido>0?cargaTotal/patrTransferido*100:0)); var irpjSobre=function(b){ return (b>0 && Math.abs(b-ganhoPotencial)<0.005) ? +(r.comparacao.irpj_a_mercado||0) : 0; };
   document.getElementById('kpi-n18').innerHTML=
     '<div class="kpi-card"><div class="kpi-label">Patrimônio na operação</div><div class="kpi-value">'+R(patrTransferido)+'</div><div class="kpi-sub">'+(pct*100).toFixed(0)+'% do PL</div></div>'+
     '<div class="kpi-card'+(ganhoRealizado>0?' kpi-alerta':'')+'"><div class="kpi-label">Ganho de capital realizado</div><div class="kpi-value">'+R(ganhoRealizado)+'</div>'+
@@ -24356,6 +24376,12 @@ function calcularN18(){
     }
   }catch(_e){}
   var res=document.getElementById('res-n18'); if(res) res.style.display='block';
+
+}
+function calcularN18(){
+  var ent=n18LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularN18')){ LH_PONTE.executar('calcularN18', ent); return; }
+  n18Render(n18CalcularLocal(ent), ent, null);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -25020,13 +25046,14 @@ var f=[[29145.60,0,0],[33919.80,0.075,2185.92],[45012.60,0.15,4729.41],
   var res=document.getElementById('res-stockoptions'); if(res) res.style.display='block';
 }
 
-function calcularValuation(){
+/* ═══ v738 · CUTOVER — calcularValuation: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function valuationLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var receita=V('vl_receita',0), ebitda=V('vl_ebitda',0), lucro=V('vl_lucro',0);
   var pl=V('vl_pl',0), divida=V('vl_divida',0);
   if(ebitda<=0 && lucro<=0 && pl<=0){
-    if(typeof mostrarToast==='function') mostrarToast('Informe ao menos o EBITDA, o lucro ou o patrimônio líquido','error'); return;
+    if(typeof mostrarToast==='function') mostrarToast('Informe ao menos o EBITDA, o lucro ou o patrimônio líquido','error'); return null;
   }
   var g=V('vl_cresc',5)/100;
   var setorMult=parseFloat(G('vl_setor','6'))||0;
@@ -25038,6 +25065,12 @@ function calcularValuation(){
   var fin=G('vl_finalidade','itcmd');
   var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
 
+
+  return { receita:receita, ebitda:ebitda, lucro:lucro, patrimonio_liquido:pl, divida_liquida:divida, multiplo:mult, crescimento_aa:g*100, taxa_desconto:k*100, desagio_pct:desagio*100, participacao_pct:pct*100, finalidade:fin, _g:g, _k:k, _desagio:desagio, _pct:pct, _mult:mult };
+}
+function valuationCalcularLocal(ent){
+  var receita=ent.receita, ebitda=ent.ebitda, lucro=ent.lucro, pl=ent.patrimonio_liquido, divida=ent.divida_liquida, mult=ent._mult, fin=ent.finalidade, g=ent._g, k=ent._k, desagio=ent._desagio, pct=ent._pct;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
   var metodos=[];
 
   /* 1 · múltiplo de EBITDA */
@@ -25075,6 +25108,16 @@ function calcularValuation(){
   function ajusta(v){ return v*(1-desagio)*pct; }
   var minAj=ajusta(minV), maxAj=ajusta(maxV), mediaAj=ajusta(media);
 
+
+  return { ok:true, metodos:metodos.map(function(m){ return { metodo:m.nome, firma:m.firma, equity:m.quotas, invalido:!!m.invalido, patrimonial:!!m.patrimonial }; }), faixa:{ minimo:minV, medio:media, maximo:maxV }, desagio_pct:desagio*100, participacao_pct:pct*100, finalidade:fin, minimo_ajustado:minAj, medio_ajustado:mediaAj, maximo_ajustado:maxAj };
+}
+function valuationRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-valuation'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var receita=ent.receita, ebitda=ent.ebitda, lucro=ent.lucro, pl=ent.patrimonio_liquido, divida=ent.divida_liquida, mult=ent._mult, fin=ent.finalidade, g=ent._g, k=ent._k, desagio=ent._desagio, pct=ent._pct;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
+  var receita=ent.receita, ebitda=ent.ebitda, lucro=ent.lucro, pl=ent.patrimonio_liquido, divida=ent.divida_liquida, g=ent._g, k=ent._k, desagio=ent._desagio, pct=ent._pct, mult=ent._mult, fin=ent.finalidade; var _como={ 'Múltiplo de EBITDA':mult.toFixed(1).replace('.',',')+'× sobre '+R(ebitda), 'Fluxo de caixa descontado':R(lucro)+' × (1+'+(g*100).toFixed(1).replace('.',',')+'%) ÷ ('+(k*100).toFixed(1).replace('.',',')+'% − '+(g*100).toFixed(1).replace('.',',')+'%)', 'Fluxo descontado':'não calculável — a taxa de desconto precisa superar o crescimento', 'Valor patrimonial contábil':'patrimônio líquido do balanço' }; var _nome={ 'Múltiplo de EBITDA':'Múltiplo de EBITDA', 'Fluxo de caixa descontado (Gordon)':'Fluxo de caixa descontado', 'Valor patrimonial (book)':'Valor patrimonial contábil', 'Fluxo descontado':'Fluxo descontado' }; var metodos=(r.metodos||[]).map(function(m){ var nome=_nome[m.metodo]||m.metodo; return { nome:nome, como:_como[nome]||'', firma:+m.firma, quotas:+m.equity, invalido:!!m.invalido, patrimonial:!!m.patrimonial }; }); var validos=metodos.filter(function(m){ return !m.invalido && m.quotas>0; }); var vals=validos.map(function(m){ return m.quotas; }); var minV=+r.faixa.minimo, maxV=+r.faixa.maximo, media=+r.faixa.medio; function ajusta(v){ return v*(1-desagio)*pct; } var minAj=ajusta(minV), maxAj=ajusta(maxV), mediaAj=ajusta(media);
   var linhas='';
   metodos.forEach(function(m){
     if(m.invalido){
@@ -25174,6 +25217,12 @@ function calcularValuation(){
     }
   }catch(_e){}
   var res=document.getElementById('res-valuation'); if(res) res.style.display='block';
+
+}
+function calcularValuation(){
+  var ent=valuationLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularValuation')){ LH_PONTE.executar('calcularValuation', ent); return; }
+  valuationRender(valuationCalcularLocal(ent), ent, null);
 }
 
 function calcularOffshore(){
@@ -25493,17 +25542,24 @@ function calcularSucessorio(){
   var res=document.getElementById('res-sucessorio'); if(res) res.style.display='block';
 }
 
-function calcularAluguelPFPJ(){
+/* ═══ v738 · CUTOVER — calcularAluguelPFPJ: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function aluguelLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var bruto=V('al_bruto',0);
-  if(bruto<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o aluguel bruto anual','error'); return; }
-  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(bruto,100,'Aluguel bruto anual')) return;
+  if(bruto<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o aluguel bruto anual','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(bruto,100,'Aluguel bruto anual')) return null;
   var desp=V('al_desp',0), outros=V('al_outros',0);
   var custoPJ=V('al_custopj',0), constit=V('al_constit',0);
   var vaiVender=G('al_vender','nao')==='sim';
   var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); };
 
+
+  return { aluguel_anual:bruto, despesas:desp, outros_rendimentos:outros, custo_pj_anual:custoPJ, constituicao:constit, vai_vender:vaiVender, ano:2026 };
+}
+function aluguelCalcularLocal(ent){
+  var bruto=ent.aluguel_anual, desp=ent.despesas, outros=ent.outros_rendimentos, custoPJ=ent.custo_pj_anual, constit=ent.constituicao, vaiVender=ent.vai_vender;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); };
   /* ── PESSOA FÍSICA — tabela progressiva anual ── */
   var baseAluguel=Math.max(0,bruto-desp);
   function irpfAnual(base){
@@ -25533,6 +25589,16 @@ var f=[[29145.60,0,0],[33919.80,0.075,2185.92],[45012.60,0.15,4729.41],
   var economiaAno=impostoPF-custoTotalPJ;
   var payback = (economiaAno>0 && constit>0) ? (constit/economiaAno) : 0;
 
+
+  return { ok:true, ano:2026, pessoa_fisica:{ base:baseAluguel, imposto:impostoPF, aliquota_efetiva_pct:aliqPF*100 }, pessoa_juridica:{ irpj:irpj, adicional:adicional, csll:csll, pis_cofins:pisCofins, tributos:impostoPJ, custo_estrutura:custoPJ, total:custoTotalPJ, aliquota_efetiva_pct:aliqPJ*100 }, diferenca_anual:economiaAno, payback_constituicao_anos:payback, melhor:(economiaAno>0?'PESSOA JURÍDICA':'PESSOA FÍSICA') };
+}
+function aluguelRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-aluguelpfpj'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var bruto=ent.aluguel_anual, desp=ent.despesas, outros=ent.outros_rendimentos, custoPJ=ent.custo_pj_anual, constit=ent.constituicao, vaiVender=ent.vai_vender;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  var bruto=ent.aluguel_anual, desp=ent.despesas, outros=ent.outros_rendimentos, custoPJ=ent.custo_pj_anual, constit=ent.constituicao, vaiVender=ent.vai_vender; var baseAluguel=+r.pessoa_fisica.base, impostoPF=+r.pessoa_fisica.imposto, aliqPF=(+r.pessoa_fisica.aliquota_efetiva_pct)/100; var basePres=bruto*0.32, irpj=+r.pessoa_juridica.irpj, adicional=+r.pessoa_juridica.adicional, csll=+r.pessoa_juridica.csll, pisCofins=+r.pessoa_juridica.pis_cofins, impostoPJ=+r.pessoa_juridica.tributos, custoTotalPJ=+r.pessoa_juridica.total, aliqPJ=(+r.pessoa_juridica.aliquota_efetiva_pct)/100; var economiaAno=+r.diferenca_anual, payback=+r.payback_constituicao_anos;
   var linhas='';
   function ln(rot,a,b,destaque){
     linhas+='<tr'+(destaque?' style="font-weight:700;background:rgba(201,162,39,.07)"':'')+
@@ -25626,6 +25692,12 @@ var f=[[29145.60,0,0],[33919.80,0.075,2185.92],[45012.60,0.15,4729.41],
     }
   }catch(_e){}
   var res=document.getElementById('res-aluguelpfpj'); if(res) res.style.display='block';
+
+}
+function calcularAluguelPFPJ(){
+  var ent=aluguelLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAluguelPFPJ')){ LH_PONTE.executar('calcularAluguelPFPJ', ent); return; }
+  aluguelRender(aluguelCalcularLocal(ent), ent, null);
 }
 
 /* ═══ v735 · CUTOVER — calcularAutuacao: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
