@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v727";</script>
+<body><script>window.LH_VERSAO="v728";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2842,14 +2842,16 @@ window.LH_PONTE = (function(){
       entradas: function(G){ var f=function(id){ var v=parseFloat(String((G.el(id)||{}).value||'0')); return isNaN(v)?0:v; };
         return { setor:'bares', subtipo:'padrao', faturamento:f('bar_fat'), carga_atual_pct:f('bar_atual'), credito_pct:0 }; },
       esperado: function(r){ return r ? { imposto_2033:Number(r.imposto_2033), carga_atual:Number(r.carga_atual), variacao:Number(r.variacao_2033) } : null; },
-      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-bares',0), carga_atual:LH_PONTE._kpiNum('kpi-bares',1), variacao:LH_PONTE._kpiNum('kpi-bares',3) }; }
+      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-bares',0), carga_atual:LH_PONTE._kpiNum('kpi-bares',1), variacao:LH_PONTE._kpiNum('kpi-bares',3) }; },
+      render:function(r, ent, motivo){ baresRender(r, ent, motivo); }
     },
     calcularHotel: {
       calc: 'setor',
       entradas: function(G){ var f=function(id){ var v=parseFloat(String((G.el(id)||{}).value||'0')); return isNaN(v)?0:v; };
         return { setor:'hotel', subtipo:'padrao', faturamento:f('hot_fat'), carga_atual_pct:f('hot_atual'), credito_pct:f('hot_cred') }; },
       esperado: function(r){ return r ? { imposto_2033:Number(r.imposto_2033), carga_atual:Number(r.carga_atual), variacao:Number(r.variacao_2033) } : null; },
-      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-hotel',0), carga_atual:LH_PONTE._kpiNum('kpi-hotel',1), variacao:LH_PONTE._kpiNum('kpi-hotel',3) }; }
+      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-hotel',0), carga_atual:LH_PONTE._kpiNum('kpi-hotel',1), variacao:LH_PONTE._kpiNum('kpi-hotel',3) }; },
+      render:function(r, ent, motivo){ hotelRender(r, ent, motivo); }
     },
     calcularAgViagem: {
       calc: 'setor',
@@ -2860,7 +2862,8 @@ window.LH_PONTE = (function(){
       entradas: function(G){ var f=function(id){ var v=parseFloat(String((G.el(id)||{}).value||'0')); return isNaN(v)?0:v; };
         return { setor:'agviagem', subtipo:'padrao', faturamento:f('agv_fat'), deducao:f('agv_repasses'), carga_atual_pct:f('agv_atual'), credito_pct:f('agv_cred') }; },
       esperado: function(r){ return r ? { imposto_2033:Number(r.imposto_2033), carga_atual:Number(r.carga_atual), variacao:Number(r.variacao_2033) } : null; },
-      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-agviagem',0), carga_atual:LH_PONTE._kpiNum('kpi-agviagem',1), variacao:LH_PONTE._kpiNum('kpi-agviagem',3) }; }
+      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-agviagem',0), carga_atual:LH_PONTE._kpiNum('kpi-agviagem',1), variacao:LH_PONTE._kpiNum('kpi-agviagem',3) }; },
+      render:function(r, ent, motivo){ agviagemRender(r, ent, motivo); }
     },
 
     /* ═══ v681 · ONDA 4 · as três bases que faltavam provar (receita−sinistros, GGR, spread) ═══
@@ -2935,7 +2938,8 @@ window.LH_PONTE = (function(){
         return { setor:'coop', subtipo:'padrao', faturamento:rec, deducao:rec*(1-terc), carga_atual_pct:f('coop_atual'), credito_pct:f('coop_credito'),
                  aliq_ref_pct:(red>0 ? Math.round(ref*(1-red)*10000)/10000 : undefined) }; },   /* arredonda: 26,5×0,4 em ponto flutuante dá 10,600000000000001 */
       esperado: function(r){ return r ? { imposto_2033:Number(r.imposto_2033), carga_atual:Number(r.carga_atual), base:Number(r.base_valor), variacao:Number(r.variacao_2033) } : null; },
-      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-coop',0), carga_atual:LH_PONTE._kpiNum('kpi-coop',1), base:LH_PONTE._kpiNum('kpi-coop',2), variacao:LH_PONTE._kpiNum('kpi-coop',4) }; }
+      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-coop',0), carga_atual:LH_PONTE._kpiNum('kpi-coop',1), base:LH_PONTE._kpiNum('kpi-coop',2), variacao:LH_PONTE._kpiNum('kpi-coop',4) }; },
+      render:function(r, ent, motivo){ coopRender(r, ent, motivo); }
     },
     calcularAgroIns: {
       calc: 'setor',
@@ -21040,14 +21044,21 @@ function lhSelHint(selId){
  var cfg=(window.LH_SEL_INFO&&window.LH_SEL_INFO[selId])||{}; var o=cfg[sel.value];
  var h=document.getElementById(selId+'_hint'); if(h&&o) h.innerHTML='⚖️ '+o.a+' · '+o.n;
 }
-function calcularCoop(){
+/* ═══ v728 · CUTOVER — calcularCoop: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function coopLerEntradas(){
   const tipo=document.getElementById('coop_tipo').value;
   const receita=parseFloat(document.getElementById('coop_receita').value)||0;
   const pctTerc=(parseFloat(document.getElementById('coop_terceiros').value)||0)/100;
   const reducao=(parseFloat(document.getElementById('coop_reducao').value)||0)/100;
   const pctCred=(parseFloat(document.getElementById('coop_credito').value)||0)/100;
   const cargaAtual=(parseFloat(document.getElementById('coop_atual').value)||0)/100;
-  if(receita<=0){ mostrarToast('Informe a receita total','error'); return; }
+  if(receita<=0){ mostrarToast('Informe a receita total','error'); return null; }
+
+  return { setor:'coop', subtipo:'padrao', faturamento:receita, deducao:receita*(1-pctTerc), carga_atual_pct:cargaAtual*100, credito_pct:pctCred*100, aliq_ref_pct:(reducao>0 ? Math.round(LH_REF_PLENA()*100*(1-reducao)*10000)/10000 : undefined), _tipo:tipo, _pctTerc:pctTerc, _reducao:reducao, _pctCred:pctCred, _cargaAtual:cargaAtual };
+}
+function coopCalcularLocal(ent){
+  var receita=ent.faturamento, tipo=ent._tipo, pctTerc=ent._pctTerc, reducao=ent._reducao, pctCred=ent._pctCred, cargaAtual=ent._cargaAtual;
+  
   const impostoAtual=receita*cargaAtual;
   const baseTrib=receita*pctTerc;
   const anos=[2026,2027,2028,2029,2030,2031,2032,2033];
@@ -21059,6 +21070,16 @@ function calcularCoop(){
     var impostoNovo=baseTrib*aliqEfet;
     return {ano:ano,aliqEfet:aliqEfet,impostoNovo:impostoNovo,varVs:impostoNovo-impostoAtual};
   });
+
+  return _lhServidorDeRes(resultados, impostoAtual, { base_valor:baseTrib });
+}
+function coopRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-coop'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var receita=ent.faturamento, tipo=ent._tipo, pctTerc=ent._pctTerc, reducao=ent._reducao, pctCred=ent._pctCred, cargaAtual=ent._cargaAtual;
+  
+  var tipo=ent._tipo, pctTerc=ent._pctTerc, reducao=ent._reducao, pctCred=ent._pctCred, cargaAtual=ent._cargaAtual; var impostoAtual=+r.carga_atual, baseTrib=+(r.base_valor!=null?r.base_valor:receita*pctTerc); var resultados=_lhResDeServidor(r, impostoAtual);
   const r33=resultados[7];
   const ganha=r33.impostoNovo<impostoAtual;
   document.getElementById('kpi-coop').innerHTML=`
@@ -21112,6 +21133,12 @@ function calcularCoop(){
   document.getElementById('res-coop').classList.add('visible');
   try{ if(window.setMotorResultado){ setMotorResultado('coop',{tipo:r33.varVs<0?'economia_anual':'custo_imposto',valor:Math.abs(r33.varVs),valorAnual:Math.abs(r33.varVs),contexto:ganha?'Cooperativa ganha':'Cooperativa perde',descricao:'Cooperativa '+tipo+': imposto novo 2033 '+fmtR(r33.impostoNovo)+' vs '+fmtR(impostoAtual)+' hoje.',recomendacao:'Maximizar a formalização do ato cooperativo (não-incidência).'}); } }catch(e){}
   mostrarToast('✓ Impacto da cooperativa calculado','success');
+
+}
+function calcularCoop(){
+  var ent=coopLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularCoop')){ LH_PONTE.executar('calcularCoop', ent); return; }
+  coopRender(coopCalcularLocal(ent), ent, null);
 }
 
 
@@ -21228,14 +21255,31 @@ function lhCoreSomaTrib(p){
 
 /* 🦁 v38 — Hotelaria (F1-03) e Logística de Cargas (F2-01) — do Excel mestre */
 function lhCoreAtualPct(p){ return (parseFloat((document.getElementById(p+'_atual')||{value:0}).value)||0)/100; }
-function calcularHotel(){
+/* ═══ v728 · CUTOVER — calcularHotel: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function hotelLerEntradas(){
   var fat=parseFloat(document.getElementById('hot_fat').value)||0;
   var cred=(parseFloat(document.getElementById('hot_cred').value)||0)/100;
   var atual=lhCoreAtualPct('hot');
-  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return; }
+  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return null; }
   var _rs=document.getElementById('res-hotel'); if(_rs) _rs.classList.add('visible');
+
+  return { setor:'hotel', subtipo:'padrao', faturamento:fat, carga_atual_pct:atual*100, credito_pct:cred*100, _cred:cred, _atual:atual };
+}
+function hotelCalcularLocal(ent){
+  var fat=ent.faturamento, cred=ent._cred, atual=ent._atual;
+  
   var red=0.40, impostoAtual=fat*atual;
   var res=_lhProjSetor(fat,red,cred,impostoAtual); var r33=res[7];
+
+  return _lhServidorDeRes(res, impostoAtual, { reducao_pct:40 });
+}
+function hotelRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-hotel'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento, cred=ent._cred, atual=ent._atual;
+  
+  var cred=ent._cred, atual=ent._atual; var red=0.40; var impostoAtual=+r.carga_atual; var res=_lhResDeServidor(r, impostoAtual); var r33=res[7];
   var ganha=_lhKpisSetor('kpi-hotel',r33,impostoAtual,'Hotelaria','−40% COM crédito (arts. 277-283)');
   try{ _lhChartSetor('chartHotel','chart-hotel',res,impostoAtual); }catch(e){ console.warn('chart hotel',e.message); }
   try{ _lhRecsSetor('recs-hotel','hotel',ganha,r33.impostoNovo,impostoAtual); }catch(e){}
@@ -21246,6 +21290,12 @@ function calcularHotel(){
   var v=document.getElementById('viab-hotel');
   if(v&&window.lhNotaConsultiva) v.innerHTML=window.lhNotaConsultiva({confianca:{nivel:'media',motivo:'Premissa Lionheart — ISS municipal e mix de crédito variam por caso; o tributarista valida.'},nota:'Variação 2033: '+(r33.impostoNovo-impostoAtual<0?'−':'+')+fmtR(Math.abs(r33.impostoNovo-impostoAtual))+'/ano.',premissas:[{label:'Regime',valor:'−40% com crédito'},{label:'Curva',valor:'EC 132 · 2026-2033'}],rotuloValor:'Novo 2033',valor:fmtR(r33.impostoNovo)});
   mostrarToast('✓ Hotelaria calculada');
+
+}
+function calcularHotel(){
+  var ent=hotelLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularHotel')){ LH_PONTE.executar('calcularHotel', ent); return; }
+  hotelRender(hotelCalcularLocal(ent), ent, null);
 }
 function calcularLogCarga(){
   var fat=parseFloat(document.getElementById('log_fat').value)||0;
@@ -21382,6 +21432,11 @@ function calcularCP03(){
   mostrarToast('✓ Compliance calculado');
 try{var _pg=document.getElementById('page-cp03');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-cp03');if(!_mv){_mv=document.createElement('div');_mv.id='mem-cp03';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'ROI do compliance 2026',aliquotas:[{label:'Custo adequação',valor:''},{label:'Benefício',valor:''},{label:'Valor líquido',valor:''}],porque:'Valor líquido = benefício da adequação (ano-piloto) − custo de adequação.',baseLegal:[{lei:'LC 214/2025 — cronograma 2026'}]});}}catch(e){}}
 
+/* v728 · CUTOVER — adaptadores compartilhados das telas de setor (fn_setor):
+   _lhResDeServidor(r) devolve o 'res' de 8 anos no formato que _lhKpisSetor/_lhChartSetor já leem;
+   _lhServidorDeRes(res, impostoAtual, extra) devolve o resultado no formato do servidor (para o cálculo local). */
+function _lhResDeServidor(r, impostoAtual){ return (r&&Array.isArray(r.projecao)?r.projecao:[]).map(function(p){ return { ano:+p.ano, aliqEfet:+(p.aliquota_efetiva!=null?p.aliquota_efetiva:(+p.aliquota_efetiva_pct)/100), impostoNovo:+p.imposto, varVs:(p.variacao_vs_hoje!=null?+p.variacao_vs_hoje:(+p.imposto-impostoAtual)) }; }); }
+function _lhServidorDeRes(res, impostoAtual, extra){ var o={ ok:true, carga_atual:impostoAtual, projecao:res.map(function(x){ return { ano:x.ano, aliquota_efetiva:x.aliqEfet, aliquota_efetiva_pct:x.aliqEfet*100, imposto:x.impostoNovo, variacao_vs_hoje:x.varVs }; }), imposto_2033:res[7]?res[7].impostoNovo:0, variacao_2033:res[7]?res[7].varVs:0, aliquota_efetiva_2033_pct:res[7]?res[7].aliqEfet*100:0 }; if(extra) for(var k in extra) o[k]=extra[k]; return o; }
 function _lhProjSetor(fat,red,cred,impostoAtual){
   var anos=[2026,2027,2028,2029,2030,2031,2032,2033];
   return anos.map(function(ano){
@@ -21505,15 +21560,32 @@ function _lhTabelaSetor(tbodyId, arr, tipo, velho){
   tb.innerHTML=h;
 }
 
-function calcularAgViagem(){
+/* ═══ v728 · CUTOVER — calcularAgViagem: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function agviagemLerEntradas(){
   var fat=parseFloat(document.getElementById('agv_fat').value)||0;
   var cred=(parseFloat(document.getElementById('agv_cred').value)||0)/100;
   var atual=(parseFloat(document.getElementById('agv_atual').value)||0)/100;
-  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return; }
+  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return null; }
   var repasses=(parseFloat(document.getElementById('agv_repasses').value)||0);
+
+  return { setor:'agviagem', subtipo:'padrao', faturamento:fat, deducao:repasses, carga_atual_pct:atual*100, credito_pct:cred*100, _cred:cred, _atual:atual };
+}
+function agviagemCalcularLocal(ent){
+  var fat=ent.faturamento, repasses=ent.deducao, cred=ent._cred, atual=ent._atual;
+  
   var margem=Math.max(fat-repasses,0);
   var red=0.40, impostoAtual=margem*atual;
   var res=_lhProjSetor(margem,red,cred,impostoAtual); var r33=res[7];
+
+  return _lhServidorDeRes(res, impostoAtual, { reducao_pct:40, base_valor:margem });
+}
+function agviagemRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-agviagem'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento, repasses=ent.deducao, cred=ent._cred, atual=ent._atual;
+  
+  var cred=ent._cred, atual=ent._atual, repasses=ent.deducao; var margem=Math.max(fat-repasses,0); var red=0.40; var impostoAtual=+r.carga_atual; var res=_lhResDeServidor(r, impostoAtual); var r33=res[7];
   var ganha=_lhKpisSetor('kpi-agviagem',r33,impostoAtual,'Agência','−40% sobre a margem (art. 289)');
   try{ var v=document.getElementById('viab-agviagem'); if(v&&window.lhNotaConsultiva) v.innerHTML=window.lhNotaConsultiva({confianca:{nivel:'Média',motivo:'Regime específico de agências de viagem/turismo com redução de 40% (art. 289). A base pode ser a margem/agenciamento, não o pacote bruto — confirmar conforme o contrato e a operação real.'},premissas:[{label:'Faturamento/margem',valor:fmtR(fat)},{label:'Redução',valor:'40%'},{label:'% crédito',valor:fmtPct(cred*100)}],nota:'Serviço → carga atual é PIS+COFINS+ISS. Se a base for por margem, lance o faturamento como a margem líquida de agenciamento.'});
     var m=document.getElementById('mem-agviagem'); if(m&&window.lhMemoriaCalculo) m.innerHTML=window.lhMemoriaCalculo({titulo:'Agência de viagem na Reforma',aliquotas:[{label:'Faturamento',valor:fmtR(fat)},{label:'Redução',valor:'40%'},{label:'Alíquota efetiva 2033',valor:fmtPct(r33.aliqEfet*100)},{label:'Imposto novo 2033',valor:fmtR(r33.impostoNovo)},{label:'Carga atual',valor:fmtR(impostoAtual)}],porque:'Regime específico (LC 214/2025 art. 289-291) com alíquota reduzida em 40% e direito a crédito sobre insumos. A base pode ser a margem de agenciamento.',baseLegal:[{lei:'LC 214/2025 art. 289-291'}]});
@@ -21524,6 +21596,12 @@ function calcularAgViagem(){
   document.getElementById('res-agviagem').classList.add('visible');
   try{ if(window.setMotorResultado) setMotorResultado('agviagem',{tipo:r33.varVs<0?'economia_anual':'custo_imposto',valor:Math.abs(r33.varVs),valorAnual:Math.abs(r33.varVs),contexto:ganha?'Agência ganha':'Agência perde',descricao:'Agência de viagem: imposto novo 2033 '+fmtR(r33.impostoNovo)+' vs '+fmtR(impostoAtual)+'.',recomendacao:'Confirmar se a base é margem ou pacote bruto.'}); }catch(e){}
   mostrarToast('✓ Impacto calculado','success');
+
+}
+function calcularAgViagem(){
+  var ent=agviagemLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAgViagem')){ LH_PONTE.executar('calcularAgViagem', ent); return; }
+  agviagemRender(agviagemCalcularLocal(ent), ent, null);
 }
 
 function calcularTelecom(){
@@ -21683,13 +21761,30 @@ function calcularCombustivel(){
   mostrarToast('✓ Impacto do combustível calculado','success');
 }
 
-function calcularBares(){
+/* ═══ v728 · CUTOVER — calcularBares: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function baresLerEntradas(){
   var tipo=document.getElementById('bar_tipo').value;
   var fat=parseFloat(document.getElementById('bar_fat').value)||0;
   var atual=(parseFloat(document.getElementById('bar_atual').value)||0)/100;
-  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return; }
+  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return null; }
+
+  return { setor:'bares', subtipo:'padrao', faturamento:fat, carga_atual_pct:atual*100, credito_pct:0, _tipo:tipo, _atual:atual };
+}
+function baresCalcularLocal(ent){
+  var fat=ent.faturamento, tipo=ent._tipo, atual=ent._atual;
+  
   var red=0.40, impostoAtual=fat*atual;
   var res=_lhProjSetor(fat,red,0,impostoAtual); var r33=res[7];
+
+  return _lhServidorDeRes(res, impostoAtual, { reducao_pct:40 });
+}
+function baresRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-bares'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento, tipo=ent._tipo, atual=ent._atual;
+  
+  var tipo=ent._tipo, atual=ent._atual; var red=0.40; var impostoAtual=+r.carga_atual; var res=_lhResDeServidor(r, impostoAtual); var r33=res[7];
   var ganha=_lhKpisSetor('kpi-bares',r33,impostoAtual,tipo,'−40% · CUMULATIVO (sem crédito)');
   try{ var v=document.getElementById('viab-bares'); if(v&&window.lhNotaConsultiva) v.innerHTML=window.lhNotaConsultiva({confianca:{nivel:'Média',motivo:'Regime específico de bares/restaurantes com redução de 40%, porém cumulativo (sem crédito sobre insumos). A carga atual cumulativa é baixa — por isso o regime costuma ENCARECER.'},premissas:[{label:'Tipo',valor:tipo},{label:'Faturamento',valor:fmtR(fat)},{label:'Redução',valor:'40%'},{label:'Crédito',valor:'NÃO (cumulativo)'}],nota:'Cuidado: a maioria dos bares/restaurantes está no Simples. Para quem está fora dele, o −40% cumulativo (≈15,9%) tende a ser MAIOR que a carga cumulativa atual. Avalie permanência no Simples.'});
     var m=document.getElementById('mem-bares'); if(m&&window.lhMemoriaCalculo) m.innerHTML=window.lhMemoriaCalculo({titulo:'Bares e restaurantes na Reforma (cumulativo)',aliquotas:[{label:'Faturamento',valor:fmtR(fat)},{label:'Redução',valor:'40%'},{label:'Crédito insumos',valor:'não (cumulativo)'},{label:'Alíquota efetiva 2033',valor:fmtPct(r33.aliqEfet*100)},{label:'Imposto novo 2033',valor:fmtR(r33.impostoNovo)},{label:'Carga atual',valor:fmtR(impostoAtual)}],porque:'O regime de bares e restaurantes (LC 214/2025 art. 275-276) aplica alíquota reduzida em 40%, mas em base cumulativa — sem direito a crédito sobre insumos. Como a tributação cumulativa atual desse setor é baixa, o novo regime frequentemente eleva a carga para quem está fora do Simples Nacional.',baseLegal:[{lei:'LC 214/2025 art. 274-276'}]});
@@ -21700,6 +21795,12 @@ function calcularBares(){
   document.getElementById('res-bares').classList.add('visible');
   try{ if(window.setMotorResultado) setMotorResultado('bares',{tipo:r33.varVs<0?'economia_anual':'custo_imposto',valor:Math.abs(r33.varVs),valorAnual:Math.abs(r33.varVs),contexto:ganha?'Setor ganha':'Setor encarece',descricao:'Bares/restaurantes '+tipo+': imposto novo 2033 '+fmtR(r33.impostoNovo)+' vs '+fmtR(impostoAtual)+' (cumulativo).',recomendacao:'Avaliar permanência no Simples Nacional vs regime regular.'}); }catch(e){}
   mostrarToast('✓ Impacto calculado','success');
+
+}
+function calcularBares(){
+  var ent=baresLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularBares')){ LH_PONTE.executar('calcularBares', ent); return; }
+  baresRender(baresCalcularLocal(ent), ent, null);
 }
 
 
