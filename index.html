@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v732";</script>
+<body><script>window.LH_VERSAO="v733";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3194,7 +3194,8 @@ window.LH_PONTE = (function(){
         return { receita_mensal:f('iss-rec'), aliq_iss:f('iss-aliq'), regime:(((G.el('iss-regime')||{}).value)==='presumido'?'lp':'lr'),
                  meses:parseInt((G.el('iss-meses')||{}).value,10)||0, comp_inicial:((G.el('iss-compini')||{}).value)||'2021-06' }; },
       esperado:function(r){ return r?{ iss_total:Number(r.iss_total_periodo), nominal:Number(r.nominal), corrigido:Number(r.corrigido) }:null; },
-      local:function(){ return { iss_total:LH_PONTE._rsNum('iss118-result',0), nominal:LH_PONTE._rsNum('iss118-result',1), corrigido:LH_PONTE._rsNum('iss118-result',2) }; } },
+      local:function(){ return { iss_total:LH_PONTE._rsNum('iss118-result',0), nominal:LH_PONTE._rsNum('iss118-result',1), corrigido:LH_PONTE._rsNum('iss118-result',2) }; },
+      render:function(r, ent, motivo){ iss118Render(r, ent, motivo); } },
     calcularICMSST1125: { calc:'icmsst1125',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { st_mensal:f('icmsst-valor'), regime:(((G.el('icmsst-regime')||{}).value)==='presumido'?'lp':'lr'),
@@ -3208,7 +3209,8 @@ window.LH_PONTE = (function(){
                  regime:((G.el('ret-regime')||{}).value)||'lr', meses:Math.min(60,Math.max(1,f('ret-meses')||60)),
                  comp_inicial:((G.el('ret-compini')||{}).value)||'2021-09', honorario_pct:Math.min(60,f('ret-honor')) }; },
       esperado:function(r){ return r?{ nominal:Math.round(r.nominal), corrigido:Math.round(r.corrigido), sobra:Math.round(r.sobra_mensal), honorario:Math.round(r.honorario), liquido:Math.round(r.liquido_cliente) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { nominal:R('ret-result',0), corrigido:R('ret-result',1), sobra:R('ret-result',2), honorario:R('ret-result',3), liquido:R('ret-result',4) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { nominal:R('ret-result',0), corrigido:R('ret-result',1), sobra:R('ret-result',2), honorario:R('ret-result',3), liquido:R('ret-result',4) }; },
+      render:function(r, ent, motivo){ retRender(r, ent, motivo); } },
     calcularINS: { calc:'ins',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         var V=['ins-energia','ins-fretes','ins-alugueis','ins-manut','ins-comb','ins-epi','ins-efluentes','ins-embalagens'];
@@ -3218,13 +3220,15 @@ window.LH_PONTE = (function(){
                  meses:Math.min(60,Math.max(1,f('ins-meses')||60)), comp_inicial:((G.el('ins-compini')||{}).value)||'2021-09',
                  honorario_pct:Math.min(60,f('ins-honor')) }; },
       esperado:function(r){ return (r&&r.confirmado)?{ nominal:Math.round(r.confirmado.nominal), corrigido:Math.round(r.confirmado.corrigido), potencial:Math.round(r.potencial.nominal), mensal:Math.round(r.confirmado.credito_mensal), honorario:Math.round(r.honorario) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { nominal:R('ins-result',0), corrigido:R('ins-result',1), potencial:R('ins-result',2), mensal:R('ins-result',3), honorario:R('ins-result',4) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { nominal:R('ins-result',0), corrigido:R('ins-result',1), potencial:R('ins-result',2), mensal:R('ins-result',3), honorario:R('ins-result',4) }; },
+      render:function(r, ent, motivo){ insRender(r, ent, motivo); } },
     calcularS962: { calc:'s962',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { selic_recebida:f('s962-selic'), origem:((G.el('s962-origem')||{}).value)||'indebito', aliq:f('s962-aliq'),
                  competencia:((G.el('s962-comp')||{}).value)||'2025-06', honorario_pct:Math.min(60,f('s962-honor')) }; },
       esperado:function(r){ return r?{ nominal:Math.round(r.nominal), corrigido:Math.round(r.corrigido), base:Math.round(r.selic_base), honorario:Math.round(r.honorario), liquido:Math.round(r.liquido_cliente) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { nominal:R('s962-result',0), corrigido:R('s962-result',1), base:R('s962-result',2), honorario:R('s962-result',3), liquido:R('s962-result',4) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { nominal:R('s962-result',0), corrigido:R('s962-result',1), base:R('s962-result',2), honorario:R('s962-result',3), liquido:R('s962-result',4) }; },
+      render:function(r, ent, motivo){ s962Render(r, ent, motivo); } },
     calcularMonofasico: { calc:'monofasico',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         var reg=((G.el('mono-regime')||{}).value)||'presumido';
@@ -3232,7 +3236,8 @@ window.LH_PONTE = (function(){
                  regime:(reg==='real'?'lr':(reg==='presumido'?'lp':'sn')), pct_das:f('mono-pct-das'),
                  meses:parseInt((G.el('mono-meses')||{}).value,10)||0, comp_inicial:((G.el('mono-compini')||{}).value)||'2021-06' }; },
       esperado:function(r){ return r?{ receita:Number(r.receita_periodo), nominal:Number(r.nominal), corrigido:Number(r.corrigido) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { receita:R('monofasico-result',0), nominal:R('monofasico-result',1), corrigido:R('monofasico-result',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { receita:R('monofasico-result',0), nominal:R('monofasico-result',1), corrigido:R('monofasico-result',2) }; },
+      render:function(r, ent, motivo){ monoRender(r, ent, motivo); } },
     calcularCredPresumido: { calc:'cred-presumido',
       /* o corte da LC 224/2025 (90% desde 01/04/2026) é uma flag da tela; sem ela o servidor
          devolve a alíquota cheia e a diferença seria de premissa, não de motor. */
@@ -46975,21 +46980,38 @@ if(typeof lhImportXML_render==='function'){ var _lhOXML=lhImportXML_render; lhIm
 /* ══ Lionheart · Tese ISS na base PIS/COFINS (Tema 118 STF) ══ */
 function _lhAddMes(comp,k){ var y=parseInt(comp.slice(0,4),10),m=parseInt(comp.slice(5,7),10)-1+k; y+=Math.floor(m/12); m=((m%12)+12)%12; var mm=m+1; return y+'-'+(mm<10?'0'+mm:mm); }
 /* ═══ v443 · IRPJ/CSLL SOBRE SELIC DO INDÉBITO · TEMA 962 STF (definitiva) ═══ */
-function calcularS962(){
+/* ═══ v733 · CUTOVER — calcularS962: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function s962LerEntradas(){
   function V(id){ var e=document.getElementById(id); return e?parseFloat(e.value)||0:0; }
   function T(id){ var e=document.getElementById(id); return e?e.value:''; }
   var el=document.getElementById('s962-result');
   var origem=T('s962-origem')||'indebito';
-  if(origem==='deposito'){ if(el)el.innerHTML='<div class="input-card" style="margin-top:14px"><div style="background:rgba(224,90,77,.08);border:1px solid rgba(224,90,77,.35);border-radius:10px;padding:14px 16px;color:#f0b9b3;line-height:1.6"><b style="color:#e05a4d">\u2716 Dep\u00f3sito judicial fica FORA do Tema 962.</b> O STJ (Tema 504, reafirmado em 2025) entende que os juros na devolu\u00e7\u00e3o de dep\u00f3sitos judiciais t\u00eam natureza <b>remunerat\u00f3ria</b> \u2014 IRPJ/CSLL incidem normalmente. O STF esclareceu nos embargos (02/05/2022) que o Tema 962 alcan\u00e7a apenas a Selic da repeti\u00e7\u00e3o de ind\u00e9bito/compensa\u00e7\u00e3o. N\u00e3o dimensione recupera\u00e7\u00e3o aqui.</div></div>'; window.LH_S962_DETECT={aplicavel:false,motivo:'dep\u00f3sito judicial (Tema 504)'}; return; }
+  if(origem==='deposito'){ if(el)el.innerHTML='<div class="input-card" style="margin-top:14px"><div style="background:rgba(224,90,77,.08);border:1px solid rgba(224,90,77,.35);border-radius:10px;padding:14px 16px;color:#f0b9b3;line-height:1.6"><b style="color:#e05a4d">\u2716 Dep\u00f3sito judicial fica FORA do Tema 962.</b> O STJ (Tema 504, reafirmado em 2025) entende que os juros na devolu\u00e7\u00e3o de dep\u00f3sitos judiciais t\u00eam natureza <b>remunerat\u00f3ria</b> \u2014 IRPJ/CSLL incidem normalmente. O STF esclareceu nos embargos (02/05/2022) que o Tema 962 alcan\u00e7a apenas a Selic da repeti\u00e7\u00e3o de ind\u00e9bito/compensa\u00e7\u00e3o. N\u00e3o dimensione recupera\u00e7\u00e3o aqui.</div></div>'; window.LH_S962_DETECT={aplicavel:false,motivo:'dep\u00f3sito judicial (Tema 504)'}; return null; }
   var selic=V('s962-selic');
-  if(selic<=0){ if(el)el.innerHTML='<div class="input-card" style="margin-top:14px;color:#e8b93a">Informe a Selic recebida nos ind\u00e9bitos (= corrigido \u2212 nominal das recupera\u00e7\u00f5es).</div>'; return; }
+  if(selic<=0){ if(el)el.innerHTML='<div class="input-card" style="margin-top:14px;color:#e8b93a">Informe a Selic recebida nos ind\u00e9bitos (= corrigido \u2212 nominal das recupera\u00e7\u00f5es).</div>'; return null; }
   var aliq=Math.min(45,V('s962-aliq')||34)/100;
   var comp=T('s962-comp')||'2025-06';
   var honor=Math.min(60,V('s962-honor')||0)/100;
+
+  return { selic_recebida:selic, origem:origem, aliq:aliq*100, competencia:comp, honorario_pct:honor*100, _aliq:aliq, _honor:honor };
+}
+function s962CalcularLocal(ent){
+  var selic=ent.selic_recebida, origem=ent.origem, comp=ent.competencia, aliq=ent._aliq, honor=ent._honor;
+  
   var nominal=selic*aliq;
   var sa=(typeof lhSelicAcum==='function')?lhSelicAcum(comp):0.01;
   var corrigido=nominal*(1+sa);
   var vhonor=corrigido*honor, liquido=corrigido-vhonor;
+
+  return { ok:true, selic_base:selic, aliquota_irpj_csll:aliq*100, nominal:nominal, fator_selic:sa, corrigido:corrigido, honorario:vhonor, liquido_cliente:liquido };
+}
+function s962Render(r, ent, motivo){
+  var _box=document.getElementById('s962-result'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var selic=ent.selic_recebida, origem=ent.origem, comp=ent.competencia, aliq=ent._aliq, honor=ent._honor;
+  
+  var selic=ent.selic_recebida, origem=ent.origem, aliq=ent._aliq, comp=ent.competencia, honor=ent._honor; var el=document.getElementById('s962-result'); var nominal=+r.nominal, sa=+r.fator_selic, corrigido=+r.corrigido, vhonor=+r.honorario, liquido=+r.liquido_cliente;
   function F(v){ return 'R$ '+Math.round(v).toLocaleString('pt-BR'); }
   var kpis='<div class="kpi-grid">'
     +'<div class="kpi-card kpi-hero"><div class="kpi-label">IRPJ/CSLL recuper\u00e1vel (nominal)</div><div class="kpi-value">'+F(nominal)+'</div></div>'
@@ -47004,29 +47026,52 @@ function calcularS962(){
     +'<div style="margin-top:10px;font-size:.8em;color:#94a3b8;font-style:italic">Confirme na ECF/LALUR que a Selic foi efetivamente oferecida \u00e0 tributa\u00e7\u00e3o antes de pedir \u2014 se j\u00e1 foi exclu\u00edda na apura\u00e7\u00e3o, n\u00e3o h\u00e1 o que recuperar.</div></div>';
   if(el) el.innerHTML=kpis+det;
   window.LH_S962_DETECT={aplicavel:true,nominal:Math.round(nominal)};
+
+}
+function calcularS962(){
+  var ent=s962LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularS962')){ LH_PONTE.executar('calcularS962', ent); return; }
+  s962Render(s962CalcularLocal(ent), ent, null);
 }
 window.calcularS962=calcularS962;
 /* ═══ v442 · INSUMOS PIS/COFINS · TEMA 779 STJ (matriz de elegibilidade) ═══ */
-function calcularINS(){
+/* ═══ v733 · CUTOVER — calcularINS: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function insLerEntradas(){
   function V(id){ var e=document.getElementById(id); return e?parseFloat(e.value)||0:0; }
   function T(id){ var e=document.getElementById(id); return e?e.value:''; }
   var regime=T('ins-regime')||'lr';
   var el=document.getElementById('ins-result');
-  if(regime!=='lr'){ if(el)el.innerHTML='<div class="input-card" style="margin-top:14px"><div style="background:rgba(232,185,58,.10);border:1px solid rgba(232,185,58,.35);border-radius:10px;padding:14px 16px;color:#e8b93a;line-height:1.6"><b>\u26a0 Tese exclusiva do N\u00c3O-CUMULATIVO (Lucro Real).</b> '+(regime==='lp'?'No Lucro Presumido (cumulativo, 3,65%) n\u00e3o h\u00e1 sistema de cr\u00e9ditos de insumos \u2014 o Tema 779 n\u00e3o se aplica.':'No Simples Nacional o PIS/COFINS est\u00e1 dentro do DAS \u2014 n\u00e3o h\u00e1 creditamento de insumos. Veja Monof\u00e1sico e Segrega\u00e7\u00e3o, que s\u00e3o as minas do Simples.')+'</div></div>'; return; }
+  if(regime!=='lr'){ if(el)el.innerHTML='<div class="input-card" style="margin-top:14px"><div style="background:rgba(232,185,58,.10);border:1px solid rgba(232,185,58,.35);border-radius:10px;padding:14px 16px;color:#e8b93a;line-height:1.6"><b>\u26a0 Tese exclusiva do N\u00c3O-CUMULATIVO (Lucro Real).</b> '+(regime==='lp'?'No Lucro Presumido (cumulativo, 3,65%) n\u00e3o h\u00e1 sistema de cr\u00e9ditos de insumos \u2014 o Tema 779 n\u00e3o se aplica.':'No Simples Nacional o PIS/COFINS est\u00e1 dentro do DAS \u2014 n\u00e3o h\u00e1 creditamento de insumos. Veja Monof\u00e1sico e Segrega\u00e7\u00e3o, que s\u00e3o as minas do Simples.')+'</div></div>'; return null; }
   var verdes=['ins-energia','ins-fretes','ins-alugueis','ins-manut','ins-comb','ins-epi','ins-efluentes','ins-embalagens'];
   var amarelas=['ins-limpeza','ins-software','ins-comissoes','ins-testes'];
   var vg=0; verdes.forEach(function(id){vg+=V(id);});
   var am=0; amarelas.forEach(function(id){am+=V(id);});
-  if(vg+am<=0){ if(el)el.innerHTML='<div class="input-card" style="margin-top:14px;color:#e8b93a">Informe ao menos uma despesa mensal n\u00e3o creditada.</div>'; return; }
+  if(vg+am<=0){ if(el)el.innerHTML='<div class="input-card" style="margin-top:14px;color:#e8b93a">Informe ao menos uma despesa mensal n\u00e3o creditada.</div>'; return null; }
   var meses=Math.min(60,Math.max(1,V('ins-meses')||60));
   var compini=T('ins-compini')||'2021-09';
   var honor=Math.min(60,V('ins-honor')||0)/100;
+
+  return { verdes:vg, amarelas:am, regime:regime, meses:meses, comp_inicial:compini, honorario_pct:honor*100, _honor:honor };
+}
+function insCalcularLocal(ent){
+  var vg=ent.verdes, am=ent.amarelas, regime=ent.regime, meses=ent.meses, compini=ent.comp_inicial, honor=ent._honor;
+  
   var credV=vg*0.0925, credA=am*0.0925;
   function addMes(comp,i){ var p=comp.split('-'); var d=new Date(parseInt(p[0]),parseInt(p[1])-1+i,1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
   var nomV=0,corV=0,nomA=0,corA=0;
   for(var i=0;i<meses;i++){ var sa=(typeof lhSelicAcum==='function')?lhSelicAcum(addMes(compini,i)):0.01;
     nomV+=credV; corV+=credV*(1+sa); nomA+=credA; corA+=credA*(1+sa); }
   var vhonor=corV*honor;
+
+  return { ok:true, confirmado:{ nominal:nomV, corrigido:corV, credito_mensal:credV }, potencial:{ nominal:nomA, corrigido:corA, credito_mensal:credA }, honorario:vhonor };
+}
+function insRender(r, ent, motivo){
+  var _box=document.getElementById('ins-result'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var vg=ent.verdes, am=ent.amarelas, regime=ent.regime, meses=ent.meses, compini=ent.comp_inicial, honor=ent._honor;
+  
+  var vg=ent.verdes, am=ent.amarelas, regime=ent.regime, meses=ent.meses, compini=ent.comp_inicial, honor=ent._honor; var el=document.getElementById('ins-result'); var credV=+r.confirmado.credito_mensal, credA=+r.potencial.credito_mensal, nomV=+r.confirmado.nominal, corV=+r.confirmado.corrigido, nomA=+r.potencial.nominal, corA=+r.potencial.corrigido, vhonor=+r.honorario;
   function F(v){ return 'R$ '+Math.round(v).toLocaleString('pt-BR'); }
   var kpis='<div class="kpi-grid">'
     +'<div class="kpi-card kpi-hero"><div class="kpi-label">\ud83d\udfe2 CONFIRMADO (pacificado) \u00b7 nominal</div><div class="kpi-value">'+F(nomV)+'</div></div>'
@@ -47041,6 +47086,12 @@ function calcularINS(){
     +'<div style="margin-top:10px;background:rgba(224,90,77,.07);border:1px solid rgba(224,90,77,.3);border-radius:10px;padding:12px 16px;font-size:.85em;color:#f0b9b3;line-height:1.55"><b style="color:#e05a4d">\u23f3 Urg\u00eancia 2026:</b> o PIS/COFINS acaba em 31/12/2026 (Reforma). Cr\u00e9ditos extempor\u00e2neos precisam estar escriturados para valer contra a CBS na transi\u00e7\u00e3o (LC 214) \u2014 cada m\u00eas de espera \u00e9 uma compet\u00eancia de 2021 que prescreve.</div>'
     +'<div style="margin-top:10px;font-size:.8em;color:#94a3b8;font-style:italic">Dimensionamento por m\u00e9dia mensal \u2014 a apropria\u00e7\u00e3o real exige levantamento documental por compet\u00eancia (NF a NF) e mem\u00f3ria de c\u00e1lculo por categoria. O enquadramento fino de cada despesa \u00e9 do contador/tributarista respons\u00e1vel.</div></div>';
   if(el) el.innerHTML=kpis+det;
+
+}
+function calcularINS(){
+  var ent=insLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularINS')){ LH_PONTE.executar('calcularINS', ent); return; }
+  insRender(insCalcularLocal(ent), ent, null);
 }
 window.calcularINS=calcularINS;
 function lhInsPuxarCentral(){
@@ -47107,7 +47158,8 @@ function calcularDUP(){
 }
 window.calcularDUP=calcularDUP;
 /* ═══ v440 · RETENÇÕES NA FONTE NÃO APROVEITADAS (operacional, sem tese judicial) ═══ */
-function calcularRET(){
+/* ═══ v733 · CUTOVER — calcularRET: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function retLerEntradas(){
   function V(id){ var e=document.getElementById(id); return e?parseFloat(e.value)||0:0; }
   function T(id){ var e=document.getElementById(id); return e?e.value:''; }
   var regime=T('ret-regime')||'lr';
@@ -47119,6 +47171,12 @@ function calcularRET(){
   /* trava do Simples: prestador ME/EPP é dispensado da CSRF (art. 30 Lei 10.833; IN 459/2004) */
   var avisoSN='';
   if(regime==='sn' && csrf>0){ avisoSN='<div style="background:rgba(232,185,58,.10);border:1px solid rgba(232,185,58,.35);border-radius:10px;padding:12px 16px;margin:10px 0;color:#e8b93a;font-size:.88em"><b>⚠ Simples Nacional:</b> o prestador optante é <b>dispensado da CSRF</b> (art. 30, Lei 10.833/2003; IN 459/2004). Se houve retenção de CSRF sobre suas notas, ela foi <b>indevida na origem</b> — recuperável integralmente, mas o caminho é pedido de restituição da retenção indevida (não compensação de saldo). Zerei o aproveitamento esperado dessa linha.</div>'; apC=0; }
+
+  return { irrf_mensal:irrf, csrf_mensal:csrf, inss_mensal:inss, ap_irrf:apI*100, ap_csrf:apC*100, ap_inss:apN*100, regime:regime, meses:meses, comp_inicial:compini, honorario_pct:honor*100, _apI:apI, _apC:apC, _apN:apN, _honor:honor, _avisoSN:avisoSN };
+}
+function retCalcularLocal(ent){
+  var irrf=ent.irrf_mensal, csrf=ent.csrf_mensal, inss=ent.inss_mensal, regime=ent.regime, meses=ent.meses, compini=ent.comp_inicial, apI=ent._apI, apC=ent._apC, apN=ent._apN, honor=ent._honor, avisoSN=ent._avisoSN;
+  
   var sobraI=irrf*(1-apI), sobraC=csrf*(1-apC), sobraN=inss*(1-apN);
   var sobraMes=sobraI+sobraC+sobraN;
   /* SELIC por competência (método fino da restituição — art. 39 §4º Lei 9.250/95) */
@@ -47126,6 +47184,16 @@ function calcularRET(){
   var nominal=0, corrigido=0;
   for(var i=0;i<meses;i++){ var comp=addMes(compini,i); var sa=(typeof lhSelicAcum==='function')?lhSelicAcum(comp):0.01; nominal+=sobraMes; corrigido+=sobraMes*(1+sa); }
   var vhonor=corrigido*honor, liquido=corrigido-vhonor;
+
+  return { ok:true, regime:regime, sobra_irrf:sobraI, sobra_csrf:sobraC, sobra_inss:sobraN, sobra_mensal:sobraMes, nominal:nominal, corrigido:corrigido, correcao_selic:corrigido-nominal, honorario:vhonor, liquido_cliente:liquido };
+}
+function retRender(r, ent, motivo){
+  var _box=document.getElementById('ret-result'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var irrf=ent.irrf_mensal, csrf=ent.csrf_mensal, inss=ent.inss_mensal, regime=ent.regime, meses=ent.meses, compini=ent.comp_inicial, apI=ent._apI, apC=ent._apC, apN=ent._apN, honor=ent._honor, avisoSN=ent._avisoSN;
+  
+  var irrf=ent.irrf_mensal, csrf=ent.csrf_mensal, inss=ent.inss_mensal, apI=ent._apI, apC=ent._apC, apN=ent._apN, regime=ent.regime, meses=ent.meses, compini=ent.comp_inicial, honor=ent._honor, avisoSN=ent._avisoSN; var sobraI=+r.sobra_irrf, sobraC=+r.sobra_csrf, sobraN=+r.sobra_inss, sobraMes=+r.sobra_mensal, nominal=+r.nominal, corrigido=+r.corrigido, vhonor=+r.honorario, liquido=+r.liquido_cliente;
   function F(v){ return 'R$ '+Math.round(v).toLocaleString('pt-BR'); }
   var kpis='<div class="kpi-grid">'
     +'<div class="kpi-card kpi-hero"><div class="kpi-label">Crédito não aproveitado (nominal)</div><div class="kpi-value">'+F(nominal)+'</div></div>'
@@ -47142,6 +47210,12 @@ function calcularRET(){
     +'<div style="margin-top:10px;font-size:.8em;color:#94a3b8;font-style:italic">Estimativa de dimensionamento — a conferência fina (nota a nota, DARF a DARF) é obrigatória antes de transmitir PER/DCOMP. Valores retidos e não declarados pelo tomador exigem prova adicional (informe/contrato/NF).</div></div>';
   var el=document.getElementById('ret-result'); if(el){ el.innerHTML=avisoSN+kpis+det; }
   try{ if(typeof setMotorResumo==='function')setMotorResumo('ret',{nominal:nominal,corrigido:corrigido}); }catch(_e){}
+
+}
+function calcularRET(){
+  var ent=retLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularRET')){ LH_PONTE.executar('calcularRET', ent); return; }
+  retRender(retCalcularLocal(ent), ent, null);
 }
 window.calcularRET=calcularRET;
 /* detector: DIRF/DCTF/EFD-Reinf não são documentos da Central — preenche o que dá (regime via EFD/PGDAS) e orienta com honestidade */
@@ -47158,7 +47232,8 @@ function lhRetPuxarCentral(){
   window.LH_RET_DETECT={aplicavel:null,fonte:'manual (DIRF/DCTF fora da Central)'};
 }
 window.lhRetPuxarCentral=lhRetPuxarCentral;
-function calcularISS118(){
+/* ═══ v733 · CUTOVER — calcularISS118: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function iss118LerEntradas(){
   function val(id){ var e=document.getElementById(id); return e?e.value:''; }
   var rec=parseFloat(val('iss-rec'))||0;
   var aliq=(parseFloat(val('iss-aliq'))||0)/100;
@@ -47166,10 +47241,26 @@ function calcularISS118(){
   var rate=regime==='presumido'?0.0365:0.0925;
   var compini=val('iss-compini')||'2021-06';
   var meses=parseInt(val('iss-meses'),10)||0;
-  var el=document.getElementById('iss118-result'); if(!el) return; el.style.display='block';
-  if(rec<=0||aliq<=0){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:14px 16px;margin-top:14px;">Preencha a receita de serviços e a alíquota de ISS.</div>'; return; }
+  var el=document.getElementById('iss118-result'); if(!el) return null; el.style.display='block';
+  if(rec<=0||aliq<=0){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:14px 16px;margin-top:14px;">Preencha a receita de serviços e a alíquota de ISS.</div>'; return null; }
+
+  return { receita_mensal:rec, aliq_iss:aliq*100, regime:(regime==='presumido'?'lp':'lr'), meses:meses, comp_inicial:compini, _regime:regime, _aliq:aliq, _rate:rate };
+}
+function iss118CalcularLocal(ent){
+  var rec=ent.receita_mensal, meses=ent.meses, compini=ent.comp_inicial, regime=ent._regime, aliq=ent._aliq, rate=ent._rate;
+  
   var issMes=rec*aliq, overMes=issMes*rate, issTot=0,nom=0,cor=0;
   for(var i=0;i<meses;i++){ var comp=_lhAddMes(compini,i); issTot+=issMes; nom+=overMes; cor+=overMes*(1+lhSelicAcum(comp)); }
+
+  return { ok:true, regime:regime, iss_mensal:issMes, iss_total_periodo:issTot, credito_mensal:overMes, nominal:nom, corrigido:cor, correcao_selic:cor-nom };
+}
+function iss118Render(r, ent, motivo){
+  var _box=document.getElementById('iss118-result'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var rec=ent.receita_mensal, meses=ent.meses, compini=ent.comp_inicial, regime=ent._regime, aliq=ent._aliq, rate=ent._rate;
+  
+  var rec=ent.receita_mensal, regime=ent._regime, aliq=ent._aliq, rate=ent._rate, meses=ent.meses, compini=ent.comp_inicial; var el=document.getElementById('iss118-result'); var issMes=+r.iss_mensal, issTot=+r.iss_total_periodo, overMes=+r.credito_mensal, nom=+r.nominal, cor=+r.corrigido;
   function k(l,v,s,destaque){ return '<div style="background:'+(destaque?'rgba(16,185,129,0.10)':'rgba(15,15,17,0.4)')+';border:1px solid '+(destaque?'rgba(16,185,129,0.35)':'rgba(255,255,255,0.08)')+';border-radius:10px;padding:12px 14px;"><div style="font-size:0.72em;color:#9fb0c8;text-transform:uppercase;letter-spacing:.04em;">'+l+'</div><div style="font-size:1.25em;font-weight:800;color:'+(destaque?'#10b981':'#e8e6e3')+';">'+v+'</div><div style="font-size:0.72em;color:#7a8aa0;">'+(s||'')+'</div></div>'; }
   var kpis='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px;">'+
     k('ISS embutido na base',_lhFmt(issTot),meses+' meses')+
@@ -47213,9 +47304,16 @@ function calcularISS118(){
   }):via);
   el.innerHTML=kpis+grafico+window.lhCards([{tipo:'oport',aberto:false,titulo:'Quanto dá pra recuperar (e de quando)',corpo:'<p><strong>Recuperável corrigido (SELIC): '+_lhFmt(cor)+'</strong> · nominal '+_lhFmt(nom)+' em '+meses+' meses.</p><p>Nesse período a empresa embutiu <strong>'+_lhFmt(issTot)+'</strong> de ISS na base de PIS/COFINS — isso gerou tributo federal pago a maior, recuperável nos últimos 5 anos.</p>'},{tipo:'info',aberto:false,titulo:'A tese (base jurídica)',corpo:'<p><strong>STF · Tema 118 (RE 592.616):</strong> o ISS é tributo municipal sobre serviços e não compõe faturamento; logo, não deveria integrar a base de PIS/COFINS — mesma lógica do Tema 69 (RE 574.706).</p><p><strong>Atenção ao status:</strong> o Tema 118 ainda está em julgamento no STF e o resultado é incerto. Há assimetria favorável — ajuizar resguarda os 5 anos sem penalidade se a tese cair.</p>'},{tipo:'atencao',aberto:false,titulo:'Como recuperar (via, papéis e risco)',corpo:'<p><strong>Via:</strong> ajuizar mandado de segurança ou ação ordinária resguarda o prazo dos 5 anos; após decisão favorável, retificar a EFD-Contribuições e compensar via PER/DCOMP.</p><p><strong>Papéis:</strong> o contador dimensiona e quantifica; a ação exige advogado tributarista.</p><p><strong>Risco:</strong> tese ainda em julgamento (diferente do Tema 69, já pacificado) — protocolar cedo é a jogada de menor risco para não perder o passado.</p>'}])+memHTML+viaHTML;
   try{ if(window.chartISS118&&window.chartISS118.destroy){window.chartISS118.destroy();} var _cv=document.getElementById('chart-iss118'); if(_cv&&window.Chart){ window.chartISS118=new Chart(_cv.getContext('2d'),{type:'bar',data:{labels:['Nominal','Corrigido (SELIC)'],datasets:[{data:[nom,cor],backgroundColor:['#9fb0c8','#10b981'],borderRadius:8,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return fmtR(c.raw);}}}},scales:{y:{beginAtZero:true,ticks:{color:'#9fb0c8',callback:function(v){return 'R$ '+(v/1000).toFixed(0)+'k';}},grid:{color:'rgba(255,255,255,0.06)'}},x:{ticks:{color:'#9fb0c8'},grid:{display:false}}}}}); } }catch(e){}
+
+}
+function calcularISS118(){
+  var ent=iss118LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularISS118')){ LH_PONTE.executar('calcularISS118', ent); return; }
+  iss118Render(iss118CalcularLocal(ent), ent, null);
 }
 
-function calcularMonofasico(){
+/* ═══ v733 · CUTOVER — calcularMonofasico: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function monoLerEntradas(){
   function val(id){ var e=document.getElementById(id); return e?e.value:''; }
   var rec=parseFloat(val('mono-receita'))||0;
   var regime=val('mono-regime')||'presumido';
@@ -47223,12 +47321,28 @@ function calcularMonofasico(){
   var rate=regime==='real'?0.0925:(regime==='presumido'?0.0365:(pctDas/100));
   var compini=val('mono-compini')||'2021-06';
   var meses=parseInt(val('mono-meses'),10)||0;
-  var el=document.getElementById('monofasico-result'); if(!el) return; el.style.display='block';
+  var el=document.getElementById('monofasico-result'); if(!el) return null; el.style.display='block';
   var papel=val('mono-papel')||'revendedor';
-  if(papel==='fabricante'){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.35);border-radius:10px;padding:14px 16px;margin-top:14px;line-height:1.55;"><b style="color:#f87171;">⚖️ Tese NÃO aplicável — Fabricante/Importador.</b><br>Na tributação monofásica (Leis 10.147/2000, 10.485/2002, 10.560/2002), o fabricante/importador é o <b>CONTRIBUINTE</b> da alíquota concentrada — a alíquota zero é exclusiva da <b>revenda</b>. Não há PIS/COFINS pago indevidamente por esta tese. Avalie outras frentes: créditos de insumos (LR), Tema 69, saldo credor.</div>'; window.LH_MONO_DETECT={pct:0,mensal:0,aplicavel:false,motivo:'fabricante'}; return; }
-  if(rec<=0||rate<=0){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:14px 16px;margin-top:14px;">Preencha a receita de produtos monofásicos e (no Simples) o % PIS+COFINS no DAS.</div>'; return; }
+  if(papel==='fabricante'){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.35);border-radius:10px;padding:14px 16px;margin-top:14px;line-height:1.55;"><b style="color:#f87171;">⚖️ Tese NÃO aplicável — Fabricante/Importador.</b><br>Na tributação monofásica (Leis 10.147/2000, 10.485/2002, 10.560/2002), o fabricante/importador é o <b>CONTRIBUINTE</b> da alíquota concentrada — a alíquota zero é exclusiva da <b>revenda</b>. Não há PIS/COFINS pago indevidamente por esta tese. Avalie outras frentes: créditos de insumos (LR), Tema 69, saldo credor.</div>'; window.LH_MONO_DETECT={pct:0,mensal:0,aplicavel:false,motivo:'fabricante'}; return null; }
+  if(rec<=0||rate<=0){ el.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);border-radius:10px;padding:14px 16px;margin-top:14px;">Preencha a receita de produtos monofásicos e (no Simples) o % PIS+COFINS no DAS.</div>'; return null; }
+
+  return { receita_mensal:rec, papel:papel, regime:(regime==='real'?'lr':(regime==='presumido'?'lp':'sn')), pct_das:pctDas, meses:meses, comp_inicial:compini, _regime:regime, _rate:rate };
+}
+function monoCalcularLocal(ent){
+  var rec=ent.receita_mensal, papel=ent.papel, pctDas=ent.pct_das, meses=ent.meses, compini=ent.comp_inicial, regime=ent._regime, rate=ent._rate;
+  
   var overMes=rec*rate, recTot=0,nom=0,cor=0;
   for(var i=0;i<meses;i++){ var comp=_lhAddMes(compini,i); recTot+=rec; nom+=overMes; cor+=overMes*(1+lhSelicAcum(comp)); }
+
+  return { ok:true, papel:papel, receita_periodo:recTot, credito_mensal:overMes, nominal:nom, corrigido:cor, correcao_selic:cor-nom };
+}
+function monoRender(r, ent, motivo){
+  var _box=document.getElementById('monofasico-result'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var rec=ent.receita_mensal, papel=ent.papel, pctDas=ent.pct_das, meses=ent.meses, compini=ent.comp_inicial, regime=ent._regime, rate=ent._rate;
+  
+  var rec=ent.receita_mensal, papel=ent.papel, regime=ent._regime, rate=ent._rate, pctDas=ent.pct_das, meses=ent.meses, compini=ent.comp_inicial; var el=document.getElementById('monofasico-result'); var overMes=+r.credito_mensal, recTot=+r.receita_periodo, nom=+r.nominal, cor=+r.corrigido;
   function k(l,v,s,destaque){ return '<div style="background:'+(destaque?'rgba(16,185,129,0.10)':'rgba(15,15,17,0.4)')+';border:1px solid '+(destaque?'rgba(16,185,129,0.35)':'rgba(255,255,255,0.08)')+';border-radius:10px;padding:12px 14px;"><div style="font-size:0.72em;color:#9fb0c8;text-transform:uppercase;letter-spacing:.04em;">'+l+'</div><div style="font-size:1.25em;font-weight:800;color:'+(destaque?'#10b981':'#e8e6e3')+';">'+v+'</div><div style="font-size:0.72em;color:#7a8aa0;">'+(s||'')+'</div></div>'; }
   var rateTxt=regime==='real'?'9,25%':(regime==='presumido'?'3,65%':pctDas.toFixed(2)+'% (DAS)');
   var kpis='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px;">'+
@@ -47244,7 +47358,13 @@ function calcularMonofasico(){
   var via='<div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:12px 16px;margin-top:12px;font-size:0.88em;color:#d8f3e3;line-height:1.55;"><b style="color:#10b981;">Viabilidade — tese consolidada</b><br>Alíquota zero na revenda monofásica é regra pacífica. Recuperação via retificação/PER/DCOMP, em geral sem litígio. Validar os NCM monofásicos é a chave.</div>';
   setMotorResultado('monofasico', { tipo:'recuperacao', valor:(cor||0), valorAnual:0, contexto:'Monofásico — PIS/COFINS revenda', descricao:'Crédito recuperável (corrigido) de '+fmtR(cor||0)+' — revenda monofásica alíquota zero.', recomendacao:'' });
   el.innerHTML=kpis+window.lhCards([{tipo:'oport',aberto:false,titulo:'Quanto dá pra recuperar (e de quando)',corpo:'<p><strong>Recuperável corrigido (SELIC): '+_lhFmt(cor)+'</strong> · nominal '+_lhFmt(nom)+' em '+meses+' meses.</p><p>Receita de revenda monofásica acumulada no período: <strong>'+_lhFmt(recTot)+'</strong> — tributada indevidamente.</p>'}])+leg+window.lhCards([{tipo:'oport',aberto:false,titulo:'Como recuperar (via e risco)',corpo:'<p><strong>Regra:</strong> na revenda de produtos monofásicos (combustíveis, bebidas frias, autopeças, fármacos, cosméticos) o PIS/COFINS é recolhido na indústria/importador e a revenda tem <strong>alíquota zero</strong> (Lei 10.147/2000, 10.485/2002, 10.560/2002 e correlatas). Quem recolheu indevidamente recupera.</p><p><strong>Via:</strong> segregar a receita monofásica, retificar a EFD-Contribuições e compensar via PER/DCOMP.</p><p><strong>Risco:</strong> baixo (regra clara) — a atenção é a correta classificação dos produtos (NCM) como monofásicos.</p>'}])+window.lhCards([{tipo:'atencao',aberto:false,titulo:'Memória de cálculo',corpo:mem}]);
-try{var _pg=document.getElementById('page-monofasico');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-monofasico');if(!_mv){_mv=document.createElement('div');_mv.id='mem-monofasico';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'Monofásico — revenda com alíquota zero',aliquotas:[{label:'Receita monofásica',valor:''},{label:'Alíquota indevida',valor:''},{label:'Recuperação',valor:''}],porque:'O revendedor de produtos monofásicos (farma, autopeças, bebidas, combustíveis) não deve PIS/COFINS na revenda; recuperação = receita monofásica × alíquota paga indevidamente × 5 anos.',baseLegal:[{lei:'Lei 10.147/00 e correlatas'}]});}}catch(e){}}
+try{var _pg=document.getElementById('page-monofasico');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-monofasico');if(!_mv){_mv=document.createElement('div');_mv.id='mem-monofasico';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'Monofásico — revenda com alíquota zero',aliquotas:[{label:'Receita monofásica',valor:''},{label:'Alíquota indevida',valor:''},{label:'Recuperação',valor:''}],porque:'O revendedor de produtos monofásicos (farma, autopeças, bebidas, combustíveis) não deve PIS/COFINS na revenda; recuperação = receita monofásica × alíquota paga indevidamente × 5 anos.',baseLegal:[{lei:'Lei 10.147/00 e correlatas'}]});}}catch(e){}
+}
+function calcularMonofasico(){
+  var ent=monoLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularMonofasico')){ LH_PONTE.executar('calcularMonofasico', ent); return; }
+  monoRender(monoCalcularLocal(ent), ent, null);
+}
 
 function lhAgroPuxarCentral(){
   var efd=window.LH_IMPORT_EFD, pg=window.LH_IMPORT_PGDAS, info=document.getElementById('cp-central-info');
