@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v731";</script>
+<body><script>window.LH_VERSAO="v732";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2786,7 +2786,8 @@ window.LH_PONTE = (function(){
         nominal:   LH_PONTE._kpiNum('kpi-cr01', 0),
         corrigido: LH_PONTE._kpiNum('kpi-cr01', 5),
         honorario: LH_PONTE._kpiNum('kpi-cr01', 3)
-      }; }
+      }; },
+      render:function(r, ent, motivo){ cr01Render(r, ent, motivo); }
     },
 
     /* ═══ v678 · Formação de Preço (Fecomércio) ═══ */
@@ -3264,7 +3265,8 @@ window.LH_PONTE = (function(){
                  rat:f('cr02_rat'), terceiros:f('cr02_terceiros'), pct_rubricas:f('cr02_pct_rubricas'),
                  anos:parseInt((G.el('cr02_anos')||{}).value,10)||5, honorario_pct:f('cr02_honor_pct') }; },
       esperado:function(r){ return r?{ total:Number(r.recuperacao_total), anual:Number(r.recuperacao_anual), honorario:Number(r.honorario) }:null; },
-      local:function(){ return { total:LH_PONTE._kpiNum('kpi-cr02',0), anual:LH_PONTE._kpiNum('kpi-cr02',1), honorario:LH_PONTE._kpiNum('kpi-cr02',3) }; } },
+      local:function(){ return { total:LH_PONTE._kpiNum('kpi-cr02',0), anual:LH_PONTE._kpiNum('kpi-cr02',1), honorario:LH_PONTE._kpiNum('kpi-cr02',3) }; },
+      render:function(r, ent, motivo){ cr02Render(r, ent, motivo); } },
     calcularCR03: { calc:'cr03',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { consumo_mensal:f('cr03_consumo'), regime:((G.el('cr03_regime')||{}).value)||'lr', pct_aproveitado:Math.min(100,f('cr03_aproveitado')),
@@ -3272,7 +3274,8 @@ window.LH_PONTE = (function(){
                  honorario_pct:Math.min(50,f('cr03_honor_pct')) }; },
       esperado:function(r){ return r?{ nominal:Math.round(r.nominal), corrigido:Math.round(r.corrigido), mensal:Math.round(r.credito_nao_aproveitado_mensal) }:null; },
       /* kpi-cr03 imprime sem centavos → _rsNum */
-      local:function(){ var R=LH_PONTE._rsNum; return { nominal:R('kpi-cr03',0), corrigido:R('kpi-cr03',1), mensal:R('kpi-cr03',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { nominal:R('kpi-cr03',0), corrigido:R('kpi-cr03',1), mensal:R('kpi-cr03',2) }; },
+      render:function(r, ent, motivo){ cr03Render(r, ent, motivo); } },
     calcularCR05: { calc:'cr05',
       /* cr05_taxa (custo de capital) é só para o custo de carregar o saldo — o servidor
          não modela isso; fica fora da comparação, e por isso não vai no payload. */
@@ -28257,7 +28260,8 @@ function calcularDIFAL() {
 // v30.11.23 — CALC CR01 · TEMA 69 STF (RE 574.706/2017)
 // Fórmula: Crédito = (Faturamento × % tributável × ICMS) × Alíquota PIS+COFINS × Anos
 // Lógica: ICMS estava indevidamente na base de PIS/COFINS — recuperar a parcela paga sobre ele.
-function calcularCR01() {
+/* ═══ v732 · CUTOVER — calcularCR01: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function cr01LerEntradas(){
   var regime = (document.getElementById('cr01_regime')||{value:'lr'}).value;
   var fatAnual = parseFloat((document.getElementById('cr01_fat_anual')||{value:0}).value) || 0;
   var aliqIcms = parseFloat((document.getElementById('cr01_aliq_icms')||{value:18}).value) || 18;
@@ -28270,7 +28274,7 @@ function calcularCR01() {
 
   if(fatAnual <= 0) {
     mostrarToast('Informe o faturamento médio anual (> 0)', 'error');
-    return;
+    return null;
   }
 
   if(regime === 'sn') {
@@ -28282,9 +28286,15 @@ function calcularCR01() {
       '<div style="font-size:0.86em;color:var(--text2);line-height:1.55;">No SN, PIS e COFINS são recolhidos dentro do DAS unificado (não separadamente sobre base com ICMS). A tese do Tema 69 vale apenas para LP e LR. Se o cliente está em SN, considere: (i) C05 Regime Ótimo para avaliar mudança de regime; (ii) outras frentes de recuperação aplicáveis ao SN (ex.: revisão Simples).</div>' +
       '</div>';
     document.getElementById('res-cr01').style.display = 'block';
-    return;
+    return null;
   }
 
+
+  return { fat_anual:fatAnual/(1-Math.min(60,Math.max(0,_devol))/100), regime:regime, aliq_icms:aliqIcms, pct_tributavel:pctTributavel, pct_devolucao:_devol, meses:anos*12, honorario_pct:honorPct, _fatAnual:fatAnual, _anos:anos, _modo:modo };
+}
+function cr01CalcularLocal(ent){
+  var regime=ent.regime, aliqIcms=ent.aliq_icms, pctTributavel=ent.pct_tributavel, _devol=ent.pct_devolucao, honorPct=ent.honorario_pct, fatAnual=ent._fatAnual, anos=ent._anos, modo=ent._modo;
+  
   /* Alíquota PIS+COFINS conforme regime */
   var aliqPisCofins = regime === 'lr' ? 9.25 : 3.65; /* LR = 1,65% + 7,6% · LP = 0,65% + 3% */
   var aliqLabel = regime === 'lr' ? 'LR · não-cumulativo · 9,25%' : 'LP · cumulativo · 3,65%';
@@ -28345,6 +28355,16 @@ function calcularCR01() {
   var _cr01HonorCorr = _cr01Corrigido * (honorPct/100);
   if(_cr01Ok) honorEscritorio = _cr01HonorCorr;
 
+
+  return { ok:true, regime:regime, aliquota_pis_cofins:aliqPisCofins, base_tributavel_anual:baseAnualTributavel, icms_embutido_anual:icmsAnualEmbutido, credito_mensal:recupAnual/12, nominal:recupTotal, corrigido:_cr01Corrigido, correcao_selic:_cr01Correcao, periodo:_cr01Periodo, honorario:honorEscritorio, liquido_cliente:_cr01Corrigido-honorEscritorio, faixa:labelR };
+}
+function cr01Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-cr01'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var regime=ent.regime, aliqIcms=ent.aliq_icms, pctTributavel=ent.pct_tributavel, _devol=ent.pct_devolucao, honorPct=ent.honorario_pct, fatAnual=ent._fatAnual, anos=ent._anos, modo=ent._modo;
+  
+  var fatAnual=ent._fatAnual, anos=ent._anos, modo=ent._modo, aliqIcms=ent.aliq_icms, pctTributavel=ent.pct_tributavel, honorPct=ent.honorario_pct; var aliqPisCofins=+r.aliquota_pis_cofins; var aliqLabel = regime === 'lr' ? 'LR · não-cumulativo · 9,25%' : 'LP · cumulativo · 3,65%'; var baseAnualTributavel=+r.base_tributavel_anual, icmsAnualEmbutido=+r.icms_embutido_anual, recupTotal=+r.nominal, recupAnual=recupTotal/anos, honorEscritorio=+r.honorario, pctSobreFat=(fatAnual>0?recupAnual/fatAnual*100:0); var corR = recupTotal >= 500000 ? '#10b981' : recupTotal >= 100000 ? '#eab308' : recupTotal >= 20000 ? '#c9a227' : '#dc2626'; var labelR = recupTotal >= 500000 ? 'Recuperação ALTA · vale ação judicial imediata' : recupTotal >= 100000 ? 'Recuperação RELEVANTE · vale análise jurídica' : recupTotal >= 20000 ? 'Recuperação MODERADA · avaliar viabilidade' : 'Recuperação BAIXA · custo-benefício duvidoso'; var _cr01Corrigido=+r.corrigido, _cr01Correcao=+r.correcao_selic, _cr01Periodo=String(r.periodo||'—'), _cr01Ok=(_cr01Correcao>0), _cr01HonorNominal=recupTotal*(honorPct/100), _cr01HonorCorr=honorEscritorio;
   /* KPI cards */
   var kpis = '';
   kpis += '<div class="kpi-card kpi-destaque" style="border-color:'+corR+';"><div class="kpi-label">Crédito Recuperável Total</div><div class="kpi-value" style="color:'+corR+';">'+fmtR(recupTotal)+'</div><div class="kpi-sub">'+labelR+'</div></div>';
@@ -28454,14 +28474,21 @@ function calcularCR01() {
   setMotorResultado('cr01', { tipo:'recuperacao', valor:(recupTotal||0), valorAnual:(typeof recupAnual!=='undefined'?(recupAnual||0):0), contexto:'Tema 69 — ICMS na base do PIS/COFINS', descricao:'Crédito recuperável de '+fmtR(recupTotal)+'.', recomendacao:'' });
   try{ if(window.LH_SAUDE_registrar){ window.LH_SAUDE_registrar('tema69', { recuperavel:(typeof recupTotal==='number'?recupTotal:0), nivel:(typeof recupTotal==='number'&&recupTotal>0?'ok':'info'), rotulo:(typeof recupTotal==='number'&&recupTotal>0?'Crédito disponível':'Sem crédito') }); } }catch(e){}
   mostrarToast('✓ Tema 69 · Crédito recuperável: '+fmtR(recupTotal), 'success');
+
+}
+function calcularCR01(){
+  var ent=cr01LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularCR01')){ LH_PONTE.executar('calcularCR01', ent); return; }
+  cr01Render(cr01CalcularLocal(ent), ent, null);
 }
 
 // v30.11.24 — CALC CR02 · RECUPERAÇÃO PREVIDENCIÁRIA PATRONAL
 // Base: Lei 8.212/91 art. 28 §9º · STJ REsp 1.230.957 · STF Tema 985
 // Fórmula: Recuperação = Folha × %RubricasNS × (INSS_Patr + RAT + Terceiros) × Anos
-function calcularCR02() {
+/* ═══ v732 · CUTOVER — calcularCR02: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function cr02LerEntradas(){
   var _cprb=(document.getElementById('cr02_cprb')||{value:'nao'}).value;
-  if(_cprb==='sim'){ var _k2=document.getElementById('kpi-cr02'); if(_k2){ _k2.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.35);border-radius:10px;padding:14px 16px;line-height:1.55;"><b style="color:#f87171;">⚖️ Tese NÃO aplicável — empresa na CPRB.</b><br>Na desoneração (Lei 12.546/2011), a contribuição patronal incide sobre a <b>RECEITA</b> — não há patronal-sobre-rubricas a expurgar enquanto durar a opção. <b>Avalie:</b> competências dos últimos 5 anos FORA da CPRB (a opção é anual) — nesses períodos a tese vale.</div>'; } var _t2=document.getElementById('tabela-cr02'); if(_t2)_t2.innerHTML=''; var _v2=document.getElementById('viab-cr02'); if(_v2)_v2.innerHTML=''; window.LH_CR02_DETECT={aplicavel:false,motivo:'CPRB'}; return; }
+  if(_cprb==='sim'){ var _k2=document.getElementById('kpi-cr02'); if(_k2){ _k2.innerHTML='<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.35);border-radius:10px;padding:14px 16px;line-height:1.55;"><b style="color:#f87171;">⚖️ Tese NÃO aplicável — empresa na CPRB.</b><br>Na desoneração (Lei 12.546/2011), a contribuição patronal incide sobre a <b>RECEITA</b> — não há patronal-sobre-rubricas a expurgar enquanto durar a opção. <b>Avalie:</b> competências dos últimos 5 anos FORA da CPRB (a opção é anual) — nesses períodos a tese vale.</div>'; } var _t2=document.getElementById('tabela-cr02'); if(_t2)_t2.innerHTML=''; var _v2=document.getElementById('viab-cr02'); if(_v2)_v2.innerHTML=''; window.LH_CR02_DETECT={aplicavel:false,motivo:'CPRB'}; return null; }
   var folha = parseFloat((document.getElementById('cr02_folha')||{value:0}).value) || 0;
   var inssPatr = parseFloat((document.getElementById('cr02_inss_patr')||{value:20}).value) || 20;
   var rat = parseFloat((document.getElementById('cr02_rat')||{value:2}).value) || 2;
@@ -28473,12 +28500,18 @@ function calcularCR02() {
 
   if(folha <= 0) {
     mostrarToast('Informe a folha anual média (> 0)', 'error');
-    return;
+    return null;
   }
   if(pctRubricas > 25) {
     mostrarToast('% de rubricas acima de 25% é incomum — confirme com a folha real', 'warning');
   }
 
+
+  return { folha_anual:folha, cprb:'nao', inss_patronal:inssPatr, rat:rat, terceiros:terceiros, pct_rubricas:pctRubricas, anos:anos, honorario_pct:honorPct, _modo:modo };
+}
+function cr02CalcularLocal(ent){
+  var folha=ent.folha_anual, inssPatr=ent.inss_patronal, rat=ent.rat, terceiros=ent.terceiros, pctRubricas=ent.pct_rubricas, anos=ent.anos, honorPct=ent.honorario_pct, modo=ent._modo;
+  
   /* Cargas */
   var cargaTotal = inssPatr + rat + terceiros; /* % total sobre folha */
   /* Base anual de rubricas não-salariais */
@@ -28498,6 +28531,16 @@ function calcularCR02() {
                recupTotal >= 15000 ? 'Recuperação MODERADA · avaliar' :
                'Recuperação BAIXA · custo-benefício duvidoso';
 
+
+  return { ok:true, carga_total_pct:cargaTotal, base_rubricas_anual:baseRubricasAno, recuperacao_anual:recupAnual, recuperacao_total:recupTotal, honorario:honorEscritorio, liquido_cliente:recupTotal-honorEscritorio, peso_sobre_folha_pct:pctSobreFolha, faixa:labelR };
+}
+function cr02Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-cr02'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var folha=ent.folha_anual, inssPatr=ent.inss_patronal, rat=ent.rat, terceiros=ent.terceiros, pctRubricas=ent.pct_rubricas, anos=ent.anos, honorPct=ent.honorario_pct, modo=ent._modo;
+  
+  var folha=ent.folha_anual, inssPatr=ent.inss_patronal, rat=ent.rat, terceiros=ent.terceiros, pctRubricas=ent.pct_rubricas, anos=ent.anos, honorPct=ent.honorario_pct, modo=ent._modo; var cargaTotal=+r.carga_total_pct, baseRubricasAno=+r.base_rubricas_anual, recupAnual=+r.recuperacao_anual, recupTotal=+r.recuperacao_total, honorEscritorio=+r.honorario, pctSobreFolha=+r.peso_sobre_folha_pct; var corR = recupTotal >= 300000 ? '#10b981' : recupTotal >= 80000 ? '#eab308' : recupTotal >= 15000 ? '#c9a227' : '#dc2626'; var labelR = recupTotal >= 300000 ? 'Recuperação ALTA · vale ação imediata' : recupTotal >= 80000 ? 'Recuperação RELEVANTE · vale análise' : recupTotal >= 15000 ? 'Recuperação MODERADA · avaliar' : 'Recuperação BAIXA · custo-benefício duvidoso';
   /* KPIs */
   var kpis = '';
   kpis += '<div class="kpi-card kpi-destaque" style="border-color:'+corR+';"><div class="kpi-label">Crédito Recuperável Total</div><div class="kpi-value" style="color:'+corR+';">'+fmtR(recupTotal)+'</div><div class="kpi-sub">'+labelR+'</div></div>';
@@ -28599,12 +28642,19 @@ function calcularCR02() {
   if(window.LGPD && window.LGPD.log) window.LGPD.log('calc_executada', { calc:'cr02', resultado: fmtR(recupTotal) });
   setMotorResultado('cr02', { tipo:'recuperacao', valor:(recupTotal||0), valorAnual:(typeof recupAnual!=='undefined'?(recupAnual||0):0), contexto:'Recuperação Previdenciária Patronal', descricao:'Crédito recuperável de '+fmtR(recupTotal)+'.', recomendacao:'' });
   mostrarToast('✓ Previdenciária · Crédito recuperável: '+fmtR(recupTotal), 'success');
+
+}
+function calcularCR02(){
+  var ent=cr02LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularCR02')){ LH_PONTE.executar('calcularCR02', ent); return; }
+  cr02Render(cr02CalcularLocal(ent), ent, null);
 }
 
 // v30.11.25 — CALC CR03 · PIS/COFINS SOBRE ENERGIA ELÉTRICA
 // Base: STF Tema 176 + STJ Tema 986 + STF Tema 69 (por extensão)
 // Combina 2 teses: (A) PIS/COFINS sobre TUST/TUSD + (B) PIS/COFINS sobre ICMS embutido
-function calcularCR03(){
+/* ═══ v732 · CUTOVER — calcularCR03: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function cr03LerEntradas(){
   function V(id){ var e=document.getElementById(id); return e?parseFloat(e.value)||0:0; }
   function T(id){ var e=document.getElementById(id); return e?e.value:''; }
   var regime=T('cr03_regime')||'lr';
@@ -28614,19 +28664,35 @@ function calcularCR03(){
   if(regime!=='lr'){
     if(kpi)kpi.innerHTML=''; if(tab)tab.innerHTML='';
     if(recs)recs.innerHTML='<div style="background:rgba(232,185,58,.10);border:1px solid rgba(232,185,58,.35);border-radius:10px;padding:14px 18px;margin-top:10px;color:#e8b93a;line-height:1.6"><b>\u26a0 Cr\u00e9dito de energia \u00e9 exclusivo do N\u00c3O-CUMULATIVO (Lucro Real).</b> '+(regime==='lp'?'No Lucro Presumido (cumulativo) n\u00e3o h\u00e1 sistema de cr\u00e9ditos \u2014 a energia n\u00e3o gera cr\u00e9dito de PIS/COFINS.':'No Simples Nacional o PIS/COFINS est\u00e1 no DAS unificado \u2014 n\u00e3o h\u00e1 creditamento de energia.')+'</div>';
-    return;
+    return null;
   }
   var consumo=V('cr03_consumo');
-  if(consumo<=0){ if(recs)recs.innerHTML='<div style="margin-top:10px;color:#e8b93a">Informe o valor da energia CONSUMIDA mensal (> 0).</div>'; if(kpi)kpi.innerHTML=''; if(tab)tab.innerHTML=''; return; }
+  if(consumo<=0){ if(recs)recs.innerHTML='<div style="margin-top:10px;color:#e8b93a">Informe o valor da energia CONSUMIDA mensal (> 0).</div>'; if(kpi)kpi.innerHTML=''; if(tab)tab.innerHTML=''; return null; }
   var aprov=Math.min(100,V('cr03_aproveitado'))/100;
   var meses=Math.min(60,Math.max(1,V('cr03_meses')||60));
   var compini=T('cr03_compini')||'2021-09';
   var honor=Math.min(50,V('cr03_honor_pct')||0)/100;
+
+  return { consumo_mensal:consumo, regime:regime, pct_aproveitado:aprov*100, meses:meses, comp_inicial:compini, honorario_pct:honor*100, _aprov:aprov, _honor:honor };
+}
+function cr03CalcularLocal(ent){
+  var consumo=ent.consumo_mensal, regime=ent.regime, meses=ent.meses, compini=ent.comp_inicial, aprov=ent._aprov, honor=ent._honor;
+  
   var creditoMes=consumo*0.0925*(1-aprov);
   function addMes(comp,i){ var p=comp.split('-'); var d=new Date(parseInt(p[0]),parseInt(p[1])-1+i,1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
   var nominal=0, corrigido=0;
   for(var i=0;i<meses;i++){ var sa=(typeof lhSelicAcum==='function')?lhSelicAcum(addMes(compini,i)):0.01; nominal+=creditoMes; corrigido+=creditoMes*(1+sa); }
   var vhonor=corrigido*honor, liquido=corrigido-vhonor;
+
+  return { ok:true, consumo_mensal:consumo, credito_cheio_mensal:consumo*0.0925, credito_nao_aproveitado_mensal:creditoMes, nominal:nominal, corrigido:corrigido, correcao_selic:corrigido-nominal, honorario:vhonor, liquido_cliente:liquido };
+}
+function cr03Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-cr03'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var consumo=ent.consumo_mensal, regime=ent.regime, meses=ent.meses, compini=ent.comp_inicial, aprov=ent._aprov, honor=ent._honor;
+  
+  var consumo=ent.consumo_mensal, regime=ent.regime, aprov=ent._aprov, meses=ent.meses, compini=ent.comp_inicial, honor=ent._honor; var kpi=document.getElementById('kpi-cr03'), tab=document.getElementById('tabela-cr03'), recs=document.getElementById('recs-cr03'); var creditoMes=+r.credito_nao_aproveitado_mensal, nominal=+r.nominal, corrigido=+r.corrigido, vhonor=+r.honorario, liquido=+r.liquido_cliente;
   function F(v){ return 'R$ '+Math.round(v).toLocaleString('pt-BR'); }
   if(kpi)kpi.innerHTML='<div class="kpi-card kpi-hero"><div class="kpi-label">Cr\u00e9dito n\u00e3o aproveitado (nominal)</div><div class="kpi-value">'+F(nominal)+'</div></div>'
     +'<div class="kpi-card"><div class="kpi-label">Corrigido SELIC</div><div class="kpi-value">'+F(corrigido)+'</div></div>'
@@ -28638,6 +28704,12 @@ function calcularCR03(){
   if(recs)recs.innerHTML='<div style="margin-top:10px;background:rgba(214,228,240,0.05);border:1px solid rgba(120,160,210,0.25);border-radius:10px;padding:12px 16px;font-size:.87em;color:#cdd6e4;line-height:1.55"><b style="color:#9fc">Base legal</b><br>Art. 3\u00ba, IX da Lei 10.637/2002 (PIS) e art. 3\u00ba, III da Lei 10.833/2003 (COFINS) \u00b7 energia consumida nos estabelecimentos, qualquer setor \u00b7 Base restrita ao consumo (Solu\u00e7\u00e3o Cosit 22/2016: CIP, ICMS, PIS/COFINS da conta N\u00c3O creditam) \u00b7 Prazo 5 anos (art. 168, I, CTN) \u00b7 Corre\u00e7\u00e3o SELIC oficial.</div>'
     +'<div style="margin-top:8px;font-size:.8em;color:#94a3b8;font-style:italic">Confira na EFD-Contribui\u00e7\u00f5es se o cr\u00e9dito de energia j\u00e1 vinha sendo tomado \u2014 s\u00f3 \u00e9 recuper\u00e1vel o que n\u00e3o foi aproveitado. Separe o consumo dos demais itens da fatura antes de dimensionar.</div>';
   try{ if(typeof setMotorResumo==='function')setMotorResumo('cr03',{nominal:nominal,corrigido:corrigido}); }catch(_e){}
+
+}
+function calcularCR03(){
+  var ent=cr03LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularCR03')){ LH_PONTE.executar('calcularCR03', ent); return; }
+  cr03Render(cr03CalcularLocal(ent), ent, null);
 }
 
 // v30.11.26 — CALC CR04 · CRÉDITOS PLENOS CBS/IBS (Prospectiva pós-2027)
