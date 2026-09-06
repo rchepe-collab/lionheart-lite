@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v726";</script>
+<body><script>window.LH_VERSAO="v727";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3096,12 +3096,14 @@ window.LH_PONTE = (function(){
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { estoque:f('ind01_est'), pct_nacional:f('ind01_pct'), regime:(G.el('ind01_regime')||{}).value||'cumulativo', saldo_icms:f('ind01_icms'), ipca_aa:f('ind01_ipca') }; },
       esperado:function(r){ return r?{ credito:Number(r.credito_presumido_cbs), mensal:Number(r.apropriacao_mensal), parcela_corr:Number(r.saldo_icms&&r.saldo_icms.parcela_corrigida_1ano), total:Number(r.credito_total_mapeado) }:null; },
-      local:function(){ return { credito:LH_PONTE._kpiNum('kpi-ind01',0), mensal:LH_PONTE._kpiNum('kpi-ind01',2), parcela_corr:LH_PONTE._kpiNum('kpi-ind01',3), total:LH_PONTE._kpiNum('kpi-ind01',5) }; } },
+      local:function(){ return { credito:LH_PONTE._kpiNum('kpi-ind01',0), mensal:LH_PONTE._kpiNum('kpi-ind01',2), parcela_corr:LH_PONTE._kpiNum('kpi-ind01',3), total:LH_PONTE._kpiNum('kpi-ind01',5) }; },
+      render:function(r, ent, motivo){ ind01Render(r, ent, motivo); } },
     calcularIND02: { calc:'ind02',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { beneficio_anual:f('ind02_ben'), tipo:(G.el('ind02_tipo')||{}).value||'cp', pct_investimento:f('ind02_exp'), habilitado:(((G.el('ind02_hab')||{}).value)==='Sim') }; },
       esperado:function(r){ return r?{ tributacao:Number(r.tributacao_43_25), credito25:Number(r.credito_fiscal_25), liquida:Number(r.carga_liquida), economia:Number(r.economia_da_tese) }:null; },
-      local:function(){ return { tributacao:LH_PONTE._kpiNum('kpi-ind02',0), credito25:LH_PONTE._kpiNum('kpi-ind02',3), liquida:LH_PONTE._kpiNum('kpi-ind02',4), economia:LH_PONTE._kpiNum('kpi-ind02',6) }; } },
+      local:function(){ return { tributacao:LH_PONTE._kpiNum('kpi-ind02',0), credito25:LH_PONTE._kpiNum('kpi-ind02',3), liquida:LH_PONTE._kpiNum('kpi-ind02',4), economia:LH_PONTE._kpiNum('kpi-ind02',6) }; },
+      render:function(r, ent, motivo){ ind02Render(r, ent, motivo); } },
     calcularIND03: { calc:'ind03',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { receita_exportacao:f('ind03_rec'), aliquota_vigente_pct:f('ind03_al') }; },
@@ -3112,12 +3114,14 @@ window.LH_PONTE = (function(){
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { dispendios_pd:f('ind04_pd'), pct_exclusao:f('ind04_pct')||60, lucro_real_com_lucro:(((G.el('ind04_lucro')||{}).value)==='Sim'), maquinas_pd:f('ind04_maq') }; },
       esperado:function(r){ return r?{ exclusao:Number(r.exclusao_da_base), economia_irpj:Number(r.economia_irpj_csll), deprec:Number(r.depreciacao_integral_maquinas), total:Number(r.economia_total) }:null; },
-      local:function(){ return { exclusao:LH_PONTE._kpiNum('kpi-ind04',0), economia_irpj:LH_PONTE._kpiNum('kpi-ind04',2), deprec:LH_PONTE._kpiNum('kpi-ind04',3), total:LH_PONTE._kpiNum('kpi-ind04',4) }; } },
+      local:function(){ return { exclusao:LH_PONTE._kpiNum('kpi-ind04',0), economia_irpj:LH_PONTE._kpiNum('kpi-ind04',2), deprec:LH_PONTE._kpiNum('kpi-ind04',3), total:LH_PONTE._kpiNum('kpi-ind04',4) }; },
+      render:function(r, ent, motivo){ ind04Render(r, ent, motivo); } },
     calcularIND05: { calc:'ind05',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { compras_st:f('ind05_compras'), mva_pct:f('ind05_mva'), venda_real:f('ind05_venda'), aliquota_icms_pct:f('ind05_aliq'), meses:Math.min(60,parseInt((G.el('ind05_meses')||{}).value,10)||0) }; },
       esperado:function(r){ return r?{ presumida:Number(r.base_presumida), ressarc:Number(r.ressarcimento_mensal), complemento:Number(r.complemento_mensal), tese:Number(r.tese_periodo) }:null; },
-      local:function(){ return { presumida:LH_PONTE._kpiNum('kpi-ind05',0), ressarc:LH_PONTE._kpiNum('kpi-ind05',2), complemento:LH_PONTE._kpiNum('kpi-ind05',3), tese:LH_PONTE._kpiNum('kpi-ind05',4) }; } },
+      local:function(){ return { presumida:LH_PONTE._kpiNum('kpi-ind05',0), ressarc:LH_PONTE._kpiNum('kpi-ind05',2), complemento:LH_PONTE._kpiNum('kpi-ind05',3), tese:LH_PONTE._kpiNum('kpi-ind05',4) }; },
+      render:function(r, ent, motivo){ ind05Render(r, ent, motivo); } },
     calcularIND06: { calc:'ind06',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { faturamento:f('ind06_fat'), aliquota_ipi_pct:f('ind06_al'), zfm:(((G.el('ind06_zfm')||{}).value)!=='Nao') }; },
@@ -3140,12 +3144,14 @@ window.LH_PONTE = (function(){
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { beneficio_anual:f('ind09_ben'), ano_fim_ato:parseInt((G.el('ind09_fim')||{}).value,10)||2032, cobertura_fundo_pct:f('ind09_cob') }; },
       esperado:function(r){ return r?{ perda_rampa:Number(r.perda_na_rampa), compensacao:Number(r.compensacao_fundo), perda_liquida:Number(r.perda_liquida), custo_2029:Number(r.custo_2029) }:null; },
-      local:function(){ return { perda_rampa:LH_PONTE._kpiNum('kpi-ind09',0), compensacao:LH_PONTE._kpiNum('kpi-ind09',1), perda_liquida:LH_PONTE._kpiNum('kpi-ind09',3), custo_2029:LH_PONTE._kpiNum('kpi-ind09',4) }; } },
+      local:function(){ return { perda_rampa:LH_PONTE._kpiNum('kpi-ind09',0), compensacao:LH_PONTE._kpiNum('kpi-ind09',1), perda_liquida:LH_PONTE._kpiNum('kpi-ind09',3), custo_2029:LH_PONTE._kpiNum('kpi-ind09',4) }; },
+      render:function(r, ent, motivo){ ind09Render(r, ent, motivo); } },
     calcularIND10: { calc:'ind10',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { conta_mensal:f('ind10_conta'), pct_demanda:f('ind10_dem'), pct_tust_tusd:f('ind10_tust'), icms_pct:f('ind10_icms'), meses:Math.min(60,parseInt((G.el('ind10_meses')||{}).value,10)||0) }; },
       esperado:function(r){ return r?{ tese_demanda:Number(r.tese_demanda_contratada&&r.tese_demanda_contratada.periodo), tese_tust:Number(r.tese_tust_tusd&&r.tese_tust_tusd.periodo), total:Number(r.total_periodo) }:null; },
-      local:function(){ return { tese_demanda:LH_PONTE._kpiNum('kpi-ind10',0), tese_tust:LH_PONTE._kpiNum('kpi-ind10',2), total:LH_PONTE._kpiNum('kpi-ind10',5) }; } },
+      local:function(){ return { tese_demanda:LH_PONTE._kpiNum('kpi-ind10',0), tese_tust:LH_PONTE._kpiNum('kpi-ind10',2), total:LH_PONTE._kpiNum('kpi-ind10',5) }; },
+      render:function(r, ent, motivo){ ind10Render(r, ent, motivo); } },
     calcularIND11: { calc:'ind11',
       /* a tela não tem seletor de ano: modela 2027-28 (CBS cheia + IBS 0,1%). O servidor recebe ano=2027. */
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
@@ -3156,7 +3162,8 @@ window.LH_PONTE = (function(){
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { credito_presumido:f('ind12_cp'), demais_beneficios:f('ind12_dem'), tem_reserva:(((G.el('ind12_res')||{}).value)==='Sim'), prob_exito_pct:f('ind12_prob') }; },
       esperado:function(r){ return r?{ economia:Number(r.economia_anual), esperada:Number(r.esperada_com_probabilidade), exposicao:Number(r.exposicao_se_autuado_5anos), resultado:Number(r.resultado_esperado_5anos) }:null; },
-      local:function(){ return { economia:LH_PONTE._kpiNum('kpi-ind12',0), esperada:LH_PONTE._kpiNum('kpi-ind12',3), exposicao:LH_PONTE._kpiNum('kpi-ind12',5), resultado:LH_PONTE._kpiNum('kpi-ind12',6) }; } },
+      local:function(){ return { economia:LH_PONTE._kpiNum('kpi-ind12',0), esperada:LH_PONTE._kpiNum('kpi-ind12',3), exposicao:LH_PONTE._kpiNum('kpi-ind12',5), resultado:LH_PONTE._kpiNum('kpi-ind12',6) }; },
+      render:function(r, ent, motivo){ ind12Render(r, ent, motivo); } },
 
     /* ═══ v690 · C5 · TESES DE CRÉDITO (geração antiga: ids com hífen, <div>-result) ═══
        Duas particularidades destas telas, ambas tratadas aqui:
@@ -54547,17 +54554,34 @@ function calcularAGRO10(){
 /* ══════ v191 — PACOTE INDÚSTRIA · LOTE 1 (espelhado do mestre v45) ══════ */
 window.LH_IND = { curva: LH_AGRO.curva, irpjPresumido: LH_AGRO.irpjPresumido };
 
-function calcularIND01(){
+/* ═══ v727 · CUTOVER — calcularIND01: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function ind01LerEntradas(){
   var est=parseFloat(document.getElementById('ind01_est').value)||0;
   var pct=(parseFloat(document.getElementById('ind01_pct').value)||0)/100;
   var reg=document.getElementById('ind01_regime').value;
   var icms=parseFloat(document.getElementById('ind01_icms').value)||0;
   var ipca=(parseFloat(document.getElementById('ind01_ipca').value)||0)/100;
-  if(est<=0){ mostrarToast('Informe o estoque projetado','error'); return; }
+  if(est<=0){ mostrarToast('Informe o estoque projetado','error'); return null; }
+
+  return { estoque:est, pct_nacional:pct*100, regime:reg, saldo_icms:icms, ipca_aa:ipca*100, _pct:pct, _ipca:ipca };
+}
+function ind01CalcularLocal(ent){
+  var est=ent.estoque, reg=ent.regime, icms=ent.saldo_icms, pct=ent._pct, ipca=ent._ipca;
+  
   var credito=(reg==='cumulativo')? est*pct*0.0925 : 0;
   var mensal=credito/12;
   var parcICMS=icms/240, parcCorr=icms*(1+ipca)/240;
   var total=credito+icms;
+
+  return { ok:true, regime:reg, credito_presumido_cbs:credito, apropriacao_mensal:mensal, saldo_icms:{ total:icms, parcela_mensal:parcICMS, parcela_corrigida_1ano:parcCorr }, credito_total_mapeado:total };
+}
+function ind01Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-ind01'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var est=ent.estoque, reg=ent.regime, icms=ent.saldo_icms, pct=ent._pct, ipca=ent._ipca;
+  
+  var pct=ent._pct, ipca=ent._ipca; var credito=+r.credito_presumido_cbs, mensal=+r.apropriacao_mensal, parcICMS=+r.saldo_icms.parcela_mensal, parcCorr=+r.saldo_icms.parcela_corrigida_1ano, total=+r.credito_total_mapeado;
   document.getElementById('kpi-ind01').innerHTML=
     '<div class="kpi-card '+(credito>0?'kpi-ok':'kpi-alerta')+'"><div class="kpi-label">Crédito presumido de CBS</div><div class="kpi-value">'+fmtR(credito)+'</div><div class="kpi-sub">'+(credito>0?'9,25% sobre o estoque nacional onerado':'regime não cumulativo — crédito já tomado na compra')+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Apropriação mensal</div><div class="kpi-value">'+fmtR(mensal)+'</div><div class="kpi-sub">12 parcelas — compensa só com CBS</div></div>'+
@@ -54569,20 +54593,43 @@ function calcularIND01(){
     '<br><b>⚠ DUPLO PRAZO FATAL:</b> inventário documentado em <b>31/12/2026</b> e apropriação até <b>30/06/2027</b>. Perdeu um dos dois, perdeu o crédito.'+
     '<br><b>Atenção à vedação:</b> este crédito compensa <b>apenas CBS</b> — não IBS (arts. 27 e 47).'+
     '<br><b>✅ Caso-ouro:</b> exemplo publicado no mercado (estoque de 1M no cumulativo → crédito de R$ 92.500) reproduzido por esta mesma fórmula.</div>';
+
+}
+function calcularIND01(){
+  var ent=ind01LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularIND01')){ LH_PONTE.executar('calcularIND01', ent); return; }
+  ind01Render(ind01CalcularLocal(ent), ent, null);
 }
 
-function calcularIND02(){
+/* ═══ v727 · CUTOVER — calcularIND02: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function ind02LerEntradas(){
   var ben=parseFloat(document.getElementById('ind02_ben').value)||0;
   var tipo=document.getElementById('ind02_tipo').value;
   var exp=(parseFloat(document.getElementById('ind02_exp').value)||0)/100;
   var hab=document.getElementById('ind02_hab').value;
-  if(ben<=0){ mostrarToast('Informe o benefício anual','error'); return; }
+  if(ben<=0){ mostrarToast('Informe o benefício anual','error'); return null; }
+
+  return { beneficio_anual:ben, tipo:tipo, pct_investimento:exp*100, habilitado:(hab==='Sim'), _exp:exp, _hab:hab };
+}
+function ind02CalcularLocal(ent){
+  var ben=ent.beneficio_anual, tipo=ent.tipo, exp=ent._exp, hab=ent._hab;
+  
   var tributacao=ben*0.4325;
   var creditoFiscal=(hab==='Sim')? ben*exp*0.25 : 0;
   var liquida=tributacao-creditoFiscal;
   var efetiva=ben>0?liquida/ben:0;
   var comTese=(tipo==='cp')? ben*0.0925 : liquida;
   var economia=liquida-comTese;
+
+  return { ok:true, beneficio:ben, tributacao_43_25:tributacao, credito_fiscal_25:creditoFiscal, carga_liquida:liquida, carga_efetiva_pct:efetiva*100, com_tese_1182:comTese, economia_da_tese:economia };
+}
+function ind02Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-ind02'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var ben=ent.beneficio_anual, tipo=ent.tipo, exp=ent._exp, hab=ent._hab;
+  
+  var exp=ent._exp, hab=ent._hab; var tributacao=+r.tributacao_43_25, creditoFiscal=+r.credito_fiscal_25, liquida=+r.carga_liquida, efetiva=(+r.carga_efetiva_pct)/100, comTese=+r.com_tese_1182, economia=+r.economia_da_tese;
   document.getElementById('kpi-ind02').innerHTML=
     '<div class="kpi-card kpi-alerta"><div class="kpi-label">Tributação da Lei 14.789</div><div class="kpi-value">'+fmtR(tributacao)+'</div><div class="kpi-sub">43,25% — IRPJ 25% + CSLL 9% + PIS/COFINS 9,25%</div></div>'+
     '<div class="kpi-card '+(creditoFiscal>0?'kpi-ok':'kpi-alerta')+'"><div class="kpi-label">Crédito fiscal de 25%</div><div class="kpi-value">'+fmtR(creditoFiscal)+'</div><div class="kpi-sub">'+(creditoFiscal>0?'sobre a parcela de implantação/expansão':'⚠ não habilitada na RFB — crédito perdido')+'</div></div>'+
@@ -54594,13 +54641,26 @@ function calcularIND02(){
     '<br><b>A tese do outro lado:</b> o STJ decidiu no <b>EREsp 1.517.492</b> que o <b>crédito presumido</b> de ICMS não integra a base do IRPJ/CSLL — tese incondicionada, por violação do pacto federativo. Para os demais benefícios, vale o <b>Tema 1182</b>, que exige os requisitos do art. 30 da Lei 12.973 (reserva de lucros e destinação).'+
     (hab==='Nao'?'<br><b>⚠ Ação imediata:</b> sem habilitação, você paga os 43,25% e não recebe o crédito de 25%. A habilitação é petição simples no e-CAC.':'')+
     '</div>';
+
+}
+function calcularIND02(){
+  var ent=ind02LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularIND02')){ LH_PONTE.executar('calcularIND02', ent); return; }
+  ind02Render(ind02CalcularLocal(ent), ent, null);
 }
 
-function calcularIND09(){
+/* ═══ v727 · CUTOVER — calcularIND09: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function ind09LerEntradas(){
   var ben=parseFloat(document.getElementById('ind09_ben').value)||0;
   var fim=parseFloat(document.getElementById('ind09_fim').value)||2032;
   var cob=(parseFloat(document.getElementById('ind09_cob').value)||0)/100;
-  if(ben<=0){ mostrarToast('Informe o benefício anual','error'); return; }
+  if(ben<=0){ mostrarToast('Informe o benefício anual','error'); return null; }
+
+  return { beneficio_anual:ben, ano_fim_ato:fim, cobertura_fundo_pct:cob*100, _cob:cob };
+}
+function ind09CalcularLocal(ent){
+  var ben=ent.beneficio_anual, fim=ent.ano_fim_ato, cob=ent._cob;
+  
   var anos=[2029,2030,2031,2032], red=[0.9,0.8,0.7,0.6];
   var preservado=anos.map(function(a,i){ return a<=fim ? ben*red[i] : 0; });
   var perdaNoPrazo=anos.reduce(function(s,a,i){ return s + (a<=fim ? ben*(1-red[i]) : 0); },0);
@@ -54609,6 +54669,16 @@ function calcularIND09(){
   var liquida=perdaTotal-compensacao;
   var tributacao=ben*0.4325;
   var custo1oAno=ben*0.1*(1-cob)+tributacao;
+
+  return { ok:true, beneficio_anual:ben, ano_fim_ato:fim, curva_2029_2032:anos.map(function(a,i){ return { ano:a, beneficio:preservado[i] }; }), perda_na_rampa:perdaNoPrazo, perda_liquida:liquida, compensacao_fundo:compensacao, preservado_no_prazo:preservado.reduce(function(x,y){return x+y;},0), tributacao_lei_14789:tributacao, custo_2029:custo1oAno, perda_total:perdaTotal };
+}
+function ind09Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-ind09'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var ben=ent.beneficio_anual, fim=ent.ano_fim_ato, cob=ent._cob;
+  
+  var cob=ent._cob; var anos=[2029,2030,2031,2032], red=[0.9,0.8,0.7,0.6]; var preservado=(r.curva_2029_2032||[]).map(function(c){ return +c.beneficio; }); var perdaNoPrazo=+r.perda_na_rampa, perdaTotal=+(r.perda_total!=null?r.perda_total:ben*(0.1+0.2+0.3+0.4)), compensacao=+r.compensacao_fundo, liquida=+r.perda_liquida, tributacao=+r.tributacao_lei_14789, custo1oAno=+r.custo_2029;
   document.getElementById('kpi-ind09').innerHTML=
     '<div class="kpi-card kpi-alerta"><div class="kpi-label">Perda acumulada 2029-2032</div><div class="kpi-value">'+fmtR(perdaTotal)+'</div><div class="kpi-sub">decaimento de 10% ao ano do incentivo</div></div>'+
     '<div class="kpi-card kpi-ok"><div class="kpi-label">Compensação do Fundo ADCT</div><div class="kpi-value">'+fmtR(compensacao)+'</div><div class="kpi-sub">'+fmtPct(cob*100)+' da perda dentro do prazo do contrato</div></div>'+
@@ -54619,20 +54689,43 @@ function calcularIND09(){
     '<div class="rec-card"><b>⚖ Base legal:</b> <b>ADCT art. 12</b> (EC 132/2023) — Fundo de Compensação de Benefícios Fiscais: compensa o titular de benefício <b>oneroso</b>, concedido até <b>31/05/2023</b>, com prazo certo e condições, mediante <b>habilitação</b>. A redução segue 10% ao ano de 2029 a 2032, com extinção em 2033.'+
     '<br><b>⚡ Mesa FIERGS — o associado precisa saber DUAS coisas:</b> (1) sem habilitação no prazo, não há compensação, e o risco aqui é <b>operacional</b>, não jurídico; (2) o Fundo compensa a perda do incentivo, mas <b>não devolve</b> a tributação da Lei 14.789 sobre o benefício — que soma '+fmtR(tributacao)+' por ano e é onde mora a tese (ver Tema 1182).'+
     '</div>';
+
+}
+function calcularIND09(){
+  var ent=ind09LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularIND09')){ LH_PONTE.executar('calcularIND09', ent); return; }
+  ind09Render(ind09CalcularLocal(ent), ent, null);
 }
 
-function calcularIND12(){
+/* ═══ v727 · CUTOVER — calcularIND12: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function ind12LerEntradas(){
   var cp=parseFloat(document.getElementById('ind12_cp').value)||0;
   var dem=parseFloat(document.getElementById('ind12_dem').value)||0;
   var res=document.getElementById('ind12_res').value;
   var prob=(parseFloat(document.getElementById('ind12_prob').value)||0)/100;
-  if(cp<=0&&dem<=0){ mostrarToast('Informe os benefícios','error'); return; }
+  if(cp<=0&&dem<=0){ mostrarToast('Informe os benefícios','error'); return null; }
+
+  return { credito_presumido:cp, demais_beneficios:dem, tem_reserva:(res==='Sim'), prob_exito_pct:prob*100, _res:res, _prob:prob };
+}
+function ind12CalcularLocal(ent){
+  var cp=ent.credito_presumido, dem=ent.demais_beneficios, res=ent._res, prob=ent._prob;
+  
   var exclCP=cp*0.34;
   var exclDem=(res==='Sim')? dem*0.34 : 0;
   var economia=exclCP+exclDem;
   var esperado=economia*prob;
   var risco=economia*5*1.75;
   var resultado=economia*5*prob - risco*(1-prob);
+
+  return { ok:true, economia_credito_presumido:exclCP, economia_demais:exclDem, economia_anual:economia, esperada_com_probabilidade:esperado, exposicao_se_autuado_5anos:risco, resultado_esperado_5anos:resultado, vale:(resultado>0) };
+}
+function ind12Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-ind12'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var cp=ent.credito_presumido, dem=ent.demais_beneficios, res=ent._res, prob=ent._prob;
+  
+  var res=ent._res, prob=ent._prob; var exclCP=+r.economia_credito_presumido, exclDem=+r.economia_demais, economia=+r.economia_anual, esperado=+r.esperada_com_probabilidade, risco=+r.exposicao_se_autuado_5anos, resultado=+r.resultado_esperado_5anos;
   document.getElementById('kpi-ind12').innerHTML=
     '<div class="kpi-card kpi-ok"><div class="kpi-label">Economia anual se a tese vencer</div><div class="kpi-value">'+fmtR(economia)+'</div><div class="kpi-sub">CP '+fmtR(exclCP)+(exclDem>0?' + demais '+fmtR(exclDem):' — demais fora por falta de reserva')+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Valor esperado no ano</div><div class="kpi-value">'+fmtR(esperado)+'</div><div class="kpi-sub">ponderado por '+fmtPct(prob*100)+' de êxito</div></div>'+
@@ -54644,6 +54737,12 @@ function calcularIND12(){
     '<div class="rec-card"><b>⚖ Base legal:</b> STJ <b>EREsp 1.517.492</b> — crédito presumido de ICMS fora da base do IRPJ/CSLL, tese <b>incondicionada</b> · <b>Tema 1182</b> — demais benefícios exigem os requisitos do art. 30 da Lei 12.973 (constituição de reserva de lucros e destinação para absorção de prejuízo ou aumento de capital) · Lei 9.430/96 art. 44 (multa de ofício de 75%).'+
     (res==='Nao'?'<br><b>⚠ Sem reserva de lucros constituída</b>, a parcela dos demais benefícios ('+fmtR(dem)+') fica fora da tese. Constituir a reserva é ato societário simples e destrava '+fmtR(dem*0.34)+' por ano de exposição defensável.':'')+
     '<br><b>Como usar esta tela:</b> a probabilidade de êxito deve vir do <b>parecer do seu jurídico</b>, não de estimativa comercial. O resultado esperado é ferramenta de decisão, não promessa.</div>';
+
+}
+function calcularIND12(){
+  var ent=ind12LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularIND12')){ LH_PONTE.executar('calcularIND12', ent); return; }
+  ind12Render(ind12CalcularLocal(ent), ent, null);
 }
 
 
@@ -54839,18 +54938,35 @@ function calcularIND03(){
   ind03Render(ind03CalcularLocal(ent), ent, null);
 }
 
-function calcularIND05(){
+/* ═══ v727 · CUTOVER — calcularIND05: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function ind05LerEntradas(){
   var compras=parseFloat(document.getElementById('ind05_compras').value)||0;
   var mva=(parseFloat(document.getElementById('ind05_mva').value)||0)/100;
   var venda=parseFloat(document.getElementById('ind05_venda').value)||0;
   var al=(parseFloat(document.getElementById('ind05_aliq').value)||0)/100;
   var meses=Math.min(60,parseFloat(document.getElementById('ind05_meses').value)||0);
-  if(compras<=0){ mostrarToast('Informe as compras sujeitas à ST','error'); return; }
+  if(compras<=0){ mostrarToast('Informe as compras sujeitas à ST','error'); return null; }
+
+  return { compras_st:compras, mva_pct:mva*100, venda_real:venda, aliquota_icms_pct:al*100, meses:meses, _mva:mva, _al:al };
+}
+function ind05CalcularLocal(ent){
+  var compras=ent.compras_st, venda=ent.venda_real, meses=ent.meses, mva=ent._mva, al=ent._al;
+  
   var presumida=compras*(1+mva);
   var dif=presumida-venda;
   var ressarc=Math.max(0,dif)*al;
   var complemento=Math.max(0,-dif)*al;
   var tese=ressarc*meses;
+
+  return { ok:true, meses:meses, base_presumida:presumida, venda_real:venda, diferenca:dif, ressarcimento_mensal:ressarc, complemento_mensal:complemento, tese_periodo:tese };
+}
+function ind05Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-ind05'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var compras=ent.compras_st, venda=ent.venda_real, meses=ent.meses, mva=ent._mva, al=ent._al;
+  
+  var mva=ent._mva, al=ent._al; var presumida=+r.base_presumida, dif=+r.diferenca, ressarc=+r.ressarcimento_mensal, complemento=+r.complemento_mensal, tese=+r.tese_periodo;
   document.getElementById('kpi-ind05').innerHTML=
     '<div class="kpi-card"><div class="kpi-label">Base presumida da retenção</div><div class="kpi-value">'+fmtR(presumida)+'</div><div class="kpi-sub">compras + MVA de '+fmtPct(mva*100)+'</div></div>'+
     '<div class="kpi-card '+(ressarc>0?'kpi-ok':'')+'"><div class="kpi-label">Ressarcimento mensal</div><div class="kpi-value">'+fmtR(ressarc)+'</div><div class="kpi-sub">'+(ressarc>0?'vendeu abaixo da base presumida':'não há ressarcimento neste cenário')+'</div></div>'+
@@ -54861,6 +54977,12 @@ function calcularIND05(){
     '<div class="rec-card"><b>⚖ Base legal:</b> STF <b>Tema 201</b> (RE 593.849) — é devida a restituição da diferença do ICMS-ST quando a base presumida supera a base real da operação. Convênio ICMS 142/2018 e legislação estadual disciplinam o procedimento.'+
     '<br><b>⚠ A mão dupla que muitos ignoram:</b> a mesma lógica autoriza os estados a exigir <b>complemento</b> quando a venda real supera a presumida. Antes de pleitear ressarcimento, apure os dois lados de todo o período — um levantamento parcial pode expor a empresa.'+
     '<br><b>O que muda em 2027:</b> a substituição tributária <b>não existe</b> no IBS/CBS. Todo o passivo e o ativo da ST precisam ser liquidados durante a transição.</div>';
+
+}
+function calcularIND05(){
+  var ent=ind05LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularIND05')){ LH_PONTE.executar('calcularIND05', ent); return; }
+  ind05Render(ind05CalcularLocal(ent), ent, null);
 }
 
 /* ═══ v726 · CUTOVER — calcularIND07: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
@@ -54907,17 +55029,34 @@ function calcularIND07(){
   ind07Render(ind07CalcularLocal(ent), ent, null);
 }
 
-function calcularIND10(){
+/* ═══ v727 · CUTOVER — calcularIND10: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function ind10LerEntradas(){
   var conta=parseFloat(document.getElementById('ind10_conta').value)||0;
   var dem=(parseFloat(document.getElementById('ind10_dem').value)||0)/100;
   var tust=(parseFloat(document.getElementById('ind10_tust').value)||0)/100;
   var icms=(parseFloat(document.getElementById('ind10_icms').value)||0)/100;
   var meses=Math.min(60,parseFloat(document.getElementById('ind10_meses').value)||0);
-  if(conta<=0){ mostrarToast('Informe a conta de energia','error'); return; }
+  if(conta<=0){ mostrarToast('Informe a conta de energia','error'); return null; }
+
+  return { conta_mensal:conta, pct_demanda:dem*100, pct_tust_tusd:tust*100, icms_pct:icms*100, meses:meses, _dem:dem, _tust:tust, _icms:icms };
+}
+function ind10CalcularLocal(ent){
+  var conta=ent.conta_mensal, meses=ent.meses, dem=ent._dem, tust=ent._tust, icms=ent._icms;
+  
   var baseDem=conta*dem, icmsDem=baseDem*icms, tese1=icmsDem*meses;
   var baseTust=conta*tust, icmsTust=baseTust*icms, pisTust=baseTust*0.0925;
   var tese2=(icmsTust+pisTust)*meses;
   var total=tese1+tese2;
+
+  return { ok:true, meses:meses, tese_demanda_contratada:{ base_mensal:baseDem, icms_mensal:icmsDem, periodo:tese1 }, tese_tust_tusd:{ base_mensal:baseTust, icms_mensal:icmsTust, pis_cofins_mensal:pisTust, periodo:tese2 }, total_periodo:total };
+}
+function ind10Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-ind10'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var conta=ent.conta_mensal, meses=ent.meses, dem=ent._dem, tust=ent._tust, icms=ent._icms;
+  
+  var dem=ent._dem, tust=ent._tust, icms=ent._icms; var baseDem=+r.tese_demanda_contratada.base_mensal, icmsDem=+r.tese_demanda_contratada.icms_mensal, tese1=+r.tese_demanda_contratada.periodo, baseTust=+r.tese_tust_tusd.base_mensal, icmsTust=+r.tese_tust_tusd.icms_mensal, pisTust=+r.tese_tust_tusd.pis_cofins_mensal, tese2=+r.tese_tust_tusd.periodo, total=+r.total_periodo;
   document.getElementById('kpi-ind10').innerHTML=
     '<div class="kpi-card"><div class="kpi-label">Tese 1 — demanda não consumida</div><div class="kpi-value">'+fmtR(tese1)+'</div><div class="kpi-sub">Súmula 391 do STJ — '+fmtR(icmsDem)+'/mês</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Tese 2 — TUST/TUSD</div><div class="kpi-value">'+fmtR(tese2)+'</div><div class="kpi-sub">Tema 986 — ICMS '+fmtR(icmsTust)+' + PIS/COFINS '+fmtR(pisTust)+'/mês</div></div>'+
@@ -54928,22 +55067,45 @@ function calcularIND10(){
     '<div class="rec-card"><b>⚖ Base legal:</b> <b>Súmula 391 do STJ</b> — o ICMS incide apenas sobre a energia <b>efetivamente consumida</b>, não sobre a demanda contratada e não utilizada · <b>Tema 986</b> — discussão sobre a inclusão da TUST/TUSD na base do ICMS, com modulação relevante para o período recuperável.'+
     '<br><b>⚡ A virada de 2027:</b> na LC 214 a energia é <b>insumo com crédito integral</b> de IBS/CBS. Para o eletrointensivo, isso encerra a discussão para frente — mas o passado recuperável continua valendo e prescreve mês a mês.'+
     '<br><b>Método:</b> valores nominais, sem Selic. A atualização depende da via (administrativa ou judicial) e da data de cada competência — confirme com o jurídico antes de provisionar.</div>';
+
+}
+function calcularIND10(){
+  var ent=ind10LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularIND10')){ LH_PONTE.executar('calcularIND10', ent); return; }
+  ind10Render(ind10CalcularLocal(ent), ent, null);
 }
 
 ['ind03','ind05','ind07','ind10'].forEach(function(id){ window.LH_VERT_MAPA[id]=['ind']; });
 
 /* ══════ v193 — INDÚSTRIA · LOTE 3 (espelhado do mestre v45) ══════ */
-function calcularIND04(){
+/* ═══ v727 · CUTOVER — calcularIND04: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function ind04LerEntradas(){
   var pd=parseFloat(document.getElementById('ind04_pd').value)||0;
   var pct=(parseFloat(document.getElementById('ind04_pct').value)||60)/100;
   var lucro=document.getElementById('ind04_lucro').value;
   var maq=parseFloat(document.getElementById('ind04_maq').value)||0;
-  if(pd<=0){ mostrarToast('Informe os dispêndios com P&D','error'); return; }
+  if(pd<=0){ mostrarToast('Informe os dispêndios com P&D','error'); return null; }
+
+  return { dispendios_pd:pd, pct_exclusao:pct*100, lucro_real_com_lucro:(lucro==='Sim'), maquinas_pd:maq, _pct:pct, _lucro:lucro };
+}
+function ind04CalcularLocal(ent){
+  var pd=ent.dispendios_pd, maq=ent.maquinas_pd, pct=ent._pct, lucro=ent._lucro;
+  
   var exclusao=(lucro==='Sim')? pd*pct : 0;
   var economia=exclusao*0.34;
   var deprec=(lucro==='Sim')? maq*0.34 : 0;
   var total=economia+deprec;
   var retorno=pd>0?total/pd:0;
+
+  return { ok:true, dispendios:pd, exclusao_adicional_pct:pct*100, exclusao_da_base:exclusao, economia_irpj_csll:economia, depreciacao_integral_maquinas:deprec, economia_total:total, retorno_sobre_pd_pct:retorno*100 };
+}
+function ind04Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-ind04'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var pd=ent.dispendios_pd, maq=ent.maquinas_pd, pct=ent._pct, lucro=ent._lucro;
+  
+  var pct=ent._pct, lucro=ent._lucro; var exclusao=+r.exclusao_da_base, economia=+r.economia_irpj_csll, deprec=+r.depreciacao_integral_maquinas, total=+r.economia_total, retorno=(+r.retorno_sobre_pd_pct)/100;
   document.getElementById('kpi-ind04').innerHTML=
     '<div class="kpi-card"><div class="kpi-label">Exclusão adicional da base</div><div class="kpi-value">'+fmtR(exclusao)+'</div><div class="kpi-sub">'+fmtPct(pct*100)+' dos dispêndios — além da despesa já lançada</div></div>'+
     '<div class="kpi-card kpi-ok"><div class="kpi-label">Economia de IRPJ + CSLL</div><div class="kpi-value">'+fmtR(economia)+'</div><div class="kpi-sub">34% sobre a exclusão</div></div>'+
@@ -54955,6 +55117,12 @@ function calcularIND04(){
     '<br><b>⚠ A condição que elimina o benefício:</b> é obrigatório estar no <b>Lucro Real com lucro fiscal no ano</b>. Sem lucro, não há base a excluir — e a Lei do Bem <b>não permite transportar</b> o saldo para exercícios seguintes. Empresa em prejuízo perde o benefício daquele ano.'+
     '<br><b>✅ Caso-ouro:</b> exemplos publicados reproduzidos por esta fórmula (P&D de 1M a 60% → economia de R$ 204.000; a 80% → R$ 272.000). A recuperação de <b>20,40% do gasto</b> citada no mercado é exatamente 60% × 34%.'+
     '<br><b>Obrigação acessória:</b> envio anual do formulário ao MCTI — a perda do prazo invalida o benefício.</div>';
+
+}
+function calcularIND04(){
+  var ent=ind04LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularIND04')){ LH_PONTE.executar('calcularIND04', ent); return; }
+  ind04Render(ind04CalcularLocal(ent), ent, null);
 }
 
 /* ═══ v726 · CUTOVER — calcularIND06: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
