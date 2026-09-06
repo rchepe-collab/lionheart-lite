@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v734";</script>
+<body><script>window.LH_VERSAO="v735";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3346,14 +3346,16 @@ window.LH_PONTE = (function(){
       esperado:function(r){ if(!r) return null; var sit=((document.getElementById('mj_situacao')||{}).value)||'espontanea'; var c=null; (r.cenarios||[]).forEach(function(x){ if(x.id===sit) c=x; });
         return c?{ principal:Number(r.principal), multa:Number(c.multa), juros:Number(c.juros), total:Number(c.total) }:null; },
       /* kpi-multajuros (R$ — o texto tem "2,05×" e "30,12%" que enganariam o kpiNum): [0] principal · [1] multa · [2] juros · [3] total */
-      local:function(){ var R=LH_PONTE._rsNum; return { principal:R('kpi-multajuros',0), multa:R('kpi-multajuros',1), juros:R('kpi-multajuros',2), total:R('kpi-multajuros',3) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { principal:R('kpi-multajuros',0), multa:R('kpi-multajuros',1), juros:R('kpi-multajuros',2), total:R('kpi-multajuros',3) }; },
+      render:function(r, ent, motivo){ multajurosRender(r, ent, motivo); } },
     calcularAutuacao: { calc:'autuacao',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { principal:f('au_principal'), multa_pct:f('au_multa'), selic_pct:f('au_selic'), prob_drj:f('au_drj'), prob_carf:f('au_carf'), prob_judicial:f('au_judicial'),
                  prob_desqualificacao:f('au_desqualif'), anos:f('au_anos'), taxa_anual:f('au_taxa') }; },
       esperado:function(r){ return r?{ hoje:Number(r.autuado_hoje), multa:Number(r.multa), futuro:Number(r.valor_em_6_anos!=null?r.valor_em_6_anos:(r['valor_em_'+r.anos+'_anos'])), exposicao_vp:Number(r.exposicao_esperada_vp) }:null; },
       /* kpi-autuacao (R$ — "2,05×" e "76%" no texto): [0] autuado hoje · [1] multa · [2] em N anos · [3] exposição esperada VP */
-      local:function(){ var R=LH_PONTE._rsNum; return { hoje:R('kpi-autuacao',0), multa:R('kpi-autuacao',1), futuro:R('kpi-autuacao',2), exposicao_vp:R('kpi-autuacao',3) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { hoje:R('kpi-autuacao',0), multa:R('kpi-autuacao',1), futuro:R('kpi-autuacao',2), exposicao_vp:R('kpi-autuacao',3) }; },
+      render:function(r, ent, motivo){ autuacaoRender(r, ent, motivo); } },
     calcularRefis: { calc:'refis',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { principal:f('rf_principal'), acessorios:f('rf_acessorios'), capacidade_mes:f('rf_capacidade'), onde:((G.el('rf_onde')||{}).value)||'rfb',
@@ -3401,7 +3403,8 @@ window.LH_PONTE = (function(){
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { faturamento:f('cp03_fat'), acessorias_em_dia:(((G.el('cp03_ok')||{}).value)==='sim'), regime:((G.el('cp03_reg')||{}).value)||'regular', custo_adequacao:f('cp03_custo') }; },
       esperado:function(r){ return r?{ piloto:Number(r.piloto_2026_1pct), dispensa:Number(r.dispensa_conquistada), liquido:Number(r.valor_liquido) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { piloto:R('kpi-cp03',0), dispensa:R('kpi-cp03',1), liquido:R('kpi-cp03',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { piloto:R('kpi-cp03',0), dispensa:R('kpi-cp03',1), liquido:R('kpi-cp03',2) }; },
+      render:function(r, ent, motivo){ cp03Render(r, ent, motivo); } },
     calcularC06: { calc:'c06',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { prolabore:f('c06_prolabore'), dividendo:f('c06_dividendo'), outros:f('c06_outros'), isentos_mes:f('c06_isentos'), gc_anual:f('c06_gc_anual'),
@@ -21535,17 +21538,40 @@ function calcularCP02(){
   if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularCP02')){ LH_PONTE.executar('calcularCP02', ent); return; }
   cp02Render(cp02CalcularLocal(ent), ent, null);
 }
-function calcularCP03(){
+/* ═══ v735 · CUTOVER — calcularCP03: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function cp03LerEntradas(){
   var fat=parseFloat(document.getElementById('cp03_fat').value)||0;
-  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return; }
+  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return null; }
   var ok=document.getElementById('cp03_ok').value==='sim', reg=document.getElementById('cp03_reg').value;
   var custo=parseFloat(document.getElementById('cp03_custo').value)||0;
+
+  return { faturamento:fat, acessorias_em_dia:ok, regime:reg, custo_adequacao:custo };
+}
+function cp03CalcularLocal(ent){
+  var fat=ent.faturamento, ok=ent.acessorias_em_dia, reg=ent.regime, custo=ent.custo_adequacao;
+  
   var piloto=fat*0.01, disp=(ok&&reg==='regular')?piloto:0, liq=disp-custo, roi=custo>0?disp/custo:0;
+
+  return { ok:true, piloto_2026_1pct:piloto, dispensa_conquistada:disp, valor_liquido:liq, roi:roi, custo_adequacao:custo };
+}
+function cp03Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-cp03'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento, ok=ent.acessorias_em_dia, reg=ent.regime, custo=ent.custo_adequacao;
+  
+  var fat=ent.faturamento, ok=ent.acessorias_em_dia, reg=ent.regime, custo=ent.custo_adequacao; var piloto=+r.piloto_2026_1pct, disp=+r.dispensa_conquistada, liq=+r.valor_liquido, roi=+r.roi;
   lhKpi('kpi-cp03',[{l:'PILOTO 2026 (1%)',v:fmtR(piloto)},{l:'DISPENSA CONQUISTADA',v:fmtR(disp),cls:disp>0?'kpi-positivo':'kpi-negativo',s:disp>0?'acessórias em dia':'sem dispensa'},{l:'VALOR LÍQUIDO DO COMPLIANCE',v:fmtR(liq),cls:liq>0?'kpi-positivo':''},{l:'ROI DA ADEQUAÇÃO',v:roi.toFixed(2)+'×',s:'cada R$1 investido'}]);
   document.getElementById('recs-cp03').innerHTML='<div class="rec-card rec-oport"><h5>✨ Compliance É o imposto em 2026</h5><p>'+(disp>0?('Estar em dia vale '+fmtR(disp)+' este ano — e o bônus invisível: chegar em 2027 (CBS 8,8% + split payment) com sistemas rodados, enquanto o concorrente apaga incêndio.'):'Sem as acessórias em dia, o piloto de '+fmtR(piloto)+' é devido — e 2027 chega com CBS 8,8% e split payment em cima de uma casa desorganizada. A adequação se paga só com a dispensa.')+'</p></div>';
   document.getElementById('recs-cp03').innerHTML+='<div class="rec-card rec-atencao"><h5>📅 A linha do tempo que vende</h5><p>2026: piloto 1% + dispensa p/ quem cumprir → 2027: CBS 8,8% pra valer + split payment + fim do PIS/COFINS → 2029-32: rampa do IBS. Quem entra em 2026 organizado atravessa tudo isso com sistema rodado. O contador que conduzir essa esteira vira infraestrutura do cliente — impossível de demitir.</p></div>';
   mostrarToast('✓ Compliance calculado');
-try{var _pg=document.getElementById('page-cp03');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-cp03');if(!_mv){_mv=document.createElement('div');_mv.id='mem-cp03';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'ROI do compliance 2026',aliquotas:[{label:'Custo adequação',valor:''},{label:'Benefício',valor:''},{label:'Valor líquido',valor:''}],porque:'Valor líquido = benefício da adequação (ano-piloto) − custo de adequação.',baseLegal:[{lei:'LC 214/2025 — cronograma 2026'}]});}}catch(e){}}
+try{var _pg=document.getElementById('page-cp03');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-cp03');if(!_mv){_mv=document.createElement('div');_mv.id='mem-cp03';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'ROI do compliance 2026',aliquotas:[{label:'Custo adequação',valor:''},{label:'Benefício',valor:''},{label:'Valor líquido',valor:''}],porque:'Valor líquido = benefício da adequação (ano-piloto) − custo de adequação.',baseLegal:[{lei:'LC 214/2025 — cronograma 2026'}]});}}catch(e){}
+}
+function calcularCP03(){
+  var ent=cp03LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularCP03')){ LH_PONTE.executar('calcularCP03', ent); return; }
+  cp03Render(cp03CalcularLocal(ent), ent, null);
+}
 
 /* v728 · CUTOVER — adaptadores compartilhados das telas de setor (fn_setor):
    _lhResDeServidor(r) devolve o 'res' de 8 anos no formato que _lhKpisSetor/_lhChartSetor já leem;
@@ -25524,12 +25550,13 @@ var f=[[29145.60,0,0],[33919.80,0.075,2185.92],[45012.60,0.15,4729.41],
   var res=document.getElementById('res-aluguelpfpj'); if(res) res.style.display='block';
 }
 
-function calcularAutuacao(){
+/* ═══ v735 · CUTOVER — calcularAutuacao: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function autuacaoLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var principal=V('au_principal',0);
-  if(principal<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o tributo exigido','error'); return; }
-  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(principal,1000,'Tributo exigido')) return;
+  if(principal<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o tributo exigido','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(principal,1000,'Tributo exigido')) return null;
   var multaPct=parseFloat(G('au_multa','75'))||75;
   var selic=V('au_selic',30)/100;
   var pDRJ=V('au_drj',20)/100, pCARF=V('au_carf',40)/100, pJud=V('au_judicial',45)/100;
@@ -25537,6 +25564,12 @@ function calcularAutuacao(){
   var anos=Math.max(1,V('au_anos',5)), taxa=V('au_taxa',14)/100;
   var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
 
+
+  return { principal:principal, multa_pct:multaPct, selic_pct:selic*100, prob_drj:pDRJ*100, prob_carf:pCARF*100, prob_judicial:pJud*100, prob_desqualificacao:pDesq*100, anos:anos, taxa_anual:taxa*100, _selic:selic, _pDRJ:pDRJ, _pCARF:pCARF, _pJud:pJud, _pDesq:pDesq, _taxa:taxa };
+}
+function autuacaoCalcularLocal(ent){
+  var principal=ent.principal, multaPct=ent.multa_pct, anos=ent.anos, selic=ent._selic, pDRJ=ent._pDRJ, pCARF=ent._pCARF, pJud=ent._pJud, pDesq=ent._pDesq, taxa=ent._taxa;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
   var multa=principal*(multaPct/100);
   var juros=principal*selic;
   var autuado=principal+multa+juros;
@@ -25560,6 +25593,16 @@ function calcularAutuacao(){
   var esperado = pPerdeTudo*futuro;
   var vpEsperado = esperado/Math.pow(1+taxa,anos);
 
+
+  return { ok:true, principal:principal, multa_pct:multaPct, multa:multa, juros:juros, autuado_hoje:autuado, multiplicador:autuado/principal, qualificada:qualificada, economia_se_desqualificar:economiaDesq, chance_derrubar_pct:pAlgum*100, chance_perder_tudo_pct:pPerdeTudo*100, valor_se_perder_hoje:esperadoSePerde, valor_em_5_anos:futuro, exposicao_esperada:esperado, exposicao_esperada_vp:vpEsperado };
+}
+function autuacaoRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-autuacao'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var principal=ent.principal, multaPct=ent.multa_pct, anos=ent.anos, selic=ent._selic, pDRJ=ent._pDRJ, pCARF=ent._pCARF, pJud=ent._pJud, pDesq=ent._pDesq, taxa=ent._taxa;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
+  var selic=ent._selic, pDRJ=ent._pDRJ, pCARF=ent._pCARF, pJud=ent._pJud, pDesq=ent._pDesq, taxa=ent._taxa, anos=ent.anos, multaPct=ent.multa_pct, principal=ent.principal; var multa=+r.multa, juros=+r.juros, autuado=+r.autuado_hoje, pAlgum=(+r.chance_derrubar_pct)/100, pPerdeTudo=(+r.chance_perder_tudo_pct)/100, qualificada=!!r.qualificada, multaBase=principal*0.75, economiaDesq=+r.economia_se_desqualificar, perdeComDesq=principal+multaBase+juros, perdeSemDesq=autuado, esperadoSePerde=+r.valor_se_perder_hoje, futuro=+r.valor_em_5_anos, esperado=+r.exposicao_esperada, vpEsperado=+r.exposicao_esperada_vp;
   document.getElementById('kpi-autuacao').innerHTML=
     '<div class="kpi-card kpi-alerta"><div class="kpi-label">Valor autuado hoje</div><div class="kpi-value">'+R(autuado)+'</div><div class="kpi-sub">'+(autuado/principal).toFixed(2).replace('.',',')+'× o principal</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Multa de ofício</div><div class="kpi-value">'+R(multa)+'</div><div class="kpi-sub">'+String(multaPct).replace('.',',')+'%</div></div>'+
@@ -25645,6 +25688,12 @@ function calcularAutuacao(){
     }
   }catch(_e){}
   var res=document.getElementById('res-autuacao'); if(res) res.style.display='block';
+
+}
+function calcularAutuacao(){
+  var ent=autuacaoLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAutuacao')){ LH_PONTE.executar('calcularAutuacao', ent); return; }
+  autuacaoRender(autuacaoCalcularLocal(ent), ent, null);
 }
 
 function calcularRefis(){
@@ -26063,18 +26112,25 @@ function calcularDecisor(){
   var res=document.getElementById('res-decisor'); if(res) res.style.display='block';
 }
 
-function calcularMultaJuros(){
+/* ═══ v735 · CUTOVER — calcularMultaJuros: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function multajurosLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var principal=V('mj_principal',0);
-  if(principal<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o valor do tributo devido','error'); return; }
-  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(principal,1000,'Tributo devido')) return;
+  if(principal<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o valor do tributo devido','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(principal,1000,'Tributo devido')) return null;
   var venc=G('mj_venc',''), pgto=G('mj_pgto','');
   var situacao=G('mj_situacao','espontanea');
   var qualif=parseFloat(G('mj_qualif','75'))||75;
   var selicManual=V('mj_selic',0);
   var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
 
+
+  return { principal:principal, venc:venc, pagamento:pgto, situacao:situacao, qualificacao:qualif, selic_manual:(selicManual>0?selicManual:undefined), _selicManual:selicManual };
+}
+function multajurosCalcularLocal(ent){
+  var principal=ent.principal, venc=ent.venc, pgto=ent.pagamento, situacao=ent.situacao, qualif=ent.qualificacao, selicManual=ent._selicManual;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
   /* meses de atraso */
   function dt(ym){ if(!ym||ym.length<7) return null; var p=ym.split('-'); return new Date(parseInt(p[0],10), parseInt(p[1],10)-1, 1); }
   var dV=dt(venc), dP=dt(pgto)||new Date();
@@ -26105,6 +26161,16 @@ function calcularMultaJuros(){
     {id:'mora', nome:'Atraso declarado — multa de mora', multa:moraVal, multaRot:(moraPct*100).toFixed(1).replace('.',',')+'%'+(moraPct>=0.20?' (teto)':''), juros:juros},
     {id:'oficio', nome:'Autuação — multa de ofício de '+String(qualif).replace('.',',')+'%', multa:oficioVal, multaRot:String(qualif).replace('.',',')+'%', juros:juros}
   ];
+
+  return { ok:true, principal:principal, meses_atraso:meses, dias:dias, selic_aplicada_pct:selic*100, fonte_selic:fonteSelic, juros:juros, cenarios:cen.map(function(c){ return { id:c.id, nome:c.nome, multa:c.multa, multa_pct:c.multaRot, juros:c.juros, total:principal+c.multa+c.juros, sobre_principal:(principal+c.multa+c.juros)/principal }; }), situacao_informada:situacao };
+}
+function multajurosRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-multajuros'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var principal=ent.principal, venc=ent.venc, pgto=ent.pagamento, situacao=ent.situacao, qualif=ent.qualificacao, selicManual=ent._selicManual;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
+  var principal=ent.principal, venc=ent.venc, pgto=ent.pagamento, situacao=ent.situacao, qualif=ent.qualificacao, selicManual=ent._selicManual; var meses=+r.meses_atraso, dias=+r.dias, selic=(+r.selic_aplicada_pct)/100, fonteSelic=String(r.fonte_selic||''), juros=+r.juros; var moraPct=Math.min(0.20, dias*0.0033), moraVal=principal*moraPct, oficioVal=principal*(qualif/100); var cen=(r.cenarios||[]).map(function(c){ var rot = c.id==='espontanea' ? 'afastada' : (c.id==='mora' ? ((c.multa/principal*100).toFixed(1).replace('.',',')+'%'+((c.multa/principal)>=0.20?' (teto)':'')) : String(qualif).replace('.',',')+'%'); return { id:c.id, nome:c.nome, multa:+c.multa, multaRot:rot, juros:+c.juros }; });
   var linhas='';
   cen.forEach(function(c){
     c.total=principal+c.multa+c.juros;
@@ -26183,6 +26249,12 @@ function calcularMultaJuros(){
     }
   }catch(_e){}
   var res=document.getElementById('res-multajuros'); if(res) res.style.display='block';
+
+}
+function calcularMultaJuros(){
+  var ent=multajurosLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularMultaJuros')){ LH_PONTE.executar('calcularMultaJuros', ent); return; }
+  multajurosRender(multajurosCalcularLocal(ent), ent, null);
 }
 
 function calcularPrescricao(){
