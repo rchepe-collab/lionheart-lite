@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v728";</script>
+<body><script>window.LH_VERSAO="v729";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2877,7 +2877,8 @@ window.LH_PONTE = (function(){
                  faturamento:f('ps_rec'), deducao:f('ps_sin'), carga_atual_pct:f('ps_atual'), credito_pct:f('ps_cred') , aliq_ref_pct:(String((G.el('ps_aliq')||{}).value||'').trim()===''?undefined:f('ps_aliq')) }; },
       esperado: function(r){ return r ? { imposto_2033:Number(r.imposto_2033), carga_atual:Number(r.carga_atual), base:Number(r.base_valor), variacao:Number(r.variacao_2033) } : null; },
       /* kpi-psaude: [0] imposto 2033 · [1] carga atual · [2] base · [3] variação */
-      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-psaude',0), carga_atual:LH_PONTE._kpiNum('kpi-psaude',1), base:LH_PONTE._kpiNum('kpi-psaude',2), variacao:LH_PONTE._kpiNum('kpi-psaude',3) }; }
+      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-psaude',0), carga_atual:LH_PONTE._kpiNum('kpi-psaude',1), base:LH_PONTE._kpiNum('kpi-psaude',2), variacao:LH_PONTE._kpiNum('kpi-psaude',3) }; },
+      render:function(r, ent, motivo){ psaudeRender(r, ent, motivo); }
     },
     calcularApostas: {
       calc: 'setor',
@@ -2886,7 +2887,8 @@ window.LH_PONTE = (function(){
         return { setor:'apostas', subtipo:(saf?'saf':'ggr'), faturamento:f('ap_rec'), deducao:(saf?0:f('ap_prem')), carga_atual_pct:0, credito_pct:f('ap_cred') , aliq_ref_pct:(String((G.el('ap_aliq')||{}).value||'').trim()===''?undefined:f('ap_aliq')) }; },
       esperado: function(r){ return r ? { imposto_2033:Number(r.imposto_2033), base:Number(r.base_valor) } : null; },
       /* kpi-apostas: [0] imposto 2033 · [1] base · [2] margem % · [3] arrecadação */
-      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-apostas',0), base:LH_PONTE._kpiNum('kpi-apostas',1) }; }
+      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-apostas',0), base:LH_PONTE._kpiNum('kpi-apostas',1) }; },
+      render:function(r, ent, motivo){ apostasRender(r, ent, motivo); }
     },
     calcularFinanceiro: {
       calc: 'setor',
@@ -2895,7 +2897,8 @@ window.LH_PONTE = (function(){
                  carga_atual_pct:f('fin_atual'), credito_pct:f('fin_cred') , aliq_ref_pct:(String((G.el('fin_aliq')||{}).value||'').trim()===''?undefined:f('fin_aliq')) }; },
       esperado: function(r){ return r ? { imposto_2033:Number(r.imposto_2033), carga_atual:Number(r.carga_atual), base:Number(r.base_valor), variacao:Number(r.variacao_2033) } : null; },
       /* kpi-financeiro: [0] imposto 2033 · [1] carga atual · [2] base · [3] spread · [4] variação */
-      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-financeiro',0), carga_atual:LH_PONTE._kpiNum('kpi-financeiro',1), base:LH_PONTE._kpiNum('kpi-financeiro',2), variacao:LH_PONTE._kpiNum('kpi-financeiro',4) }; }
+      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-financeiro',0), carga_atual:LH_PONTE._kpiNum('kpi-financeiro',1), base:LH_PONTE._kpiNum('kpi-financeiro',2), variacao:LH_PONTE._kpiNum('kpi-financeiro',4) }; },
+      render:function(r, ent, motivo){ financeiroRender(r, ent, motivo); }
     },
 
     /* ═══ v682 · ONDA 4 · classif (mix ponderado) e raiox360 (enquadramento do NCM) ═══ */
@@ -2946,7 +2949,8 @@ window.LH_PONTE = (function(){
       entradas: function(G){ var f=function(id){ var v=parseFloat(String((G.el(id)||{}).value||'0')); return isNaN(v)?0:v; };
         return { setor:'agroins', subtipo:G.txt('agroins_sub')||'insumo_agropecuario', faturamento:f('agroins_fat'), carga_atual_pct:f('agroins_atual'), credito_pct:f('agroins_cred') }; },
       esperado: function(r){ return r ? { imposto_2033:Number(r.imposto_2033), carga_atual:Number(r.carga_atual), variacao:Number(r.variacao_2033) } : null; },
-      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-agroins',0), carga_atual:LH_PONTE._kpiNum('kpi-agroins',2), variacao:LH_PONTE._kpiNum('kpi-agroins',4) }; }
+      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-agroins',0), carga_atual:LH_PONTE._kpiNum('kpi-agroins',2), variacao:LH_PONTE._kpiNum('kpi-agroins',4) }; },
+      render:function(r, ent, motivo){ agroinsRender(r, ent, motivo); }
     },
     calcularTelecom: {
       calc: 'setor',
@@ -2962,7 +2966,8 @@ window.LH_PONTE = (function(){
         var cap=((G.el('med_cap')||{}).value)||'S';
         return { setor:'medicamento', subtipo:(cap==='N'?'fora_da_lista':(G.txt('med_sub')||'medicamento_geral')), faturamento:f('med_fat'), carga_atual_pct:f('med_atual'), credito_pct:f('med_cred') }; },
       esperado: function(r){ return r ? { imposto_2033:Number(r.imposto_2033), carga_atual:Number(r.carga_atual), variacao:Number(r.variacao_2033) } : null; },
-      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-medicamento',0), carga_atual:LH_PONTE._kpiNum('kpi-medicamento',2), variacao:LH_PONTE._kpiNum('kpi-medicamento',4) }; }
+      local: function(){ return { imposto_2033:LH_PONTE._kpiNum('kpi-medicamento',0), carga_atual:LH_PONTE._kpiNum('kpi-medicamento',2), variacao:LH_PONTE._kpiNum('kpi-medicamento',4) }; },
+      render:function(r, ent, motivo){ medicamentoRender(r, ent, motivo); }
     },
     calcularTransPax: {
       calc: 'setor',
@@ -21142,13 +21147,20 @@ function calcularCoop(){
 }
 
 
-function calcularAgroIns(){
+/* ═══ v729 · CUTOVER — calcularAgroIns: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function agroinsLerEntradas(){
   var REDUC={insumo_agropecuario:0.60,produtor_rural:1.00,maquina_implemento:1.00,hortifruti:1.00,cesta_basica:1.00,agroindustria_geral:0.00};
   var sub=document.getElementById('agroins_sub').value;
   var fat=parseFloat(document.getElementById('agroins_fat').value)||0;
   var cred=(parseFloat(document.getElementById('agroins_cred').value)||0)/100;
   var atual=(parseFloat(document.getElementById('agroins_atual').value)||0)/100;
-  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return; }
+  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return null; }
+
+  return { setor:'agroins', subtipo:sub||'insumo_agropecuario', faturamento:fat, carga_atual_pct:atual*100, credito_pct:cred*100, _sub:sub, _cred:cred, _atual:atual };
+}
+function agroinsCalcularLocal(ent){
+  var fat=ent.faturamento, sub=ent._sub, cred=ent._cred, atual=ent._atual;
+  var REDUC={insumo_agropecuario:0.60,produtor_rural:1.00,maquina_implemento:1.00,hortifruti:1.00,cesta_basica:1.00,agroindustria_geral:0.00};
   var red=REDUC[sub]||0;
   var impostoAtual=fat*atual;
   var anos=[2026,2027,2028,2029,2030,2031,2032,2033];
@@ -21159,6 +21171,16 @@ function calcularAgroIns(){
     return {ano:ano,aliqEfet:aliqEfet,impostoNovo:impostoNovo,varVs:impostoNovo-impostoAtual};
   });
   var r33=resultados[7]; var ganha=r33.impostoNovo<impostoAtual;
+
+  return _lhServidorDeRes(resultados, impostoAtual, { reducao_pct:red*100 });
+}
+function agroinsRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-agroins'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento, sub=ent._sub, cred=ent._cred, atual=ent._atual;
+  var REDUC={insumo_agropecuario:0.60,produtor_rural:1.00,maquina_implemento:1.00,hortifruti:1.00,cesta_basica:1.00,agroindustria_geral:0.00};
+  var sub=ent._sub, cred=ent._cred, atual=ent._atual; var red=(r.reducao_pct!=null?(+r.reducao_pct)/100:(REDUC[sub]||0)); var impostoAtual=+r.carga_atual; var resultados=_lhResDeServidor(r, impostoAtual); var r33=resultados[7]; var ganha=r33.impostoNovo<impostoAtual;
   document.getElementById('kpi-agroins').innerHTML='<div class="kpi-card kpi-destaque"><div class="kpi-label">Imposto novo 2033</div><div class="kpi-value">'+fmtR(r33.impostoNovo)+'</div><div class="kpi-sub">redução '+fmtPct(red*100)+'</div></div>'+
     '<div class="kpi-card '+(ganha?'kpi-ok':'kpi-alerta')+'"><div class="kpi-label">Carga atual</div><div class="kpi-value">'+fmtR(impostoAtual)+'</div><div class="kpi-sub">'+(ganha?'GANHA':'PERDE')+' com a Reforma</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Sub-categoria</div><div class="kpi-value" style="font-size:1.1em">'+sub.replace(/_/g," ")+'</div><div class="kpi-sub">redução '+fmtPct(red*100)+'</div></div>'+
@@ -21172,6 +21194,12 @@ function calcularAgroIns(){
   document.getElementById('res-agroins').classList.add('visible');
   try{ if(window.setMotorResultado) setMotorResultado('agroins',{tipo:r33.varVs<0?'economia_anual':'custo_imposto',valor:Math.abs(r33.varVs),valorAnual:Math.abs(r33.varVs),contexto:ganha?'Agro ganha':'Agro perde',descricao:'Agro '+sub+': imposto novo 2033 '+fmtR(r33.impostoNovo)+' vs '+fmtR(impostoAtual)+' hoje.',recomendacao:'Confirmar a sub-cadeia e o diferimento aplicável ao caso concreto.'}); }catch(e){}
   mostrarToast('✓ Impacto agro calculado','success');
+
+}
+function calcularAgroIns(){
+  var ent=agroinsLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAgroIns')){ LH_PONTE.executar('calcularAgroIns', ent); return; }
+  agroinsRender(agroinsCalcularLocal(ent), ent, null);
 }
 
 function calcularImport(){
@@ -21624,18 +21652,35 @@ function calcularTelecom(){
   mostrarToast('✓ Impacto calculado','success');
 }
 
-function calcularPSaude(){
+/* ═══ v729 · CUTOVER — calcularPSaude: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function psaudeLerEntradas(){
   var mod=document.getElementById('ps_mod').value;
   var rec=parseFloat(document.getElementById('ps_rec').value)||0;
   var sin=parseFloat(document.getElementById('ps_sin').value)||0;
   var _aliqRaw=String((document.getElementById('ps_aliq')||{}).value||'').trim(); var _aliqBranco=(_aliqRaw===''); var aliq=_aliqBranco?((typeof LH_refPlena==='function')?LH_refPlena():LH_REF_PLENA()):((parseFloat(_aliqRaw.replace(',','.'))||0)/100); var _aliqNota=_aliqBranco?' · alíq. de referência '+(aliq*100).toFixed(1).replace('.',',')+'% (campo em branco)':''; /* ★ v681 · CAMPO EM BRANCO NÃO É ZERO — ps_aliq/ap_aliq/fin_aliq são lh-def: placeholder 26.5 e valor vazio. parseFloat('') = 0 → imposto novo R$ 0,00 e veredito 'GANHA' com a tela no estado padrão. O Mestre (F2-02/F2-03/F2-06) pinta a alíquota do regime na referência (aba TRANSIÇÃO C17). Em branco, usa LH_refPlena() e DIZ isso no KPI; a ferramenta não escreve no campo. Digitado, respeita o digitado (o regime financeiro tem alíquota própria, art. 181+, ainda não fixada). */
   var cred=(parseFloat(document.getElementById('ps_cred').value)||0)/100;
   var atual=(parseFloat(document.getElementById('ps_atual').value)||0)/100;
-  if(rec<=0){ mostrarToast('Informe a receita','error'); return; }
+  if(rec<=0){ mostrarToast('Informe a receita','error'); return null; }
+  var impostoAtual=rec*atual; var base=Math.max(rec-sin,0);
+
+  return { setor:'psaude', subtipo:(mod==='autogestao'?'autogestao':'operadora'), faturamento:rec, deducao:sin, carga_atual_pct:atual*100, credito_pct:cred*100, aliq_ref_pct:(_aliqBranco?undefined:aliq*100), _mod:mod, _aliq:aliq, _aliqNota:_aliqNota, _cred:cred, _atual:atual, _sin:sin };
+}
+function psaudeCalcularLocal(ent){
+  var rec=ent.faturamento, sin=ent._sin, mod=ent._mod, aliq=ent._aliq, _aliqNota=ent._aliqNota, cred=ent._cred, atual=ent._atual;
   var impostoAtual=rec*atual; var base=Math.max(rec-sin,0);
   var anos=[2026,2027,2028,2029,2030,2031,2032,2033];
   var res=anos.map(function(ano){ var pctTrans; try{ pctTrans=getAliq(ano).total/LH_REF_PLENA(); }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); } var a=Math.max(0,aliq*pctTrans*(1-cred)); /* 🦁 v38: operadora SEM −60% (regime da margem, art. 234+) — padrão mestre */ var imp=base*a; if(mod==='autogestao')imp=0; return {ano:ano,impostoNovo:imp,aliqEfet:(rec>0?imp/rec:0),varVs:imp-impostoAtual}; });
   var r33=res[7]; var ganha=r33.impostoNovo<impostoAtual;
+
+  return _lhServidorDeRes(res, impostoAtual, { base_valor:base });
+}
+function psaudeRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-psaude'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var rec=ent.faturamento, sin=ent._sin, mod=ent._mod, aliq=ent._aliq, _aliqNota=ent._aliqNota, cred=ent._cred, atual=ent._atual;
+  var impostoAtual=rec*atual; var base=Math.max(rec-sin,0);
+  var mod=ent._mod, aliq=ent._aliq, _aliqNota=ent._aliqNota, cred=ent._cred, atual=ent._atual, sin=ent._sin, rec=ent.faturamento; var impostoAtual=+r.carga_atual, base=+(r.base_valor!=null?r.base_valor:Math.max(rec-sin,0)); var res=_lhResDeServidor(r, impostoAtual).map(function(x){ return { ano:x.ano, impostoNovo:x.impostoNovo, aliqEfet:(rec>0?x.impostoNovo/rec:0), varVs:x.varVs }; }); var r33=res[7]; var ganha=r33.impostoNovo<impostoAtual;
   document.getElementById('kpi-psaude').innerHTML='<div class="kpi-card kpi-destaque"><div class="kpi-label">Imposto novo 2033</div><div class="kpi-value">'+fmtR(r33.impostoNovo)+'</div><div class="kpi-sub">sobre a margem'+_aliqNota+'</div></div>'+
     '<div class="kpi-card '+(ganha?'kpi-ok':'kpi-alerta')+'"><div class="kpi-label">Carga atual</div><div class="kpi-value">'+fmtR(impostoAtual)+'</div><div class="kpi-sub">'+(ganha?'GANHA':'PERDE')+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Base (contrapr.−sinistros)</div><div class="kpi-value">'+fmtR(base)+'</div><div class="kpi-sub">margem operacional</div></div>'+
@@ -21649,19 +21694,42 @@ function calcularPSaude(){
   document.getElementById('res-psaude').classList.add('visible');
   try{ if(window.setMotorResultado) setMotorResultado('psaude',{tipo:r33.varVs<0?'economia_anual':'custo_imposto',valor:Math.abs(r33.varVs),valorAnual:Math.abs(r33.varVs),contexto:ganha?'Operadora ganha':'Operadora perde',descricao:'Plano de saúde '+mod+': imposto novo 2033 '+fmtR(r33.impostoNovo)+' vs '+fmtR(impostoAtual)+'.',recomendacao:'Confirmar a base (contraprestação − eventos) e a alíquota do regime.'}); }catch(e){}
   mostrarToast('✓ Impacto calculado','success');
+
+}
+function calcularPSaude(){
+  var ent=psaudeLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularPSaude')){ LH_PONTE.executar('calcularPSaude', ent); return; }
+  psaudeRender(psaudeCalcularLocal(ent), ent, null);
 }
 
-function calcularApostas(){
+/* ═══ v729 · CUTOVER — calcularApostas: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function apostasLerEntradas(){
   var modo=document.getElementById('ap_modo').value;
   var rec=parseFloat(document.getElementById('ap_rec').value)||0;
   var prem=parseFloat(document.getElementById('ap_prem').value)||0;
   var _aliqRaw=String((document.getElementById('ap_aliq')||{}).value||'').trim(); var _aliqBranco=(_aliqRaw===''); var aliq=_aliqBranco?((typeof LH_refPlena==='function')?LH_refPlena():LH_REF_PLENA()):((parseFloat(_aliqRaw.replace(',','.'))||0)/100); var _aliqNota=_aliqBranco?' · alíq. de referência '+(aliq*100).toFixed(1).replace('.',',')+'% (campo em branco)':''; /* ★ v681 · CAMPO EM BRANCO NÃO É ZERO — ps_aliq/ap_aliq/fin_aliq são lh-def: placeholder 26.5 e valor vazio. parseFloat('') = 0 → imposto novo R$ 0,00 e veredito 'GANHA' com a tela no estado padrão. O Mestre (F2-02/F2-03/F2-06) pinta a alíquota do regime na referência (aba TRANSIÇÃO C17). Em branco, usa LH_refPlena() e DIZ isso no KPI; a ferramenta não escreve no campo. Digitado, respeita o digitado (o regime financeiro tem alíquota própria, art. 181+, ainda não fixada). */
   var cred=(parseFloat(document.getElementById('ap_cred').value)||0)/100;
-  if(rec<=0){ mostrarToast('Informe a arrecadação','error'); return; }
+  if(rec<=0){ mostrarToast('Informe a arrecadação','error'); return null; }
+  var base=(modo==='saf')?rec:Math.max(rec-prem,0);
+
+  return { setor:'apostas', subtipo:(modo==='saf'?'saf':'ggr'), faturamento:rec, deducao:(modo==='saf'?0:prem), carga_atual_pct:0, credito_pct:cred*100, aliq_ref_pct:(_aliqBranco?undefined:aliq*100), _modo:modo, _aliq:aliq, _aliqNota:_aliqNota, _cred:cred, _prem:prem };
+}
+function apostasCalcularLocal(ent){
+  var rec=ent.faturamento, modo=ent._modo, aliq=ent._aliq, _aliqNota=ent._aliqNota, cred=ent._cred, prem=ent._prem;
   var base=(modo==='saf')?rec:Math.max(rec-prem,0);
   var anos=[2026,2027,2028,2029,2030,2031,2032,2033];
   var res=anos.map(function(ano){ var pctTrans; try{ pctTrans=getAliq(ano).total/LH_REF_PLENA(); }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); } var a=Math.max(0,aliq*pctTrans*(1-cred)); var imp=base*a; return {ano:ano,impostoNovo:imp}; });
   var r33=res[7]; var margem=(rec>0?base/rec:0);
+
+  return _lhServidorDeRes(res.map(function(x){ return { ano:x.ano, aliqEfet:(base>0?x.impostoNovo/base:0), impostoNovo:x.impostoNovo, varVs:x.impostoNovo }; }), 0, { base_valor:base });
+}
+function apostasRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-apostas'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var rec=ent.faturamento, modo=ent._modo, aliq=ent._aliq, _aliqNota=ent._aliqNota, cred=ent._cred, prem=ent._prem;
+  var base=(modo==='saf')?rec:Math.max(rec-prem,0);
+  var modo=ent._modo, aliq=ent._aliq, _aliqNota=ent._aliqNota, cred=ent._cred, prem=ent._prem, rec=ent.faturamento; var base=+(r.base_valor!=null?r.base_valor:((modo==='saf')?rec:Math.max(rec-prem,0))); var res=_lhResDeServidor(r, 0).map(function(x){ return { ano:x.ano, impostoNovo:x.impostoNovo }; }); var r33=res[7]; var margem=(rec>0?base/rec:0);
   document.getElementById('kpi-apostas').innerHTML='<div class="kpi-card kpi-destaque"><div class="kpi-label">IBS/CBS sobre GGR 2033</div><div class="kpi-value">'+fmtR(r33.impostoNovo)+'</div><div class="kpi-sub">'+(modo==='saf'?'base = receita SAF':'base = GGR')+_aliqNota+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Base ('+(modo==='saf'?'receita':'GGR')+')</div><div class="kpi-value">'+fmtR(base)+'</div><div class="kpi-sub">'+fmtPct(margem*100)+' da arrecadação</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Arrecadação</div><div class="kpi-value">'+fmtR(rec)+'</div><div class="kpi-sub">'+(modo==='saf'?'receita SAF':'total apostado')+'</div></div>'+
@@ -21675,6 +21743,12 @@ function calcularApostas(){
   document.getElementById('res-apostas').classList.add('visible');
   try{ if(window.setMotorResultado) setMotorResultado('apostas',{tipo:'custo_imposto',valor:r33.impostoNovo,valorAnual:r33.impostoNovo,contexto:'Apostas/SAF',descricao:'Apostas/SAF '+modo+': IBS/CBS sobre GGR 2033 '+fmtR(r33.impostoNovo)+'.',recomendacao:'Somar 12% GGR (Lei das Bets) + Imposto Seletivo. Validar enquadramento.'}); }catch(e){}
   mostrarToast('✓ Impacto calculado','success');
+
+}
+function calcularApostas(){
+  var ent=apostasLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularApostas')){ LH_PONTE.executar('calcularApostas', ent); return; }
+  apostasRender(apostasCalcularLocal(ent), ent, null);
 }
 
 
@@ -21693,7 +21767,8 @@ function finAtualizaTipo(){
  if(li)li.textContent=c.li; if(lf)lf.textContent=c.lf; if(ls)ls.textContent=c.ls;
  var h=document.getElementById('fin_tipo_hint'); if(h)h.innerHTML='⚖️ '+c.art+' · base: '+c.base;
 }
-function calcularFinanceiro(){
+/* ═══ v729 · CUTOVER — calcularFinanceiro: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function financeiroLerEntradas(){
   var tipo=document.getElementById('fin_tipo').value;
   var _finC=(window.FIN_TIPO&&window.FIN_TIPO[tipo])||{art:'LC 214/2025 art. 182+',nota:''};
   var interm=parseFloat(document.getElementById('fin_interm').value)||0;
@@ -21701,14 +21776,30 @@ function calcularFinanceiro(){
   var serv=parseFloat(document.getElementById('fin_serv').value)||0;
   var _aliqRaw=String((document.getElementById('fin_aliq')||{}).value||'').trim(); var _aliqBranco=(_aliqRaw===''); var aliq=_aliqBranco?((typeof LH_refPlena==='function')?LH_refPlena():LH_REF_PLENA()):((parseFloat(_aliqRaw.replace(',','.'))||0)/100); var _aliqNota=_aliqBranco?' · alíq. de referência '+(aliq*100).toFixed(1).replace('.',',')+'% (campo em branco)':''; /* ★ v681 · CAMPO EM BRANCO NÃO É ZERO — ps_aliq/ap_aliq/fin_aliq são lh-def: placeholder 26.5 e valor vazio. parseFloat('') = 0 → imposto novo R$ 0,00 e veredito 'GANHA' com a tela no estado padrão. O Mestre (F2-02/F2-03/F2-06) pinta a alíquota do regime na referência (aba TRANSIÇÃO C17). Em branco, usa LH_refPlena() e DIZ isso no KPI; a ferramenta não escreve no campo. Digitado, respeita o digitado (o regime financeiro tem alíquota própria, art. 181+, ainda não fixada). */ var cred=(parseFloat((document.getElementById('fin_cred')||{value:0}).value)||0)/100;
   var atual=(parseFloat(document.getElementById('fin_atual').value)||0)/100;
-  if(interm<=0&&serv<=0){ mostrarToast('Informe as receitas','error'); return; }
+  if(interm<=0&&serv<=0){ mostrarToast('Informe as receitas','error'); return null; }
   var receitaTotal=interm+serv;
   var spread=Math.max(interm-funding,0);
   var base=spread+serv;
   var impostoAtual=receitaTotal*atual;
+
+  return { setor:'financeiro', subtipo:'padrao', faturamento:interm, deducao:funding, receita_servico:serv, carga_atual_pct:atual*100, credito_pct:cred*100, aliq_ref_pct:(_aliqBranco?undefined:aliq*100), _tipo:tipo, _aliq:aliq, _aliqNota:_aliqNota, _cred:cred, _atual:atual };
+}
+function financeiroCalcularLocal(ent){
+  var interm=ent.faturamento, funding=ent.deducao, serv=ent.receita_servico, tipo=ent._tipo, aliq=ent._aliq, _aliqNota=ent._aliqNota, cred=ent._cred, atual=ent._atual;
+  var receitaTotal=interm+serv, spread=Math.max(interm-funding,0), base=spread+serv, impostoAtual=receitaTotal*atual;
   var anos=[2026,2027,2028,2029,2030,2031,2032,2033];
   var res=anos.map(function(ano){ var pctTrans; try{ pctTrans=getAliq(ano).total/LH_REF_PLENA(); }catch(e){ pctTrans=(ano>=2033?1:(ano-2025)/8); } var a=Math.max(0,aliq*pctTrans*(1-cred)); /* 🦁 v38 crédito padrão mestre */ var imp=base*a; return {ano:ano,impostoNovo:imp,aliqEfet:(receitaTotal>0?imp/receitaTotal:0),varVs:imp-impostoAtual}; });
   var r33=res[7]; var ganha=r33.impostoNovo<impostoAtual;
+
+  return _lhServidorDeRes(res, impostoAtual, { base_valor:base, receita_total:receitaTotal });
+}
+function financeiroRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-financeiro'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var interm=ent.faturamento, funding=ent.deducao, serv=ent.receita_servico, tipo=ent._tipo, aliq=ent._aliq, _aliqNota=ent._aliqNota, cred=ent._cred, atual=ent._atual;
+  var receitaTotal=interm+serv, spread=Math.max(interm-funding,0), base=spread+serv, impostoAtual=receitaTotal*atual;
+  var tipo=ent._tipo, aliq=ent._aliq, _aliqNota=ent._aliqNota, cred=ent._cred, atual=ent._atual, interm=ent.faturamento, funding=ent.deducao, serv=ent.receita_servico; var _finC=(window.FIN_TIPO&&window.FIN_TIPO[tipo])||{art:'LC 214/2025 art. 182+',nota:''}; var receitaTotal=interm+serv, spread=Math.max(interm-funding,0); var impostoAtual=+r.carga_atual, base=+(r.base_valor!=null?r.base_valor:spread+serv); var res=_lhResDeServidor(r, impostoAtual).map(function(x){ return { ano:x.ano, impostoNovo:x.impostoNovo, aliqEfet:(receitaTotal>0?x.impostoNovo/receitaTotal:0), varVs:x.varVs }; }); var r33=res[7]; var ganha=r33.impostoNovo<impostoAtual;
   document.getElementById('kpi-financeiro').innerHTML='<div class="kpi-card kpi-destaque"><div class="kpi-label">Imposto novo 2033</div><div class="kpi-value">'+fmtR(r33.impostoNovo)+'</div><div class="kpi-sub">sobre spread + serviços'+_aliqNota+'</div></div>'+
     '<div class="kpi-card '+(ganha?'kpi-ok':'kpi-alerta')+'"><div class="kpi-label">Carga atual</div><div class="kpi-value">'+fmtR(impostoAtual)+'</div><div class="kpi-sub">'+(ganha?'GANHA':'PERDE')+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Base (spread + tarifas)</div><div class="kpi-value">'+fmtR(base)+'</div><div class="kpi-sub">spread '+fmtR(spread)+'</div></div>'+
@@ -21722,6 +21813,12 @@ function calcularFinanceiro(){
   document.getElementById('res-financeiro').classList.add('visible');
   try{ if(window.setMotorResultado) setMotorResultado('financeiro',{tipo:r33.varVs<0?'economia_anual':'custo_imposto',valor:Math.abs(r33.varVs),valorAnual:Math.abs(r33.varVs),contexto:ganha?'Financeiro ganha':'Financeiro perde',descricao:'Financeiro '+tipo+': imposto novo 2033 '+fmtR(r33.impostoNovo)+' sobre base de spread '+fmtR(base)+'.',recomendacao:'Confirmar a composição do spread e a alíquota do regime.'}); }catch(e){}
   mostrarToast('✓ Impacto financeiro calculado','success');
+
+}
+function calcularFinanceiro(){
+  var ent=financeiroLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularFinanceiro')){ LH_PONTE.executar('calcularFinanceiro', ent); return; }
+  financeiroRender(financeiroCalcularLocal(ent), ent, null);
 }
 
 function calcularCombustivel(){
@@ -21840,15 +21937,32 @@ function calcularClassificador(){
   mostrarToast('\u2713 Al\u00edquota efetiva calculada','success');
 }
 
-function calcularMedicamento(){
+/* ═══ v729 · CUTOVER — calcularMedicamento: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function medicamentoLerEntradas(){
   var REDUC={lista_zero:1.00,medicamento_geral:0.60,dispositivo_medico:1.00,manipulado:0.60,nutricao:0.60};
   var sub=document.getElementById('med_sub').value;
   var fat=parseFloat(document.getElementById('med_fat').value)||0;
   var cred=(parseFloat(document.getElementById('med_cred').value)||0)/100;
   var atual=(parseFloat(document.getElementById('med_atual').value)||0)/100;
-  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return; }
+  if(fat<=0){ mostrarToast('Informe o faturamento','error'); return null; }
+
+  return { setor:'medicamento', subtipo:((((document.getElementById('med_cap')||{}).value)||'S')==='N'?'fora_da_lista':(sub||'medicamento_geral')), faturamento:fat, carga_atual_pct:atual*100, credito_pct:cred*100, _sub:sub, _cred:cred, _atual:atual };
+}
+function medicamentoCalcularLocal(ent){
+  var fat=ent.faturamento, sub=ent._sub, cred=ent._cred, atual=ent._atual;
+  var REDUC={lista_zero:1.00,medicamento_geral:0.60,dispositivo_medico:1.00,manipulado:0.60,nutricao:0.60};
   var red=REDUC[sub]||0, impostoAtual=fat*atual; var _cap=(document.getElementById('med_cap')||{value:'S'}).value; if(_cap==='N') red=0;
   var res=_lhProjSetor(fat,red,cred,impostoAtual); var r33=res[7];
+
+  return _lhServidorDeRes(res, impostoAtual, { reducao_pct:red*100 });
+}
+function medicamentoRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-medicamento'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento, sub=ent._sub, cred=ent._cred, atual=ent._atual;
+  var REDUC={lista_zero:1.00,medicamento_geral:0.60,dispositivo_medico:1.00,manipulado:0.60,nutricao:0.60};
+  var sub=ent._sub, cred=ent._cred, atual=ent._atual; var red=(r.reducao_pct!=null?(+r.reducao_pct)/100:(REDUC[sub]||0)); var impostoAtual=+r.carga_atual; var res=_lhResDeServidor(r, impostoAtual); var r33=res[7];
   var ganha=_lhKpisSetor('kpi-medicamento',r33,impostoAtual,sub.replace(/_/g," "),'redução '+fmtPct(red*100));
   try{ var v=document.getElementById('viab-medicamento'); if(v&&window.lhNotaConsultiva) v.innerHTML=window.lhNotaConsultiva({confianca:{nivel:'Média',motivo:'O enquadramento depende de o produto estar (ou não) na lista taxativa do Anexo XIV (0%) e do registro Anvisa. A carga atual é monofásica (PIS/COFINS na indústria, Lei 10.147) — varia por elo da cadeia.'},premissas:[{label:'Categoria',valor:sub},{label:'Faturamento',valor:fmtR(fat)},{label:'Redução',valor:fmtPct(red*100)},{label:'% crédito',valor:fmtPct(cred*100)}],nota:'Gate de enquadramento: confirmar se o item consta da lista taxativa (Anexo XIV → 0%) ou se é medicamento geral registrado na Anvisa (−60%). Dispositivos médicos do Anexo XII → 0%.'});
     var m=document.getElementById('mem-medicamento'); if(m&&window.lhMemoriaCalculo) m.innerHTML=window.lhMemoriaCalculo({titulo:'Medicamentos e dispositivos na Reforma',aliquotas:[{label:'Faturamento',valor:fmtR(fat)},{label:'Categoria',valor:sub},{label:'Redução',valor:fmtPct(red*100)},{label:'Alíquota efetiva 2033',valor:fmtPct(r33.aliqEfet*100)},{label:'Imposto novo 2033',valor:fmtR(r33.impostoNovo)},{label:'Carga atual',valor:fmtR(impostoAtual)}],porque:'A LC 214/2025 zera (art. 144 + Anexo XIV) os medicamentos da lista taxativa e os dispositivos médicos do Anexo XII; medicamentos registrados na Anvisa fora da lista têm redução de 60%. Hoje a tributação é monofásica (PIS/COFINS na indústria, Lei 10.147) somada ao ICMS.',baseLegal:[{lei:'LC 214/2025 art. 144 + Anexo XIV/XII'}]});
@@ -21859,6 +21973,12 @@ function calcularMedicamento(){
   document.getElementById('res-medicamento').classList.add('visible');
   try{ if(window.setMotorResultado) setMotorResultado('medicamento',{tipo:r33.varVs<0?'economia_anual':'custo_imposto',valor:Math.abs(r33.varVs),valorAnual:Math.abs(r33.varVs),contexto:ganha?'Alivia':'Encarece',descricao:'Medicamento '+sub+': imposto novo 2033 '+fmtR(r33.impostoNovo)+' vs '+fmtR(impostoAtual)+'.',recomendacao:'Confirmar enquadramento na lista taxativa (Anexo XIV) vs medicamento geral.'}); }catch(e){}
   mostrarToast('✓ Impacto calculado','success');
+
+}
+function calcularMedicamento(){
+  var ent=medicamentoLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularMedicamento')){ LH_PONTE.executar('calcularMedicamento', ent); return; }
+  medicamentoRender(medicamentoCalcularLocal(ent), ent, null);
 }
 
 /* v489 — art. 285/157: no transporte urbano a redução de 100% vem SEM
