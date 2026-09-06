@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v735";</script>
+<body><script>window.LH_VERSAO="v736";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3327,7 +3327,8 @@ window.LH_PONTE = (function(){
         var p=parseFloat((document.getElementById('tr_principal')||{}).value)||0, a=parseFloat((document.getElementById('tr_acessorios')||{}).value)||0;
         return { a_pagar:tot, economia_vp:+((p+a)-Number(r.melhor.valor_presente)).toFixed(2) }; },
       /* kpi-transacao (R$ — "R$ 45 mi" também casa): [0] consolidada · [1] principal · [2] acessórios · [3] "45 mi" · [4] a pagar (melhor) · [5] economia em VP */
-      local:function(){ var R=LH_PONTE._rsNum; return { a_pagar:R('kpi-transacao',4), economia_vp:R('kpi-transacao',5) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { a_pagar:R('kpi-transacao',4), economia_vp:R('kpi-transacao',5) }; },
+      render:function(r, ent, motivo){ transacaoRender(r, ent, motivo); } },
     calcularPrescricao: { calc:'prescricao',
       entradas:function(G){ var v=function(id){ return ((G.el(id)||{}).value)||''; };
         var interr=v('pd_interr'), dt=v('pd_datainterr');
@@ -3364,14 +3365,16 @@ window.LH_PONTE = (function(){
       esperado:function(r){ if(!r||!r.opcoes) return null; var m=null; r.opcoes.forEach(function(o){ if(!m||Number(o.valor_presente)<Number(m.valor_presente)) m=o; });
         return m?{ melhor_vp:Number(m.valor_presente), prestacao:Number(m.prestacao) }:null; },
       /* kpi-refis: [0] consolidado · [1] principal · [2] acessórios · [3] melhor VP · [4] prestação */
-      local:function(){ return { melhor_vp:LH_PONTE._kpiNum('kpi-refis',3), prestacao:LH_PONTE._kpiNum('kpi-refis',4) }; } },
+      local:function(){ return { melhor_vp:LH_PONTE._kpiNum('kpi-refis',3), prestacao:LH_PONTE._kpiNum('kpi-refis',4) }; },
+      render:function(r, ent, motivo){ refisRender(r, ent, motivo); } },
     calcularCompensacao: { calc:'compensacao',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { credito:f('pc_credito'), debitos_mensais:f('pc_debitos'), origem:((G.el('pc_origem')||{}).value)||'pagamento', transito:(((G.el('pc_transito')||{}).value)||undefined),
                  taxa_anual:f('pc_taxa'), risco_glosa:f('pc_risco'), pct_glosa:f('pc_pctglosa'), multa_isolada:(((G.el('pc_multaiso')||{}).value)==='sim') }; },
       esperado:function(r){ return (r&&r.risco)?{ vp:Number(r.valor_presente), perda:+(Number(r.credito)-Number(r.valor_presente)).toFixed(2), exposicao:Number(r.risco.exposicao_esperada) }:null; },
       /* kpi-compensacao: [0] crédito · [1] absorção/mês · [2] VP · [3] perda · [4] exposição esperada */
-      local:function(){ var K=LH_PONTE._kpiNum; return { vp:K('kpi-compensacao',2), perda:K('kpi-compensacao',3), exposicao:K('kpi-compensacao',4) }; } },
+      local:function(){ var K=LH_PONTE._kpiNum; return { vp:K('kpi-compensacao',2), perda:K('kpi-compensacao',3), exposicao:K('kpi-compensacao',4) }; },
+      render:function(r, ent, motivo){ compensacaoRender(r, ent, motivo); } },
     calcularDecisor: { calc:'decisor',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { divida:f('dc_valor'), prob_exito:f('dc_exito'), taxa_desconto:f('dc_taxa'), honorarios:f('dc_honor'), anos:f('dc_anos'), sucumbencia:f('dc_sucumb'),
@@ -3379,7 +3382,8 @@ window.LH_PONTE = (function(){
       esperado:function(r){ if(!r||!r.cenarios) return null; var m={}; r.cenarios.forEach(function(c){ m[c.caminho]=c; });
         return { litigar_vp:Number(m['Litigar']&&m['Litigar'].valor_presente), transacionar:Number(m['Transacionar']&&m['Transacionar'].valor_presente), pagar:Number(m['Pagar agora']&&m['Pagar agora'].valor_presente) }; },
       /* kpi-decisor: [0] em discussão · [1] litigar VP · [2] transacionar · [3] pagar agora */
-      local:function(){ var K=LH_PONTE._kpiNum; return { litigar_vp:K('kpi-decisor',1), transacionar:K('kpi-decisor',2), pagar:K('kpi-decisor',3) }; } },
+      local:function(){ var K=LH_PONTE._kpiNum; return { litigar_vp:K('kpi-decisor',1), transacionar:K('kpi-decisor',2), pagar:K('kpi-decisor',3) }; },
+      render:function(r, ent, motivo){ decisorRender(r, ent, motivo); } },
 
     /* ═══ v695 · COMPLIANCE (3) · C4 DIVIDENDOS (1) · COMEX (5) ═══
        Ficaram FORA, na lista de reconciliação: N29 (fn_n29 trata a alíquota 34 como fração —
@@ -25696,13 +25700,14 @@ function calcularAutuacao(){
   autuacaoRender(autuacaoCalcularLocal(ent), ent, null);
 }
 
-function calcularRefis(){
+/* ═══ v736 · CUTOVER — calcularRefis: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function refisLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var principal=V('rf_principal',0), acess=V('rf_acessorios',0);
   var total=principal+acess;
-  if(total<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o principal e os acessórios','error'); return; }
-  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(total,1000,'Valor do débito')) return;
+  if(total<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o principal e os acessórios','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(total,1000,'Valor do débito')) return null;
   var capac=V('rf_capacidade',0);
   var onde=G('rf_onde','rfb');
   var temEsp=G('rf_especial','nao')==='sim';
@@ -25714,6 +25719,12 @@ function calcularRefis(){
   var im=Math.pow(1+taxa,1/12)-1;
   function vpParc(v,n){ if(n<=1) return v; var p=v/n, acc=0; for(var m=1;m<=n;m++) acc+=p/Math.pow(1+im,m); return acc; }
 
+
+  return { principal:principal, acessorios:acess, capacidade_mes:capac, onde:onde, tem_especial:temEsp, desc_especial:descEsp*100, parc_especial:parcEsp, desc_transacao:descTr*100, taxa_anual:taxa*100, _taxa:taxa, _descEsp:descEsp, _descTr:descTr };
+}
+function refisCalcularLocal(ent){
+  var principal=ent.principal, acess=ent.acessorios, capac=ent.capacidade_mes, onde=ent.onde, temEsp=ent.tem_especial, parcEsp=ent.parc_especial, taxa=ent._taxa, descEsp=ent._descEsp, descTr=ent._descTr;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }; var total=principal+acess; var im=Math.pow(1+taxa,1/12)-1; function vpParc(v,n){ if(n<=1) return v; var p=v/n, acc=0; for(var m=1;m<=n;m++) acc+=p/Math.pow(1+im,m); return acc; }
   var ops=[];
   /* 1 · à vista, sem desconto */
   ops.push({nome:'Pagar à vista', desc:0, n:1, total:total, vp:total, sempre:true});
@@ -25746,6 +25757,16 @@ function calcularRefis(){
       '<td'+(cabe?'':' style="color:#e06b5a"')+'>'+R(prest)+(cabe?'':' ⚠')+'</td>'+
       '<td>'+R(o.total)+'</td><td><b>'+R(o.vp)+'</b></td></tr>';
   });
+
+  return { ok:true, principal:principal, acessorios:acess, debito_total:total, onde:onde, opcoes:ops.map(function(o){ return { nome:o.nome, desconto_pct:o.desc*100, parcelas:o.n, total:o.total, prestacao:o.total/o.n, valor_presente:o.vp, cabe_no_caixa:(capac<=0||o.total/o.n<=capac), observacao:o.obs||'' }; }), melhor_valor_presente:{ nome:melhor.nome, total:melhor.total, parcelas:melhor.n, prestacao:melhor.total/melhor.n, valor_presente:melhor.vp } };
+}
+function refisRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-refis'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var principal=ent.principal, acess=ent.acessorios, capac=ent.capacidade_mes, onde=ent.onde, temEsp=ent.tem_especial, parcEsp=ent.parc_especial, taxa=ent._taxa, descEsp=ent._descEsp, descTr=ent._descTr;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }; var total=principal+acess; var im=Math.pow(1+taxa,1/12)-1; function vpParc(v,n){ if(n<=1) return v; var p=v/n, acc=0; for(var m=1;m<=n;m++) acc+=p/Math.pow(1+im,m); return acc; }
+  var principal=ent.principal, acess=ent.acessorios, capac=ent.capacidade_mes, onde=ent.onde, temEsp=ent.tem_especial, parcEsp=ent.parc_especial, taxa=ent._taxa, descEsp=ent._descEsp, descTr=ent._descTr; var total=principal+acess; var ops=(r.opcoes||[]).map(function(o){ return { nome:o.nome, desc:(+o.desconto_pct)/100, n:+o.parcelas, total:+o.total, vp:+o.valor_presente, obs:o.observacao||'', sempre:true }; }); var melhor=ops.reduce(function(a,b){ return b.vp<a.vp?b:a; }); var linhas=''; ops.forEach(function(o){ var prest=o.total/o.n; var cabe = capac<=0 || prest<=capac; var dest=(o===melhor)?' style="background:rgba(22,196,124,.10);font-weight:600"':''; linhas+='<tr'+dest+'><td>'+o.nome+(o===melhor?' <span style="color:#16c47c">★</span>':'')+ (o.obs?('<br><span style="font-size:.8em;color:var(--text3)">'+o.obs+'</span>'):'')+'</td>'+ '<td>'+(o.desc>0?(o.desc*100).toFixed(1).replace('.',',')+'%':'—')+'</td>'+ '<td>'+(o.n>1?o.n+'x':'à vista')+'</td>'+ '<td'+(cabe?'':' style="color:#e06b5a"')+'>'+R(prest)+(cabe?'':' ⚠')+'</td>'+ '<td>'+R(o.total)+'</td><td><b>'+R(o.vp)+'</b></td></tr>'; });
   document.getElementById('tab-refis').innerHTML=linhas;
 
   var prestMelhor=melhor.total/melhor.n;
@@ -25824,23 +25845,36 @@ function calcularRefis(){
     }
   }catch(_e){}
   var res=document.getElementById('res-refis'); if(res) res.style.display='block';
+
+}
+function calcularRefis(){
+  var ent=refisLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularRefis')){ LH_PONTE.executar('calcularRefis', ent); return; }
+  refisRender(refisCalcularLocal(ent), ent, null);
 }
 
-function calcularCompensacao(){
+/* ═══ v736 · CUTOVER — calcularCompensacao: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function compensacaoLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var credito=V('pc_credito',0);
-  if(credito<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o valor do crédito','error'); return; }
-  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(credito,1000,'Valor do crédito')) return;
+  if(credito<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o valor do crédito','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(credito,1000,'Valor do crédito')) return null;
   var origem=G('pc_origem','judicial'), transito=G('pc_transito','');
   var debitos=V('pc_debitos',0);
-  if(debitos<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe os débitos compensáveis por mês','error'); return; }
+  if(debitos<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe os débitos compensáveis por mês','error'); return null; }
   var habilit=G('pc_habilit','sim');
   var taxa=V('pc_taxa',14)/100;
   var risco=V('pc_risco',15)/100, pctGlosa=V('pc_pctglosa',30)/100;
   var comMultaIso=G('pc_multaiso','nao')==='sim';
   var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
 
+
+  return { credito:credito, debitos_mensais:debitos, origem:origem, transito:(transito||undefined), taxa_anual:taxa*100, risco_glosa:risco*100, pct_glosa:pctGlosa*100, multa_isolada:comMultaIso, _taxa:taxa, _risco:risco, _pctGlosa:pctGlosa, _habilit:habilit, _transito:transito };
+}
+function compensacaoCalcularLocal(ent){
+  var credito=ent.credito, debitos=ent.debitos_mensais, origem=ent.origem, comMultaIso=ent.multa_isolada, taxa=ent._taxa, risco=ent._risco, pctGlosa=ent._pctGlosa, habilit=ent._habilit, transito=ent._transito;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
   var ehJudicial=(origem==='judicial');
 
   /* art. 74-A: limite mensal por faixa, só para crédito judicial ≥ R$ 10 mi */
@@ -25880,6 +25914,16 @@ function calcularCompensacao(){
   var exposicao = valorGlosado+multaMora+jurosGlosa+multaIso;
   var exposicaoEsperada = exposicao*risco;
 
+
+  return { ok:true, credito:credito, origem:origem, limite_74a:{ aplicavel:(mesesMin>0), faixa:faixa, meses_minimos:mesesMin, teto_mensal:(isFinite(tetoMensal)?tetoMensal:null) }, absorcao_mensal:absorveMes, meses_para_consumir:mesesReais, prazo:{ informado:!!dT, primeira_dcomp_ate:(prazoFim?prazoFim.toISOString().slice(0,10):null), dias_restantes:diasPrazo, perdeu:perdeuPrazo }, valor_presente:vpCred, perda_pelo_tempo:perdaTempo, perda_pct:(credito>0?perdaTempo/credito*100:0), risco:{ valor_glosado:valorGlosado, multa_mora:multaMora, juros:jurosGlosa, multa_isolada_50:multaIso, exposicao_total:exposicao, exposicao_esperada:exposicaoEsperada }, liquido_esperado:vpCred-exposicaoEsperada };
+}
+function compensacaoRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-compensacao'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var credito=ent.credito, debitos=ent.debitos_mensais, origem=ent.origem, comMultaIso=ent.multa_isolada, taxa=ent._taxa, risco=ent._risco, pctGlosa=ent._pctGlosa, habilit=ent._habilit, transito=ent._transito;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
+  var credito=ent.credito, debitos=ent.debitos_mensais, origem=ent.origem, transito=ent._transito, taxa=ent._taxa, risco=ent._risco, pctGlosa=ent._pctGlosa, habilit=ent._habilit, comMultaIso=ent.multa_isolada; var ehJudicial=(origem==='judicial'); var mesesMin=+(r.limite_74a&&r.limite_74a.meses_minimos||0), faixa=String((r.limite_74a&&r.limite_74a.faixa)||'não se aplica'), tetoMensal=(r.limite_74a&&r.limite_74a.teto_mensal!=null&&mesesMin>0)?+r.limite_74a.teto_mensal:Infinity; var absorveMes=+r.absorcao_mensal, mesesReais=+r.meses_para_consumir; var dT=(r.prazo&&r.prazo.informado)?new Date():null; var prazoFim=(r.prazo&&r.prazo.primeira_dcomp_ate)?new Date(parseInt(String(r.prazo.primeira_dcomp_ate).slice(0,4),10), parseInt(String(r.prazo.primeira_dcomp_ate).slice(5,7),10)-1, 1):null; var diasPrazo=(r.prazo&&r.prazo.dias_restantes!=null)?+r.prazo.dias_restantes:null; var perdeuPrazo=!!(r.prazo&&r.prazo.perdeu); var vpCred=+r.valor_presente, perdaTempo=+r.perda_pelo_tempo; var valorGlosado=+r.risco.valor_glosado, multaMora=+r.risco.multa_mora, jurosGlosa=+r.risco.juros, multaIso=+r.risco.multa_isolada_50, exposicao=+r.risco.exposicao_total, exposicaoEsperada=+r.risco.exposicao_esperada;
   document.getElementById('kpi-compensacao').innerHTML=
     '<div class="kpi-card"><div class="kpi-label">Crédito a compensar</div><div class="kpi-value">'+R(credito)+'</div></div>'+
     '<div class="kpi-card'+(mesesMin>0?' kpi-alerta':'')+'"><div class="kpi-label">Absorção por mês</div><div class="kpi-value">'+R(absorveMes)+'</div><div class="kpi-sub">'+(mesesMin>0?('limite do art. 74-A · '+faixa):'limitada pelos débitos')+'</div></div>'+
@@ -25966,19 +26010,32 @@ function calcularCompensacao(){
     }
   }catch(_e){}
   var res=document.getElementById('res-compensacao'); if(res) res.style.display='block';
+
+}
+function calcularCompensacao(){
+  var ent=compensacaoLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularCompensacao')){ LH_PONTE.executar('calcularCompensacao', ent); return; }
+  compensacaoRender(compensacaoCalcularLocal(ent), ent, null);
 }
 
-function calcularDecisor(){
+/* ═══ v736 · CUTOVER — calcularDecisor: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function decisorLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var divida=V('dc_valor',0);
-  if(divida<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o valor consolidado em discussão','error'); return; }
-  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(divida,1000,'Valor em discussão')) return;
+  if(divida<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o valor consolidado em discussão','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(divida,1000,'Valor em discussão')) return null;
   var p=V('dc_exito',40)/100;
   var taxa=V('dc_taxa',14)/100;
   var honor=V('dc_honor',0), anos=Math.max(1,V('dc_anos',6)), sucumb=V('dc_sucumb',10)/100;
   var garantia=G('dc_garantia','nao'), custoSeg=V('dc_custoseg',2)/100;
   var descT=V('dc_desctransac',45)/100;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
+
+  return { divida:divida, prob_exito:p*100, taxa_desconto:taxa*100, honorarios:honor, anos:anos, sucumbencia:sucumb*100, garantia:garantia, custo_seguro:custoSeg*100, desconto_transacao:descT*100, selic_anual:11, _p:p, _taxa:taxa, _sucumb:sucumb, _custoSeg:custoSeg, _descT:descT };
+}
+function decisorCalcularLocal(ent){
+  var divida=ent.divida, honor=ent.honorarios, anos=ent.anos, garantia=ent.garantia, p=ent._p, taxa=ent._taxa, sucumb=ent._sucumb, custoSeg=ent._custoSeg, descT=ent._descT;
   var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
   var vp=function(v,a){ return v/Math.pow(1+taxa,a); };
 
@@ -26019,16 +26076,20 @@ function calcularDecisor(){
     linhas+='<tr'+dest+'><td>'+c.nome+(c===melhor?' <span style="color:#16c47c">★</span>':'')+'</td>'+
       '<td>'+c.ok+'</td><td>'+c.nok+'</td><td>'+R(c.esp)+'</td><td><b>'+R(c.vp)+'</b></td></tr>';
   });
+
+  return { ok:true, divida:divida, prob_exito_pct:p*100, anos_de_discussao:anos, divida_corrigida_no_fim:dividaFutura, garantia:{ tipo:garantia, custo:custoGarantia, observacao:obsGarantia }, cenarios:[ { caminho:'Litigar', se_vencer:0, se_perder:perde_lit, desembolso_esperado:esperado_lit, valor_presente:vpLitigar, nota:'Honorários e garantia são pagos vença ou perca.' }, { caminho:'Transacionar', se_vencer:vTransac, se_perder:vTransac, desembolso_esperado:vTransac, valor_presente:vpTransac, desconto_pct:descT*100 }, { caminho:'Pagar agora', se_vencer:divida, se_perder:divida, desembolso_esperado:divida, valor_presente:vpPagar } ], melhor:(melhor.nome==='Litigar'?'LITIGAR':melhor.nome==='Transacionar'?'TRANSACIONAR':'PAGAR'), melhor_valor_presente:melhor.vp, ponto_de_virada_pct:(function(){ var alternativa=Math.min(vpTransac,vpPagar); for(var q=0;q<=100;q++){ var pq=q/100; var vpq=vp((1-pq)*perde_lit,anos)+honor+custoGarantia; if(vpq<=alternativa) return q; } return null; })() };
+}
+function decisorRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-decisor'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var divida=ent.divida, honor=ent.honorarios, anos=ent.anos, garantia=ent.garantia, p=ent._p, taxa=ent._taxa, sucumb=ent._sucumb, custoSeg=ent._custoSeg, descT=ent._descT;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
+  var divida=ent.divida, p=ent._p, taxa=ent._taxa, honor=ent.honorarios, anos=ent.anos, sucumb=ent._sucumb, garantia=ent.garantia, custoSeg=ent._custoSeg, descT=ent._descT; var vp=function(v,a){ return v/Math.pow(1+taxa,a); }; var dividaFutura=+r.divida_corrigida_no_fim, custoGarantia=+(r.garantia&&r.garantia.custo||0), obsGarantia=String((r.garantia&&r.garantia.observacao)||'sem garantia'); var m={}; (r.cenarios||[]).forEach(function(c){ m[c.caminho]=c; }); var perde_lit=+m['Litigar'].se_perder, esperado_lit=+m['Litigar'].desembolso_esperado, vpLitigar=+m['Litigar'].valor_presente, vTransac=+m['Transacionar'].valor_presente, vpTransac=vTransac, vpPagar=+m['Pagar agora'].valor_presente; var cen=[ {nome:'Litigar', ok:R(0)+' <span style="color:var(--text3)">(vence)</span>', nok:R(perde_lit)+' <span style="color:var(--text3)">(perde, corrigido)</span>', esp:esperado_lit, vp:vpLitigar}, {nome:'Transacionar', ok:R(vTransac), nok:R(vTransac), esp:vTransac, vp:vpTransac}, {nome:'Pagar agora', ok:R(divida), nok:R(divida), esp:divida, vp:vpPagar} ]; var melhor=cen.reduce(function(a,b){ return b.vp<a.vp?b:a; }); var linhas=''; cen.forEach(function(c){ var dest=(c===melhor)?' style="background:rgba(22,196,124,.10);font-weight:600"':''; linhas+='<tr'+dest+'><td>'+c.nome+(c===melhor?' <span style="color:#16c47c">★</span>':'')+'</td>'+ '<td>'+c.ok+'</td><td>'+c.nok+'</td><td>'+R(c.esp)+'</td><td><b>'+R(c.vp)+'</b></td></tr>'; }); var alternativa=Math.min(vpTransac,vpPagar); var _pViradaServ=(r.ponto_de_virada_pct!=null?(+r.ponto_de_virada_pct)/100:null);
   document.getElementById('tab-decisor').innerHTML=linhas;
 
   /* ponto de virada: com que chance de êxito litigar empata com a melhor alternativa */
-  var alternativa = Math.min(vpTransac, vpPagar);
-  var pVirada=null;
-  for(var q=0;q<=100;q++){
-    var pq=q/100;
-    var vpq = vp((1-pq)*perde_lit,anos) + honor + custoGarantia;
-    if(vpq<=alternativa){ pVirada=pq; break; }
-  }
+  var pVirada=_pViradaServ;   /* v736: ponto de virada vem do servidor (ponto_de_virada_pct) */
 
   document.getElementById('kpi-decisor').innerHTML=
     '<div class="kpi-card"><div class="kpi-label">Em discussão</div><div class="kpi-value">'+R(divida)+'</div><div class="kpi-sub">chance de êxito '+(p*100).toFixed(0)+'%</div></div>'+
@@ -26110,6 +26171,12 @@ function calcularDecisor(){
     }
   }catch(_e){}
   var res=document.getElementById('res-decisor'); if(res) res.style.display='block';
+
+}
+function calcularDecisor(){
+  var ent=decisorLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularDecisor')){ LH_PONTE.executar('calcularDecisor', ent); return; }
+  decisorRender(decisorCalcularLocal(ent), ent, null);
 }
 
 /* ═══ v735 · CUTOVER — calcularMultaJuros: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
@@ -26394,13 +26461,14 @@ function calcularPrescricao(){
   var res=document.getElementById('res-prescricao'); if(res) res.style.display='block';
 }
 
-function calcularTransacao(){
+/* ═══ v736 · CUTOVER — calcularTransacao: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function transacaoLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var principal=V('tr_principal',0), acess=V('tr_acessorios',0);
   var total=principal+acess;
-  if(total<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o principal e os acessórios da dívida','error'); return; }
-  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(total,1000,'Valor da dívida')) return;
+  if(total<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o principal e os acessórios da dívida','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(total,1000,'Valor da dívida')) return null;
   var taxa=V('tr_taxa',14)/100;
   var perfil=G('tr_perfil','geral'), classe=G('tr_class','capacidade');
   var temDiscussao=G('tr_discussao','nao')==='sim';
@@ -26418,6 +26486,12 @@ function calcularTransacao(){
     return acc;
   }
 
+
+  return { principal:principal, acessorios:acess, classificacao:({capacidade:'C',irrecuperavel:'D',garantida:'A'}[classe]||classe), perfil:perfil, taxa_anual:taxa*100, _taxa:taxa, _classe:classe, _temDiscussao:temDiscussao, _tetoDesc:tetoDesc, _ampliado:ampliado };
+}
+function transacaoCalcularLocal(ent){
+  var principal=ent.principal, acess=ent.acessorios, perfil=ent.perfil, taxa=ent._taxa, classe=ent._classe, temDiscussao=ent._temDiscussao, tetoDesc=ent._tetoDesc, ampliado=ent._ampliado;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }; var total=principal+acess; var LIMITE=45000000; var ampliado=(perfil==='ampliado'); var tetoDesc = ampliado?0.70:0.65; function vp(valor,n){ if(n<=1) return valor; var im=Math.pow(1+taxa,1/12)-1, p=valor/n, acc=0; for(var m=1;m<=n;m++) acc+=p/Math.pow(1+im,m); return acc; }
   var mods=[];
   if(classe==='garantida'){
     mods.push({nome:'Garantida — sem desconto', desc:0, entradaPct:0, entradaN:0, parcelas:1,
@@ -26458,6 +26532,16 @@ function calcularTransacao(){
       '<td>'+(m.parcelas>1?m.parcelas+'x':'à vista')+'</td>'+
       '<td>'+R(m.total)+'</td><td><b>'+R(m.vp)+'</b></td></tr>';
   });
+
+  return { ok:true, principal:principal, acessorios:acess, divida_total:total, perfil:perfil, classificacao:classe, teto_desconto_pct:tetoDesc*100, opcoes:mods.map(function(m){ return { nome:m.nome, desconto_pct:m.desc*100, entrada:m.total*m.entradaPct, entrada_parcelas:m.entradaN, parcelas:m.parcelas, total:m.total, valor_presente:m.vp, observacao:m.obs }; }), melhor:(melhor?{ nome:melhor.nome, total:melhor.total, valor_presente:melhor.vp, parcelas:melhor.parcelas }:null), economia_vs_integral:(melhor?total-melhor.vp:0) };
+}
+function transacaoRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-transacao'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var principal=ent.principal, acess=ent.acessorios, perfil=ent.perfil, taxa=ent._taxa, classe=ent._classe, temDiscussao=ent._temDiscussao, tetoDesc=ent._tetoDesc, ampliado=ent._ampliado;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }; var total=principal+acess; var LIMITE=45000000; var ampliado=(perfil==='ampliado'); var tetoDesc = ampliado?0.70:0.65; function vp(valor,n){ if(n<=1) return valor; var im=Math.pow(1+taxa,1/12)-1, p=valor/n, acc=0; for(var m=1;m<=n;m++) acc+=p/Math.pow(1+im,m); return acc; }
+  var principal=ent.principal, acess=ent.acessorios, taxa=ent._taxa, classe=ent._classe, perfil=ent.perfil, temDiscussao=ent._temDiscussao, tetoDesc=ent._tetoDesc, ampliado=ent._ampliado; var total=principal+acess; var mods=(r.opcoes||[]).map(function(o){ return { nome:o.nome, desc:(+o.desconto_pct)/100, entradaPct:(+o.total>0?(+o.entrada)/(+o.total):0), entradaN:+o.entrada_parcelas, parcelas:+o.parcelas, obs:o.observacao, total:+o.total, vp:+o.valor_presente }; }); var melhor=null, melhorVP=Infinity; mods.forEach(function(m){ if(m.vp<melhorVP){ melhorVP=m.vp; melhor=m; } }); var linhas=''; mods.forEach(function(m){ var dest = (m===melhor) ? ' style="background:rgba(22,196,124,.10);font-weight:600"' : ''; linhas+='<tr'+dest+'><td>'+m.nome+(m===melhor?' <span style="color:#16c47c">★</span>':'')+'</td>'+ '<td>'+(m.desc>0?(m.desc*100).toFixed(1).replace('.',',')+'%':'—')+'</td>'+ '<td>'+(m.entradaPct>0?((Math.round(m.entradaPct*1000)/10)+'% em '+m.entradaN+'x'):'—')+'</td>'+ '<td>'+(m.parcelas>1?m.parcelas+'x':'à vista')+'</td>'+ '<td>'+R(m.total)+'</td><td><b>'+R(m.vp)+'</b></td></tr>'; });
   document.getElementById('tab-transacao').innerHTML=linhas;
 
   var economia = total-melhor.total;
@@ -26539,6 +26623,12 @@ function calcularTransacao(){
     }
   }catch(_e){}
   var res=document.getElementById('res-transacao'); if(res) res.style.display='block';
+
+}
+function calcularTransacao(){
+  var ent=transacaoLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularTransacao')){ LH_PONTE.executar('calcularTransacao', ent); return; }
+  transacaoRender(transacaoCalcularLocal(ent), ent, null);
 }
 
 function calcularAgroSuper6(){
