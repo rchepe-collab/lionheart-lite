@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v748";</script>
+<body><script>window.LH_VERSAO="v749";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2558,7 +2558,8 @@ window.LH_PONTE = (function(){
       esperado: function(r){ var l = Array.isArray(r) ? r[0] : r; return l ? {
         economia_anual: Number(l.economia_anual)
       } : null; },
-      local: function(){ return { economia_anual: LH_PONTE._kpiNum('kpi-art127', 4) }; }
+      local: function(){ return { economia_anual: LH_PONTE._kpiNum('kpi-art127', 4) }; },
+      render:function(r, ent, motivo){ art127Render(r, ent, motivo); }
     },
     calcularC07: {
       calc: 'pf-vs-pj',
@@ -3617,7 +3618,8 @@ window.LH_PONTE = (function(){
         remuneratoria:+(Number(r.se_remuneratoria.total_beneficiario)+Number(r.se_remuneratoria.inss_patronal_empresa)).toFixed(2),
         em_jogo:+(Number(r.economia_beneficiario)+Number(r.economia_empresa)).toFixed(2) }:null; },
       /* kpi-stockoptions (R$): [0] ganho total · [1] carga mercantil · [2] carga como remuneração (beneficiário + empresa) · [3] o que está em jogo */
-      local:function(){ var R=LH_PONTE._rsNum; return { ganho:R('kpi-stockoptions',0), mercantil:R('kpi-stockoptions',1), remuneratoria:R('kpi-stockoptions',2), em_jogo:R('kpi-stockoptions',3) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { ganho:R('kpi-stockoptions',0), mercantil:R('kpi-stockoptions',1), remuneratoria:R('kpi-stockoptions',2), em_jogo:R('kpi-stockoptions',3) }; },
+      render:function(r, ent, motivo){ stockRender(r, ent, motivo); } },
 
     /* ═══ v700 · PATRIMONIAL — as três que já batem com o Mestre: ITCMD (n16), Ganho de Capital (n17), Aluguel PF×PJ ═══
        n17: fn_n17 passou a contar os meses de FR1/FR2 na convenção do Mestre N17 (jan→dez = 203 meses).
@@ -24982,11 +24984,12 @@ function calcularMA(){
   maRender(maCalcularLocal(ent), ent, null);
 }
 
-function calcularStockOptions(){
+/* ═══ v749 · CUTOVER — calcularStockOptions: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function stockLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var qtd=V('so_qtd',0), strike=V('so_strike',0), mercado=V('so_mercado',0), venda=V('so_venda',0);
-  if(qtd<=0 || mercado<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe a quantidade e o valor de mercado no exercício','error'); return; }
+  if(qtd<=0 || mercado<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe a quantidade e o valor de mercado no exercício','error'); return null; }
   var anos=V('so_anos',3), salario=V('so_salario',0);
   var encargos=V('so_encargos',28.8)/100;
   var outrosGanhos=V('so_outrosganhos',0);
@@ -24996,6 +24999,12 @@ function calcularStockOptions(){
   var habitual=G('so_habitual','nao')==='sim';
   var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
 
+
+  return { quantidade:qtd, strike:strike, valor_mercado:mercado, valor_venda:venda, voluntario:volunt, oneroso:oneroso, risco:risco, habitual:habitual, encargos_pct:encargos*100, outros_ganhos:outrosGanhos, _strike:strike, _mercado:mercado, _venda:venda, _anos:anos, _salario:salario, _encargos:encargos };
+}
+function stockCalcularLocal(ent){
+  var qtd=ent.quantidade, strike=ent._strike, mercado=ent._mercado, venda=ent._venda, volunt=ent.voluntario, oneroso=ent.oneroso, risco=ent.risco, habitual=ent.habitual, outrosGanhos=ent.outros_ganhos, anos=ent._anos, salario=ent._salario, encargos=ent._encargos;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
   var custoAquisicao=qtd*strike;
   var valorExercicio=qtd*mercado;
   var descontoExercicio=Math.max(0, valorExercicio-custoAquisicao);   /* o "spread" */
@@ -25038,6 +25047,16 @@ var f=[[29145.60,0,0],[33919.80,0.075,2185.92],[45012.60,0.15,4729.41],
   var diferencaBenef=cargaRemun-cargaMerc;
   var diferencaTotal=(cargaRemun+cargaEmpresa)-cargaMerc;
 
+
+  return { ok:true, quantidade:qtd, custo_aquisicao:custoAquisicao, valor_no_exercicio:valorExercicio, spread:descontoExercicio, valor_venda:valorVenda, ganho_total:ganhoTotal, se_mercantil:{ no_exercicio:0, empresa:0, ganho_capital_na_venda:gcMerc, total_beneficiario:cargaMerc }, se_remuneratoria:{ irpf_no_exercicio:irExercicio, inss_patronal:inssPatronal, ganho_capital_pos_base:ganhoRemuner, ganho_capital_pos:gcRemun, total_beneficiario:cargaRemun }, economia_beneficiario:diferencaBenef, economia_empresa:cargaEmpresa };
+}
+function stockRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-stockoptions'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var qtd=ent.quantidade, strike=ent._strike, mercado=ent._mercado, venda=ent._venda, volunt=ent.voluntario, oneroso=ent.oneroso, risco=ent.risco, habitual=ent.habitual, outrosGanhos=ent.outros_ganhos, anos=ent._anos, salario=ent._salario, encargos=ent._encargos;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
+  var qtd=ent.quantidade, strike=ent._strike, mercado=ent._mercado, venda=ent._venda, anos=ent._anos, salario=ent._salario, encargos=ent._encargos, outrosGanhos=ent.outros_ganhos, volunt=ent.voluntario, oneroso=ent.oneroso, risco=ent.risco, habitual=ent.habitual; var custoAquisicao=+r.custo_aquisicao, valorExercicio=+r.valor_no_exercicio, descontoExercicio=+r.spread, valorVenda=+r.valor_venda, ganhoTotal=+r.ganho_total; var gcMerc=+r.se_mercantil.ganho_capital_na_venda, cargaMerc=+r.se_mercantil.total_beneficiario, liquidoMerc=valorVenda-custoAquisicao-cargaMerc; var irExercicio=+r.se_remuneratoria.irpf_no_exercicio, inssPatronal=+r.se_remuneratoria.inss_patronal, ganhoRemuner=+r.se_remuneratoria.ganho_capital_pos_base, gcRemun=+r.se_remuneratoria.ganho_capital_pos, cargaRemun=+r.se_remuneratoria.total_beneficiario, cargaEmpresa=inssPatronal, liquidoRemun=valorVenda-custoAquisicao-cargaRemun; var diferencaBenef=cargaRemun-cargaMerc, diferencaTotal=(cargaRemun+cargaEmpresa)-cargaMerc;
   var linhas='';
   function ln(rot,a,b,destaque){
     linhas+='<tr'+(destaque?' style="font-weight:700;background:rgba(201,162,39,.07)"':'')+
@@ -25153,6 +25172,12 @@ var f=[[29145.60,0,0],[33919.80,0.075,2185.92],[45012.60,0.15,4729.41],
     }
   }catch(_e){}
   var res=document.getElementById('res-stockoptions'); if(res) res.style.display='block';
+
+}
+function calcularStockOptions(){
+  var ent=stockLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularStockOptions')){ LH_PONTE.executar('calcularStockOptions', ent); return; }
+  stockRender(stockCalcularLocal(ent), ent, null);
 }
 
 /* ═══ v738 · CUTOVER — calcularValuation: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
@@ -28470,7 +28495,8 @@ function calcularObra(){
   if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularObra')){ LH_PONTE.executar('calcularObra', ent); return; }
   obraRender(obraCalcularLocal(ent), ent, null);
 }
-function calcularArt127(){
+/* ═══ v749 · CUTOVER — calcularArt127: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function art127LerEntradas(){
   var fat  = parseFloat((document.getElementById('art127_fat')||{value:0}).value) || 0;
   var cons = (document.getElementById('art127_conselho')||{value:'sim'}).value;
   var uni  = (document.getElementById('art127_uni')||{value:'sim'}).value;
@@ -28478,16 +28504,22 @@ function calcularArt127(){
 
   if(fat <= 0){
     if(typeof mostrarToast==='function') mostrarToast('Informe o faturamento anual da atividade regulamentada','error');
-    return;
+    return null;
   }
-  if(lhValorSuspeito(fat,1000,'Faturamento anual')) return;
+  if(lhValorSuspeito(fat,1000,'Faturamento anual')) return null;
 
   var aliqCheia = art127AliqAno(ano);
   if(aliqCheia === null){
     /* v668 · vazio declarado, nunca silencioso */
     if(typeof mostrarToast==='function') mostrarToast('Curva de transicao indisponivel para '+ano+' — resultado nao calculado','error');
-    return;
+    return null;
   }
+
+  return { faturamento_anual:fat, tem_conselho:(cons==='sim'), uniprofissional:uni, ano:parseInt(ano,10), cenario:'A', _cons:cons, _uni:uni, _ano:ano };
+}
+function art127CalcularLocal(ent){
+  var fat=ent.faturamento_anual, uni=ent._uni, cons=ent._cons, ano=ent._ano;
+  var aliqCheia=art127AliqAno(ano); if(aliqCheia===null) aliqCheia=0; var aliqRed=aliqCheia*0.7;
   /* B13: elegível se conselho=sim E (uniprofissional=sim OU pessoa física habilitada) */
   var elegivel  = (cons==='sim' && (uni==='sim' || uni==='pf')) ? 1 : 0;
   var aliqRed   = aliqCheia * 0.7;                 /* B14 */
@@ -28497,6 +28529,16 @@ function calcularArt127(){
   var pctFat    = fat>0 ? economia/fat : 0;        /* B20 */
   var potencial = debSem - fat*aliqRed;            /* o que se destrava se reorganizar */
 
+
+  return { ok:true, ano:parseInt(ano,10), aliquota_cheia:aliqCheia, aliquota_reduzida:aliqRed, elegivel:(elegivel===1), debito_sem:debSem, debito_com:debCom, economia_anual:economia, economia_pct_fat:pctFat, potencial_se_reorganizar:potencial };
+}
+function art127Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-art127'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento_anual, uni=ent._uni, cons=ent._cons, ano=ent._ano;
+  var aliqCheia=art127AliqAno(ano); if(aliqCheia===null) aliqCheia=0; var aliqRed=aliqCheia*0.7;
+  var fat=ent.faturamento_anual, cons=ent._cons, uni=ent._uni, ano=ent._ano; var aliqCheia=+r.aliquota_cheia, aliqRed=+r.aliquota_reduzida, elegivel=(r.elegivel?1:0), debSem=+r.debito_sem, debCom=+r.debito_com, economia=+r.economia_anual, pctFat=+r.economia_pct_fat, potencial=+r.potencial_se_reorganizar;
   var pc = function(x){ return (x*100).toFixed(2).replace('.',',')+'%'; };
   var R  = (typeof fmtR==='function') ? fmtR : function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
 
@@ -28553,7 +28595,13 @@ function calcularArt127(){
   var res=document.getElementById('res-art127'); if(res) res.style.display='block';
 
   /* v673 · ponte em modo sombra — nao altera o resultado que o usuario ve */
-  try{ if(window.LH_PONTE) LH_PONTE.sombra('calcularArt127'); }catch(_p){}
+  try{ if(window.LH_PONTE && LH_PONTE.modo()!=='servidor') LH_PONTE.sombra('calcularArt127'); }catch(_p){}
+
+}
+function calcularArt127(){
+  var ent=art127LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularArt127')){ LH_PONTE.executar('calcularArt127', ent); return; }
+  art127Render(art127CalcularLocal(ent), ent, null);
 }
 function calcularSublimite() {
   var rbt12 = parseFloat((document.getElementById('sub_rbt12')||{value:0}).value) || 0;
