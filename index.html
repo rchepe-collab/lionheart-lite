@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v741";</script>
+<body><script>window.LH_VERSAO="v742";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2648,7 +2648,8 @@ window.LH_PONTE = (function(){
         suspensao: G.txt('capex_susp') === 'sim'
       };},
       esperado: function(r){ return r ? { embutido: Number(r.imposto_embutido), liquido: Number(r.custo_liquido_do_bem) } : null; },
-      local: function(){ return { embutido: LH_PONTE._kpiNum('kpi-capex',0), liquido: LH_PONTE._kpiNum('kpi-capex',1) }; }
+      local: function(){ return { embutido: LH_PONTE._kpiNum('kpi-capex',0), liquido: LH_PONTE._kpiNum('kpi-capex',1) }; },
+      render:function(r, ent, motivo){ capexRender(r, ent, motivo); }
     },
     calcularSublimite: {
       calc: 'sublimite',
@@ -3083,7 +3084,8 @@ window.LH_PONTE = (function(){
                  ano:parseInt((G.el('seletivo_ano')||{}).value,10)||2033, tem_tese:(((G.el('seletivo_tese')||{}).value)==='S'), honorario_pct:20 }; },
       esperado: function(r){ return r ? { is:Number(r.imposto_seletivo), cascata:Number(r.efeito_cascata), total:Number(r.carga_total) } : null; },
       /* kpi-seletivo: [0] IS · [1] cascata · [2] total · [3] % receita · [4] honorário (se tese) */
-      local: function(){ return { is:LH_PONTE._kpiNum('kpi-seletivo',0), cascata:LH_PONTE._kpiNum('kpi-seletivo',1), total:LH_PONTE._kpiNum('kpi-seletivo',2) }; }
+      local: function(){ return { is:LH_PONTE._kpiNum('kpi-seletivo',0), cascata:LH_PONTE._kpiNum('kpi-seletivo',1), total:LH_PONTE._kpiNum('kpi-seletivo',2) }; },
+      render:function(r, ent, motivo){ seletivoRender(r, ent, motivo); }
     },
     calcularAntecip: {
       calc: 'antecip',
@@ -3092,7 +3094,8 @@ window.LH_PONTE = (function(){
                  reducao:parseFloat((G.el('ant_red')||{}).value)||0, credito_pct:f('ant_cred') }; },
       esperado: function(r){ return r ? { imp_rec:Number(r.imposto_pela_curva_do_recebimento), imp_ent:Number(r.imposto_pela_curva_da_entrega), provisao:Number(r.provisao_necessaria) } : null; },
       /* kpi-antecip: [0] alíq efetiva % · [1] imposto curva recebimento · [2] imposto curva entrega · [3] provisão · [4] % comprometido */
-      local: function(){ return { imp_rec:LH_PONTE._kpiNum('kpi-antecip',1), imp_ent:LH_PONTE._kpiNum('kpi-antecip',2), provisao:LH_PONTE._kpiNum('kpi-antecip',3) }; }
+      local: function(){ return { imp_rec:LH_PONTE._kpiNum('kpi-antecip',1), imp_ent:LH_PONTE._kpiNum('kpi-antecip',2), provisao:LH_PONTE._kpiNum('kpi-antecip',3) }; },
+      render:function(r, ent, motivo){ antecipRender(r, ent, motivo); }
     },
     calcularAliqRef: {
       calc: 'aliqref',
@@ -20573,13 +20576,20 @@ function lhSeletivoAliqRef(){
   if(p==='outro'){ el.value=''; el.placeholder='definir com o tributarista'; }
   if(p==='mineral'){ el.title='Teto de 0,25% já fixado na LC 214'; }
 }
-function calcularSeletivo(){
+/* ═══ v742 · CUTOVER — calcularSeletivo: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function seletivoLerEntradas(){
   var num=function(id){var el=document.getElementById(id);var v=el?parseFloat(el.value):NaN;return isNaN(v)?0:v;};
   var val=function(id){var el=document.getElementById(id);return el?el.value:'';};
   var receita=num('seletivo_receita'), aliq=num('seletivo_aliq');
   var produto=val('seletivo_produto'), importacao=val('seletivo_import'), tese=val('seletivo_tese');
-  if(receita<=0){ if(typeof toast==='function') toast('Informe a receita do produto','error'); return; }
+  if(receita<=0){ if(typeof toast==='function') toast('Informe a receita do produto','error'); return null; }
   var prodNome={bebida:'Bebidas açucaradas',fumigeno:'Produtos fumígenos',veiculo:'Veículos automotores',embarcacao:'Embarcações e aeronaves',mineral:'Bens minerais',outro:'Produto a classificar'}[produto]||'Produto';
+
+  return { receita:receita, aliquota_is:aliq, produto:produto, ano:(parseInt((document.getElementById('seletivo_ano')||{}).value,10)||2033), tem_tese:(tese==='S'), honorario_pct:20, _tese:tese, _importacao:importacao, _prodNome:prodNome };
+}
+function seletivoCalcularLocal(ent){
+  var receita=ent.receita, aliq=ent.aliquota_is, produto=ent.produto, tese=ent._tese, importacao=ent._importacao, prodNome=ent._prodNome;
+  
   var IS=receita*(aliq/100);
   var _anoIS=parseInt((document.getElementById('seletivo_ano')||{}).value,10)||2033;
   var _aliqCascata=(typeof getAliq==='function')?(getAliq(_anoIS).total||0.265):0.265;
@@ -20590,6 +20600,16 @@ function calcularSeletivo(){
   var honorarios=valorDisputa*0.2;
   var valeDiscutir=IS>50000;
 
+
+  return { ok:true, ano:_anoIS, produto:prodNome, receita:receita, aliquota_is_pct:aliq, imposto_seletivo:IS, aliquota_ibs_cbs_pct:_aliqCascata*100, efeito_cascata:cbsIS, carga_total:total, carga_pct_da_receita:pctReceita };
+}
+function seletivoRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-seletivo'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var receita=ent.receita, aliq=ent.aliquota_is, produto=ent.produto, tese=ent._tese, importacao=ent._importacao, prodNome=ent._prodNome;
+  
+  var receita=ent.receita, aliq=ent.aliquota_is, produto=ent.produto, tese=ent._tese, importacao=ent._importacao, prodNome=ent._prodNome; var IS=+r.imposto_seletivo, _aliqCascata=(+r.aliquota_ibs_cbs_pct)/100, cbsIS=+r.efeito_cascata, total=+r.carga_total, pctReceita=+r.carga_pct_da_receita, _anoIS=+r.ano; var valorDisputa=(tese==='S')?IS:0, honorarios=valorDisputa*0.2, valeDiscutir=IS>50000;
   document.getElementById('res-seletivo').classList.add('visible');
   document.getElementById('kpi-seletivo').innerHTML=
     '<div class="kpi-card"><div class="kpi-label">IS calculado ('+aliq+'%)</div><div class="kpi-value">'+fmtR(IS)+'</div><div class="kpi-sub">'+prodNome+'</div></div>'+
@@ -20636,6 +20656,12 @@ function calcularSeletivo(){
     });
   }
   if(typeof toast==='function') toast('Imposto Seletivo calculado');
+
+}
+function calcularSeletivo(){
+  var ent=seletivoLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularSeletivo')){ LH_PONTE.executar('calcularSeletivo', ent); return; }
+  seletivoRender(seletivoCalcularLocal(ent), ent, null);
 }
 
 
@@ -27921,15 +27947,22 @@ function calcularAliqRef(){
   }catch(_e){}
   var res=document.getElementById('res-aliqref'); if(res) res.style.display='block';
 }
-function calcularAntecip(){
+/* ═══ v742 · CUTOVER — calcularAntecip: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function antecipLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var val=V('ant_valor',0);
-  if(val<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o valor recebido antecipado','error'); return; }
+  if(val<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o valor recebido antecipado','error'); return null; }
   var aRec=parseInt(G('ant_ano_rec','2027'),10), aEnt=parseInt(G('ant_ano_ent','2031'),10);
   var red=parseFloat(G('ant_red','0.4'))||0, cred=V('ant_cred',0)/100;
   var regime=G('ant_regime','regular');
 
+
+  return { valor:val, ano_recebimento:aRec, ano_entrega:aEnt, reducao:red, credito_pct:cred*100, cenario:'A', _red:red, _cred:cred, _regime:regime };
+}
+function antecipCalcularLocal(ent){
+  var val=ent.valor, aRec=ent.ano_recebimento, aEnt=ent.ano_entrega, red=ent._red, cred=ent._cred, regime=ent._regime;
+  
   var aliqEfet = LH_REF_PLENA()*(1-red)*(1-cred);
   var fRec=antFatorAno(aRec), fEnt=antFatorAno(aEnt);
   var impRec = val*aliqEfet*fRec;
@@ -27940,6 +27973,16 @@ function calcularAntecip(){
   var pc=function(x){ return (x*100).toFixed(2).replace('.',',')+'%'; };
   var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:2}); };
 
+
+  return { ok:true, valor_recebido:val, ano_recebimento:aRec, ano_entrega:aEnt, aliquota_plena_efetiva_pct:aliqEfet*100, fator_recebimento:fRec, fator_entrega:fEnt, imposto_pela_curva_do_recebimento:impRec, imposto_pela_curva_da_entrega:impEnt, provisao_necessaria:provisao, pct_do_valor_comprometido:pctComprometido*100 };
+}
+function antecipRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-antecip'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var val=ent.valor, aRec=ent.ano_recebimento, aEnt=ent.ano_entrega, red=ent._red, cred=ent._cred, regime=ent._regime;
+  
+  var val=ent.valor, aRec=ent.ano_recebimento, aEnt=ent.ano_entrega, red=ent._red, cred=ent._cred, regime=ent._regime; var aliqEfet=(+r.aliquota_plena_efetiva_pct)/100, fRec=+r.fator_recebimento, fEnt=+r.fator_entrega, impRec=+r.imposto_pela_curva_do_recebimento, impEnt=+r.imposto_pela_curva_da_entrega, provisao=+r.provisao_necessaria, pctComprometido=(+r.pct_do_valor_comprometido)/100; var pc=function(x){ return (x*100).toFixed(2).replace('.',',')+'%'; }; var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:2}); };
   document.getElementById('kpi-antecip').innerHTML=
     '<div class="kpi-card"><div class="kpi-label">Alíquota efetiva (redução + crédito)</div><div class="kpi-value">'+pc(aliqEfet)+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Imposto pela curva de '+aRec+' (recebimento)</div><div class="kpi-value">'+R(impRec)+'</div></div>'+
@@ -28005,6 +28048,12 @@ function calcularAntecip(){
     }
   }catch(_e){}
   var res=document.getElementById('res-antecip'); if(res) res.style.display='block';
+
+}
+function calcularAntecip(){
+  var ent=antecipLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAntecip')){ LH_PONTE.executar('calcularAntecip', ent); return; }
+  antecipRender(antecipCalcularLocal(ent), ent, null);
 }
 /* ═══ v731 · CUTOVER — calcularHotelEv: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
 function hotelevLerEntradas(){
@@ -66183,7 +66232,8 @@ async function lhConsultarCNPJ(){
      · suspensão (alíquota zero): entra desonerado, sem crédito a tomar
    Sem hardcode de alíquota: getAliq(ano).total (curva canônica).
 ══════════════════════════════════════════════════════════════════ */
-function calcularCapex(){
+/* ═══ v742 · CUTOVER — calcularCapex: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function capexLerEntradas(){
   var valor=parseFloat((document.getElementById('capex_valor')||{}).value)||0;
   var regime=(document.getElementById('capex_regime')||{value:'regular'}).value;
   var ano=parseInt((document.getElementById('capex_ano')||{value:'2029'}).value)||2029;
@@ -66191,7 +66241,7 @@ function calcularCapex(){
   var cdc=(parseFloat((document.getElementById('capex_cdc')||{}).value)||15)/100;
   var susp=(document.getElementById('capex_susp')||{value:'nao'}).value==='sim';
   var res=document.getElementById('res-capex');
-  if(valor<=0){ if(res) res.style.display='none'; return; }
+  if(valor<=0){ if(res) res.style.display='none'; return null; }
 
   var aliq=(!isNaN(aliqManual)&&aliqManual>0)? aliqManual/100
            : ((typeof getAliq==='function')? getAliq(ano).total : 0.088);
@@ -66202,6 +66252,12 @@ function calcularCapex(){
   var kpi=document.getElementById('kpi-capex');
   var recs=document.getElementById('recs-capex');
 
+
+  return { valor:valor, regime:regime, ano:ano, aliquota_pct:(!isNaN(aliqManual)&&aliqManual>0?aliqManual:undefined), custo_capital_pct:cdc*100, suspensao:susp, cenario:'A', _cdc:cdc, _susp:susp, _aliq:aliq };
+}
+function capexCalcularLocal(ent){
+  var valor=ent.valor, regime=ent.regime, ano=ent.ano, susp=ent._susp, cdc=ent._cdc, aliq=ent._aliq;
+   var aliqManual=parseFloat((document.getElementById('capex_aliq')||{}).value); var aliq=(!isNaN(aliqManual)&&aliqManual>0)? aliqManual/100 : ((typeof getAliq==='function')? getAliq(ano).total : 0.088); var _fmtR=(typeof fmtR==='function')?fmtR:function(v){return 'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}; var _fmtP=(typeof fmtPct==='function')?fmtPct:function(v){return (v||0).toFixed(1)+'%';}; var kpi=document.getElementById('kpi-capex'); var recs=document.getElementById('recs-capex'); var res=document.getElementById('res-capex');
   // Simples puro: não credita bem de capital (fica no DAS)
   if(regime==='simples'){
     if(kpi) kpi.innerHTML=
@@ -66233,6 +66289,16 @@ function calcularCapex(){
 
   // Comparação com modelo ANTIGO (1/48 por mês) — valor presente
   // novo: crédito hoje (VP = credito). antigo: 48 parcelas mensais de credito/48
+
+  return { ok:true, ano:ano, regime:regime, valor_investimento:valor, aliquota_pct:aliq*100, imposto_embutido:valor*aliq/(1+aliq), credito_apropriado:(regime==='simples'?0:valor*aliq/(1+aliq)), custo_liquido_do_bem:(regime==='simples'?valor:valor-valor*aliq/(1+aliq)), credito_perdido_no_simples:(regime==='simples'?valor*aliq/(1+aliq):0), suspensao:{ ativa:susp, desembolso_evitado:(susp?valor*aliq/(1+aliq):0) } };
+}
+function capexRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-capex'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var valor=ent.valor, regime=ent.regime, ano=ent.ano, susp=ent._susp, cdc=ent._cdc, aliq=ent._aliq;
+   var aliqManual=parseFloat((document.getElementById('capex_aliq')||{}).value); var aliq=(!isNaN(aliqManual)&&aliqManual>0)? aliqManual/100 : ((typeof getAliq==='function')? getAliq(ano).total : 0.088); var _fmtR=(typeof fmtR==='function')?fmtR:function(v){return 'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}; var _fmtP=(typeof fmtPct==='function')?fmtPct:function(v){return (v||0).toFixed(1)+'%';}; var kpi=document.getElementById('kpi-capex'); var recs=document.getElementById('recs-capex'); var res=document.getElementById('res-capex');
+  var valor=ent.valor, regime=ent.regime, ano=ent.ano, cdc=ent._cdc, susp=ent._susp; var aliq=(+r.aliquota_pct)/100; var _fmtR=(typeof fmtR==='function')?fmtR:function(v){return 'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}; var _fmtP=(typeof fmtPct==='function')?fmtPct:function(v){return (v||0).toFixed(1)+'%';}; var kpi=document.getElementById('kpi-capex'); var recs=document.getElementById('recs-capex'); var res=document.getElementById('res-capex'); var credito=+r.credito_apropriado, custoLiq=+r.custo_liquido_do_bem;
   var im=cdc/12;                              // taxa mensal
   var parcela=credito/48;
   var vpAntigo=0;
@@ -66255,7 +66321,13 @@ function calcularCapex(){
   if(res) res.style.display='block';
   if(window.Chart) _capexChart(credito, vpAntigo, cdc);
 
-  try{ if(window.LH_PONTE) LH_PONTE.sombra('calcularCapex'); }catch(_p){}
+  try{ if(window.LH_PONTE && LH_PONTE.modo()!=='servidor') LH_PONTE.sombra('calcularCapex'); }catch(_p){}
+
+}
+function calcularCapex(){
+  var ent=capexLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularCapex')){ LH_PONTE.executar('calcularCapex', ent); return; }
+  capexRender(capexCalcularLocal(ent), ent, null);
 }
 
 function _capexChart(imediato, antigo, cdc){
