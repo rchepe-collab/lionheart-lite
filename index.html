@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v740";</script>
+<body><script>window.LH_VERSAO="v741";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3675,10 +3675,11 @@ window.LH_PONTE = (function(){
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
         return { uf:String(v('n15_estado')||'RS').toUpperCase(), patrimonio_imoveis:f('n15_patrim_imov'), patrimonio_societario:f('n15_patrim_soc'), patrimonio_outros:f('n15_patrim_outros'),
                  renda_aluguel:f('n15_renda_aluguel'), dividendos:f('n15_dividendos'), herdeiros:parseInt(v('n15_herdeiros'),10)||2, horizonte_anos:parseInt(v('n15_horizonte'),10)||10,
-                 custo_abertura:f('n15_custo_abertura'), custo_manutencao:f('n15_custo_manutencao'), itbi_pct:f('n15_itbi'), ajuste_vm_pct:f('n15_reducao_holding'), ano:parseInt(v('n15_ano'),10)||2026 }; },   /* v705 · fn_n15 ganhou p_ano (despachante v6) */
+                 custo_abertura:f('n15_custo_abertura'), custo_manutencao:f('n15_custo_manutencao'), itbi_pct:(f('n15_patrim_imov')>0?f('n15_itbi')/f('n15_patrim_imov')*100:0), ajuste_vm_pct:f('n15_reducao_holding'), ano:parseInt(v('n15_ano'),10)||2026 }; },   /* v741 · ITBI é R$ na tela e % no servidor — converte aqui */
       esperado:function(r){ return (r&&r.renda&&r.sucessao)?{ economia:Number(r.renda.economia_anual), itcmd_sem:Number(r.sucessao.itcmd_sem_holding), itcmd_com:Number(r.sucessao.itcmd_com_holding) }:null; },
       /* kpi-n15 (R$): [0] economia anual (bruta) · [1] líquida · [2] custo abertura · [3] economia ITCMD · [4] patrimônio · [5] ITCMD sem holding · [6] com holding */
-      local:function(){ var R=LH_PONTE._rsNum; return { economia:R('kpi-n15',0), itcmd_sem:R('kpi-n15',5), itcmd_com:R('kpi-n15',6) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { economia:R('kpi-n15',0), itcmd_sem:R('kpi-n15',5), itcmd_com:R('kpi-n15',6) }; },
+      render:function(r, ent, motivo){ n15Render(r, ent, motivo); } },
     /* v704 · Sucessório: Mestre N14 = ITCMD marginal + inventário ~4%. O servidor já era isso, com dois extras fora do
        Mestre (ganho de capital latente se transmitir a mercado; inventário judicial). A ponte manda o cenário do
        Mestre (custo histórico, extrajudicial). O % de inventário da tela vai como informação; se diferir de 4%, diverge. */
@@ -30403,7 +30404,8 @@ function removerImovelN15(btn){
   if(l){ l.remove(); somarImoveisN15(); }
 }
 
-function calcularN15(){
+/* ═══ v741 · CUTOVER — calcularN15: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function n15LerEntradas(){
   const patrimImov=parseFloat(document.getElementById('n15_patrim_imov').value)||0;
   const patrimSoc=parseFloat(document.getElementById('n15_patrim_soc').value)||0;
   const patrimOutros=parseFloat(document.getElementById('n15_patrim_outros').value)||0;
@@ -30417,7 +30419,7 @@ function calcularN15(){
   const itbi=parseFloat(document.getElementById('n15_itbi').value)||0;
   // Sprint v6: input agora controla a redução (era 30% fixo)
   const pctReducaoHolding = (parseFloat(document.getElementById('n15_reducao_holding').value)||0)/100;  // LC 227/2026: default 0% (holding não reduz mais ITCMD)
-  if(patrimImov+patrimSoc+patrimOutros<=0){ mostrarToast('Informe o patrimônio','error'); return; }
+  if(patrimImov+patrimSoc+patrimOutros<=0){ mostrarToast('Informe o patrimônio','error'); return null; }
   const patrimonioTotal=patrimImov+patrimSoc+patrimOutros;
   // Sprint v5 fix: ITCMD_ESTADOS reformulado para {max,tipo,faixas} — não tem mais .nome
   const cfgEst = ITCMD_ESTADOS[estado] || ITCMD_ESTADOS.outros;
@@ -30434,6 +30436,12 @@ function calcularN15(){
   /* ★ v703 · TABELA ANUAL 2026 (Mestre N15 B18 / APOIO Folha IRPF 2026): a tela usava a de 2025
      (isenção 27.408 · parcela 10.770,40). Mestre: 29.145,60 / 33.919,80 / 45.012,60 / 55.976,16 ·
      deduções 2.185,92 / 4.729,41 / 8.105,10 / 10.904,76 — mesma régua de fn_irpf_anual. */
+
+  return { uf:estado, patrimonio_imoveis:patrimImov, patrimonio_societario:patrimSoc, patrimonio_outros:patrimOutros, renda_aluguel:rendaAluguel, dividendos:dividendos, herdeiros:herdeiros, horizonte_anos:horizonte, custo_abertura:custoAbert, custo_manutencao:custoMaint, itbi_pct:(patrimImov>0?itbi/patrimImov*100:0), ajuste_vm_pct:pctReducaoHolding*100, ano:(parseInt((document.getElementById('n15_ano')||{value:2026}).value)||2026), _itbi:itbi, _pctRed:pctReducaoHolding };
+}
+function n15CalcularLocal(ent){
+  var estado=ent.uf, patrimImov=ent.patrimonio_imoveis, patrimSoc=ent.patrimonio_societario, patrimOutros=ent.patrimonio_outros, rendaAluguel=ent.renda_aluguel, dividendos=ent.dividendos, herdeiros=ent.herdeiros, horizonte=ent.horizonte_anos, custoAbert=ent.custo_abertura, custoMaint=ent.custo_manutencao, itbi=ent._itbi, pctReducaoHolding=ent._pctRed;
+  const aluguelMensal = rendaAluguel / 12; const isencaoMensal_15270 = 5000; const baseTributMensal = Math.max(0, aluguelMensal - isencaoMensal_15270); var patrimonioTotal=patrimImov+patrimSoc+patrimOutros; const cfgEst = ITCMD_ESTADOS[estado] || ITCMD_ESTADOS.outros; const tipoEst = cfgEst.tipo === 'prog' ? 'progressivo' : 'fixo'; const nomeEstado = estado + ' (alíq. máx. ' + (cfgEst.max*100).toFixed(0) + '% — ' + tipoEst + ')';
   const ir_aluguel_pf = (function(b){
     if(b<=29145.6) return 0;
     if(b<=33919.8) return b*0.075-2185.92;
@@ -30486,6 +30494,16 @@ function calcularN15(){
   const anos=Array.from({length:horizonte},(_,i)=>i+1);
   const economiaAcum=anos.map(a=>a===1?economiaTotalAnual-custoAbert-itbi:economiaTotalAnual*a-custoAbert-itbi);
   const custoAcum=anos.map(a=>custoAbert+itbi+custoMaint*a);
+
+  return { ok:true, uf:estado, ano:n15ano, patrimonio:patrimonioTotal, herdeiros:herdeiros, horizonte_anos:horizonte, renda:{ ir_na_pf:ir_aluguel_pf, ir_na_pj:ir_aluguel_holding, economia_anual:ec_aluguel }, sucessao:{ itcmd_sem_holding:itcmd_sem, itcmd_com_holding:itcmd_com, economia_itcmd:ec_itcmd }, irpfm:{ sem_holding:irpfm_semHolding, com_holding:irpfm_comHolding, economia_anual:ec_irpfm_anual }, economia_bruta_anual:economiaBrutaAnual, economia_liquida_manutencao_anual:economiaTotalAnual, break_even_anos:(isFinite(breakEvenAnos)?breakEvenAnos:null), serie:anos.map(function(a,i){ return { ano:a, economia_acumulada:economiaAcum[i], custo_acumulado:custoAcum[i] }; }), custos:{ abertura:custoAbert, itbi_integralizacao:itbi, manutencao_no_horizonte:custoMaint*horizonte, total:custoAbert+itbi+custoMaint*horizonte } };
+}
+function n15Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-n15'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var estado=ent.uf, patrimImov=ent.patrimonio_imoveis, patrimSoc=ent.patrimonio_societario, patrimOutros=ent.patrimonio_outros, rendaAluguel=ent.renda_aluguel, dividendos=ent.dividendos, herdeiros=ent.herdeiros, horizonte=ent.horizonte_anos, custoAbert=ent.custo_abertura, custoMaint=ent.custo_manutencao, itbi=ent._itbi, pctReducaoHolding=ent._pctRed;
+  const aluguelMensal = rendaAluguel / 12; const isencaoMensal_15270 = 5000; const baseTributMensal = Math.max(0, aluguelMensal - isencaoMensal_15270); var patrimonioTotal=patrimImov+patrimSoc+patrimOutros; const cfgEst = ITCMD_ESTADOS[estado] || ITCMD_ESTADOS.outros; const tipoEst = cfgEst.tipo === 'prog' ? 'progressivo' : 'fixo'; const nomeEstado = estado + ' (alíq. máx. ' + (cfgEst.max*100).toFixed(0) + '% — ' + tipoEst + ')';
+  var patrimImov=ent.patrimonio_imoveis, patrimSoc=ent.patrimonio_societario, patrimOutros=ent.patrimonio_outros, estado=ent.uf, rendaAluguel=ent.renda_aluguel, dividendos=ent.dividendos, herdeiros=ent.herdeiros, horizonte=ent.horizonte_anos, custoAbert=ent.custo_abertura, custoMaint=ent.custo_manutencao, itbi=ent._itbi, pctReducaoHolding=ent._pctRed, n15ano=ent.ano; var ir_aluguel_pf=+r.renda.ir_na_pf, ir_aluguel_holding=+r.renda.ir_na_pj, ec_aluguel=+r.renda.economia_anual, itcmd_sem=+r.sucessao.itcmd_sem_holding, itcmd_com=+r.sucessao.itcmd_com_holding, ec_itcmd=+r.sucessao.economia_itcmd; var irpfm_semHolding=+r.irpfm.sem_holding, irpfm_comHolding=+r.irpfm.com_holding, ec_irpfm_anual=+r.irpfm.economia_anual; var economiaBrutaAnual=+r.economia_bruta_anual, economiaTotalAnual=+r.economia_liquida_manutencao_anual; var avisoLPaplicado = rendaAluguel > 0, avisoLRrecomendado = rendaAluguel > 78000000; var avisoSemEconomia = (rendaAluguel <= 0 && dividendos <= 0) ? 'Sem renda de aluguel ou dividendos informados, a holding só apresenta custos. A economia real aparece quando você informa a renda de aluguel (tributada melhor na PJ) ou os dividendos. Preencha esses campos para a análise fazer sentido.' : ''; const custoTotal1Ano=custoAbert+itbi+custoMaint; const breakEvenAnos=(r.break_even_anos!=null)?+r.break_even_anos:Infinity; const vantajosa=economiaTotalAnual>0; const anos=(r.serie||[]).map(function(x){ return +x.ano; }); const economiaAcum=(r.serie||[]).map(function(x){ return +x.economia_acumulada; }); const custoAcum=(r.serie||[]).map(function(x){ return +x.custo_acumulado; });
   document.getElementById('kpi-n15').innerHTML=`
     <div class="kpi-card ${vantajosa?'kpi-ok':'kpi-alerta'}"><div class="kpi-label">Holding Patrimonial</div><div class="kpi-value" style="font-size:0.85em">${vantajosa?'VALE A PENA':'Avaliar com cautela'}</div><div class="kpi-sub">${vantajosa?'Economia supera os custos':'Custos superam a economia anual'}</div></div>
     <div class="kpi-card kpi-ok"><div class="kpi-label">Economia Anual Estimada</div><div class="kpi-value">${fmtR(economiaBrutaAnual)}</div><div class="kpi-sub">IR aluguel + IRPFM (Mestre N15) · líquida de manutenção: ${fmtR(economiaTotalAnual)}</div></div>
@@ -30577,6 +30595,12 @@ function calcularN15(){
       : 'Adiar abertura. Reavaliar quando patrimônio ou aluguéis crescerem.'
   });
   mostrarToast('✓ Break-even calculado','success');
+
+}
+function calcularN15(){
+  var ent=n15LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularN15')){ LH_PONTE.executar('calcularN15', ent); return; }
+  n15Render(n15CalcularLocal(ent), ent, null);
 }
 
 // ══════════════════════════════════════════
