@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v751";</script>
+<body><script>window.LH_VERSAO="v752";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2663,7 +2663,8 @@ window.LH_PONTE = (function(){
       esperado: function(r){ var l = Array.isArray(r) ? r[0] : r; return l ? {
         ate_sublimite: Number(l.ate_sublimite)
       } : null; },
-      local: function(){ return { ate_sublimite: LH_PONTE._kpiNum('kpi-sublimite', 0) }; }
+      local: function(){ return { ate_sublimite: LH_PONTE._kpiNum('kpi-sublimite', 0) }; },
+      render:function(r, ent, motivo){ subRender(r, ent, motivo); }
     },
 
     /* ═══ v677 · TRÊS TELAS NOVAS EM SOMBRA ═══ */
@@ -28606,7 +28607,8 @@ function calcularArt127(){
   if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularArt127')){ LH_PONTE.executar('calcularArt127', ent); return; }
   art127Render(art127CalcularLocal(ent), ent, null);
 }
-function calcularSublimite() {
+/* ═══ v752 · CUTOVER — calcularSublimite: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function subLerEntradas(){
   var rbt12 = parseFloat((document.getElementById('sub_rbt12')||{value:0}).value) || 0;
   var fatMes = parseFloat((document.getElementById('sub_fat_mes')||{value:0}).value) || 0;
   var crescAA = parseFloat((document.getElementById('sub_crescimento')||{value:0}).value) || 0;
@@ -28615,13 +28617,20 @@ function calcularSublimite() {
 
   if(rbt12 <= 0 && fatMes <= 0) {
     mostrarToast('Informe ao menos a RBT12 OU o faturamento mensal médio', 'error');
-    return;
+    return null;
   }
   /* Se RBT12 não foi dada, estima como 12× faturamento médio */
   if(rbt12 <= 0) rbt12 = fatMes * 12;
   /* Se faturamento mensal não dado, estima como RBT12/12 */
   if(fatMes <= 0) fatMes = rbt12 / 12;
 
+
+  var aliqIcmsIss=(parseFloat((document.getElementById('sub_aliq_icms_iss')||{value:'6'}).value)||0)/100;
+  return { rbt12:rbt12, fat_mensal:fatMes, crescimento:crescAA, sublimite:sublim, aliq_icms_iss:aliqIcmsIss*100, _crescAA:crescAA, _aliqIcmsIss:aliqIcmsIss };
+}
+function subCalcularLocal(ent){
+  var rbt12=ent.rbt12, fatMes=ent.fat_mensal, crescAA=ent._crescAA, sublim=ent.sublimite, aliqIcmsIss=ent._aliqIcmsIss;
+  var teto=4800000;
   var pctSublim = (rbt12 / sublim) * 100;
   var pctTeto = (rbt12 / teto) * 100;
   var margemSublim = sublim - rbt12;
@@ -28658,7 +28667,7 @@ function calcularSublimite() {
   for(var m=1;m<=12;m++) {
     receitaMM = receitaMM * (1 + crescMM);
     historicoMensal.shift();
-    historicoMensal.push(receitaMM); historicoMensal.shift();
+    historicoMensal.push(receitaMM); /* v752: um shift so — a janela ROLA, nao encolhe (RBT12 = soma dos 12 ultimos meses, LC 123 art. 3 §1) */
     var rbt12Proj = historicoMensal.reduce(function(a,b){return a+b;},0);
     var pctSub = (rbt12Proj / sublim) * 100;
     var statM;
@@ -28672,6 +28681,16 @@ function calcularSublimite() {
     if(mesEstouroTeto === null && rbt12Proj > teto) mesEstouroTeto = m;
   }
 
+
+  return { ok:true, rbt12:rbt12, faturamento_mensal:fatMes, sublimite:sublim, teto:teto, pct_do_sublimite:pctSublim, pct_do_teto:pctTeto, margem_ate_sublimite:margemSublim, margem_ate_teto:teto-rbt12, meses_ate_sublimite:mesesSublimTxt, meses_ate_teto:mesesTetoTxt, status:statusTxt, custo_extra_icms_iss_ano:custoExtraIcmsIss, projecao:projecao.map(function(p){ return { mes:p.mes, receita_mensal:p.receita, rbt12:p.rbt12, pct_do_sublimite:p.pct, status:p.status }; }), mes_estouro_sublimite:mesEstouroSublim, mes_estouro_teto:mesEstouroTeto };
+}
+function subRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-sublimite'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var rbt12=ent.rbt12, fatMes=ent.fat_mensal, crescAA=ent._crescAA, sublim=ent.sublimite, aliqIcmsIss=ent._aliqIcmsIss;
+  var teto=4800000;
+  var rbt12=+r.rbt12, fatMes=+r.faturamento_mensal, crescAA=ent._crescAA, sublim=+r.sublimite, teto=+r.teto, aliqIcmsIss=ent._aliqIcmsIss; var pctSublim=+r.pct_do_sublimite, pctTeto=+r.pct_do_teto, margemSublim=+r.margem_ate_sublimite; var custoExtraIcmsIss=+r.custo_extra_icms_iss_ano, teto_sn=teto; var alertaExclusao=(rbt12 > teto_sn*1.2); var __taxaAA=crescAA/100; var mesesAteSublim=(r.meses_ate_sublimite==null?null:+r.meses_ate_sublimite); var mesesAteTeto=(r.meses_ate_teto==null?null:+r.meses_ate_teto); var mesesSublimTxt=(mesesAteSublim===null?null:Math.round(mesesAteSublim*100)/100), mesesTetoTxt=(mesesAteTeto===null?null:Math.round(mesesAteTeto*100)/100); var statusTxt=String(r.status||''); var cor, ico=''; if(rbt12>teto) cor='#dc2626'; else if(rbt12>sublim) cor='#dc2626'; else if(pctSublim>=90) cor='#ea580c'; else if(pctSublim>=70 || (mesesAteSublim!==null && mesesAteSublim<=12)) cor='#c9a227'; else cor='#10b981'; var crescMM=Math.pow(1+crescAA/100,1/12)-1; var mesEstouroSublim=(r.mes_estouro_sublimite==null?null:+r.mes_estouro_sublimite), mesEstouroTeto=(r.mes_estouro_teto==null?null:+r.mes_estouro_teto); var margemTeto=teto-rbt12; var projecao=(r.projecao||[]).map(function(p){ return { mes:+p.mes, receita:+p.receita_mensal, rbt12:+p.rbt12, pct:+p.pct_do_sublimite, status:String(p.status) }; });
   /* KPIs */
   var kpis = '';
   kpis += '<div class="kpi-card kpi-destaque" style="border-color:'+cor+';"><div class="kpi-label">Posição vs Sublimite</div><div class="kpi-value" style="color:'+cor+';">'+fmtPct(pctSublim)+'</div><div class="kpi-sub">'+ico+' '+statusTxt+'</div></div>';
@@ -28756,7 +28775,13 @@ function calcularSublimite() {
   mostrarToast('✓ Sublimite: '+ico+' '+fmtPct(pctSublim)+' do limite estadual', 'success');
 
   /* v673 · ponte em modo sombra — nao altera o resultado que o usuario ve */
-  try{ if(window.LH_PONTE) LH_PONTE.sombra('calcularSublimite'); }catch(_p){}
+  try{ if(window.LH_PONTE && LH_PONTE.modo()!=='servidor') LH_PONTE.sombra('calcularSublimite'); }catch(_p){}
+
+}
+function calcularSublimite(){
+  var ent=subLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularSublimite')){ LH_PONTE.executar('calcularSublimite', ent); return; }
+  subRender(subCalcularLocal(ent), ent, null);
 }
 
 // v30.11.17 — CALC DIFAL (EC 87/2015 · LC 190/2022 · Res. SF 13/2012)
