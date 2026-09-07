@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v742";</script>
+<body><script>window.LH_VERSAO="v743";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2601,7 +2601,8 @@ window.LH_PONTE = (function(){
       /* kpi-c01: [0] gap 2027 · [1] gap 2029 · [2] custo p/ repor 2029 · [3] taxa · [4] float atual */
       esperado: function(r){ if(!r) return null; var p29=null; (r.projecao||[]).forEach(function(x){ if(Number(x.ano)===2029) p29=x; });
         return { gap_2027: Number(r.gap_2027), gap_2029: Number(r.gap_2029), custo_2029: p29 ? Number(p29.custo_mensal_para_repor) : null, float_atual: Number(r.float_atual_mensal) }; },
-      local: function(){ return { gap_2027: LH_PONTE._kpiNum('kpi-c01',0), gap_2029: LH_PONTE._kpiNum('kpi-c01',1), custo_2029: LH_PONTE._kpiNum('kpi-c01',2), float_atual: LH_PONTE._kpiNum('kpi-c01',4) }; }
+      local: function(){ return { gap_2027: LH_PONTE._kpiNum('kpi-c01',0), gap_2029: LH_PONTE._kpiNum('kpi-c01',1), custo_2029: LH_PONTE._kpiNum('kpi-c01',2), float_atual: LH_PONTE._kpiNum('kpi-c01',4) }; },
+      render:function(r, ent, motivo){ c01Render(r, ent, motivo); }
     },
     calcularN04: {
       calc: 'n04',
@@ -3105,7 +3106,8 @@ window.LH_PONTE = (function(){
       esperado: function(r){ if(!r||!r.cenarios||r.cenarios.length<2) return null; var n=Number(r.anos)||1;
         return { imposto_teto:Number(r.cenarios[0].imposto)/n, imposto_cgibs:Number(r.cenarios[1].imposto)/n, exposicao_cgibs:Number(r.cenarios[1].diferenca_vs_teto) }; },
       /* kpi-aliqref: [0] teto/ano · [1] 27,91 · [2] CGIBS/ano · [3] diferença/ano · [4] exposição N anos · [5] peso % */
-      local: function(){ return { imposto_teto:LH_PONTE._kpiNum('kpi-aliqref',0), imposto_cgibs:LH_PONTE._kpiNum('kpi-aliqref',2), exposicao_cgibs:LH_PONTE._kpiNum('kpi-aliqref',4) }; }
+      local: function(){ return { imposto_teto:LH_PONTE._kpiNum('kpi-aliqref',0), imposto_cgibs:LH_PONTE._kpiNum('kpi-aliqref',2), exposicao_cgibs:LH_PONTE._kpiNum('kpi-aliqref',4) }; },
+      render:function(r, ent, motivo){ aliqrefRender(r, ent, motivo); }
     },
 
     /* ═══ v689 · ONDA 6 · INDÚSTRIA — 12 calculadoras de forma fechada ═══
@@ -20442,7 +20444,8 @@ function limparMotorResultado(calcId) {
 // ══════════════════════════════════════════
 // C-01: SPLIT PAYMENT CASH GAP
 // ══════════════════════════════════════════
-function calcularC01(){
+/* ═══ v743 · CUTOVER — calcularC01: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function c01LerEntradas(){
   const fat     = parseFloat(document.getElementById('c01_faturamento').value)||0;
   const regime  = document.getElementById('c01_regime').value;
   const prazoR  = parseFloat(document.getElementById('c01_prazo_recolhimento').value)||25;
@@ -20450,7 +20453,7 @@ function calcularC01(){
   const pctPrazo= parseFloat(document.getElementById('c01_pct_prazo').value)/100||0.70; // % vendas via banco
   const cresc   = parseFloat(document.getElementById('c01_crescimento').value)/100||0.08;
   const taxaCG  = parseFloat(document.getElementById('c01_taxa_cg').value)/100||0.18;
-  if(fat<=0){ mostrarToast('Informe o faturamento mensal','error'); return; }
+  if(fat<=0){ mostrarToast('Informe o faturamento mensal','error'); return null; }
 
   /* ★ v693 · ZERO LEGÍTIMO VIRAVA 9,3% — `ALIQ_ATUAL[regime]||0.093`: para o Simples e o MEI a
      tabela diz 0 (o PIS/COFINS está dentro do DAS, não há float separado), e 0 é falsy em JS,
@@ -20460,6 +20463,12 @@ function calcularC01(){
   const aliqAtual = (regime in ALIQ_ATUAL) ? ALIQ_ATUAL[regime] : ALIQ_ATUAL.lp;
   // CG atual: "float" tributário que o cliente ainda tem (antes do split)
   const cgAtual = fat*pctPrazo*aliqAtual*(prazoR/30);
+
+  return { faturamento_mensal:fat, regime:regime, prazo_recolhimento_dias:prazoR, pct_incidencia:pctInc*100, pct_eletronico:pctPrazo*100, pct_credito:((parseFloat((document.getElementById('c01_pct_credito')||{}).value)||0)), crescimento_aa:cresc*100, custo_capital:taxaCG*100, cenario:'A', _pctInc:pctInc, _pctPrazo:pctPrazo, _cresc:cresc, _taxaCG:taxaCG, _pctCred:((parseFloat((document.getElementById('c01_pct_credito')||{}).value)||0)/100) };
+}
+function c01CalcularLocal(ent){
+  var fat=ent.faturamento_mensal, regime=ent.regime, prazoR=ent.prazo_recolhimento_dias, pctInc=ent._pctInc, pctPrazo=ent._pctPrazo, cresc=ent._cresc, taxaCG=ent._taxaCG;
+   var aliqAtual = (regime in ALIQ_ATUAL) ? ALIQ_ATUAL[regime] : ALIQ_ATUAL.lp; var cgAtual = fat*pctPrazo*aliqAtual*(prazoR/30);
   const anos=[2026,2027,2028,2029,2030,2031,2032,2033];
   const res = anos.map((ano,i)=>{
     const fatAno=fat*Math.pow(1+cresc,i);
@@ -20476,6 +20485,16 @@ function calcularC01(){
     return {ano,aliq,fatAno,imposto,cgPerdido,custoCG};
   });
   const r26=res[0], r27=res[1], r29=res[3];
+
+  return { ok:true, regime:regime, carga_pis_cofins_atual_pct:aliqAtual*100, float_atual_mensal:cgAtual, projecao:res.map(function(x){ return { ano:x.ano, faturamento_mensal:x.fatAno, aliquota_pct:(x.aliq&&x.aliq.total!=null?x.aliq.total*100:0), imposto_mensal:x.imposto, gap_de_caixa_mensal:x.cgPerdido, custo_mensal_para_repor:x.custoCG, custo_anual:x.custoCG*12 }; }), gap_2027:res[1].cgPerdido, gap_2029:res[3].cgPerdido, gap_2033:res[7].cgPerdido, custo_anual_2029:res[3].custoCG*12 };
+}
+function c01Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-c01'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento_mensal, regime=ent.regime, prazoR=ent.prazo_recolhimento_dias, pctInc=ent._pctInc, pctPrazo=ent._pctPrazo, cresc=ent._cresc, taxaCG=ent._taxaCG;
+   var aliqAtual = (regime in ALIQ_ATUAL) ? ALIQ_ATUAL[regime] : ALIQ_ATUAL.lp; var cgAtual = fat*pctPrazo*aliqAtual*(prazoR/30);
+  var fat=ent.faturamento_mensal, regime=ent.regime, prazoR=ent.prazo_recolhimento_dias, pctInc=ent._pctInc, pctPrazo=ent._pctPrazo, cresc=ent._cresc, taxaCG=ent._taxaCG, _pctCred=ent._pctCred; var aliqAtual=(+r.carga_pis_cofins_atual_pct)/100, cgAtual=+r.float_atual_mensal; const anos=(r.projecao||[]).map(function(p){ return +p.ano; }); const res=(r.projecao||[]).map(function(p){ var a={}; try{ a=getAliq(+p.ano)||{}; }catch(_e){} return { ano:+p.ano, aliq:a, fatAno:+p.faturamento_mensal, imposto:+p.imposto_mensal, cgPerdido:+p.gap_de_caixa_mensal, custoCG:+p.custo_mensal_para_repor }; }); const r26=res[0], r27=res[1], r29=res[3];
   document.getElementById('kpi-c01').innerHTML=`
     <div class="kpi-card kpi-critico"><div class="kpi-label">Gap de Caixa em 2027</div><div class="kpi-value">${fmtR(r27.cgPerdido)}</div><div class="kpi-sub">por mês — início do Split (facultativo)</div></div>
     <div class="kpi-card kpi-alerta"><div class="kpi-label">Gap de Caixa em 2029</div><div class="kpi-value">${fmtR(r29.cgPerdido)}</div><div class="kpi-sub">por mês — alíquota ${(r29.aliq.total*100).toFixed(1).replace('.',',')}% em 2029</div></div>
@@ -20562,7 +20581,13 @@ function calcularC01(){
 
   try{ if(window.LH_SAUDE_registrar){ window.LH_SAUDE_registrar('splitGap', { rodou:true, nivel:'info', rotulo:'Analisado' }); } }catch(e){}
 
-  try{ if(window.LH_PONTE) LH_PONTE.sombra('calcularC01'); }catch(_p){}
+  try{ if(window.LH_PONTE && LH_PONTE.modo()!=='servidor') LH_PONTE.sombra('calcularC01'); }catch(_p){}
+
+}
+function calcularC01(){
+  var ent=c01LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularC01')){ LH_PONTE.executar('calcularC01', ent); return; }
+  c01Render(c01CalcularLocal(ent), ent, null);
 }
 // C-02: REPRECIFICAÇÃO
 // ══════════════════════════════════════════
@@ -27870,14 +27895,21 @@ function calcularAgroSuper3(){
   agroS3Render(agroS3CalcularLocal(ent), ent, null);
 }
 
-function calcularAliqRef(){
+/* ═══ v743 · CUTOVER — calcularAliqRef: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function aliqrefLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var fat=V('ar_fat',0);
-  if(fat<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o faturamento anual','error'); return; }
-  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(fat,1000,'Faturamento anual')) return;
+  if(fat<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o faturamento anual','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(fat,1000,'Faturamento anual')) return null;
   var red=parseFloat((document.getElementById('ar_red')||{value:'0'}).value)||0;
   var cred=V('ar_cred',0)/100, anos=Math.max(1,V('ar_anos',1));
 
+
+  return { faturamento_anual:fat, reducao_pct:red*100, credito_pct:cred*100, anos:anos, _red:red, _cred:cred };
+}
+function aliqrefCalcularLocal(ent){
+  var fat=ent.faturamento_anual, anos=ent.anos, red=ent._red, cred=ent._cred;
+  
   var cen=[
     ['Teto do art. 18',       0.265,   'É o limite legal — e o número que quase todo mundo usa como se fosse a alíquota.'],
     ['CGIBS · Res. 14/2026',  0.2791,  'Estimativa oficial do Comitê Gestor, publicada em 31/07/2026. Já supera o teto em 1,41 ponto.'],
@@ -27896,6 +27928,16 @@ function calcularAliqRef(){
       '<td>'+pc(c[1])+'</td><td>'+pc(ef)+'</td><td>'+R(imp)+'</td>'+
       '<td>'+(dif===0?'—':'<span style="color:#e06b5a">+'+R(dif)+'</span>')+'</td></tr>';
   });
+
+  return { ok:true, faturamento_anual:fat, reducao_pct:red*100, credito_pct:cred*100, anos:anos, cenarios:cen.map(function(c){ var nomeServ={ 'Teto do art. 18':'Teto do art. 475 §11', 'CGIBS · Res. 14/2026':'CGIBS · Resolução 14/2026', 'Estresse':'Estresse' }[c[0]]||c[0]; var ef=c[1]*(1-red)*(1-cred); return { cenario:nomeServ, aliquota_pct:c[1]*100, aliquota_efetiva_pct:ef*100, imposto:fat*ef*anos, diferenca_vs_teto:(fat*ef-fat*0.265*(1-red)*(1-cred))*anos, nota:c[2] }; }), exposicao_ao_risco:(fat*0.2791*(1-red)*(1-cred)-fat*0.265*(1-red)*(1-cred))*anos };
+}
+function aliqrefRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-aliqref'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento_anual, anos=ent.anos, red=ent._red, cred=ent._cred;
+  
+  var fat=ent.faturamento_anual, red=ent._red, cred=ent._cred, anos=ent.anos; var _NOTA={ 'Teto do art. 475 §11':'É o limite legal — e o número que quase todo mundo usa como se fosse a alíquota.', 'CGIBS · Resolução 14/2026':'Estimativa oficial do Comitê Gestor, publicada em 31/07/2026. Já supera o teto em 1,41 ponto.', 'Estresse':'Cenário sem revisão das exceções — usado só para medir a borda.' }; var _ROT={ 'Teto do art. 475 §11':'Teto do art. 18', 'CGIBS · Resolução 14/2026':'CGIBS · Res. 14/2026', 'Estresse':'Estresse' }; var cen=(r.cenarios||[]).map(function(c){ var nome=_ROT[c.cenario]||String(c.cenario); return [nome, (+c.aliquota_pct)/100, _NOTA[c.cenario]||'']; }); var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }; var pc=function(x){ return (x*100).toFixed(2).replace('.',',')+'%'; }; var base=null, linhas=''; (r.cenarios||[]).forEach(function(c,i){ var nome=_ROT[c.cenario]||String(c.cenario); var ef=(+c.aliquota_efetiva_pct)/100, imp=+c.imposto/Math.max(1,anos); if(base===null) base=imp; var dif=imp-base; linhas+='<tr'+(nome.indexOf('CGIBS')>=0?' style="font-weight:700;background:rgba(224,138,46,.08)"':'')+'>'+ '<td>'+nome+'<br><span style="color:var(--text-dim);font-size:.85em">'+(_NOTA[c.cenario]||'')+'</span></td>'+ '<td>'+pc((+c.aliquota_pct)/100)+'</td><td>'+pc(ef)+'</td><td>'+R(imp)+'</td>'+ '<td>'+(dif===0?'—':'<span style="color:#e06b5a">+'+R(dif)+'</span>')+'</td></tr>'; });
   var tb=document.getElementById('tabela-aliqref'); if(tb) tb.innerHTML=linhas;
 
   var efTeto=0.265*(1-red)*(1-cred), efCG=0.2791*(1-red)*(1-cred);
@@ -27946,6 +27988,12 @@ function calcularAliqRef(){
     }
   }catch(_e){}
   var res=document.getElementById('res-aliqref'); if(res) res.style.display='block';
+
+}
+function calcularAliqRef(){
+  var ent=aliqrefLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAliqRef')){ LH_PONTE.executar('calcularAliqRef', ent); return; }
+  aliqrefRender(aliqrefCalcularLocal(ent), ent, null);
 }
 /* ═══ v742 · CUTOVER — calcularAntecip: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
 function antecipLerEntradas(){
