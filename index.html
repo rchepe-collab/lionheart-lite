@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v744";</script>
+<body><script>window.LH_VERSAO="v745";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3053,7 +3053,8 @@ window.LH_PONTE = (function(){
                  ano:parseInt((G.el('c11_ano')||{}).value,10)||2027, modalidade:(G.el('c11_modalidade')||{}).value||'inteligente' }; },
       esperado: function(r){ return r ? { retido:Number(r.retido_no_split), float_ano:Number(r.custo_fim_do_float_ano), giro_ano:Number(r.custo_giro_ano), impacto:Number(r.impacto_total_ano) } : null; },
       /* kpi-c11: [0] retido/mês · [1] custo float/ano · [2] custo giro/ano · [3] impacto/ano · [4] liquidez/mês */
-      local: function(){ return { retido:LH_PONTE._kpiNum('kpi-c11',0), float_ano:LH_PONTE._kpiNum('kpi-c11',1), giro_ano:LH_PONTE._kpiNum('kpi-c11',2), impacto:LH_PONTE._kpiNum('kpi-c11',3) }; }
+      local: function(){ return { retido:LH_PONTE._kpiNum('kpi-c11',0), float_ano:LH_PONTE._kpiNum('kpi-c11',1), giro_ano:LH_PONTE._kpiNum('kpi-c11',2), impacto:LH_PONTE._kpiNum('kpi-c11',3) }; },
+      render:function(r, ent, motivo){ c11Render(r, ent, motivo); }
     },
     calcularN33: {
       calc: 'n33',
@@ -29548,40 +29549,41 @@ function calcularCR05Live() {
 try{var _pg=document.getElementById('page-cr05');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-cr05');if(!_mv){_mv=document.createElement('div');_mv.id='mem-cr05';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'Saldo credor de PIS/COFINS',aliquotas:[{label:'Saldo escriturado',valor:''},{label:'Extemporâneos',valor:''},{label:'Total recuperável',valor:''}],porque:'Saldo escriturado + créditos extemporâneos, corrigidos; parcela exportação é ressarcível em dinheiro; o restante compensa com a CBS na transição.',baseLegal:[{lei:'LC 214/2025 (transição de créditos); Lei 9.430/96 art. 74'}]});}}catch(e){}}
 
 // ══════ C-11: SPLIT PAYMENT POR OPERAÇÃO (espelha Excel-mestre C11) ══════
-window.calcularC11 = function() {
-  var fat       = parseFloat((document.getElementById('c11_fat')||{value:0}).value) || 0;
+/* ═══ v745 · CUTOVER — Split por Operação (C11): ler · calcular (chaves de fn_c11) · desenhar ═══ */
+function c11LerEntradas(){
+  var fat = parseFloat((document.getElementById('c11_fat')||{value:0}).value) || 0;
   var pctInsumo = (parseFloat((document.getElementById('c11_insumos')||{value:0}).value) || 0) / 100;
   var floatDias = parseFloat((document.getElementById('c11_float')||{value:0}).value) || 0;
-  var pmr       = parseFloat((document.getElementById('c11_pmr')||{value:0}).value) || 0;
-  var custoCG   = (parseFloat((document.getElementById('c11_custo_cg')||{value:0}).value) || 0) / 100;
-  var ano       = parseInt((document.getElementById('c11_ano')||{value:2027}).value) || 2027;
-  var modalidade= (document.getElementById('c11_modalidade')||{value:'inteligente'}).value;
-
-  if(fat <= 0) { mostrarToast('Informe o faturamento mensal sujeito a split', 'error'); return; }
-
-  // 2) Imposto retido no split (espelha B15-B18)
+  var pmr = parseFloat((document.getElementById('c11_pmr')||{value:0}).value) || 0;
+  var custoCG = (parseFloat((document.getElementById('c11_custo_cg')||{value:0}).value) || 0) / 100;
+  var ano = parseInt((document.getElementById('c11_ano')||{value:2027}).value) || 2027;
+  var modalidade = (document.getElementById('c11_modalidade')||{value:'inteligente'}).value;
+  if(fat <= 0) { mostrarToast('Informe o faturamento mensal sujeito a split', 'error'); return null; }
+  return { faturamento_mensal:fat, pct_insumos:pctInsumo*100, float_dias:floatDias, pmr_dias:pmr, custo_capital:custoCG*100, ano:ano,
+           modalidade:(modalidade==='inteligente'?'inteligente':'padrao'), cenario:'A',
+           _pctInsumo:pctInsumo, _custoCG:custoCG, _modalidade:modalidade };
+}
+function c11CalcularLocal(ent){
+  var fat=ent.faturamento_mensal, pctInsumo=ent._pctInsumo, floatDias=ent.float_dias, pmr=ent.pmr_dias, custoCG=ent._custoCG, ano=ent.ano, modalidade=ent._modalidade;
   var aliqAno = (typeof getAliq === 'function') ? getAliq(ano).total : 0.088;
   var cbsibsBruto = fat * aliqAno;
   var creditoInsumo = (modalidade === 'inteligente') ? fat * pctInsumo * aliqAno : 0;
   var retidoSplit = Math.max(0, cbsibsBruto - creditoInsumo);
-
-  // 3) Fim do float (B21-B23)
-  var custoFloatMes = retidoSplit * (floatDias/365) * custoCG;
-  var custoFloatAno = custoFloatMes * 12;
-
-  // 4) Capital de giro adicional (B26-B27)
-  var giroAdicional = retidoSplit * (pmr/30);
-  var custoGiroAno = giroAdicional * custoCG;
-
-  // 5) Caixa antes x depois
-  var reducaoLiquidez = retidoSplit;
-
-  // 6) Impacto total
-  /* ⚖ v265 pente 23/07 — ALINHAMENTO AO MESTRE (aba C11, B35): float perdido e
-   giro adicional são DUAS LENTES do mesmo buraco de caixa (o imposto retido);
-   somá-las dupla-conta. O impacto do ano espelha o mestre (= custo do giro);
-   o custo do float segue exibido como lente separada, não somada. */
-var impactoTotalAno = custoGiroAno;
+  var custoFloatMes = retidoSplit * (floatDias/365) * custoCG, custoFloatAno = custoFloatMes * 12;
+  var giroAdicional = retidoSplit * (pmr/30), custoGiroAno = giroAdicional * custoCG;
+  return { ok:true, ano:ano, modalidade:ent.modalidade, aliquota_pct:aliqAno*100, cbs_ibs_bruto:cbsibsBruto,
+           credito_abatido_na_retencao:creditoInsumo, retido_no_split:retidoSplit, reducao_liquidez_mes:retidoSplit,
+           custo_fim_do_float_ano:custoFloatAno, capital_giro_adicional:giroAdicional, custo_giro_ano:custoGiroAno,
+           impacto_total_ano:custoGiroAno, se_fosse_split_simples:cbsibsBruto, vantagem_do_inteligente:cbsibsBruto-retidoSplit };
+}
+function c11Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-c11'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento_mensal, pctInsumo=ent._pctInsumo, floatDias=ent.float_dias, pmr=ent.pmr_dias, custoCG=ent._custoCG, ano=ent.ano, modalidade=ent._modalidade;
+  var aliqAno=(+r.aliquota_pct)/100, cbsibsBruto=+r.cbs_ibs_bruto, creditoInsumo=+r.credito_abatido_na_retencao, retidoSplit=+r.retido_no_split;
+  var custoFloatAno=+r.custo_fim_do_float_ano, custoFloatMes=custoFloatAno/12, giroAdicional=+r.capital_giro_adicional, custoGiroAno=+r.custo_giro_ano;
+  var reducaoLiquidez=+r.reducao_liquidez_mes, impactoTotalAno=+r.impacto_total_ano;
   var recomendacao = ano <= 2026
     ? '2026 é teste (alíquota 1%) — preparar sistemas e fluxo de caixa para 2027'
     : 'Split ativo: provisionar ' + fmtR(impactoTotalAno) + '/ano e renegociar prazos com fornecedores';
@@ -29649,6 +29651,11 @@ var impactoTotalAno = custoGiroAno;
       recomendacao: recomendacao
     });
   }
+}
+window.calcularC11 = function(){
+  var ent=c11LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularC11')){ LH_PONTE.executar('calcularC11', ent); return; }
+  c11Render(c11CalcularLocal(ent), ent, null);
 };
 function calcularC11Live(){ var r=document.getElementById('res-c11'); if(r && r.style.display!=='none') window.calcularC11(); try{var _pg=document.getElementById('page-c11');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-c11');if(!_mv){_mv=document.createElement('div');_mv.id='mem-c11';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'Split payment por operação',aliquotas:[{label:'Valor operação',valor:''},{label:'Retenção',valor:''},{label:'Impacto no caixa',valor:''}],porque:'Retido = valor da operação × alíquota IBS/CBS do ano (rampa). Impacto = retido − imposto líquido devido (crédito da etapa anterior).',baseLegal:[{lei:'LC 214/2025 — split payment'}]});}}catch(e){}}
 
