@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v753";</script>
+<body><script>window.LH_VERSAO="v754";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2621,7 +2621,8 @@ window.LH_PONTE = (function(){
         custo_lp: r.migrar_para_regular ? Number(r.migrar_para_regular.custo_total) : null,
         custo_hib: r.sn_hibrido ? Number(r.sn_hibrido.custo_total) : null } : null; },
       /* kpi-n04 (medido v685): [0] saldo · [1] custo SN · [2] custo LP · [3] custo híbrido */
-      local: function(){ return { custo_sn: LH_PONTE._kpiNum('kpi-n04', 1), custo_lp: LH_PONTE._kpiNum('kpi-n04', 2), custo_hib: LH_PONTE._kpiNum('kpi-n04', 3) }; }
+      local: function(){ return { custo_sn: LH_PONTE._kpiNum('kpi-n04', 1), custo_lp: LH_PONTE._kpiNum('kpi-n04', 2), custo_hib: LH_PONTE._kpiNum('kpi-n04', 3) }; },
+      render:function(r, ent, motivo){ n04Render(r, ent, motivo); }
     },
     calcularAGRO01: {
       calc: 'agro01',
@@ -39745,7 +39746,8 @@ function animarNumeroMotor(id, valor, prefixo, sufixo) {
 // Cruza carga tributária com impacto competitivo de não dar crédito B2B
 // ════════════════════════════════════════════════════════════════════════
 let chartN04;
-function calcularN04() {
+/* ═══ v754 · CUTOVER — calcularN04: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function n04LerEntradas(){
   var fat = parseFloat(document.getElementById('n04_fat').value)||0;
   var anexo = document.getElementById('n04_anexo').value;
   var presLP = parseFloat(document.getElementById('n04_presuncao').value)||0.32;
@@ -39758,7 +39760,7 @@ function calcularN04() {
   var ano = parseInt(document.getElementById('n04_ano').value)||2027;
   var margem = parseFloat(document.getElementById('n04_margem').value)/100||0.15;
 
-  if(fat<=0){ mostrarToast('Informe o faturamento anual','error'); return; }
+  if(fat<=0){ mostrarToast('Informe o faturamento anual','error'); return null; }
 
   // Alíquota CBS/IBS no ano
   var aliqCBSIBS = (typeof getAliq === 'function') ? getAliq(ano).total : 0.088;
@@ -39771,6 +39773,19 @@ function calcularN04() {
     III:[[180000,0.06,0],[360000,0.112,9360],[720000,0.135,17640],[1800000,0.16,35640],[3600000,0.21,125640],[4800000,0.33,648000]],
     IV:[[180000,0.045,0],[360000,0.09,8100],[720000,0.102,12420],[1800000,0.14,39780],[3600000,0.22,183780],[4800000,0.33,828000]],
     V:[[180000,0.155,0],[360000,0.18,4500],[720000,0.195,9900],[1800000,0.205,17100],[3600000,0.23,62100],[4800000,0.305,540000]]};
+
+  return { fat_anual:fat, anexo:anexo, presuncao_lp:presLP, pct_b2b:pctB2B*100, pct_perda_b2b:pctPerda*100, pct_compras_credito:pctComprasCredito*100, folha_anual:folha, margem:margem*100, ano:ano, rat:2, cenario:'A', pct_insumos:pctInsumos*100, aliq_iss:(parseFloat((document.getElementById('n04_iss')||{value:'5'}).value)||0), _presLP:presLP, _pctB2B:pctB2B, _pctB2C:pctB2C, _pctPerda:pctPerda, _pctInsumos:pctInsumos, _pctCompras:pctComprasCredito, _margem:margem };
+}
+function n04CalcularLocal(ent){
+  var fat=ent.fat_anual, anexo=ent.anexo, presLP=ent._presLP, folha=ent.folha_anual, ano=ent.ano, pctB2B=ent._pctB2B, pctB2C=ent._pctB2C, pctPerda=ent._pctPerda, pctInsumos=ent._pctInsumos, pctComprasCredito=ent._pctCompras, margem=ent._margem;
+  var aliqCBSIBS = (typeof getAliq === 'function') ? getAliq(ano).total : 0.088;
+  var SN_FAIXAS = {
+    I:[[180000,0.04,0],[360000,0.073,5940],[720000,0.095,13860],[1800000,0.107,22500],[3600000,0.143,87300],[4800000,0.19,378000]],
+    II:[[180000,0.045,0],[360000,0.078,5940],[720000,0.10,13860],[1800000,0.112,22500],[3600000,0.147,85500],[4800000,0.30,720000]],
+    III:[[180000,0.06,0],[360000,0.112,9360],[720000,0.135,17640],[1800000,0.16,35640],[3600000,0.21,125640],[4800000,0.33,648000]],
+    IV:[[180000,0.045,0],[360000,0.09,8100],[720000,0.102,12420],[1800000,0.14,39780],[3600000,0.22,183780],[4800000,0.33,828000]],
+    V:[[180000,0.155,0],[360000,0.18,4500],[720000,0.195,9900],[1800000,0.205,17100],[3600000,0.23,62100],[4800000,0.305,540000]]};
+
   var tab = SN_FAIXAS[anexo] || SN_FAIXAS.III;
   var aliqSN = 0;
   if(fat <= 4800000) {
@@ -39840,6 +39855,23 @@ function calcularN04() {
   var menorCusto = temHib ? Math.min(custoTotalSN, custoTotalLP, custoTotalHib) : Math.min(custoTotalSN, custoTotalLP);
   var vencedor = (menorCusto===custoTotalSN)?'Manter SN puro':((temHib&&menorCusto===custoTotalHib)?'SN Híbrido':'Migrar para LP');
 
+
+  return { ok:true, ano:ano, aliquota_cbs_ibs_pct:aliqCBSIBS*100, acima_do_teto:(fat>4800000), manter_no_simples:{ anexo:anexo, aliquota_efetiva_pct:aliqSN*100, das:dasSN, cbs_ibs_parcela:cbsibsSN, desagio_bruto:desagioRetencao, desagio_com_teto:perdaLucroB2B, custo_total:custoTotalSN }, migrar_para_regular:{ irpj:irpj, csll:csll, cbs_ibs_liquido:cbsibsLP, pis_cofins:pisCofinsLP, iss:issLP, cpp_por_fora:inssPatronalLP, custo_total:custoTotalLP }, sn_hibrido:(temHib?{ fatia_das:fatiaHib, das_reduzido:dasReduzHib, cbs_ibs:cbsibsHib, perda_b2b_residual:perdaB2Bhib, custo_total:custoTotalHib }:null), melhor:(vencedor==='Manter SN puro'?'MANTER SN PURO':(vencedor==='SN Híbrido'?'SN HÍBRIDO':'MIGRAR PARA REGULAR')) };
+}
+function n04Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-n04'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.fat_anual, anexo=ent.anexo, presLP=ent._presLP, folha=ent.folha_anual, ano=ent.ano, pctB2B=ent._pctB2B, pctB2C=ent._pctB2C, pctPerda=ent._pctPerda, pctInsumos=ent._pctInsumos, pctComprasCredito=ent._pctCompras, margem=ent._margem;
+  var aliqCBSIBS = (typeof getAliq === 'function') ? getAliq(ano).total : 0.088;
+  var SN_FAIXAS = {
+    I:[[180000,0.04,0],[360000,0.073,5940],[720000,0.095,13860],[1800000,0.107,22500],[3600000,0.143,87300],[4800000,0.19,378000]],
+    II:[[180000,0.045,0],[360000,0.078,5940],[720000,0.10,13860],[1800000,0.112,22500],[3600000,0.147,85500],[4800000,0.30,720000]],
+    III:[[180000,0.06,0],[360000,0.112,9360],[720000,0.135,17640],[1800000,0.16,35640],[3600000,0.21,125640],[4800000,0.33,648000]],
+    IV:[[180000,0.045,0],[360000,0.09,8100],[720000,0.102,12420],[1800000,0.14,39780],[3600000,0.22,183780],[4800000,0.33,828000]],
+    V:[[180000,0.155,0],[360000,0.18,4500],[720000,0.195,9900],[1800000,0.205,17100],[3600000,0.23,62100],[4800000,0.305,540000]]};
+
+  var fat=ent.fat_anual, anexo=ent.anexo, presLP=ent._presLP, pctB2B=ent._pctB2B, pctB2C=ent._pctB2C, pctPerda=ent._pctPerda, pctInsumos=ent._pctInsumos, pctComprasCredito=ent._pctCompras, folha=ent.folha_anual, ano=ent.ano, margem=ent._margem; var aliqCBSIBS=(+r.aliquota_cbs_ibs_pct)/100; var _sn=r.manter_no_simples||{}, _lp=r.migrar_para_regular||{}, _hb=r.sn_hibrido||{}; var aliqSN=(+_sn.aliquota_efetiva_pct)/100, dasSN=+_sn.das, cbsibsSN=+_sn.cbs_ibs_parcela; var faturamentoB2B=fat*pctB2B, faturamentoPerdido=faturamentoB2B*pctPerda, lucroOperacional=fat*margem; var desagioRetencao=+_sn.desagio_bruto, perdaLucroB2B=+_sn.desagio_com_teto; var totalSN=dasSN+cbsibsSN, custoTotalSN=+_sn.custo_total; var irpj=+_lp.irpj, csll=+_lp.csll, cbsibsLP=+_lp.cbs_ibs_liquido, pisCofinsLP=+_lp.pis_cofins, issLP=+_lp.iss, inssPatronalLP=+_lp.cpp_por_fora, totalLP=+_lp.custo_total, custoTotalLP=totalLP; var saldoMigracao=custoTotalSN-custoTotalLP, valeMigrar=(saldoMigracao>0); var temHib=(ano>=2027), fatiaHib=(temHib?+_hb.fatia_das:null), dasReduzHib=(temHib?+_hb.das_reduzido:null), cbsibsHib=(temHib?+_hb.cbs_ibs:null), perdaB2Bhib=(temHib?+_hb.perda_b2b_residual:null), custoTotalHib=(temHib?+_hb.custo_total:null), saldoHib=(temHib?custoTotalSN-custoTotalHib:null); var menorCusto=temHib?Math.min(custoTotalSN,custoTotalLP,custoTotalHib):Math.min(custoTotalSN,custoTotalLP); var vencedor=(menorCusto===custoTotalSN)?'Manter SN puro':((temHib&&menorCusto===custoTotalHib)?'SN Híbrido':'Migrar para LP');
   // KPIs
   var elKPI = document.getElementById('kpi-n04');
   elKPI.innerHTML =
@@ -39933,7 +39965,13 @@ function calcularN04() {
   }
   mostrarToast(valeMigrar ? 'Vale migrar para LP' : 'Manter SN é melhor', valeMigrar?'success':'warning');
 
-  try{ if(window.LH_PONTE) LH_PONTE.sombra('calcularN04'); }catch(_p){}
+  try{ if(window.LH_PONTE && LH_PONTE.modo()!=='servidor') LH_PONTE.sombra('calcularN04'); }catch(_p){}
+
+}
+function calcularN04(){
+  var ent=n04LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularN04')){ LH_PONTE.executar('calcularN04', ent); return; }
+  n04Render(n04CalcularLocal(ent), ent, null);
 }
 
 // ════════════════════════════════════════════════════════════════════════
