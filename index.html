@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v739";</script>
+<body><script>window.LH_VERSAO="v740";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3669,7 +3669,8 @@ window.LH_PONTE = (function(){
         return { uf:String(v('n30_estado')||'RS').toUpperCase(), valor:f('n30_valor'), herdeiros:parseInt(v('n30_herdeiros'),10)||1, aliq_atual_pct:f('n30_aliq_atual'),
                  pct_imoveis_antigos:f('n30_pct_imoveis'), ajuste_vm_pct:f('n30_ajuste_vm'), usufruto:(v('n30_usufruto')==='sim'), anos:parseInt(v('n30_anos'),10)||20 }; },
       esperado:function(r){ return (r&&r.doar_agora)?{ agora:Number(r.doar_agora.itcmd_com_usufruto), futura:Number(r.heranca_futura.itcmd), economia:Number(r.economia) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { agora:R('kpi-n30',0), futura:R('kpi-n30',1), economia:R('kpi-n30',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { agora:R('kpi-n30',0), futura:R('kpi-n30',1), economia:R('kpi-n30',2) }; },
+      render:function(r, ent, motivo){ n30Render(r, ent, motivo); } },
     calcularN15: { calc:'n15',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
         return { uf:String(v('n15_estado')||'RS').toUpperCase(), patrimonio_imoveis:f('n15_patrim_imov'), patrimonio_societario:f('n15_patrim_soc'), patrimonio_outros:f('n15_patrim_outros'),
@@ -3689,7 +3690,8 @@ window.LH_PONTE = (function(){
       esperado:function(r){ return (r&&r.inventario)?{ itcmd:Number(r.itcmd), custo_sem_planejamento:Number(r.custo_total_da_transmissao) }:null; },
       /* kpi-sucessorio (R$): [0] patrimônio · [1] quinhão · [2] custo sem planejamento · [3] com doação fracionada · [4] economia — o ITCMD sai da tabela */
       local:function(){ var R=LH_PONTE._rsNum; var t=((document.getElementById('tabela-sucessorio')||{}).textContent||'').replace(/\s+/g,' ');
-        var m=t.match(/ITCMD[^R]{0,60}R\$\s*([\d.]+,\d{2})/); return { itcmd:(m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null), custo_sem_planejamento:R('kpi-sucessorio',2) }; } },
+        var m=t.match(/ITCMD[^R]{0,60}R\$\s*([\d.]+,\d{2})/); return { itcmd:(m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null), custo_sem_planejamento:R('kpi-sucessorio',2) }; },
+      render:function(r, ent, motivo){ sucessorioRender(r, ent, motivo); } },
     /* ═══ v706 · AGRO fechado: Crédito Presumido do Produtor (art. 168) e Sentinela do Teto (art. 164) ═══ */
     calcularAGRO09: { calc:'agro09',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
@@ -25424,13 +25426,14 @@ function calcularOffshore(){
   offshoreRender(offshoreCalcularLocal(ent), ent, null);
 }
 
-function calcularSucessorio(){
+/* ═══ v740 · CUTOVER — calcularSucessorio: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function sucessorioLerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var imoveis=V('su_imoveis',0), partic=V('su_partic',0), aplic=V('su_aplic',0), outros=V('su_outros',0);
   var patrimonio=imoveis+partic+aplic+outros;
-  if(patrimonio<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe ao menos um ativo do espólio','error'); return; }
-  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(patrimonio,1000,'Patrimônio do espólio')) return;
+  if(patrimonio<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe ao menos um ativo do espólio','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(patrimonio,1000,'Patrimônio do espólio')) return null;
   var uf=G('su_uf','RS'), aliqMax=V('su_aliqmax',0);
   var nHerd=Math.max(1,V('su_herdeiros',3));
   var conj=G('su_conjuge','sim');
@@ -25456,6 +25459,12 @@ function calcularSucessorio(){
     return calcITCMD(base, uf);
   }
 
+
+  return { uf:uf, imoveis:imoveis, custo_imoveis:imoveis, participacoes:partic, custo_participacoes:partic, financeiro:aplic+outros, herdeiros:nHerd, judicial:false, vende_apos:false, valor_mercado_transmissao:false, conjuge:conj, custo_inventario_pct:custoInvPct*100, anos_doacao:anosDoacao, custo_estruturar:custoHolding, desagio_pct:desagio*100, aliq_max_outro:aliqMax, _aplic:aplic, _outros:outros, _aliqMax:aliqMax, _conj:conj, _custoInvPct:custoInvPct, _anosDoacao:anosDoacao, _custoHolding:custoHolding, _desagio:desagio };
+}
+function sucessorioCalcularLocal(ent){
+  var uf=ent.uf, imoveis=ent.custo_imoveis, partic=ent.custo_participacoes, nHerd=ent.herdeiros, conj=ent._conj, anosDoacao=ent._anosDoacao, custoHolding=ent._custoHolding, aliqMax=ent._aliqMax, aplic=ent._aplic, outros=ent._outros, custoInvPct=ent._custoInvPct, desagio=ent._desagio;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }; var patrimonio=imoveis+partic+aplic+outros; var teto=(uf==='OUTRO' && aliqMax>0) ? aliqMax/100 : 0.08; function itcmd(base){ if(base<=0) return 0; if(uf==='OUTRO' && aliqMax>0) return base*(aliqMax/100); return calcITCMD(base, uf); }
   /* ── meação: separa metade antes da partilha ── */
   var temMeacao = (conj==='sim');
   var meacao = temMeacao ? patrimonio*0.5 : 0;
@@ -25482,6 +25491,16 @@ function calcularSucessorio(){
   var aliqEfSem = espolio>0 ? totalSem/espolio : 0;
   var aliqEfCom = espolio>0 ? totalCom/espolio : 0;
 
+
+  return { ok:true, uf:uf, patrimonio:patrimonio, meacao_conjuge:temMeacao, meacao:meacao, espolio:espolio, quinhoes:nQuinhoes, quinhao:quinhao, itcmd_por_herdeiro:itcmdPorHerdeiro, itcmd:itcmdTotal, inventario:{ tipo:'extrajudicial', custo:custoInv, pct:custoInvPct*100 }, custo_total_da_transmissao:totalSem, doacao_fracionada:{ base:baseDoacao, anos:anosDoacao, parcela_por_herdeiro_ano:parcelaAno, itcmd_por_parcela:itcmdParcela, itcmd_total:itcmdDoacao, custo_estruturar:custoHolding, custo_total:totalCom }, economia_do_planejamento:economia };
+}
+function sucessorioRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-sucessorio'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var uf=ent.uf, imoveis=ent.custo_imoveis, partic=ent.custo_participacoes, nHerd=ent.herdeiros, conj=ent._conj, anosDoacao=ent._anosDoacao, custoHolding=ent._custoHolding, aliqMax=ent._aliqMax, aplic=ent._aplic, outros=ent._outros, custoInvPct=ent._custoInvPct, desagio=ent._desagio;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }; var patrimonio=imoveis+partic+aplic+outros; var teto=(uf==='OUTRO' && aliqMax>0) ? aliqMax/100 : 0.08; function itcmd(base){ if(base<=0) return 0; if(uf==='OUTRO' && aliqMax>0) return base*(aliqMax/100); return calcITCMD(base, uf); }
+  var imoveis=ent.imoveis, partic=ent.participacoes, aplic=ent._aplic, outros=ent._outros, uf=ent.uf, aliqMax=ent._aliqMax, nHerd=ent.herdeiros, conj=ent._conj, custoInvPct=ent._custoInvPct, anosDoacao=ent._anosDoacao, custoHolding=ent._custoHolding, desagio=ent._desagio; var patrimonio=imoveis+partic+aplic+outros; var temMeacao=!!r.meacao_conjuge, meacao=+(r.meacao||0), espolio=+r.espolio, nQuinhoes=+r.quinhoes, quinhao=+r.quinhao, itcmdPorHerdeiro=+r.itcmd_por_herdeiro, itcmdTotal=+r.itcmd, custoInv=+r.inventario.custo, totalSem=+r.custo_total_da_transmissao; var baseDoacao=+r.doacao_fracionada.base, parcelaAno=+r.doacao_fracionada.parcela_por_herdeiro_ano, itcmdParcela=+r.doacao_fracionada.itcmd_por_parcela, itcmdDoacao=+r.doacao_fracionada.itcmd_total, custoInvReduzido=0, totalCom=+r.doacao_fracionada.custo_total, economia=+r.economia_do_planejamento, aliqEfSem=(espolio>0?totalSem/espolio:0), aliqEfCom=(espolio>0?totalCom/espolio:0);
   var linhas='';
   function ln(rot,a,b,destaque){
     linhas+='<tr'+(destaque?' style="font-weight:700;background:rgba(201,162,39,.07)"':'')+
@@ -25588,6 +25607,12 @@ function calcularSucessorio(){
     }
   }catch(_e){}
   var res=document.getElementById('res-sucessorio'); if(res) res.style.display='block';
+
+}
+function calcularSucessorio(){
+  var ent=sucessorioLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularSucessorio')){ LH_PONTE.executar('calcularSucessorio', ent); return; }
+  sucessorioRender(sucessorioCalcularLocal(ent), ent, null);
 }
 
 /* ═══ v738 · CUTOVER — calcularAluguelPFPJ: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
@@ -29528,37 +29553,34 @@ var impactoTotalAno = custoGiroAno;
 function calcularC11Live(){ var r=document.getElementById('res-c11'); if(r && r.style.display!=='none') window.calcularC11(); try{var _pg=document.getElementById('page-c11');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-c11');if(!_mv){_mv=document.createElement('div');_mv.id='mem-c11';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'Split payment por operação',aliquotas:[{label:'Valor operação',valor:''},{label:'Retenção',valor:''},{label:'Impacto no caixa',valor:''}],porque:'Retido = valor da operação × alíquota IBS/CBS do ano (rampa). Impacto = retido − imposto líquido devido (crédito da etapa anterior).',baseLegal:[{lei:'LC 214/2025 — split payment'}]});}}catch(e){}}
 
 // ══════ N-30: DOAÇÃO vs HERANÇA (espelha Excel-mestre N30) ══════
-window.calcularN30 = function() {
-  var estado    = (document.getElementById('n30_estado')||{value:'RS'}).value;
-  var valor     = parseFloat((document.getElementById('n30_valor')||{value:0}).value) || 0;
+/* ═══ v740 · CUTOVER — Doação vs Herança (N30): ler · calcular (chaves de fn_n30) · desenhar ═══ */
+function n30LerEntradas(){
+  var estado = (document.getElementById('n30_estado')||{value:'RS'}).value;
+  var valor = parseFloat((document.getElementById('n30_valor')||{value:0}).value) || 0;
   var herdeiros = parseInt((document.getElementById('n30_herdeiros')||{value:1}).value) || 1;
   var aliqAtual = (parseFloat((document.getElementById('n30_aliq_atual')||{value:0}).value) || 0) / 100;
   var pctImoveisAntigos = (parseFloat((document.getElementById('n30_pct_imoveis')||{value:0}).value) || 0) / 100;
-  var ajusteVM  = (parseFloat((document.getElementById('n30_ajuste_vm')||{value:0}).value) || 0) / 100;
-  var usufruto  = (document.getElementById('n30_usufruto')||{value:'nao'}).value === 'sim';
+  var ajusteVM = (parseFloat((document.getElementById('n30_ajuste_vm')||{value:0}).value) || 0) / 100;
+  var usufruto = (document.getElementById('n30_usufruto')||{value:'nao'}).value === 'sim';
   var anosSucessao = parseInt((document.getElementById('n30_anos')||{value:20}).value) || 20;
-
-  if(valor <= 0) { mostrarToast('Informe o patrimônio a transmitir', 'error'); return; }
-
-  // 2) Cenário A — doar agora (regra atual)
-  var itcmdDoarAgora = valor * aliqAtual;
-  if(usufruto) itcmdDoarAgora = itcmdDoarAgora * 0.67; // doa só nua-propriedade (~67%)
-
-  // 3) Cenário B — herança futura (regra nova, valor de mercado)
-  var baseVMercado = valor + valor * pctImoveisAntigos * ajusteVM;
-  var basePorHerdeiro = baseVMercado / herdeiros;
+  if(valor <= 0) { mostrarToast('Informe o patrimônio a transmitir', 'error'); return null; }
+  return { uf:String(estado||'RS').toUpperCase(), valor:valor, herdeiros:herdeiros, aliq_atual_pct:aliqAtual*100, pct_imoveis_antigos:pctImoveisAntigos*100, ajuste_vm_pct:ajusteVM*100, usufruto:usufruto, anos:anosSucessao, _estado:estado };
+}
+function n30CalcularLocal(ent){
+  var estado=ent._estado, valor=ent.valor, herdeiros=ent.herdeiros, aliqAtual=ent.aliq_atual_pct/100, pctImoveisAntigos=ent.pct_imoveis_antigos/100, ajusteVM=ent.ajuste_vm_pct/100, usufruto=ent.usufruto;
+  var itcmdA = valor * aliqAtual; var itcmdDoarAgora = usufruto ? itcmdA*0.67 : itcmdA;
+  var baseVMercado = valor + valor * pctImoveisAntigos * ajusteVM; var basePorHerdeiro = baseVMercado / herdeiros;
   var itcmdPorHerdeiro = (typeof calcITCMD === 'function') ? calcITCMD(basePorHerdeiro, estado) : basePorHerdeiro * 0.04;
-  var itcmdHerancaFutura = itcmdPorHerdeiro * herdeiros;
-
-  // 4) Economia da janela
-  var economiaJanela = Math.max(0, itcmdHerancaFutura - itcmdDoarAgora);
-  var economiaPct = valor > 0 ? economiaJanela / valor : 0;
-
-  // 6) Veredito
-  var recomendacao = (itcmdHerancaFutura - itcmdDoarAgora) > valor * 0.02
-    ? 'DOAR AINDA EM 2026 — a janela da regra atual gera economia relevante de ITCMD'
-    : 'Avaliar caso a caso — a economia de antecipar é pequena; pesar custo de oportunidade';
-
+  var itcmdHerancaFutura = itcmdPorHerdeiro * herdeiros; var economiaJanela = Math.max(0, itcmdHerancaFutura - itcmdDoarAgora);
+  return { ok:true, uf:ent.uf, herdeiros:herdeiros, doar_agora:{ itcmd:itcmdA, usufruto:usufruto, itcmd_com_usufruto:itcmdDoarAgora }, heranca_futura:{ base_a_mercado:baseVMercado, base_por_herdeiro:basePorHerdeiro, itcmd_por_herdeiro:itcmdPorHerdeiro, itcmd:itcmdHerancaFutura }, economia:economiaJanela, economia_pct_patrimonio:(valor>0?economiaJanela/valor*100:0) };
+}
+function n30Render(r, ent, motivo){
+  var kc0=document.getElementById('kpi-n30'); if(!kc0) return;
+  if(motivo==='aguardando'){ kc0.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ kc0.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var estado=ent._estado, valor=ent.valor, herdeiros=ent.herdeiros, aliqAtual=ent.aliq_atual_pct/100, pctImoveisAntigos=ent.pct_imoveis_antigos/100, ajusteVM=ent.ajuste_vm_pct/100, usufruto=ent.usufruto, anosSucessao=ent.anos;
+  var itcmdDoarAgora=+r.doar_agora.itcmd_com_usufruto, baseVMercado=+r.heranca_futura.base_a_mercado, basePorHerdeiro=+r.heranca_futura.base_por_herdeiro, itcmdPorHerdeiro=+r.heranca_futura.itcmd_por_herdeiro, itcmdHerancaFutura=+r.heranca_futura.itcmd, economiaJanela=+r.economia, economiaPct=(valor>0?economiaJanela/valor:0);
+  var recomendacao = (itcmdHerancaFutura - itcmdDoarAgora) > valor * 0.02 ? 'DOAR AINDA EM 2026 — a janela da regra atual gera economia relevante de ITCMD' : 'Avaliar caso a caso — a economia de antecipar é pequena; pesar custo de oportunidade';
   // KPIs
   var kpis = '';
   kpis += '<div class="kpi-card"><div class="kpi-label">ITCMD — doar agora (2026)</div><div class="kpi-value">'+fmtR(itcmdDoarAgora)+'</div></div>';
@@ -29606,6 +29628,11 @@ window.calcularN30 = function() {
       recomendacao: recomendacao
     });
   }
+}
+window.calcularN30 = function(){
+  var ent=n30LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularN30')){ LH_PONTE.executar('calcularN30', ent); return; }
+  n30Render(n30CalcularLocal(ent), ent, null);
 };
 function calcularN30Live(){ var r=document.getElementById('res-n30'); if(r && r.style.display!=='none') window.calcularN30(); }
 
