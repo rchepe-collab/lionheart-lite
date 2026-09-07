@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v754";</script>
+<body><script>window.LH_VERSAO="v755";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3667,7 +3667,8 @@ window.LH_PONTE = (function(){
                  aliq_ref_pct:f('ret_aliqref')||26.5, base_pct:(b===''?undefined:f('ret_base')), redutor_social:(rs===''?undefined:f('ret_redsocial')), credito_real_pct:(cr===''?undefined:f('ret_credreal')) }; },
       esperado:function(r){ if(!r||!r.ret) return null; var lista=[Number(r.ret.total),Number(r.presumido.total),Number(r.real.total)].filter(function(x){return !isNaN(x);}).sort(function(a,b){return a-b;});
         return { otimo:lista[0], economia:+(lista[1]-lista[0]).toFixed(2), pior:lista[lista.length-1] }; },
-      local:function(){ var R=LH_PONTE._rsNum; return { otimo:R('kpi-imob_ret',0), economia:R('kpi-imob_ret',1), pior:R('kpi-imob_ret',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { otimo:R('kpi-imob_ret',0), economia:R('kpi-imob_ret',1), pior:R('kpi-imob_ret',2) }; },
+      render:function(r, ent, motivo){ imobretRender(r, ent, motivo); } },
     /* v702 · M&A: fn_ma passou ao ganho de capital progressivo do vendedor (Lei 13.259) — 1.275.000 nos dois lados. */
     calcularMA: { calc:'ma',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
@@ -3869,7 +3870,8 @@ window.LH_PONTE = (function(){
         return { operacao:v('imobref_op')||'venda', valor:f('imobref_valor'), custo:f('imobref_custo'), tipo_imovel:v('imobref_tipoimovel')||'res_novo', unidades:parseInt(v('imobref_unid'),10)||1,
                  regime_regular:(v('imobref_regime')!=='nao'), aliq_ref_pct:f('imobref_aliqref')||26.5 }; },
       esperado:function(r){ return r?{ ibs_cbs:Number(r.ibs_cbs), base:Number(r.base_de_calculo), economia:Number(r.economia_do_regime) }:null; },
-      local:function(){ var R=LH_PONTE._rsNum; return { ibs_cbs:R('kpi-imobref',0), base:R('kpi-imobref',1), economia:R('kpi-imobref',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { ibs_cbs:R('kpi-imobref',0), base:R('kpi-imobref',1), economia:R('kpi-imobref',2) }; },
+      render:function(r, ent, motivo){ imobrefRender(r, ent, motivo); } },
     calcularObra: { calc:'obra',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;}; var v=function(id){ return ((G.el(id)||{}).value)||''; };
         return { faturamento:f('obra_fat'), pct_material:f('obra_pct_mat'), pct_outros:f('obra_pct_out'), contratante:v('obra_contratante')||'contribuinte', regime:v('obra_regime')||'lp',
@@ -18320,7 +18322,8 @@ function imobrefSync(){
 }
 window.imobrefSync=imobrefSync;
 
-function calcularImobReforma(){
+/* ═══ v755 · CUTOVER — calcularImobReforma: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function imobrefLerEntradas(){
   var op=(document.getElementById('imobref_op')||{value:'venda'}).value;
   var valor=parseFloat((document.getElementById('imobref_valor')||{value:0}).value)||0;
   var custo=parseFloat((document.getElementById('imobref_custo')||{value:0}).value)||0;
@@ -18328,7 +18331,7 @@ function calcularImobReforma(){
   var unid=parseInt((document.getElementById('imobref_unid')||{value:1}).value)||1;
   var regimeRegular=(document.getElementById('imobref_regime')||{value:'sim'}).value==='sim';
   var aliqRef=(parseFloat((document.getElementById('imobref_aliqref')||{value:26.5}).value)||26.5)/100;
-  if(valor<=0){ if(window.mostrarToast)mostrarToast('Informe o valor da operação (> 0)','error'); return; }
+  if(valor<=0){ if(window.mostrarToast)mostrarToast('Informe o valor da operação (> 0)','error'); return null; }
 
   var reducao, opLabel, perOp;
   if(op==='locacao'){ reducao=0.70; opLabel='Locação · cessão · arrendamento'; perOp='/mês'; }
@@ -18337,6 +18340,12 @@ function calcularImobReforma(){
   var aliqEf=aliqRef*(1-reducao);
   var residencial=(tipoImovel==='res_novo'||tipoImovel==='lote');
 
+
+  return { operacao:op, valor:valor, custo:custo, tipo_imovel:tipoImovel, unidades:unid, regime_regular:regimeRegular, aliq_ref_pct:aliqRef*100, _aliqRef:aliqRef, _reducao:reducao, _opLabel:opLabel, _perOp:perOp };
+}
+function imobrefCalcularLocal(ent){
+  var op=ent.operacao, valor=ent.valor, custo=ent.custo, tipoImovel=ent.tipo_imovel, unid=ent.unidades, regimeRegular=ent.regime_regular, aliqRef=ent._aliqRef, reducao=ent._reducao, opLabel=ent._opLabel, perOp=ent._perOp;
+  var aliqEf=aliqRef*(1-reducao); var residencial=(tipoImovel==='res_novo'||tipoImovel==='res_usado');
   var redutorAjuste=0, redutorSocial=0, base=0, imposto=0, impostoCheio=0, baseBruta=valor;
   if(op==='venda'){
     redutorAjuste=Math.min(custo,valor);
@@ -18366,6 +18375,16 @@ function calcularImobReforma(){
   var resEl=document.getElementById('res-imobref'); if(resEl) resEl.style.display='block';
 
   // KPIs
+
+  return { ok:true, valor:valor, operacao:opLabel, reducao_pct:reducao*100, redutor_de_ajuste:redutorAjuste, redutor_social:redutorSocial, base_de_calculo:base, aliquota_efetiva_pct:aliqEf*100, ibs_cbs:imposto, se_fosse_aliquota_cheia:impostoCheio, economia_do_regime:economia, aliquota_sobre_valor_pct:aliqSobreBruto*100 };
+}
+function imobrefRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-imobref'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var op=ent.operacao, valor=ent.valor, custo=ent.custo, tipoImovel=ent.tipo_imovel, unid=ent.unidades, regimeRegular=ent.regime_regular, aliqRef=ent._aliqRef, reducao=ent._reducao, opLabel=ent._opLabel, perOp=ent._perOp;
+  var aliqEf=aliqRef*(1-reducao); var residencial=(tipoImovel==='res_novo'||tipoImovel==='res_usado');
+  var op=ent.operacao, valor=ent.valor, custo=ent.custo, tipoImovel=ent.tipo_imovel, unid=ent.unidades, regimeRegular=ent.regime_regular, aliqRef=ent._aliqRef, reducao=ent._reducao, opLabel=ent._opLabel, perOp=ent._perOp; var redutorAjuste=+r.redutor_de_ajuste, redutorSocial=+r.redutor_social, base=+r.base_de_calculo, aliqEf=(+r.aliquota_efetiva_pct)/100, imposto=+r.ibs_cbs, semRegime=+r.se_fosse_aliquota_cheia, economia=+r.economia_do_regime, aliqSobreValor=(+r.aliquota_sobre_valor_pct)/100; var impostoCheio=semRegime, baseBruta=valor, aliqSobreBruto=aliqSobreValor, residencial=(tipoImovel==='res_novo'||tipoImovel==='res_usado');
   var kHtml='<div class="kpi-card kpi-destaque"><div class="kpi-label">Alíquota efetiva</div><div class="kpi-value">'+fmtPct(aliqEf*100)+'</div><div class="kpi-sub">após redução de '+(reducao*100)+'% (art. 261)</div></div>'+
     '<div class="kpi-card kpi-ok"><div class="kpi-label">CBS/IBS devido</div><div class="kpi-value">'+fmtR(imposto)+'</div><div class="kpi-sub">'+perOp+(op==='venda'?'':' · '+fmtR(imposto*12)+'/ano')+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Base de cálculo</div><div class="kpi-value">'+fmtR(base)+'</div><div class="kpi-sub">após redutores</div></div>'+
@@ -18416,9 +18435,16 @@ function calcularImobReforma(){
     ],
     nota:'Viabilidade: a carga efetiva é de '+fmtPct(aliqSobreBruto*100)+' sobre o valor'+(op==='venda'?' da operação':' do aluguel')+(economia>0?(' — o regime específico economiza '+fmtR(economia)+(op==='venda'?'':'/mês')+' frente à alíquota cheia.'):'.')+(regimeRegular?'':' Sem o regime regular, o redutor social não se aplica — avalie a opção pelo regime regular.')
   }):'');
+
+}
+function calcularImobReforma(){
+  var ent=imobrefLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularImobReforma')){ LH_PONTE.executar('calcularImobReforma', ent); return; }
+  imobrefRender(imobrefCalcularLocal(ent), ent, null);
 }
 
-function calcularImobRET(){
+/* ═══ v755 · CUTOVER — calcularImobRET: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function imobretLerEntradas(){
   var receita = parseFloat(document.getElementById('ret_receita').value)||0;
   var tipo = document.getElementById('ret_tipo').value;
   var margem = (parseFloat(document.getElementById('ret_margem').value)||0)/100;
@@ -18433,8 +18459,14 @@ function calcularImobRET(){
   var _baseBranco=(_baseRaw===''); var basePct = _baseBranco ? 1 : (parseFloat(_baseRaw.replace(',','.'))||0)/100;
   var redSocial = parseFloat(document.getElementById('ret_redsocial').value)||0;
   var credReal = (parseFloat(document.getElementById('ret_credreal').value)||0)/100;
-  if(receita<=0){ mostrarToast('Informe a receita recebida no período','error'); return; }
+  if(receita<=0){ mostrarToast('Informe a receita recebida no período','error'); return null; }
 
+
+  return { receita:receita, tipo:tipo, margem_pct:margem*100, patrimonio_afetacao:(afet==='sim'), meses:meses, aliq_ref_pct:aliqref*100, base_pct:basePct*100, redutor_social:redSocial, credito_real_pct:credReal*100, _margem:margem, _afet:afet, _reg:reg, _aliqref:aliqref, _basePct:basePct, _baseBranco:_baseBranco, _credReal:credReal };
+}
+function imobretCalcularLocal(ent){
+  var receita=ent.receita, tipo=ent.tipo, meses=ent.meses, redSocial=ent.redutor_social, margem=ent._margem, afet=ent._afet, reg=ent._reg, aliqref=ent._aliqref, basePct=ent._basePct, _baseBranco=ent._baseBranco, credReal=ent._credReal;
+  
   // LEI cravada (LC 227/2026 · LC 214/2025 art. 261)
   var RET_RENDA = (tipo==='social') ? 0.0047 : 0.0192;
   var RET_CONSUMO = (tipo==='social') ? 0.0053 : 0.0208;
@@ -18460,6 +18492,16 @@ function calcularImobRET(){
   var lista = (afet==='sim')
     ? [['RET',retRenda,retConsumo,tRET],['Lucro Presumido',pRenda,pConsumo,tP],['Lucro Real',rRenda,rConsumo,tR]]
     : [['Lucro Presumido',pRenda,pConsumo,tP],['Lucro Real',rRenda,rConsumo,tR]];
+
+  return { ok:true, tipo:tipo, patrimonio_afetacao:(afet==='sim'), ret:{ renda:retRenda, consumo:retConsumo, total:tRET, aliquota_pct:(RET_RENDA+RET_CONSUMO)*100 }, presumido:{ renda:pRenda, consumo:pConsumo, total:tP }, real:{ renda:rRenda, consumo:rConsumo, total:tR }, melhor:lista.slice().sort(function(a,b){ return a[3]-b[3]; })[0][0], economia_vs_pior:lista.slice().sort(function(a,b){ return b[3]-a[3]; })[0][3]-lista.slice().sort(function(a,b){ return a[3]-b[3]; })[0][3] };
+}
+function imobretRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-imob_ret'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var receita=ent.receita, tipo=ent.tipo, meses=ent.meses, redSocial=ent.redutor_social, margem=ent._margem, afet=ent._afet, reg=ent._reg, aliqref=ent._aliqref, basePct=ent._basePct, _baseBranco=ent._baseBranco, credReal=ent._credReal;
+  
+  var receita=ent.receita, tipo=ent.tipo, margem=ent._margem, afet=ent._afet, reg=ent._reg, meses=ent.meses, aliqref=ent._aliqref, basePct=ent._basePct, _baseBranco=ent._baseBranco, redSocial=ent.redutor_social, credReal=ent._credReal; var RET_RENDA=(tipo==='social')?0.0047:0.0192, RET_CONSUMO=(tipo==='social')?0.0053:0.0208, RED261=0.50; var PRES_IRPJ=0.08, PRES_CSLL=0.12, IRPJ=0.15, ADIC=0.10, CSLL=0.09, limiteAdic=20000*meses; var aliqEfCBS=aliqref*(1-RED261), baseCBS=Math.max(0, receita*basePct - redSocial); var retRenda=+r.ret.renda, retConsumo=+r.ret.consumo, tRET=+r.ret.total; var pRenda=+r.presumido.renda, pConsumo=+r.presumido.consumo, tP=+r.presumido.total; var rRenda=+r.real.renda, rConsumo=+r.real.consumo, tR=+r.real.total; var lucro=receita*margem; var lista=(afet==='sim')?[['RET',retRenda,retConsumo,tRET],['Lucro Presumido',pRenda,pConsumo,tP],['Lucro Real',rRenda,rConsumo,tR]]                        :[['Lucro Presumido',pRenda,pConsumo,tP],['Lucro Real',rRenda,rConsumo,tR]];
   var ord = lista.slice().sort(function(a,b){return a[3]-b[3];});
   var venc = ord[0], cargaOtima = venc[3];
   var economia = ord.length>1 ? (ord[1][3]-ord[0][3]) : 0;
@@ -18525,6 +18567,12 @@ function calcularImobRET(){
     window.chartImobRET=new Chart(document.getElementById('chart-imob_ret').getContext('2d'),{type:'bar',data:{labels:lista.map(x=>x[0]),datasets:[{label:'Carga no período',data:lista.map(x=>x[3]),backgroundColor:coresG,borderWidth:2,borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'Carga: '+fmtR(c.raw)}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'R$ '+fmtN(v)}}}}});
   }catch(e){}
   document.getElementById('res-imob_ret').classList.add('visible');
+
+}
+function calcularImobRET(){
+  var ent=imobretLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularImobRET')){ LH_PONTE.executar('calcularImobRET', ent); return; }
+  imobretRender(imobretCalcularLocal(ent), ent, null);
 }
 
 /* ═══════════════════════════════════════════════════════════════
