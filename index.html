@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v746";</script>
+<body><script>window.LH_VERSAO="v747";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2830,7 +2830,8 @@ window.LH_PONTE = (function(){
         var pm = d.match(/receita l\u00edquida de hoje:\s*R\$\s*(-?[\d.]+,\d{2})/);
         var snD = (reg==='sn' && cen==='dentro');
         return { rl_atual: rl ? n(rl[1]) : null, rl_novo: rl ? n(rl[2]) : null, preco_manter: snD ? null : (pm ? n(pm[1]) : null) };
-      }
+      },
+      render:function(r, ent, motivo){ fpRender(r, ent, motivo); }
     },
 
     /* ═══ v680 · ONDA 4 · três telas sobre a mesma espinha (_lhProjSetor ↔ fn_setor / tv_regimes_especificos) ═══
@@ -63593,12 +63594,15 @@ function dxhCalc(){
    ═══════════════════════════════════════════════════════════════════════ */
 (function(){
  'use strict';
-window.fpCalc=function(){
+/* ═══ v747 · CUTOVER — Formação de Preço 2027-33 (fpCalc v253, a ATIVA): ler · calcular · desenhar ═══
+   ATENÇÃO: existe uma função fpCalc anterior no arquivo que é SOBRESCRITA por esta (v253). A conversão
+   tem que ser feita nesta — a de cima nunca roda. */
+function fpLerEntradas(){
  function gv(id){var e=document.getElementById(id);return parseFloat((e&&e.value?String(e.value):"0").replace(",","."))||0;}
  var vb=gv("fp_vb"),pc=gv("fp_pc"),icms=gv("fp_icms");
  var _pl=(document.getElementById("fp_cbs_plena").value||"").toString().replace(",",".");
  var plena=(_pl==="")?26.5:parseFloat(_pl); if(isNaN(plena)||plena<0)plena=26.5;  // 0 é VÁLIDO (cesta básica)
- if(!vb){alert("Preencha a venda bruta do item.");return;}
+ if(!vb){alert("Preencha a venda bruta do item.");return null;}
  var ano=+((document.getElementById("fp_ano")||{}).value||2027);
  var _sit=(document.getElementById("fp_icms_sit")||{value:"uf"}).value;
  var _pr=document.getElementById("fp_prod");
@@ -63622,14 +63626,28 @@ window.fpCalc=function(){
  var _fpF=(typeof window.LH_fatorAno==='function')?window.LH_fatorAno(ano,false):NaN;
  if(typeof _fpF!=='number'||isNaN(_fpF)){
    document.getElementById("fpTab").innerHTML='<div style="padding:12px;border:1.5px solid #dc2626;border-radius:10px;color:#dc2626;font-weight:800">RESULTADO INCOMPLETO — curva de transição indisponível (LH_fatorAno). Recarregue a página.</div>';
-   document.getElementById("fpDec").innerHTML=''; document.getElementById("fpRes").style.display="block"; return;
+   document.getElementById("fpDec").innerHTML=''; document.getElementById("fpRes").style.display="block"; return null;
  }
+
+  return { venda_bruta:vb, pis_cofins:pc, icms:icms, aliq_plena:plena, ano:ano, cenario:'A', perfil:((document.getElementById('fp_perfil')||{value:'b2c'}).value), sn_dentro:snDentro, _plena:plena, _snDentro:snDentro, _snHib:snHib, _rotVelho:rotVelho, _ehNBS:_ehNBS, _ehNCM:_ehNCM, _sit:_sit, _reg:_reg, _snCen:_snCen };
+}
+function fpCalcularLocal(ent){
+  var vb=ent.venda_bruta, pc=ent.pis_cofins, icms=ent.icms, plena=ent._plena, ano=ent.ano, snDentro=ent._snDentro;
+  var ehTeste=(ano===2026); var FP_ICMSF=LH_MAPA_ANOS('icms',{2026:1,2027:1,2028:1,2029:.9,2030:.8,2031:.7,2032:.6,2033:0}); var icmsAno=Math.round(icms*(FP_ICMSF[ano]!==undefined?FP_ICMSF[ano]:1)*100)/100; var _fpF=(typeof window.LH_fatorAno==='function')?window.LH_fatorAno(ano,false):NaN; if(typeof _fpF!=='number'||isNaN(_fpF)) _fpF=1;
  var tNovo=(plena/100)*_fpF, cbsA=tNovo*100;
  var rlAtual=vb-pc-icms;
  var cbs=Math.round((vb-icmsAno)*tNovo/(1+tNovo)*100)/100;
  if(snDentro && !ehTeste){ cbs=0; } // CBS+IBS por fora, base sem ICMS remanescente — centavos
  var rl27=ehTeste ? (vb-pc-icms) : (snDentro ? (vb-pc-icmsAno) : (vb-cbs-icmsAno)); /* v245: 2026 compensa o teste - efeito liquido nulo */
  var dRL=rlAtual? (rl27/rlAtual-1)*100 : 0;
+
+  return { ok:true, ano:ano, ano_teste:ehTeste, sn_dentro_do_das:snDentro, aliquota_item:tNovo*100, fator_por_dentro:tNovo/(1+tNovo), atual:{ venda_bruta:vb, pis_cofins:pc, icms:icms, receita_liquida:rlAtual }, projetado:{ venda_bruta:vb, pis_cofins:(ehTeste?pc:(snDentro?pc:0)), cbs_ibs:cbs, icms:icmsAno, fator_icms:(FP_ICMSF[ano]!==undefined?FP_ICMSF[ano]:1), receita_liquida:rl27, variacao_pct:dRL }, decisao:{ segurar_preco_ganho:rl27-rlAtual, repassar_preco_novo:((1-(vb?icmsAno/vb:0))>0? rlAtual/((1-(vb?icmsAno/vb:0))*(1-(tNovo/(1+tNovo)))) : 0), custo_efetivo_b2b:(((document.getElementById('fp_perfil')||{value:'b2c'}).value)==='b2b'&&!ehTeste? vb-cbs : null) } };
+}
+function fpRender(r, ent, motivo){
+  var _box=document.getElementById('fpTab'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); var _rr=document.getElementById('fpRes'); if(_rr) _rr.style.display='block'; return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); var _d=document.getElementById('fpDec'); if(_d) _d.innerHTML=''; var _rr2=document.getElementById('fpRes'); if(_rr2) _rr2.style.display='block'; return; }
+  var vb=ent.venda_bruta, pc=ent.pis_cofins, icms=ent.icms, plena=ent._plena, ano=ent.ano, snDentro=ent._snDentro, snHib=ent._snHib, rotVelho=ent._rotVelho, _ehNBS=ent._ehNBS, _ehNCM=ent._ehNCM, _sit=ent._sit, _reg=ent._reg, _snCen=ent._snCen; var ehTeste=!!r.ano_teste; var FP_ICMSF=LH_MAPA_ANOS('icms',{2026:1,2027:1,2028:1,2029:.9,2030:.8,2031:.7,2032:.6,2033:0}); var tNovo=(+r.aliquota_item)/100, cbsA=tNovo*100, _fpF=(plena>0?(+r.aliquota_item)/plena:1); var icmsAno=+r.projetado.icms, cbs=+r.projetado.cbs_ibs, rlAtual=+r.atual.receita_liquida, rl27=+r.projetado.receita_liquida, dRL=+r.projetado.variacao_pct;
  var t='<table style="width:100%;border-collapse:collapse;font-size:.86rem;min-width:520px">'
   +'<tr><th style="text-align:left;padding:8px;color:#8a97a8;font-size:.72rem;border-bottom:1px solid rgba(255,255,255,.1)">LINHA</th><th style="text-align:right;padding:8px;color:#9aa7b8;border-bottom:1px solid rgba(255,255,255,.1)">ATUAL</th><th style="text-align:right;padding:8px;color:var(--gold2,#e0b93a);border-bottom:1px solid rgba(255,255,255,.1)">'+ano+' (preço mantido)</th></tr>'
   +'<tr><td style="padding:7px;color:#d4dce6">Venda bruta</td><td style="text-align:right;padding:7px;color:#c8d2de">R$ '+_apN(vb)+'</td><td style="text-align:right;padding:7px;color:#c8d2de">R$ '+_apN(vb)+'</td></tr>'
@@ -63670,7 +63688,15 @@ window.fpCalc=function(){
   +'<div style="background:rgba(201,162,39,.05);border:1px solid rgba(201,162,39,.3);border-radius:12px;padding:14px"><div style="font-weight:800;color:var(--gold2,#e0b93a);font-size:.86rem">3 · Dividir a dor</div><div style="font-size:.78rem;color:#d4dce6;margin-top:6px;line-height:1.55">Preço em <b>R$ '+_apN((vb+vbManter)/2)+'</b>: metade do aumento vai ao cliente, metade você absorve — amortece a perda sem chocar o mercado.</div></div>'
  );
  document.getElementById("fpRes").style.display="block";
+
+}
+window.fpCalc=function(){
+  var ent=fpLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('fpCalc')){ LH_PONTE.executar('fpCalc', ent); return; }
+  fpRender(fpCalcularLocal(ent), ent, null);
 };
+/* a v253 vive dentro de um IIFE: exportar as três partes para o escopo global, como o resto do cutover */
+window.fpLerEntradas=fpLerEntradas; window.fpCalcularLocal=fpCalcularLocal; window.fpRender=fpRender;
  window.fpCalc._v253=true;
  /* seletor do cenário do Simples — injetado ao lado do regime */
  function ui(){
