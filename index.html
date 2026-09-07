@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v745";</script>
+<body><script>window.LH_VERSAO="v746";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3042,7 +3042,8 @@ window.LH_PONTE = (function(){
                  pct_sujeita:f('c02_pct_sujeita',80), pct_insumos:f('c02_pct_insumos',30) }; },
       esperado: function(r){ return r ? { novo_preco:Number(r.novo_preco), margem_sem_reajuste:Number(r.margem_sem_reajuste_pct), impacto_carteira:Number(r.impacto_carteira) } : null; },
       /* kpi-c02: [0] novo preço · [1] preço atual · [2] var % · [3] margem sem reajuste · [4] margem atual · [5] impacto carteira */
-      local: function(){ return { novo_preco:LH_PONTE._kpiNum('kpi-c02',0), margem_sem_reajuste:LH_PONTE._kpiNum('kpi-c02',3), impacto_carteira:LH_PONTE._kpiNum('kpi-c02',5) }; }
+      local: function(){ return { novo_preco:LH_PONTE._kpiNum('kpi-c02',0), margem_sem_reajuste:LH_PONTE._kpiNum('kpi-c02',3), impacto_carteira:LH_PONTE._kpiNum('kpi-c02',5) }; },
+      render:function(r, ent, motivo){ c02Render(r, ent, motivo); }
     },
 
     /* ═══ v687 · ONDA 5 · C11 Split por Operação e N33 NCG com Split ═══ */
@@ -20749,14 +20750,15 @@ Object.defineProperty(window,'LH_CURVA_TRANSICAO',{configurable:true,get:functio
 Object.defineProperty(window,'LH_CURVA_REF_FRAC',{configurable:true,get:function(){return LH_refPlena();}});
 var LH_F_ANOS=[2026,2027,2028,2029,2030,2031,2032,2033];
 
-function calcularC02(){
+/* ═══ v746 · CUTOVER — calcularC02: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function c02LerEntradas(){
   const preco  = parseFloat(document.getElementById('c02_preco').value)||0;
   const regime = document.getElementById('c02_regime').value;
   const seg    = document.getElementById('c02_segmento').value;
   const margem = parseFloat(document.getElementById('c02_margem').value)/100||0.22;
   const anoRef = parseInt(document.getElementById('c02_ano').value)||2033;
   const qtd    = parseInt(document.getElementById('c02_qtd').value)||1;
-  if(preco<=0){ mostrarToast('Informe o preço do contrato','error'); return; }
+  if(preco<=0){ mostrarToast('Informe o preço do contrato','error'); return null; }
   const _ia=IMPOSTOS_ATUAIS[regime];
   var impostosAtuais = (typeof _ia==='number') ? _ia : ((_ia&&_ia.total)||0.0865);
   /* ═══ v300 · IMPOSTO VELHO DO SIMPLES POR ANEXO ═══
@@ -20798,6 +20800,13 @@ function calcularC02(){
      com a carga do Lucro Presumido. Mesma família do bug da margem. */
   const redSetorial = (seg==='ncm' && window.C02_RED_NCM!=null) ? window.C02_RED_NCM : (REDUCAO_SETORIAL[seg]||0);
   const baseSemImposto = preco*(1-impostosAtuais); /* 🦁 v45 padrão mestre: tributos atuais são POR DENTRO — líquida = preço×(1−t) */
+
+  var _sj=parseFloat((document.getElementById('c02_pct_sujeita')||{}).value); var _in=parseFloat((document.getElementById('c02_pct_insumos')||{}).value); var pctSujeitaC02=(isNaN(_sj)?80:_sj)/100, pctInsumosC02=(isNaN(_in)?30:_in)/100;
+  return { preco:preco, regime:regime, segmento:seg, margem:margem*100, ano:anoRef, qtd_contratos:qtd, cenario:'A', pct_sujeita:pctSujeitaC02*100, pct_insumos:pctInsumosC02*100, _margem:margem, _pctSujeita:pctSujeitaC02, _pctInsumos:pctInsumosC02, _impostosAtuais:impostosAtuais }
+}
+function c02CalcularLocal(ent){
+  var preco=ent.preco, regime=ent.regime, seg=ent.segmento, anoRef=ent.ano, qtd=ent.qtd_contratos, margem=ent._margem, pctSujeitaC02=ent._pctSujeita, pctInsumosC02=ent._pctInsumos, impostosAtuais=ent._impostosAtuais;
+  var redSetorial = (seg==='ncm' && window.C02_RED_NCM!=null) ? window.C02_RED_NCM : (REDUCAO_SETORIAL[seg]||0); var baseSemImposto = preco*(1-impostosAtuais);
   const anos=[2026,2027,2028,2029,2030,2031,2032,2033];
   const resultados=anos.map(ano=>{
     const aliqBruta = getAliq(ano).total; // alíquota CBS/IBS do ANO (redutor via pctSujeita)
@@ -20847,6 +20856,16 @@ function calcularC02(){
   });
   const refIdx=anos.indexOf(anoRef);
   const r=resultados[refIdx]||resultados[1];
+
+  return { ok:true, regime:regime, segmento:seg, preco_atual:preco, ano_referencia:anoRef, receita_liquida:baseSemImposto, imposto_velho:{ aliquota_pct:impostosAtuais*100, valor:preco*impostosAtuais }, reducao_setorial_pct:redSetorial*100, pct_sujeita:pctSujeitaC02*100, pct_insumos_credito:pctInsumosC02*100, projecao:resultados.map(function(x){ return { ano:x.ano, aliquota_bruta_pct:x.aliqBruta*100, aliquota_liquida_pct:x.aliqLiq*100, velha_residual_pct:x.aliqVelhaVigente*100, combinada_pct:x.aliqCombinada*100, novo_preco:x.novoPreco, variacao_pct:x.varPct, margem_sem_reajuste_pct:x.novaMargemSemReajuste, impacto_carteira:(x.novoPreco-preco)*qtd }; }) };
+}
+function c02Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-c02'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var preco=ent.preco, regime=ent.regime, seg=ent.segmento, anoRef=ent.ano, qtd=ent.qtd_contratos, margem=ent._margem, pctSujeitaC02=ent._pctSujeita, pctInsumosC02=ent._pctInsumos, impostosAtuais=ent._impostosAtuais;
+  var redSetorial = (seg==='ncm' && window.C02_RED_NCM!=null) ? window.C02_RED_NCM : (REDUCAO_SETORIAL[seg]||0); var baseSemImposto = preco*(1-impostosAtuais);
+  var preco=ent.preco, regime=ent.regime, seg=ent.segmento, margem=ent._margem, anoRef=ent.ano, qtd=ent.qtd_contratos, pctSujeitaC02=ent._pctSujeita, pctInsumosC02=ent._pctInsumos; var redSetorial=(+r.reducao_setorial_pct)/100; var impostosAtuais=+(r.imposto_velho&&r.imposto_velho.aliquota_pct!=null?(+r.imposto_velho.aliquota_pct)/100:ent._impostosAtuais), redSetorial=(+r.reducao_setorial_pct)/100, baseSemImposto=+r.receita_liquida; const anos=(r.projecao||[]).map(function(p){ return +p.ano; }); const resultados=(r.projecao||[]).map(function(p){ var aliqBruta=(+p.aliquota_bruta_pct)/100, aliqLiq=(+p.aliquota_liquida_pct)/100, aliqVelhaVigente=(+p.velha_residual_pct)/100, aliqCombinada=(+p.combinada_pct)/100; var aliqBrutaEfet=aliqBruta*(1-redSetorial)*pctSujeitaC02, aliqCredito=Math.max(0, aliqBrutaEfet-aliqLiq); return { ano:+p.ano, aliqBruta:aliqBruta, aliqBrutaEfet:aliqBrutaEfet, aliqCredito:aliqCredito, aliqLiq:aliqLiq, aliqCombinada:aliqCombinada, aliqVelhaVigente:aliqVelhaVigente, novoPreco:+p.novo_preco, varPct:+p.variacao_pct, novaMargemSemReajuste:+p.margem_sem_reajuste_pct }; });  const refIdx=anos.indexOf(anoRef); var r=resultados[refIdx]||resultados[1];
   document.getElementById('kpi-c02').innerHTML=`
     <div class="kpi-card kpi-destaque"><div class="kpi-label">Novo Preço Sugerido (${anoRef})</div><div class="kpi-value">${fmtR(r.novoPreco)}</div><div class="kpi-sub">vs atual de ${fmtR(preco)}</div></div>
     <div class="kpi-card ${r.varPct>0?'kpi-alerta':'kpi-ok'}"><div class="kpi-label">Variação Necessária</div><div class="kpi-value">${r.varPct>0?'+':''}${fmtPct(r.varPct)}</div><div class="kpi-sub">${r.varPct>0?'Reajuste necessário':'Preço pode reduzir'}</div></div>
@@ -20939,6 +20958,12 @@ function calcularC02(){
   mostrarToast('✓ Novo preço calculado','success');
 
   try{ if(window.LH_SAUDE_registrar){ window.LH_SAUDE_registrar('reprice', { rodou:true, nivel:'ok', rotulo:'Repactuado' }); } }catch(e){}
+
+}
+function calcularC02(){
+  var ent=c02LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularC02')){ LH_PONTE.executar('calcularC02', ent); return; }
+  c02Render(c02CalcularLocal(ent), ent, null);
 }
 
 // ══════════════════════════════════════════
