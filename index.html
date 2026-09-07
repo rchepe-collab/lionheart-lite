@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v752";</script>
+<body><script>window.LH_VERSAO="v753";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2584,7 +2584,8 @@ window.LH_PONTE = (function(){
       },
       /* kpi-c07: [LP liq, LP liq, aliq, LP imposto, CLT imposto, ...] */
       local: function(){ return { clt_imposto: LH_PONTE._kpiNum('kpi-c07', 4),
-                                  lp_imposto:  LH_PONTE._kpiNum('kpi-c07', 3) }; }
+                                  lp_imposto:  LH_PONTE._kpiNum('kpi-c07', 3) }; },
+      render:function(r, ent, motivo){ c07Render(r, ent, motivo); }
     },
     calcularC01: {
       calc: 'c01',
@@ -30117,7 +30118,8 @@ function removerFonteC07(btn){
   if(l){ l.remove(); somarFontesC07(); }
 }
 
-function calcularC07(){
+/* ═══ v753 · CUTOVER — calcularC07: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function c07LerEntradas(){
   const renda=parseFloat(document.getElementById('c07_renda').value)||0;
   const despesas=parseFloat(document.getElementById('c07_despesas').value)||0;
   const pctDiv=parseFloat(document.getElementById('c07_pct_dividendo').value)/100||0.7;
@@ -30125,12 +30127,18 @@ function calcularC07(){
   const prolabore=parseFloat(document.getElementById('c07_prolabore').value)||1621;
   const irpfmAtivo=document.getElementById('c07_irpfm_ativo').value==='sim';
   const outrasRendas=parseFloat(document.getElementById('c07_outras_rendas').value)||0;
-  if(renda<=0){ mostrarToast('Informe a renda mensal desejada','error'); return; }
+  if(renda<=0){ mostrarToast('Informe a renda mensal desejada','error'); return null; }
   function irpfmMes(rendaMensal,impostoMensal){
     if(!irpfmAtivo) return 0;
     const rga=(rendaMensal+outrasRendas)*12;
     return Math.max(0,calcularIRPFM(rga)-impostoMensal*12)/12;
   }
+
+  return { renda:renda, atividade:atividade, despesas:despesas, prolabore:prolabore, pct_dividendo:pctDiv, irpfm_ativo:irpfmAtivo, outras_rendas:outrasRendas, custo_estrutura:(parseFloat((document.getElementById('c07_custo_estrutura')||{}).value)||0), ano:2026, cenario:'A', vigencia_inss:2026, div_simples_tributa:false, _pctDiv:pctDiv };
+}
+function c07CalcularLocal(ent){
+  var renda=ent.renda, atividade=ent.atividade, despesas=ent.despesas, prolabore=ent.prolabore, pctDiv=ent._pctDiv, irpfmAtivo=ent.irpfm_ativo, outrasRendas=ent.outras_rendas;
+  function irpfmMes(rendaMensal,impostoMensal){ if(!irpfmAtivo) return 0; var rga=(rendaMensal+outrasRendas)*12; return Math.max(0,calcularIRPFM(rga)-impostoMensal*12)/12; }
   // CLT
   const inss_clt=calcularINSSEmpregado(renda);
   const ir_clt=calcularIRPF2026(Math.max(0,renda-inss_clt-528));
@@ -30244,6 +30252,16 @@ function calcularC07(){
   const melhor=elegiveisC07.reduce((a,b)=>a.liq>b.liq?a:b);
   const pior=elegiveisC07.reduce((a,b)=>a.liq<b.liq?a:b);
   const economia=melhor.liq-pior.liq;
+
+  return modalidades.map(function(m){ return { modalidade:m.nome, elegivel:!(renda>6750 && m.nome.indexOf('MEI')>=0), imposto_mensal:m.imp, liquido_mensal:m.liq, aliq_efetiva:m.aliqEf, irpfm_mensal:m.irpfm, detalhe:(m.nome==='Simples Nacional'?{ anexo:anexo_c07, fator_r:fatorR_c07, aliq_simples:aliq_sn }:{}) }; });
+}
+function c07Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-c07'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var renda=ent.renda, atividade=ent.atividade, despesas=ent.despesas, prolabore=ent.prolabore, pctDiv=ent._pctDiv, irpfmAtivo=ent.irpfm_ativo, outrasRendas=ent.outras_rendas;
+  function irpfmMes(rendaMensal,impostoMensal){ if(!irpfmAtivo) return 0; var rga=(rendaMensal+outrasRendas)*12; return Math.max(0,calcularIRPFM(rga)-impostoMensal*12)/12; }
+  var renda=ent.renda, despesas=ent.despesas, pctDiv=ent._pctDiv, atividade=ent.atividade, prolabore=ent.prolabore, irpfmAtivo=ent.irpfm_ativo, outrasRendas=ent.outras_rendas, _custoEstr=ent.custo_estrutura; var _lista=Array.isArray(r)?r:(r&&r.modalidades)||[]; var _mod={}; _lista.forEach(function(m){ _mod[String(m.modalidade).indexOf('MEI')>=0?'MEI':String(m.modalidade)]=m; }); var _clt=_mod['CLT / Assalariado']||{}, _mei=_mod['MEI']||{}, _sn=_mod['Simples Nacional']||{}, _lp=_mod['Lucro Presumido']||{}; var imposto_clt=+_clt.imposto_mensal, liquido_clt=+_clt.liquido_mensal, irpfm_clt=+_clt.irpfm_mensal; var imposto_mei=+_mei.imposto_mensal, liquido_mei=+_mei.liquido_mensal, irpfm_mei=+_mei.irpfm_mensal; var imposto_sn=+_sn.imposto_mensal, liquido_sn=+_sn.liquido_mensal, irpfm_sn=+_sn.irpfm_mensal; var imposto_lp=+_lp.imposto_mensal, liquido_lp=+_lp.liquido_mensal, irpfm_lp=+_lp.irpfm_mensal; var anexo_c07=String((_sn.detalhe&&_sn.detalhe.anexo)||'III'), fatorR_c07=+((_sn.detalhe&&_sn.detalhe.fator_r)||0), aliq_sn=+((_sn.detalhe&&_sn.detalhe.aliq_simples)||0); var modalidades=[ {nome:'CLT / Assalariado',imp:imposto_clt,liq:liquido_clt,aliqEf:imposto_clt/renda*100,irpfm:irpfm_clt,obs:''},  {nome:String(_mei.modalidade||'MEI'),imp:imposto_mei,liq:liquido_mei,aliqEf:imposto_mei/renda*100,irpfm:irpfm_mei,obs:(renda>6750?'Renda acima do limite MEI (R$6.750/mês)':'')},  {nome:'Simples Nacional',imp:imposto_sn,liq:liquido_sn,aliqEf:imposto_sn/renda*100,irpfm:irpfm_sn,obs:''},  {nome:'Lucro Presumido',imp:imposto_lp,liq:liquido_lp,aliqEf:imposto_lp/renda*100,irpfm:irpfm_lp,obs:''} ]; var elegiveisC07=modalidades.filter(function(m){ return !(renda>6750 && m.nome.indexOf('MEI')>=0); }); var melhor=elegiveisC07.reduce(function(a,b){ return a.liq>b.liq?a:b; }), pior=elegiveisC07.reduce(function(a,b){ return a.liq<b.liq?a:b; }), economia=melhor.liq-pior.liq;
   document.getElementById('kpi-c07').innerHTML=`
     <div class="kpi-card kpi-destaque"><div class="kpi-label">Melhor Modalidade</div><div class="kpi-value" style="font-size:1em">${melhor.nome}</div><div class="kpi-sub">Líquido: ${fmtR(melhor.liq)}/mês</div></div>
     <div class="kpi-card kpi-ok"><div class="kpi-label">Líquido Mensal (melhor)</div><div class="kpi-value">${fmtR(melhor.liq)}</div><div class="kpi-sub">Alíq. efetiva: ${fmtPct(melhor.aliqEf)}</div></div>
@@ -30322,7 +30340,13 @@ function calcularC07(){
 
   try{ if(window.LH_SAUDE_registrar){ window.LH_SAUDE_registrar('pfpj', { rodou:true, economia:(typeof economia==='number'?economia:0), nivel:'ok', rotulo:'Analisado' }); } }catch(e){}
 
-  try{ if(window.LH_PONTE) LH_PONTE.sombra('calcularC07'); }catch(_p){}
+  try{ if(window.LH_PONTE && LH_PONTE.modo()!=='servidor') LH_PONTE.sombra('calcularC07'); }catch(_p){}
+
+}
+function calcularC07(){
+  var ent=c07LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularC07')){ LH_PONTE.executar('calcularC07', ent); return; }
+  c07Render(c07CalcularLocal(ent), ent, null);
 }
 
 // ══════════════════════════════════════════
