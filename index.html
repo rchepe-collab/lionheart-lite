@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v749";</script>
+<body><script>window.LH_VERSAO="v750";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3427,7 +3427,8 @@ window.LH_PONTE = (function(){
                  irpfm_ativo:(((G.el('c06_irpfm_ativo')||{}).value)==='sim'), vigencia_inss:2026 }; },
       esperado:function(r){ return r?{ imposto_mes:Number(r.imposto_total_mes), liquido_mes:Number(r.liquido_socio_mes) }:null; },
       /* kpi-c06: [0] renda bruta · [1] impostos/mês · [2] líquido/mês · ... */
-      local:function(){ var R=LH_PONTE._rsNum; return { imposto_mes:R('kpi-c06',1), liquido_mes:R('kpi-c06',2) }; } },   /* R$: o texto tem "7,08%" que enganaria o kpiNum */
+      local:function(){ var R=LH_PONTE._rsNum; return { imposto_mes:R('kpi-c06',1), liquido_mes:R('kpi-c06',2) }; },
+      render:function(r, ent, motivo){ c06Render(r, ent, motivo); } },   /* R$: o texto tem "7,08%" que enganaria o kpiNum */
     calcularExport: { calc:'export',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { receita_exportacao:f('exp_rec'), pct_insumos:f('exp_ins'), aliquota_pct:f('exp_aliq')||26.5, saldo_acumulado:f('exp_saldo'), selic_pct:f('exp_selic') }; },
@@ -3471,7 +3472,8 @@ window.LH_PONTE = (function(){
                  irpfm_ativo:(((G.el('n29_irpfm')||{}).value)==='sim'), participacao_pct:f('n29_part'), aliq_irpj_csll:(reg==='LR'?0.34:0.109) }; },
       esperado:function(r){ return (r&&r.via_dividendos&&r.limites)?{ custo_div:Number(r.via_dividendos.ir_10_fonte), jcp_max:Number(r.limites.jcp_maximo_mes) }:null; },
       /* kpis-n29 (R$): [0] custo 100% dividendos · [1] custo JCP+div · [2] JCP máximo */
-      local:function(){ var R=LH_PONTE._rsNum; return { custo_div:R('kpis-n29',0), jcp_max:R('kpis-n29',2) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { custo_div:R('kpis-n29',0), jcp_max:R('kpis-n29',2) }; },
+      render:function(r, ent, motivo){ n29Render(r, ent, motivo); } },
     calcularC08: { calc:'c08',
       /* o bloco kpi-c08 é apagado pelo acordeão (lhNotaConsultiva) logo depois de escrito;
          quem o usuário lê é o acordeão — é dele que a ponte lê. */
@@ -29848,7 +29850,8 @@ function atualizarInfoSetorialC05(){
 // ══════════════════════════════════════════
 // C-06: TRIBUTAÇÃO DE DIVIDENDOS
 // ══════════════════════════════════════════
-function calcularC06(){
+/* ═══ v750 · CUTOVER — calcularC06: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function c06LerEntradas(){
   const prolabore = parseFloat(document.getElementById('c06_prolabore').value)||0;
   const dividendo = parseFloat(document.getElementById('c06_dividendo').value)||0;
   const outros    = parseFloat(document.getElementById('c06_outros').value)||0;
@@ -29857,7 +29860,13 @@ function calcularC06(){
   const irpfmAtivo= document.getElementById('c06_irpfm_ativo').value==='sim';
   const isentosMes= parseFloat(document.getElementById('c06_isentos').value)||0;
   const gcAnual   = parseFloat(document.getElementById('c06_gc_anual').value)||0;
-  if(prolabore<=0&&dividendo<=0){ mostrarToast('Informe pró-labore ou dividendo','error'); return; }
+  if(prolabore<=0&&dividendo<=0){ mostrarToast('Informe pró-labore ou dividendo','error'); return null; }
+
+  return { prolabore:prolabore, dividendo:dividendo, outros:outros, isentos_mes:isentosMes, gc_anual:gcAnual, irpfm_ativo:irpfmAtivo, vigencia_inss:2026, _lucroEmp:lucroEmp, _nSocios:nSocios, _regime:((document.getElementById('c06_regime')||{}).value || (document.getElementById('gi_regime')||{value:'simples'}).value) };
+}
+function c06CalcularLocal(ent){
+  var prolabore=ent.prolabore, dividendo=ent.dividendo, outros=ent.outros, isentosMes=ent.isentos_mes, gcAnual=ent.gc_anual, irpfmAtivo=ent.irpfm_ativo, lucroEmp=ent._lucroEmp, nSocios=ent._nSocios;
+  
   const inss_ci=calcularINSSCI(prolabore);
   const ir_pl=calcularIRPF2026(Math.max(0,prolabore-inss_ci));
   // IR sobre dividendos: SN tem isenção total; LP/LR tributam acima de R$50k/mês
@@ -29875,6 +29884,16 @@ function calcularC06(){
   const total_imposto=inss_ci+ir_pl+ir_div+irpfm_adicional;
   const liquido_socio=prolabore+dividendo-total_imposto;
   const aliq_efetiva=(prolabore+dividendo)>0?total_imposto/(prolabore+dividendo)*100:0;
+
+  return { ok:true, inss_ci:inss_ci, irpf_prolabore:ir_pl, ir_dividendos_10:ir_div, irpfm_adicional_mes:irpfm_adicional, renda_global_anual:rendaGlobalAnual, imposto_total_mes:total_imposto, liquido_socio_mes:liquido_socio, aliquota_efetiva_pct:aliq_efetiva };
+}
+function c06Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-c06'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var prolabore=ent.prolabore, dividendo=ent.dividendo, outros=ent.outros, isentosMes=ent.isentos_mes, gcAnual=ent.gc_anual, irpfmAtivo=ent.irpfm_ativo, lucroEmp=ent._lucroEmp, nSocios=ent._nSocios;
+  
+  var prolabore=ent.prolabore, dividendo=ent.dividendo, outros=ent.outros, isentosMes=ent.isentos_mes, gcAnual=ent.gc_anual, irpfmAtivo=ent.irpfm_ativo, lucroEmp=ent._lucroEmp, nSocios=ent._nSocios, regimeEmpC06=ent._regime; var inss_ci=+r.inss_ci, ir_pl=+r.irpf_prolabore, ir_div=+r.ir_dividendos_10, irpfm_adicional=+r.irpfm_adicional_mes, rendaGlobalAnual=+r.renda_global_anual; var div_tributavel=(dividendo>50000?dividendo:0); var total_imposto=+r.imposto_total_mes, liquido_socio=+r.liquido_socio_mes, aliq_efetiva=+r.aliquota_efetiva_pct;
   const cenarios=[
     {label:'Atual (informado)', pl:prolabore, div:dividendo},
     {label:'Pró-labore mínimo (1 SM)', pl:1621, div:prolabore+dividendo-1621},
@@ -30020,6 +30039,12 @@ function calcularC06(){
   mostrarToast('✓ Carga do sócio calculada','success');
 
   try{ if(window.LH_SAUDE_registrar){ window.LH_SAUDE_registrar('dividendos', { rodou:true, nivel:'ok', rotulo:'Analisado' }); } }catch(e){}
+
+}
+function calcularC06(){
+  var ent=c06LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularC06')){ LH_PONTE.executar('calcularC06', ent); return; }
+  c06Render(c06CalcularLocal(ent), ent, null);
 }
 
 // ══════════════════════════════════════════
@@ -30277,7 +30302,8 @@ function calcularC07(){
 // ══════════════════════════════════════════
 // N-29: JCP vs DIVIDENDOS
 // ══════════════════════════════════════════
-function calcularN29(){
+/* ═══ v750 · CUTOVER — calcularN29: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function n29LerEntradas(){
   const regime=document.getElementById('n29_regime').value;
   const lucro=parseFloat(document.getElementById('n29_lucro').value)||0;
   const pl=parseFloat(document.getElementById('n29_pl').value)||0;
@@ -30285,11 +30311,17 @@ function calcularN29(){
   const tjlp=parseFloat(document.getElementById('n29_tjlp').value)||7.5;
   const irpfm=document.getElementById('n29_irpfm').value==='sim';
   const part=(parseFloat(document.getElementById('n29_part').value)||100)/100;
-  if(!lucro||!pl||!dist){ mostrarToast('Preencha todos os campos','warning'); return; }
+  if(!lucro||!pl||!dist){ mostrarToast('Preencha todos os campos','warning'); return null; }
   // v26 FIX GRAVE-02: JCP tem DOIS limites legais (art. 9º Lei 9.249/95):
   // (a) PL × TJLP (limite de proporção do capital)
   // (b) 50% do lucro do período OU 50% dos lucros acumulados (o que for maior)
   // Pegar o MENOR dos limites como teto real do JCP
+
+  return { regime:(regime==='LP'?'lp':'lr'), lucro_anual:lucro, pl:pl, distribuicao_mensal:dist, tjlp_pct:tjlp, irpfm_ativo:irpfm, participacao_pct:part*100, aliq_irpj_csll:(function(){ var seg=(document.getElementById('gi_segmento')||{value:'servicos'}).value; var pres={comercio:0.034,comercio_varejo:0.034,comercio_atacado:0.034,industria_alimentos:0.034,industria_metal:0.034,industria:0.034,agro:0.034,farmacia:0.034,saude_hospitalar:0.034,logistica:0.034,alimentacao:0.054,servicos_tec:0.109,servicos_prof:0.109,servicos_saude:0.109,educacao:0.109,construcao:0.109,servicos:0.109,ti:0.109,hotelaria:0.109,servicos_intelectuais:0.109,servicos_gerais:0.109,imobiliario:0.109,transporte_publico:0.054,financeiro:0.109,cultura_esporte:0.109}; return (regime==='LP'?(pres[seg]||0.109):0.34)*100; })(), _regime:regime, _tjlp:tjlp, _part:part };
+}
+function n29CalcularLocal(ent){
+  var lucro=ent.lucro_anual, pl=ent.pl, dist=ent.distribuicao_mensal, tjlp=ent._tjlp, irpfm=ent.irpfm_ativo, regime=ent._regime, part=ent._part;
+  
   const jcpLimiteTJLP = (pl*(tjlp/100)/12)*part;          // limite (a) — TJLP
   const jcpLimite50Lucro = (lucro/12)*0.5*part;            // limite (b) — 50% do lucro mensalizado
   const jcpMaxMes = Math.min(jcpLimiteTJLP, jcpLimite50Lucro);
@@ -30337,6 +30369,16 @@ function calcularN29(){
   const custoOtm=irJOtm+irDOtm-econOtm;
   const netOtm=(jcpOtm-irJOtm)+(divOtm-irDOtm);
   const economiaOtm=custo1-custoOtm;
+
+  return { ok:true, regime:regime, aliquota_irpj:ALIQ_IRPJ, limites:{ tjlp:jcpLimiteTJLP, cinquenta_pct_lucro:jcpLimite50Lucro, jcp_maximo_mes:jcpMaxMes, limite_ativo:limiteAtivo }, via_dividendos:{ distribuicao:dist, ir_10_fonte:irDiv1, liquido:liq1 }, via_jcp:{ jcp_pago:jcp2, irrf_17_5:irJCP2, economia_irpj_csll_pj:econ2, liquido_consolidado:liq2 }, otimo:{ jcp:jcpOtm, dividendos:divOtm, irrf_jcp:irJOtm, economia_irpj:econOtm, ir_dividendos:irDOtm, custo:custoOtm, liquido:netOtm }, economia_vs_so_dividendos:economiaOtm };
+}
+function n29Render(r, ent, motivo){
+  var _box=document.getElementById('kpis-n29'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var lucro=ent.lucro_anual, pl=ent.pl, dist=ent.distribuicao_mensal, tjlp=ent._tjlp, irpfm=ent.irpfm_ativo, regime=ent._regime, part=ent._part;
+  
+  var regime=ent._regime, lucro=ent.lucro_anual, pl=ent.pl, dist=ent.distribuicao_mensal, tjlp=ent._tjlp, irpfm=ent.irpfm_ativo, part=ent._part; var jcpLimiteTJLP=+r.limites.tjlp, jcpLimite50Lucro=+r.limites.cinquenta_pct_lucro, jcpMaxMes=+r.limites.jcp_maximo_mes, limiteAtivo=String(r.limites.limite_ativo||''); var ALIQ_DIV=0.10, ISENCAO_DIV=50000, ALIQ_JCP=0.175, ALIQ_IRPJ=+r.aliquota_irpj; var divAcima1=Math.max(0,dist-ISENCAO_DIV), irDiv1=+r.via_dividendos.ir_10_fonte, custo1=irDiv1, liq1=+r.via_dividendos.liquido; var jcp2=+r.via_jcp.jcp_pago, div2=Math.max(0,dist-jcp2), irJCP2=+r.via_jcp.irrf_17_5, econ2=+(r.via_jcp.economia_irpj_csll_pj!=null?r.via_jcp.economia_irpj_csll_pj:r.via_jcp.economia_irpj_csll), irDiv2=(div2>ISENCAO_DIV?div2*ALIQ_DIV:0), custo2=irJCP2+irDiv2-econ2, liq2=(jcp2-irJCP2)+(div2-irDiv2); var jcpOtm=+r.otimo.jcp, divOtm=+r.otimo.dividendos, irJOtm=+r.otimo.irrf_jcp, econOtm=+r.otimo.economia_irpj, irDOtm=+r.otimo.ir_dividendos, custoOtm=+r.otimo.custo, netOtm=+r.otimo.liquido, economiaOtm=+r.economia_vs_so_dividendos, melhorCusto=custoOtm;
   document.getElementById('kpis-n29').innerHTML=`
     <div class="kpi-card kpi-alerta"><div class="kpi-label">Custo — 100% Dividendos</div><div class="kpi-value">${fmtR(custo1)}</div><div class="kpi-sub">Alíq. efetiva: ${fmtPct(custo1/dist*100)}</div></div>
     <div class="kpi-card"><div class="kpi-label">Custo — JCP Máx. + Div.</div><div class="kpi-value">${fmtR(custo2)}</div><div class="kpi-sub">JCP: ${fmtR(jcp2)} | Div: ${fmtR(div2)}</div></div>
@@ -30407,6 +30449,12 @@ function calcularN29(){
       : 'Manter distribuição via dividendos. Reavaliar se TJLP subir.'
   });
   mostrarToast('✓ JCP vs. Dividendos calculado','success');
+
+}
+function calcularN29(){
+  var ent=n29LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularN29')){ LH_PONTE.executar('calcularN29', ent); return; }
+  n29Render(n29CalcularLocal(ent), ent, null);
 }
 
 // ══════════════════════════════════════════
