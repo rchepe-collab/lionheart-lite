@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v743";</script>
+<body><script>window.LH_VERSAO="v744";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3062,7 +3062,8 @@ window.LH_PONTE = (function(){
                  pct_eletronico:f('n33_pct_eletronico'), custo_capital:f('n33_taxa'), crescimento_aa:f('n33_cresc') }; },
       esperado: function(r){ return r ? { ncg_2026:Number(r.ncg_2026), ncg_2033:Number(r.ncg_2033), camada_split_2033:Number(r.camada_split_2033), aumento:Number(r.aumento_da_ncg) } : null; },
       /* kpi-n33: [0] captação (aumento) · [1] NCG atual (2026) · [2] custo fin. 2033 · [3] taxa · [4] NCG trad 2033 · [5] NCG total 2033 · [6] camada split 2033 · [7] ... */
-      local: function(){ return { aumento:LH_PONTE._kpiNum('kpi-n33',0), ncg_2026:LH_PONTE._kpiNum('kpi-n33',1), ncg_2033:LH_PONTE._kpiNum('kpi-n33',5), camada_split_2033:LH_PONTE._kpiNum('kpi-n33',6) }; }
+      local: function(){ return { aumento:LH_PONTE._kpiNum('kpi-n33',0), ncg_2026:LH_PONTE._kpiNum('kpi-n33',1), ncg_2033:LH_PONTE._kpiNum('kpi-n33',5), camada_split_2033:LH_PONTE._kpiNum('kpi-n33',6) }; },
+      render:function(r, ent, motivo){ n33Render(r, ent, motivo); }
     },
 
     /* ═══ v688 · ONDA 5 · calc03 · seletivo · antecip · aliqref ═══
@@ -3076,7 +3077,8 @@ window.LH_PONTE = (function(){
                  parcela_das:(String((G.el('calc03_parcela_das')||{}).value||'').trim()===''?15.5:f('calc03_parcela_das')) }; },
       esperado: function(r){ return (r&&r.fornecedor_a&&r.fornecedor_b) ? { custo_a:Number(r.fornecedor_a.custo_liquido), credito_a:Number(r.fornecedor_a.credito), custo_b:Number(r.fornecedor_b.custo_liquido), credito_b:Number(r.fornecedor_b.credito) } : null; },
       /* kpi-calc03: [0] vantagem · [1] custo A · [2] crédito A · [3] custo B · [4] crédito B · ... */
-      local: function(){ return { custo_a:LH_PONTE._kpiNum('kpi-calc03',1), credito_a:LH_PONTE._kpiNum('kpi-calc03',2), custo_b:LH_PONTE._kpiNum('kpi-calc03',3), credito_b:LH_PONTE._kpiNum('kpi-calc03',4) }; }
+      local: function(){ return { custo_a:LH_PONTE._kpiNum('kpi-calc03',1), credito_a:LH_PONTE._kpiNum('kpi-calc03',2), custo_b:LH_PONTE._kpiNum('kpi-calc03',3), credito_b:LH_PONTE._kpiNum('kpi-calc03',4) }; },
+      render:function(r, ent, motivo){ calc03Render(r, ent, motivo); }
     },
     calcularSeletivo: {
       calc: 'seletivo',
@@ -39694,14 +39696,15 @@ function calcularN04() {
 // v27 — CALC 03: RISCO FORNECEDOR SIMPLES NACIONAL
 // ════════════════════════════════════════════════════════════════════════
 let chartCalc03;
-function calcularCalc03() {
+/* ═══ v744 · CUTOVER — calcularCalc03: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function calc03LerEntradas(){
   var regimeComprador = document.getElementById('calc03_regime_comprador').value;
   var ano = parseInt(document.getElementById('calc03_ano').value)||2027;
   var parcelaDAS = (parseFloat((document.getElementById('calc03_parcela_das')||{value:'15.5'}).value)||15.5)/100;
   var compraSN = parseFloat(document.getElementById('calc03_compra_sn').value)||0;
   var compraLP = parseFloat(document.getElementById('calc03_compra_lp').value)||0;
 
-  if(compraSN<=0 || compraLP<=0){ mostrarToast('Informe os valores das compras','error'); return; }
+  if(compraSN<=0 || compraLP<=0){ mostrarToast('Informe os valores das compras','error'); return null; }
 
   var aliqCBSIBS = (typeof getAliq === 'function') ? getAliq(ano).total : 0.088;
 
@@ -39715,6 +39718,12 @@ function calcularCalc03() {
      · Regular (LP/LR): destaca CBS/IBS pleno → crédito = compra × alíq × aproveitamento
      · Importação: paga CBS/IBS na entrada à alíquota nacional → credita igual ao Regular (art. 47 §9º; 63/21 III)
      · Simples (SN): NÃO destaca pleno → só a fatia do DAS (parcelaDAS), a partir de 2027 */
+
+  return { compra_a:compraSN, compra_b:compraLP, regime_a:regA, regime_b:regB, regime_comprador:regimeComprador, ano:ano, parcela_das:parcelaDAS*100, cenario:'A', _parcelaDAS:parcelaDAS };
+}
+function calc03CalcularLocal(ent){
+  var compraSN=ent.compra_a, compraLP=ent.compra_b, regA=ent.regime_a, regB=ent.regime_b, regimeComprador=ent.regime_comprador, ano=ent.ano, parcelaDAS=ent._parcelaDAS;
+  var aliqCBSIBS=(typeof getAliq==='function')?getAliq(ano).total:0.088; var pctCredito=(String(regimeComprador).toUpperCase()==='LR')?1.00:0.95;
   function creditoDoForn(valor, regime){
     var r=String(regime).toUpperCase();
     if(r==='SN') return (ano>=2027) ? valor*parcelaDAS : 0;
@@ -39742,6 +39751,16 @@ function calcularCalc03() {
   // Vantagem atual do SN (descontando o crédito perdido)
   var creditoPerdido = creditoLP - creditoSN;
 
+
+  return { ok:true, ano:ano, aliquota_pct:aliqCBSIBS*100, comprador:{ regime:String(regimeComprador).toUpperCase(), aproveitamento_pct:pctCredito*100 }, fornecedor_a:{ compra:compraSN, regime:regA, credito:creditoSN, custo_liquido:custoLiqSN, custo_por_real:(compraSN>0?custoLiqSN/compraSN:0) }, fornecedor_b:{ compra:compraLP, regime:regB, credito:creditoLP, custo_liquido:custoLiqLP, custo_por_real:(compraLP>0?custoLiqLP/compraLP:0) }, mais_barato:(custoLiqSN<=custoLiqLP?('FORNECEDOR A ('+regA+')'):('FORNECEDOR B ('+regB+')')), desconto_de_indiferenca_pct:Math.max(0,desagioMaxPct) };
+}
+function calc03Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-calc03'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var compraSN=ent.compra_a, compraLP=ent.compra_b, regA=ent.regime_a, regB=ent.regime_b, regimeComprador=ent.regime_comprador, ano=ent.ano, parcelaDAS=ent._parcelaDAS;
+  var aliqCBSIBS=(typeof getAliq==='function')?getAliq(ano).total:0.088; var pctCredito=(String(regimeComprador).toUpperCase()==='LR')?1.00:0.95;
+  var regimeComprador=ent.regime_comprador, ano=ent.ano, parcelaDAS=ent._parcelaDAS, compraSN=ent.compra_a, compraLP=ent.compra_b, regA=ent.regime_a, regB=ent.regime_b; var aliqCBSIBS=(+r.aliquota_pct)/100, pctCredito=(+r.comprador.aproveitamento_pct)/100; var creditoSN=+r.fornecedor_a.credito, creditoLP=+r.fornecedor_b.credito; var _nomeReg={SN:'Simples',LP:'L. Presumido',LR:'L. Real',IMP:'Importação'}; var nomeA=_nomeReg[String(regA).toUpperCase()]||regA, nomeB=_nomeReg[String(regB).toUpperCase()]||regB; var custoLiqSN=+r.fornecedor_a.custo_liquido, custoLiqLP=+r.fornecedor_b.custo_liquido; var vantagemSN=custoLiqLP-custoLiqSN, vantagemSNAnual=vantagemSN*12; var desagioMaxAbsoluto=creditoLP-creditoSN, desagioMaxPct=(compraLP>0?desagioMaxAbsoluto/compraLP*100:0), creditoPerdido=creditoLP-creditoSN;
   // KPIs
   var _kpi3=document.getElementById('kpi-calc03'); if(_kpi3) _kpi3.innerHTML =
     '<div class="kpi-card '+(vantagemSN>=0?'kpi-ok':'kpi-alerta')+'"><div class="kpi-label">Decisão recomendada</div><div class="kpi-value" style="font-size:1.05em">'+(vantagemSN>=0?('Fornec. A ('+nomeA+')'):('Fornec. B ('+nomeB+')'))+'</div><div class="kpi-sub">Saldo: '+fmtR(Math.abs(vantagemSN))+'/mês</div></div>'+
@@ -39826,13 +39845,20 @@ function calcularCalc03() {
       contexto: vantagemSN < 0 ? 'Trocar fornecedor SN por LP' : 'Manter fornecedor SN',
       descricao: 'Análise fornecedor SN (R$ '+fmtN(compraSN)+'/mês) vs LP (R$ '+fmtN(compraLP)+'/mês) em '+ano+': '+(vantagemSN<0?'TROCAR por LP economiza '+fmtR(Math.abs(vantagemSNAnual))+'/ano':'MANTER SN é '+fmtR(vantagemSNAnual)+'/ano melhor')+'. Crédito CBS/IBS perdido com SN: '+fmtR(creditoPerdido*12)+'/ano. Deságio máximo aceitável do SN: '+fmtPct(desagioMaxPct)+'.'});
   }
+
+}
+function calcularCalc03(){
+  var ent=calc03LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularCalc03')){ LH_PONTE.executar('calcularCalc03', ent); return; }
+  calc03Render(calc03CalcularLocal(ent), ent, null);
 }
 
 // ════════════════════════════════════════════════════════════════════════
 // v27 — CALC N33: NCG AJUSTADA AO SPLIT PAYMENT
 // ════════════════════════════════════════════════════════════════════════
 let chartN33;
-function calcularN33() {
+/* ═══ v744 · CUTOVER — calcularN33: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function n33LerEntradas(){
   var fat = parseFloat(document.getElementById('n33_fat').value)||0;
   var regime = document.getElementById('n33_regime').value;
   var setor = document.getElementById('n33_setor').value;
@@ -39846,7 +39872,7 @@ function calcularN33() {
   var sazonPico = parseFloat((document.getElementById('n33_sazon_pico')||{value:0}).value)||0;
   var sazonMeses = parseInt((document.getElementById('n33_sazon_meses')||{value:1}).value)||1;
 
-  if(fat<=0){ mostrarToast('Informe o faturamento mensal','error'); return; }
+  if(fat<=0){ mostrarToast('Informe o faturamento mensal','error'); return null; }
 
   // NCG tradicional = ((PMR + PME - PMP) / 30) × Fat mensal
   // Aproximação: contas a receber + estoque - contas a pagar
@@ -39854,6 +39880,12 @@ function calcularN33() {
   cicloFinanceiro = Math.max(0, cicloFinanceiro);
 
   var anos = [2026,2027,2028,2029,2030,2031,2032,2033];
+
+  return { faturamento_mensal:fat, pmr:pmr, pme:pme, pmp:pmp, regime:regime, pct_eletronico:pctEletronico*100, custo_capital:taxa*100, crescimento_aa:cresc*100, cenario:'A', _setor:setor, _pctEletronico:pctEletronico, _taxa:taxa, _cresc:cresc, _sazonPico:sazonPico, _sazonMeses:sazonMeses };
+}
+function n33CalcularLocal(ent){
+  var fat=ent.faturamento_mensal, pmr=ent.pmr, pme=ent.pme, pmp=ent.pmp, regime=ent.regime, setor=ent._setor, pctEletronico=ent._pctEletronico, taxa=ent._taxa, cresc=ent._cresc, sazonPico=ent._sazonPico, sazonMeses=ent._sazonMeses;
+  var cicloFinanceiro=Math.max(0,(pmr+pme-pmp)/30); var anos=[2026,2027,2028,2029,2030,2031,2032,2033];
   var resultados = anos.map(function(ano, i){
     var fatAnoMensal = fat * Math.pow(1+cresc, i);
     var ncgTrad = fatAnoMensal * cicloFinanceiro;
@@ -39886,6 +39918,16 @@ function calcularN33() {
   var capitalExtraPico = ncgPico2033 - rPico.ncgTotal;
   var custoCapitalPico = capitalExtraPico * (taxa) * (sazonMeses/12); /* custo no período do pico */
 
+
+  return { ok:true, ciclo_financeiro_dias:cicloFinanceiro*30, ciclo_em_meses:cicloFinanceiro, projecao:resultados.map(function(x){ return { ano:x.ano, faturamento_mensal:x.fatMensal, ncg_tradicional:x.ncgTrad, gap_do_split:x.gapSplit, ncg_total:x.ncgTotal, captacao_acumulada:x.captacaoAcum, custo_anual:x.custoAnual }; }), ncg_2026:resultados[0].ncgTotal, ncg_2033:resultados[7].ncgTotal, aumento_da_ncg:resultados[7].ncgTotal-resultados[0].ncgTotal, camada_split_2033:resultados[7].gapSplit };
+}
+function n33Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-n33'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento_mensal, pmr=ent.pmr, pme=ent.pme, pmp=ent.pmp, regime=ent.regime, setor=ent._setor, pctEletronico=ent._pctEletronico, taxa=ent._taxa, cresc=ent._cresc, sazonPico=ent._sazonPico, sazonMeses=ent._sazonMeses;
+  var cicloFinanceiro=Math.max(0,(pmr+pme-pmp)/30); var anos=[2026,2027,2028,2029,2030,2031,2032,2033];
+  var fat=ent.faturamento_mensal, regime=ent.regime, setor=ent._setor, pmr=ent.pmr, pmp=ent.pmp, pme=ent.pme, pctEletronico=ent._pctEletronico, taxa=ent._taxa, cresc=ent._cresc, sazonPico=ent._sazonPico, sazonMeses=ent._sazonMeses; var cicloFinanceiro=(+r.ciclo_em_meses); var anos=(r.projecao||[]).map(function(p){ return +p.ano; }); var resultados=(r.projecao||[]).map(function(p){ return { ano:+p.ano, fatMensal:+p.faturamento_mensal, ncgTrad:+p.ncg_tradicional, gapSplit:+p.gap_do_split, ncgTotal:+p.ncg_total, captacaoAcum:+(p.captacao_acumulada!=null?p.captacao_acumulada:Math.max(0,+p.ncg_total-(+((r.projecao||[])[0]||{}).ncg_total))), custoAnual:+(p.custo_anual!=null?p.custo_anual:0) }; }); var ncgInicial=resultados[0].ncgTotal, rPico=resultados[7], captacaoTotal=rPico.captacaoAcum, custoTotalAnual2033=rPico.custoAnual; var ncgPico2033=rPico.ncgTotal*(1+sazonPico/100), capitalExtraPico=ncgPico2033-rPico.ncgTotal, custoCapitalPico=capitalExtraPico*taxa*(sazonMeses/12);
   // KPIs
   document.getElementById('kpi-n33').innerHTML =
     '<div class="kpi-card kpi-critico"><div class="kpi-label">Captação Necessária 2033</div><div class="kpi-value">'+fmtR(captacaoTotal)+'</div><div class="kpi-sub">Acima da NCG atual de '+fmtR(ncgInicial)+'</div></div>'+
@@ -39982,6 +40024,12 @@ function calcularN33() {
       contexto: 'Capital de giro adicional para Split Payment',
       descricao: 'Empresa precisa captar '+fmtR(captacaoTotal)+' até 2033 ('+fmtR(captacaoTotal/8)+'/ano) para atravessar a Reforma. Custo financeiro anual em 2033: '+fmtR(custoTotalAnual2033)+' à taxa de '+fmtPct(taxa*100)+'. Ciclo financeiro atual: '+(cicloFinanceiro*30).toFixed(0)+' dias.'});
   }
+
+}
+function calcularN33(){
+  var ent=n33LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularN33')){ LH_PONTE.executar('calcularN33', ent); return; }
+  n33Render(n33CalcularLocal(ent), ent, null);
 }
 
 /* ════════════════════════════════════════════════════════════════════
