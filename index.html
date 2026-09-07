@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v747";</script>
+<body><script>window.LH_VERSAO="v748";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2707,7 +2707,8 @@ window.LH_PONTE = (function(){
         absorvido_dentro:  LH_PONTE._kpiNum('dxhTabela', 2),
         absorvido_hibrido: LH_PONTE._kpiNum('dxhTabela', 3),
         cred_cliente_hib:  LH_PONTE._kpiNum('dxhTabela', 7)
-      }; }
+      }; },
+      render:function(r, ent, motivo){ dxhRender(r, ent, motivo); }
     },
 
     calcularC05: {
@@ -62629,7 +62630,8 @@ function dxhEntradaSoma(){
   if(Math.abs(soma-100)<0.01){ el.style.color='#3ecf8e'; el.textContent='✓ Soma 100% — fornecedor Simples transfere só a fatia do DAS (~20%), o resto é crédito cheio.'; }
   else { el.style.color='#e0b93a'; el.textContent='⚠ Soma '+soma.toFixed(0)+'% — vou normalizar para 100%, mas confira os percentuais.'; }
 }
-function dxhCalc(){
+/* ═══ v748 · CUTOVER — dxhCalc: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function dxhLerEntradas(){
  function gv(id){var e=document.getElementById(id);return parseFloat((e&&e.value?String(e.value):"0").replace(",","."))||0;}
  var fat=gv("dxh_fat"),aliq=gv("dxh_aliq"),parc=gv("dxh_parc"),comp=gv("dxh_comp");
  /* ═══ v287 · MOTOR DE SAÍDA — só o cliente que aproveita crédito conta ═══
@@ -62659,7 +62661,7 @@ function dxhCalc(){
  if(DXH_MODO==='mix'){
    var _ml=dxhMixLer();
    var _soma=_ml.reduce(function(s,l){return s+l.pct;},0);
-   if(Math.abs(_soma-100)>=0.01){alert("No modo preciso, a soma dos % das atividades precisa dar 100%. Está em "+_soma.toFixed(1)+"%.");return;}
+   if(Math.abs(_soma-100)>=0.01){alert("No modo preciso, a soma dos % das atividades precisa dar 100%. Está em "+_soma.toFixed(1)+"%.");return null;}
    var _debM=0,_credU=0;
    _ml.forEach(function(l){var _fl=fat*l.pct/100;var _d=_fl*l.aliq/100;_debM+=_d;_credU+=_d*l.b2b/100;});
    _mixDebOverride=_debM; _mixCredUtilOverride=_credU;
@@ -62670,14 +62672,21 @@ function dxhCalc(){
       da ponderação por débito. Usar o mesmo peso nos dois lados comparava coisas diferentes. */
    _b2bDentro=_ml.reduce(function(a,l){return a+l.pct*l.b2b;},0)/100;
  }
- if(!fat||!aliq){alert("Preencha ao menos o faturamento do mês e a alíquota efetiva do Simples.");return;}
- if(parc>aliq){alert("A parcela IBS/CBS não pode ser maior que a alíquota efetiva do Simples.");return;}
+ if(!fat||!aliq){alert("Preencha ao menos o faturamento do mês e a alíquota efetiva do Simples.");return null;}
+ if(parc>aliq){alert("A parcela IBS/CBS não pode ser maior que a alíquota efetiva do Simples.");return null;}
  /* ═══ v284 · ACHADO A + ACHADO B ═══════════════════════════════════════
     A) O lado híbrido tem de rodar na alíquota DO ANO DA DECISÃO, não na
        terminal de 2033. Espelha o mestre v101 (dxh!B23/B31/B32/B35): débito,
        crédito das compras e crédito ao cliente, os três com o fator do ano.
     B) Acima do sublimite de R$ 3,6 mi o IBS já é recolhido por fora nos DOIS
        cenários — a comparação isola só a CBS. */
+
+  var _ano=parseInt((document.getElementById("dxh_ano")||{}).value,10)||2027; var _rbt=gv("dxh_rbt12"); var _soCBS=(_rbt>3600000); var _fAno=(typeof LH_fatorAno==='function')?LH_fatorAno(_ano,_soCBS):1; var _exportPct=gv("dxh_export"); if(_exportPct<0)_exportPct=0; if(_exportPct>100)_exportPct=100; var _fatInterno=fat*(1-_exportPct/100); var _fornReg=gv("dxh_forn_regular"), _fornSN=gv("dxh_forn_simples"), _fornImp=gv("dxh_forn_import"); var _temEntrada=(_fornReg>0||_fornSN>0||_fornImp>0); var _agCompEl=document.getElementById("dxh_ag_comp"); var _agComp=(_agCompEl && String(_agCompEl.value).trim()!=="")?(parseFloat(String(_agCompEl.value).replace(",","."))||0):undefined; var _impPct=_fornImp; var _repB2C=gv("dxh_repasse_b2c")/100; var _fracB2B=(_b2bAprov||0)/100; var _repasse=_fracB2B + (1-_fracB2B)*_repB2C; var _icmsDest=(function(){ var e=document.getElementById("dxh_icms_dest"); var v=e&&String(e.value).trim()!==""?parseFloat(String(e.value).replace(",",".")):NaN; return (!isNaN(v)&&v>0)?v:0; })();
+  return { fat:fat, aliq:aliq, parc:parc, comp:comp, ag:ag, ano:_ano, cenario:'A', rbt12:_rbt, b2b:b2b, cli_regular:_cliReg, cli_simples:_cliSN, cli_b2c:_cliB2C, forn_regular:_fornReg, forn_simples:_fornSN, forn_import:_fornImp, ag_comp:_agComp, 'export':_exportPct, repasse_b2c:_repB2C*100, icms_dest:_icmsDest, _ano:_ano, _rbt:_rbt, _soCBS:_soCBS, _fAno:_fAno, _fatInterno:_fatInterno, _exportPct:_exportPct, _impPct:_impPct, _b2bAprov:_b2bAprov, _b2bDentro:_b2bDentro, _repasse:_repasse, _repB2C:_repB2C, _fracB2B:_fracB2B, _icmsDest:_icmsDest, _temEntrada:_temEntrada, _temSaida:_temSaida, _cliReg:_cliReg, _cliSN:_cliSN, _cliB2C:_cliB2C, _mixDebOverride:_mixDebOverride, _mixCredUtilOverride:_mixCredUtilOverride };
+}
+function dxhCalcularLocal(ent){
+  var fat=ent.fat, aliq=ent.aliq, parc=ent.parc, comp=ent.comp, ag=ent.ag, _ano=ent._ano, _rbt=ent._rbt, b2b=ent.b2b, _cliReg=ent._cliReg, _cliSN=ent._cliSN, _cliB2C=ent._cliB2C, _fornReg=ent.forn_regular, _fornSN=ent.forn_simples, _fornImp=ent.forn_import, _agComp=ent.ag_comp, _icmsDest=ent._icmsDest, _soCBS=ent._soCBS, _fAno=ent._fAno, _fatInterno=ent._fatInterno, _exportPct=ent._exportPct, _impPct=ent._impPct, _b2bAprov=ent._b2bAprov, _b2bDentro=ent._b2bDentro, _repasse=ent._repasse, _repB2C=ent._repB2C, _fracB2B=ent._fracB2B, _temEntrada=ent._temEntrada, _temSaida=ent._temSaida, _mixDebOverride=ent._mixDebOverride, _mixCredUtilOverride=ent._mixCredUtilOverride;
+  function gv(id){var e=document.getElementById(id);return parseFloat((e&&e.value?String(e.value):"0").replace(",","."))||0;}
  var _ano=parseInt((document.getElementById("dxh_ano")||{}).value,10)||2027;
  var _rbt=gv("dxh_rbt12");
  var _soCBS=(_rbt>3600000);
@@ -62793,6 +62802,16 @@ function dxhCalc(){
   var _ganhoRelSemICMS = dCredUtil>0 ? (credExtra/dCredUtil*100) : 0;
  
   /* v528 — quando há ICMS destacado, mostrar o crédito TOTAL e o ganho real */
+
+  return { ok:true, ano:_ano, cenario:'A', so_cbs:_soCBS, fator_ano:_fAno, dentro:{ das:dDAS, credito_cliente:dCredCli, credito_util:dCredUtil, custo_absorvido:dAbs }, hibrido:{ das_reduzido:hDAS, debito:deb, credito_compras:cred, credito_aproveitado:hCredApr, ibs_cbs_liquido:hIBS,   total:hTot, credito_cliente:hCredCli, credito_util:hCredUtil, custo_absorvido:hAbs, saldo_credor:saldoCredor }, comparacao:{ diferenca:dif, credito_extra:credExtra, credito_icms:_credICMS, b2b:b2b, b2b_aproveita:_b2bAprov,   repasse:_repasse, vence_dentro:(dAbs<hAbs), vence_hibrido:(hAbs<dAbs) } };
+}
+function dxhRender(r, ent, motivo){
+  var _box=document.getElementById('dxhTabela'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.fat, aliq=ent.aliq, parc=ent.parc, comp=ent.comp, ag=ent.ag, _ano=ent._ano, _rbt=ent._rbt, b2b=ent.b2b, _cliReg=ent._cliReg, _cliSN=ent._cliSN, _cliB2C=ent._cliB2C, _fornReg=ent.forn_regular, _fornSN=ent.forn_simples, _fornImp=ent.forn_import, _agComp=ent.ag_comp, _icmsDest=ent._icmsDest, _soCBS=ent._soCBS, _fAno=ent._fAno, _fatInterno=ent._fatInterno, _exportPct=ent._exportPct, _impPct=ent._impPct, _b2bAprov=ent._b2bAprov, _b2bDentro=ent._b2bDentro, _repasse=ent._repasse, _repB2C=ent._repB2C, _fracB2B=ent._fracB2B, _temEntrada=ent._temEntrada, _temSaida=ent._temSaida, _mixDebOverride=ent._mixDebOverride, _mixCredUtilOverride=ent._mixCredUtilOverride;
+  function gv(id){var e=document.getElementById(id);return parseFloat((e&&e.value?String(e.value):"0").replace(",","."))||0;}
+  var fat=ent.fat, aliq=ent.aliq, parc=ent.parc, comp=ent.comp, ag=ent.ag, b2b=ent.b2b; var _ano=ent._ano, _rbt=ent._rbt, _soCBS=ent._soCBS, _fAno=ent._fAno, _fatInterno=ent._fatInterno, _exportPct=ent._exportPct, _impPct=ent._impPct, _b2bAprov=ent._b2bAprov, _b2bDentro=ent._b2bDentro, _repasse=ent._repasse, _repB2C=ent._repB2C, _fracB2B=ent._fracB2B, _icmsDest=ent._icmsDest, _temEntrada=ent._temEntrada, _temSaida=ent._temSaida, _cliReg=ent._cliReg, _cliSN=ent._cliSN, _cliB2C=ent._cliB2C, _mixDebOverride=ent._mixDebOverride, _mixCredUtilOverride=ent._mixCredUtilOverride; var dDAS=+r.dentro.das, dCredCli=+r.dentro.credito_cliente, dCredUtil=+r.dentro.credito_util, dAbs=+r.dentro.custo_absorvido; var hDAS=+r.hibrido.das_reduzido, deb=+r.hibrido.debito, cred=+r.hibrido.credito_compras, hCredApr=+r.hibrido.credito_aproveitado, hIBS=+r.hibrido.ibs_cbs_liquido, hTot=+r.hibrido.total, hCredCli=+r.hibrido.credito_cliente, hCredUtil=+r.hibrido.credito_util, hAbs=+r.hibrido.custo_absorvido, saldoCredor=+r.hibrido.saldo_credor; var dif=+r.comparacao.diferenca, credExtra=+r.comparacao.credito_extra, _credICMS=+r.comparacao.credito_icms; var _dCredTotal=dCredUtil+_credICMS, _hCredTotal=hCredUtil+_credICMS; var _ganhoRel=(_dCredTotal>0?(credExtra/_dCredTotal*100):0), _ganhoRelSemICMS=(dCredUtil>0?(credExtra/dCredUtil*100):0);
   var _blocoICMS='';
   if(_credICMS>0){
     _blocoICMS='<div style="margin-top:10px;padding:12px 15px;border-radius:9px;background:rgba(74,158,255,.08);border:1px solid rgba(74,158,255,.32);font-size:.87rem;color:#8fb8e8">'+
@@ -62982,6 +63001,12 @@ function dxhCalc(){
         var perde = (vence===b) ? atual : b;
         if(perde && perde.parentNode) perde.parentNode.removeChild(perde);
         _v[kx]=vence; }); } }catch(_e){}
+
+}
+function dxhCalc(){
+  var ent=dxhLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('dxhCalc')){ LH_PONTE.executar('dxhCalc', ent); return; }
+  dxhRender(dxhCalcularLocal(ent), ent, null);
 }
 </script>
 
