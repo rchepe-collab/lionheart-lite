@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v771";</script>
+<body><script>window.LH_VERSAO="v772";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4087,6 +4087,11 @@ window.LH_PONTE = (function(){
         var v = LH_PONTE._voo[nomeFn]; if (v) v.emVoo = false;
         if (LH_PONTE._seq[nomeFn] !== seq) return;   /* chegou atrasada: outra chamada já a substituiu */
         if (!res || !res.ok){ try { m.render(null, ent, (res && res.motivo) || 'sem resposta do servidor'); } catch(e){} return; }
+        /* ★ v772 — retira o card "Calculando no servidor…" ANTES de desenhar. Em telas cujo desenho
+           final escreve num FILHO da caixa (o C05 escreve em #kpi-c05, dentro de #res-c05), o card
+           sobrava pendurado embaixo do resultado — apareceu na passada de fumaça de 07/09. */
+        try { document.querySelectorAll('[data-lh-espera]').forEach(function(el){
+                var p = el.parentNode; if (p) p.removeChild(el); }); } catch(_l){}
         try { m.render(res.resultado, ent, null); } catch(e){ try { console.error('[LH_PONTE] render falhou em '+nomeFn, e); } catch(_e){} }
         registrar({ quando:new Date().toISOString(), tela:nomeFn, calc:m.calc, entradas:ent, status:'servidor' });
       });
@@ -4096,7 +4101,8 @@ window.LH_PONTE = (function(){
       return '<div class="kpi-card" style="grid-column:1/-1;border-color:rgba(220,38,38,.55);background:rgba(220,38,38,.08)"><div class="kpi-label" style="color:#fca5a5">Não foi possível calcular</div><div class="kpi-value" style="font-size:1rem;color:#fecaca">'+String(motivo||'servidor indisponível')+'</div><div class="kpi-sub">O cálculo roda no servidor Lionheart. Verifique a sessão (login) ou tente de novo em instantes.</div></div>';
     },
     cardAguardando: function(){
-      return '<div class="kpi-card" style="grid-column:1/-1"><div class="kpi-label">Calculando no servidor…</div><div class="kpi-value" style="font-size:1rem">⏳</div></div>';
+      /* ★ v772 · marcado com data-lh-espera para poder ser retirado quando o resultado chega */
+      return '<div class="kpi-card" data-lh-espera="1" style="grid-column:1/-1"><div class="kpi-label">Calculando no servidor…</div><div class="kpi-value" style="font-size:1rem">⏳</div></div>';
     },
     cobertura: function(){ return Object.keys(MAPA); },
 
