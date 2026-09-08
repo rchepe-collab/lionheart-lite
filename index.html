@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v756";</script>
+<body><script>window.LH_VERSAO="v757";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3356,7 +3356,8 @@ window.LH_PONTE = (function(){
       esperado:function(r){ return (r&&r.prescricao)?{ dias:Number(r.prescricao.dias_restantes), decaiu:(r.decadencia&&r.decadencia.decaiu)?1:0, prescreveu:r.prescricao.prescreveu?1:0 }:null; },
       local:function(){ var t=((document.getElementById('kpi-prescricao')||{}).textContent||'').replace(/\s+/g,' ');
         var d=t.match(/faltam\s+(-?\d+)\s+dias/); var dec=/Decaiu\?\s*sim/i.test(t)?1:0; var pre=/Prescreveu\?\s*sim/i.test(t)?1:0;
-        return { dias:d?parseInt(d[1],10):null, decaiu:dec, prescreveu:pre }; } },
+        return { dias:d?parseInt(d[1],10):null, decaiu:dec, prescreveu:pre }; },
+      render:function(r, ent, motivo){ prescRender(r, ent, motivo); } },
     calcularMultaJuros: { calc:'multa-juros',
       entradas:function(G){ var v=function(id){ return ((G.el(id)||{}).value)||''; }; var sm=parseFloat(v('mj_selic'));
         return { principal:parseFloat(v('mj_principal'))||0, venc:v('mj_venc'), pagamento:v('mj_pgto'), situacao:v('mj_situacao')||'espontanea',
@@ -26706,11 +26707,12 @@ function calcularMultaJuros(){
   multajurosRender(multajurosCalcularLocal(ent), ent, null);
 }
 
-function calcularPrescricao(){
+/* ═══ v757 · CUTOVER — calcularPrescricao: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function prescLerEntradas(){
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var fg=G('pd_fg','');
-  if(!fg){ if(typeof mostrarToast==='function') mostrarToast('Informe a competência do fato gerador','error'); return; }
+  if(!fg){ if(typeof mostrarToast==='function') mostrarToast('Informe a competência do fato gerador','error'); return null; }
   var pagou=G('pd_pagou','sim')==='sim';
   var dolo=G('pd_dolo','nao')==='sim';
   var lanc=G('pd_lanc',''), def=G('pd_def','');
@@ -26725,6 +26727,12 @@ function calcularPrescricao(){
 
   var dFG=dt(fg), dLanc=dt(lanc), dDef=dt(def), dInt=dt(dtInterr);
 
+
+  return { fato_gerador:fg, houve_pagamento:pagou, dolo:dolo, lancamento:(lanc||undefined), decisao_final:(def||undefined), suspenso:susp, valor:valor, referencia:(new Date()).toISOString().slice(0,10), _lanc:lanc, _interr:interr, _dtInterr:dtInterr };
+}
+function prescCalcularLocal(ent){
+  var fg=ent.fato_gerador, pagou=ent.houve_pagamento, dolo=ent.dolo, susp=ent.suspenso, valor=ent.valor, lanc=ent._lanc, interr=ent._interr, dtInterr=ent._dtInterr;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }; function dt(ym){ if(!ym||ym.length<7) return null; var p=ym.split('-'); return new Date(parseInt(p[0],10), parseInt(p[1],10)-1, 1); } function fmtD(d){ if(!d) return '—'; return String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear(); } function add(d,anos){ var x=new Date(d.getTime()); x.setFullYear(x.getFullYear()+anos); return x; } var hoje=new Date(), dFG=dt(ent.fato_gerador), dLanc=dt(ent._lanc), dDef=dt(ent.decisao_final), dInt=dt(ent._dtInterr);
   /* ── DECADÊNCIA ── */
   var regra, inicioDec;
   if(pagou && !dolo){
@@ -26745,6 +26753,16 @@ function calcularPrescricao(){
   var prescreveu = fimPresc ? (hoje>fimPresc) : false;
   var diasPresc = fimPresc ? Math.round((fimPresc-hoje)/86400000) : null;
 
+
+  return { ok:true, decadencia:{ regra:regra, inicio:(inicioDec?inicioDec.toISOString().slice(0,10):null), prazo_ate:(fimDec?fimDec.toISOString().slice(0,10):null), decaiu:decaiu, dias_restantes:Math.max(0,diasDec) }, prescricao:{ aplicavel:!!inicioPresc, inicio:(inicioPresc?inicioPresc.toISOString().slice(0,10):null), prazo_ate:(fimPresc?fimPresc.toISOString().slice(0,10):null), prescreveu:prescreveu, suspenso:susp, dias_restantes:(diasPresc==null?null:Math.max(0,diasPresc)) }, credito_extinto:(decaiu||prescreveu), valor_extinto:((decaiu||prescreveu)?valor:0) };
+}
+function prescRender(r, ent, motivo){
+  var _box=document.getElementById('kpi-prescricao'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fg=ent.fato_gerador, pagou=ent.houve_pagamento, dolo=ent.dolo, susp=ent.suspenso, valor=ent.valor, lanc=ent._lanc, interr=ent._interr, dtInterr=ent._dtInterr;
+  var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }; function dt(ym){ if(!ym||ym.length<7) return null; var p=ym.split('-'); return new Date(parseInt(p[0],10), parseInt(p[1],10)-1, 1); } function fmtD(d){ if(!d) return '—'; return String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear(); } function add(d,anos){ var x=new Date(d.getTime()); x.setFullYear(x.getFullYear()+anos); return x; } var hoje=new Date(), dFG=dt(ent.fato_gerador), dLanc=dt(ent._lanc), dDef=dt(ent.decisao_final), dInt=dt(ent._dtInterr);
+  var fg=ent.fato_gerador, pagou=ent.houve_pagamento, dolo=ent.dolo, lanc=ent._lanc, def_=ent.decisao_final, interr=ent._interr, dtInterr=ent._dtInterr, valor=ent.valor, susp=ent.suspenso; var _d=r.decadencia||{}, _p=r.prescricao||{}; var regra=String(_d.regra||''), inicioDec=(_d.inicio?new Date(String(_d.inicio)+'T00:00:00'):null), fimDec=(_d.prazo_ate?new Date(String(_d.prazo_ate)+'T00:00:00'):null), decaiu=!!_d.decaiu, diasDec=(fimDec?Math.round((fimDec-hoje)/86400000):0); var inicioPresc=(_p.inicio?new Date(String(_p.inicio)+'T00:00:00'):null), fimPresc=(_p.prazo_ate?new Date(String(_p.prazo_ate)+'T00:00:00'):null), prescreveu=!!_p.prescreveu, diasPresc=(fimPresc?Math.round((fimPresc-hoje)/86400000):null);
   var kpis='';
   kpis+='<div class="kpi-card"><div class="kpi-label">Regra de decadência</div><div class="kpi-value" style="font-size:.92em">'+regra.split('—')[0].trim()+'</div><div class="kpi-sub">'+regra.split('—')[1].trim()+'</div></div>';
   kpis+='<div class="kpi-card"><div class="kpi-label">Prazo para lançar até</div><div class="kpi-value">'+fmtD(fimDec)+'</div></div>';
@@ -26841,6 +26859,12 @@ function calcularPrescricao(){
     }
   }catch(_e){}
   var res=document.getElementById('res-prescricao'); if(res) res.style.display='block';
+
+}
+function calcularPrescricao(){
+  var ent=prescLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularPrescricao')){ LH_PONTE.executar('calcularPrescricao', ent); return; }
+  prescRender(prescCalcularLocal(ent), ent, null);
 }
 
 /* ═══ v736 · CUTOVER — calcularTransacao: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
