@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v761";</script>
+<body><script>window.LH_VERSAO="v762";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3816,14 +3816,16 @@ window.LH_PONTE = (function(){
                  usa_ciap:(v('s5_ciap','1')==='1'), aliq_ref_pct:((typeof window.LH_ALIQ_REF==='number'&&window.LH_ALIQ_REF>0)?window.LH_ALIQ_REF:26.5) }; },
       esperado:function(r){ if(!r||!r.cenarios) return null; var m={}; r.cenarios.forEach(function(c){ m[String(c.ano)]=Number(c.vp_total); }); return { hoje:Number(r.vp_comprando_hoje), a2027:m['2027'] }; },
       /* kpi-agroSuper5 (R$): [0] comprando agora · [1] entregando em 2027 · [2] perda/ganho ao esperar */
-      local:function(){ var R=LH_PONTE._rsNum; return { hoje:R('kpi-agroSuper5',0), a2027:R('kpi-agroSuper5',1) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { hoje:R('kpi-agroSuper5',0), a2027:R('kpi-agroSuper5',1) }; },
+      render:function(r, ent, motivo){ s5Render(r, ent, motivo); } },
     calcularAgroSuper6: { calc:'agrosuper6',
       entradas:function(G){ var f=function(id,d){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?(d||0):v;}; var v=function(id,d){ return ((G.el(id)||{}).value)||d; };
         return { insumos_diferidos:f('s6_insumos'), pct_declarado:f('s6_declarado',100), real_credito_presumido:f('s6_real_cp'), real_consumo_final:f('s6_real_cf'), real_outro_uso:f('s6_real_uso'),
                  data_aquisicao:v('s6_data','2027-09'), espontanea:(v('s6_cenario','espontanea')==='espontanea'), multa_oficio_pct:f('s6_multa',75), fator_tratamento:parseFloat(v('s6_trat','0.40'))||0.40, ano:2033 }; },
       esperado:function(r){ return (r&&r.exposicao)?{ tributo:Number(r.exposicao.tributo), encargos:+(Number(r.exposicao.juros)+Number(r.exposicao.multa)).toFixed(2) }:null; },
       /* kpi-agroSuper6 (R$): [0] manteve · [1] exposta · [2] tributo · [3] encargos · [4] exposição total */
-      local:function(){ var R=LH_PONTE._rsNum; return { tributo:R('kpi-agroSuper6',2), encargos:R('kpi-agroSuper6',3) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { tributo:R('kpi-agroSuper6',2), encargos:R('kpi-agroSuper6',3) }; },
+      render:function(r, ent, motivo){ s6Render(r, ent, motivo); } },
     /* ═══ v713 · Precificação de Honorários — tela redesenhada no modelo do Mestre C10 (última da lista) ═══ */
     calcularC10: { calc:'c10',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'').replace(',','.'));return isNaN(v)?null:v;};
@@ -27116,19 +27118,20 @@ function calcularTransacao(){
   transacaoRender(transacaoCalcularLocal(ent), ent, null);
 }
 
-function calcularAgroSuper6(){
+/* ═══ v762 · CUTOVER — calcularAgroSuper6: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function s6LerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var insumos=V('s6_insumos',0);
-  if(insumos<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o valor dos insumos adquiridos com diferimento','error'); return; }
-  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(insumos,1000,'Insumos adquiridos')) return;
+  if(insumos<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o valor dos insumos adquiridos com diferimento','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(insumos,1000,'Insumos adquiridos')) return null;
 
   var declarado=V('s6_declarado',100)/100;
   var rCP=V('s6_real_cp',0)/100, rCF=V('s6_real_cf',0)/100, rUso=V('s6_real_uso',0)/100;
   var soma=rCP+rCF+rUso;
   if(Math.abs(soma-1)>0.001){
     if(typeof mostrarToast==='function') mostrarToast('Os percentuais reais somam '+(soma*100).toFixed(0)+'% — precisam somar 100%','error');
-    return;
+    return null;
   }
   var fator=parseFloat(G('s6_trat','0.40'))||0.40;
   var multaPct=V('s6_multa',75)/100;
@@ -27145,6 +27148,12 @@ function calcularAgroSuper6(){
     meses=Math.max(0,(hj.getFullYear()-dAq.getFullYear())*12 + (hj.getMonth()-dAq.getMonth()));
   }catch(_e){ meses=0; }
 
+
+  return { insumos_diferidos:insumos, pct_declarado:declarado*100, real_credito_presumido:rCP*100, real_consumo_final:rCF*100, real_outro_uso:rUso*100, data_aquisicao:dt, espontanea:espontanea, multa_oficio_pct:multaPct*100, fator_tratamento:fator, ano:2033, cenario:'A', referencia:(new Date()).toISOString().slice(0,10), _declarado:declarado, _rCP:rCP, _rCF:rCF, _rUso:rUso, _fator:fator, _multaPct:multaPct };
+}
+function s6CalcularLocal(ent){
+  var insumos=ent.insumos_diferidos, dt=ent.data_aquisicao, espontanea=ent.espontanea, fator=ent._fator, declarado=ent._declarado, rCP=ent._rCP, rCF=ent._rCF, rUso=ent._rUso, multaPct=ent._multaPct;
+  var ALIQ=(typeof window.LH_ALIQ_REF==='number'&&window.LH_ALIQ_REF>0)?window.LH_ALIQ_REF:26.5; var aliqEfetiva=ALIQ*fator; var dt=ent.data_aquisicao, meses=0; try{ var pa=String(dt).split('-'), dAq=new Date(parseInt(pa[0],10), parseInt(pa[1],10)-1, 1), hj=new Date(); meses=Math.max(0,(hj.getFullYear()-dAq.getFullYear())*12 + (hj.getMonth()-dAq.getMonth())); }catch(_e){ meses=0; }
   /* a parcela que MANTÉM o diferimento é só a vendida a quem tem crédito presumido */
   var vCP=insumos*rCP, vCF=insumos*rCF, vUso=insumos*rUso;
   var exposto=vCF+vUso;                       /* perdeu o diferimento */
@@ -27169,6 +27178,16 @@ function calcularAgroSuper6(){
   var divergencia=Math.max(0, declarado-rCP);
   var vDiverg=insumos*divergencia;
 
+
+  return { ok:true, ano:2033, insumos_diferidos:insumos, aliquota_efetiva:aliqEfetiva/100, mantem_diferimento:vCP, perde_diferimento:exposto, exposicao:{ tributo:tributo, juros:juros, multa:multa, total:totalExposicao }, destinacao:{ declarado_pct:declarado*100, real_credito_presumido_pct:rCP*100, real_consumo_final_pct:rCF*100,   real_outro_uso_pct:rUso*100, divergencia_pontos:divergencia*100 } };
+}
+function s6Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-agroSuper6'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var insumos=ent.insumos_diferidos, dt=ent.data_aquisicao, espontanea=ent.espontanea, fator=ent._fator, declarado=ent._declarado, rCP=ent._rCP, rCF=ent._rCF, rUso=ent._rUso, multaPct=ent._multaPct;
+  var ALIQ=(typeof window.LH_ALIQ_REF==='number'&&window.LH_ALIQ_REF>0)?window.LH_ALIQ_REF:26.5; var aliqEfetiva=ALIQ*fator; var dt=ent.data_aquisicao, meses=0; try{ var pa=String(dt).split('-'), dAq=new Date(parseInt(pa[0],10), parseInt(pa[1],10)-1, 1), hj=new Date(); meses=Math.max(0,(hj.getFullYear()-dAq.getFullYear())*12 + (hj.getMonth()-dAq.getMonth())); }catch(_e){ meses=0; }
+  var insumos=ent.insumos_diferidos, declarado=ent._declarado, rCP=ent._rCP, rCF=ent._rCF, rUso=ent._rUso, fator=ent._fator, multaPct=ent._multaPct, espontanea=ent.espontanea, dt=ent.data_aquisicao; var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }; var ALIQ=(typeof window.LH_ALIQ_REF==='number'&&window.LH_ALIQ_REF>0)?window.LH_ALIQ_REF:26.5; var aliqEfetiva=(+r.aliquota_efetiva)*100; var meses=0; try{ var pa=String(dt).split('-'), dAq=new Date(parseInt(pa[0],10), parseInt(pa[1],10)-1, 1), hj=new Date();   meses=Math.max(0,(hj.getFullYear()-dAq.getFullYear())*12 + (hj.getMonth()-dAq.getMonth())); }catch(_e){ meses=0; } var vCP=insumos*rCP, vCF=insumos*rCF, vUso=insumos*rUso, exposto=+r.perde_diferimento; var _e=r.exposicao||{}; var tributo=+_e.tributo, juros=+_e.juros, multa=+_e.multa, totalExposicao=+_e.total; var selicAcum=(tributo>0?juros/tributo:0); var divergencia=(+(r.destinacao&&r.destinacao.divergencia_pontos||0))/100, vDiverg=insumos*divergencia;
   document.getElementById('kpi-agroSuper6').innerHTML=
     '<div class="kpi-card"><div class="kpi-label">Parcela que manteve o diferimento</div><div class="kpi-value">'+(rCP*100).toFixed(0)+'%</div><div class="kpi-sub">'+R(vCP)+'</div></div>'+
     '<div class="kpi-card kpi-alerta"><div class="kpi-label">Parcela exposta</div><div class="kpi-value">'+((rCF+rUso)*100).toFixed(0)+'%</div><div class="kpi-sub">'+R(exposto)+'</div></div>'+
@@ -27253,14 +27272,21 @@ function calcularAgroSuper6(){
   var res=document.getElementById('res-agroSuper6'); if(res) res.style.display='block';
 
   try{ lhAgroSuperChart('agroSuper6', ['Tributo diferido devido','Juros (Selic)','Multa','EXPOSIÇÃO TOTAL'], [tributo, juros, multa, totalExposicao], ['rgba(201,162,39,0.9)','rgba(239,68,68,0.55)','rgba(239,68,68,0.85)','rgba(239,68,68,1)']); }catch(_e){ console.warn('chart s6',_e); }
+
+}
+function calcularAgroSuper6(){
+  var ent=s6LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAgroSuper6')){ LH_PONTE.executar('calcularAgroSuper6', ent); return; }
+  s6Render(s6CalcularLocal(ent), ent, null);
 }
 
-function calcularAgroSuper5(){
+/* ═══ v762 · CUTOVER — calcularAgroSuper5: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function s5LerEntradas(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var valor=V('s5_valor',0);
-  if(valor<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o valor do investimento','error'); return; }
-  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(valor,1000,'Valor do investimento')) return;
+  if(valor<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o valor do investimento','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(valor,1000,'Valor do investimento')) return null;
   var tipo=G('s5_tipo','maquina');
   var taxa=V('s5_taxa',14)/100;
   var regime=G('s5_regime','lr');
@@ -27308,6 +27334,51 @@ function calcularAgroSuper5(){
     return 0;
   }
 
+
+  return { valor_investimento:valor, regime:regime, ano_base:(new Date()).getFullYear(), custo_capital_anual:taxa*100, aliq_icms:icmsAliq*100, usa_ciap:usaCiap, cenario:'A', aliq_ref_pct:ALIQ, _tipo:tipo, _taxa:taxa, _icmsAliq:icmsAliq };
+}
+function s5CalcularLocal(ent){
+  var valor=ent.valor_investimento, regime=ent.regime, usaCiap=ent.usa_ciap, ALIQ=ent.aliq_ref_pct, tipo=ent._tipo, taxa=ent._taxa, icmsAliq=ent._icmsAliq;
+  var ALIQ=(typeof window.LH_ALIQ_REF==='number'&&window.LH_ALIQ_REF>0)?window.LH_ALIQ_REF:26.5;
+  /* valor presente de um fluxo recebido em N parcelas mensais iguais */
+  function vpParcelado(total, n, iAno){
+    if(n<=1) return total;
+    var im=Math.pow(1+iAno,1/12)-1, vp=0, p=total/n;
+    for(var m=1;m<=n;m++) vp += p/Math.pow(1+im,m);
+    return vp;
+  }
+  /* valor presente de um valor único recebido daqui a M meses */
+  function vpUnico(v, meses, iAno){
+    if(meses<=0) return v;
+    var im=Math.pow(1+iAno,1/12)-1;
+    return v/Math.pow(1+im,meses);
+  }
+
+  /* curva de IBS+CBS por ano de aquisição.
+     2026 é teste (1%); a CBS entra plena em 2027; o IBS cresce até 2033. */
+  function novoPct(ano){
+    /* v715: pela fonte única (getAliq → LIONHEART_TABELAS); a curva escrita à mano ficou só como reserva */
+    try{ var t=getAliq(ano); if(t && typeof t.total==='number') return t.total*100; }catch(_e){}
+    if(ano<=2026) return 1.0;
+    if(ano===2027||ano===2028) return 8.8;
+    if(ano===2029) return ALIQ*0.10 + 8.8;
+    if(ano===2030) return ALIQ*0.20 + 8.8;
+    if(ano===2031) return ALIQ*0.30 + 8.8;
+    if(ano===2032) return ALIQ*0.40 + 8.8;
+    return ALIQ;
+  }
+  /* fração do ICMS ainda cobrada — e creditável pelo CIAP */
+  function icmsFrac(ano){
+    try{ var _t=getAliq(ano); if(_t && typeof _t.pcVelhoEstadual==='number') return _t.pcVelhoEstadual; }catch(_e){}   /* v715: fonte única */
+    if(ano<=2028) return 1;
+    if(ano===2029) return 0.9;
+    if(ano===2030) return 0.8;
+    if(ano===2031) return 0.7;
+    if(ano===2032) return 0.6;
+    return 0;
+  }
+
+
   var hoje=new Date(), anoBase=hoje.getFullYear();
   var linhas='', cen=[], melhorVP=-1, melhorAno=anoBase, vp2026=0;
 
@@ -27343,6 +27414,55 @@ function calcularAgroSuper5(){
     cen.push({ano:ano, nominal:nominal, vp:vpTotal, como:comoVem});
   }
 
+
+  return { ok:true, regime:regime, ano_base:anoBase, cenarios:cen.map(function(c){ return { ano:c.ano, vp_total:c.vp, como:c.como,   meses_de_espera:(c.ano-anoBase)*12, credito_cbs_ibs_imediato:0, credito_icms_ciap_1_48:0, credito_pis_cofins_1_48:0 }; }), melhor_vp:melhorVP, melhor_ano:melhorAno, vp_comprando_hoje:vp2026, ganho_de_esperar:melhorVP-vp2026 };
+}
+function s5Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-agroSuper5'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var valor=ent.valor_investimento, regime=ent.regime, usaCiap=ent.usa_ciap, ALIQ=ent.aliq_ref_pct, tipo=ent._tipo, taxa=ent._taxa, icmsAliq=ent._icmsAliq;
+  var ALIQ=(typeof window.LH_ALIQ_REF==='number'&&window.LH_ALIQ_REF>0)?window.LH_ALIQ_REF:26.5;
+  /* valor presente de um fluxo recebido em N parcelas mensais iguais */
+  function vpParcelado(total, n, iAno){
+    if(n<=1) return total;
+    var im=Math.pow(1+iAno,1/12)-1, vp=0, p=total/n;
+    for(var m=1;m<=n;m++) vp += p/Math.pow(1+im,m);
+    return vp;
+  }
+  /* valor presente de um valor único recebido daqui a M meses */
+  function vpUnico(v, meses, iAno){
+    if(meses<=0) return v;
+    var im=Math.pow(1+iAno,1/12)-1;
+    return v/Math.pow(1+im,meses);
+  }
+
+  /* curva de IBS+CBS por ano de aquisição.
+     2026 é teste (1%); a CBS entra plena em 2027; o IBS cresce até 2033. */
+  function novoPct(ano){
+    /* v715: pela fonte única (getAliq → LIONHEART_TABELAS); a curva escrita à mano ficou só como reserva */
+    try{ var t=getAliq(ano); if(t && typeof t.total==='number') return t.total*100; }catch(_e){}
+    if(ano<=2026) return 1.0;
+    if(ano===2027||ano===2028) return 8.8;
+    if(ano===2029) return ALIQ*0.10 + 8.8;
+    if(ano===2030) return ALIQ*0.20 + 8.8;
+    if(ano===2031) return ALIQ*0.30 + 8.8;
+    if(ano===2032) return ALIQ*0.40 + 8.8;
+    return ALIQ;
+  }
+  /* fração do ICMS ainda cobrada — e creditável pelo CIAP */
+  function icmsFrac(ano){
+    try{ var _t=getAliq(ano); if(_t && typeof _t.pcVelhoEstadual==='number') return _t.pcVelhoEstadual; }catch(_e){}   /* v715: fonte única */
+    if(ano<=2028) return 1;
+    if(ano===2029) return 0.9;
+    if(ano===2030) return 0.8;
+    if(ano===2031) return 0.7;
+    if(ano===2032) return 0.6;
+    return 0;
+  }
+
+
+  var valor=ent.valor_investimento, tipo=ent._tipo, taxa=ent._taxa, regime=ent.regime, icmsAliq=ent._icmsAliq, usaCiap=ent.usa_ciap; var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }; var anoBase=ent.ano_base; var cen=(r.cenarios||[]).map(function(c){ var nominal=+(c.credito_cbs_ibs_imediato||0)+(+(c.credito_icms_ciap_1_48||0))+(+(c.credito_pis_cofins_1_48||0));   return { ano:+c.ano, nominal:nominal, vp:+c.vp_total, como:String(c.como||'') }; }); var melhorVP=+r.melhor_vp, melhorAno=+r.melhor_ano, vp2026=+r.vp_comprando_hoje; var linhas='';
   cen.forEach(function(c){
     var dif=c.vp-vp2026;
     var dest = (c.ano===melhorAno) ? ' style="background:rgba(22,196,124,.10);font-weight:600"' :
@@ -27437,6 +27557,12 @@ function calcularAgroSuper5(){
   var res=document.getElementById('res-agroSuper5'); if(res) res.style.display='block';
 
   try{ lhAgroSuperChart('agroSuper5', ['Comprando agora','Entregando em 2027'], [vp2026, c2027.vp], ['rgba(201,162,39,0.9)','rgba(16,185,129,0.85)']); }catch(_e){ console.warn('chart s5',_e); }
+
+}
+function calcularAgroSuper5(){
+  var ent=s5LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAgroSuper5')){ LH_PONTE.executar('calcularAgroSuper5', ent); return; }
+  s5Render(s5CalcularLocal(ent), ent, null);
 }
 
 /* ═══ v725 · CUTOVER — calcularAgroSuper4: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
