@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v758";</script>
+<body><script>window.LH_VERSAO="v759";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3310,7 +3310,8 @@ window.LH_PONTE = (function(){
                  pct_exportacao:f('cr05_pct_export'), debito_cbs:f('cr05_debito_cbs'),
                  ano_credito:parseInt((G.el('cr05_ano_credito')||{}).value,10)||2024, ano_referencia:2026 }; },
       esperado:function(r){ return r?{ saldo_total:Number(r.saldo_total), ressarcivel:Number(r.parcela_ressarcivel), compensar:Number(r.parcela_compensar) }:null; },
-      local:function(){ return { saldo_total:LH_PONTE._kpiNum('kpi-cr05',0), ressarcivel:LH_PONTE._kpiNum('kpi-cr05',1), compensar:LH_PONTE._kpiNum('kpi-cr05',2) }; } },
+      local:function(){ return { saldo_total:LH_PONTE._kpiNum('kpi-cr05',0), ressarcivel:LH_PONTE._kpiNum('kpi-cr05',1), compensar:LH_PONTE._kpiNum('kpi-cr05',2) }; },
+      render:function(r, ent, motivo){ cr05Render(r, ent, motivo); } },
     calcularCR06: { calc:'cr06',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { beneficio_anual:f('cr06_ben'), regime:((G.el('cr06_regime')||{}).value)||'lr',
@@ -29686,7 +29687,8 @@ window.calcularCR04 = function() {
 };
 
 // ══════ CR-05: SALDO CREDOR PIS/COFINS (espelha Excel-mestre CR05) ══════
-window.calcularCR05 = function() {
+/* ═══ v759 · CUTOVER — Saldo Credor PIS/COFINS → CBS (CR05): ler · calcular · desenhar ═══ */
+function cr05LerEntradas(){
   var saldo        = parseFloat((document.getElementById('cr05_saldo')||{value:0}).value) || 0;
   var extemp       = parseFloat((document.getElementById('cr05_extemporaneos')||{value:0}).value) || 0;
   var estoque      = parseFloat((document.getElementById('cr05_estoque')||{value:0}).value) || 0;
@@ -29697,9 +29699,14 @@ window.calcularCR05 = function() {
 
   if(saldo <= 0 && extemp <= 0 && estoque <= 0) {
     mostrarToast('Informe ao menos um saldo ou crédito a recuperar', 'error');
-    return;
+    return null;
   }
 
+
+  return { saldo_credor:saldo, extemporaneos:extemp, estoque:estoque, pct_exportacao:pctExport*100, debito_cbs_mensal:debitoCBS, ano_credito:anoCredito, ano_atual:(new Date()).getFullYear(), taxa_pct:taxa*100, _pctExport:pctExport, _taxa:taxa, _anoCredito:anoCredito };
+}
+function cr05CalcularLocal(ent){
+  var saldo=ent.saldo_credor, extemp=ent.extemporaneos, estoque=ent.estoque, pctExport=ent._pctExport, debitoCBS=ent.debito_cbs_mensal, anoCredito=ent._anoCredito, taxa=ent._taxa;
   // 2) Saldo credor total recuperável (espelha B15-B18)
   var creditoEstoque = estoque * 0.0925;           // crédito presumido CBS sobre estoque
   var saldoTotal = saldo + extemp + creditoEstoque; // B18
@@ -29730,6 +29737,14 @@ window.calcularCR05 = function() {
   var ganhoAntecipar = saldoTotal * taxa;
 
   // KPIs
+
+  return { ok:true, credito_estoque:creditoEstoque, saldo_total:saldoTotal, parcela_ressarcivel:parcelaRessarcivel, parcela_compensar:parcelaCompensar, anos_para_consumir:anosConsumir, recomendacao:recomendacao, ano_limite:anoLimite, anos_restantes:anosRestantes, status_prazo:statusPrazo, ganho_antecipar:ganhoAntecipar };
+}
+function cr05Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-cr05'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var saldo=ent.saldo_credor, extemp=ent.extemporaneos, estoque=ent.estoque, pctExport=ent._pctExport, debitoCBS=ent.debito_cbs_mensal, anoCredito=ent._anoCredito, taxa=ent._taxa; var creditoEstoque=+r.credito_estoque, saldoTotal=+r.saldo_total, parcelaRessarcivel=+r.parcela_ressarcivel, parcelaCompensar=+r.parcela_compensar, anosConsumir=+r.anos_para_consumir, recomendacao=String(r.recomendacao||''), anoLimite=+r.ano_limite, anoAtual=(new Date()).getFullYear(), anosRestantes=+r.anos_restantes, statusPrazo=String(r.status_prazo||''), ganhoAntecipar=+(r.ganho_antecipar!=null?r.ganho_antecipar:saldoTotal*taxa); var _anoAtual=anoAtual, _idade=_anoAtual-anoCredito, alertaPrescr=''; if(_idade>=5) alertaPrescr='<div style="background:rgba(224,90,77,.12);border:1px solid rgba(224,90,77,.4);border-radius:8px;padding:10px 14px;margin:10px 0;color:#e05a4d;font-size:.88em"><b>⚠ PRESCRIÇÃO:</b> o último creditamento foi em '+anoCredito+' ('+_idade+' anos) — parcela pode estar PRESCRITA (art. 168 CTN, 5 anos). Priorize o pedido JÁ.</div>'; else if(_idade>=4) alertaPrescr='<div style="background:rgba(232,185,58,.10);border:1px solid rgba(232,185,58,.35);border-radius:8px;padding:10px 14px;margin:10px 0;color:#e8b93a;font-size:.88em"><b>⏳ Atenção:</b> creditamento de '+anoCredito+' — resta ~'+(5-_idade)+' ano(s) antes da prescrição (art. 168 CTN). Não deixe pra depois.</div>';
   var kpis = '';
   kpis += '<div class="kpi-card kpi-destaque"><div class="kpi-label">Saldo recuperável total</div><div class="kpi-value">'+fmtR(saldoTotal)+'</div></div>';
   kpis += '<div class="kpi-card"><div class="kpi-label">Parcela ressarcível (export)</div><div class="kpi-value">'+fmtR(parcelaRessarcivel)+'</div></div>';
@@ -29787,6 +29802,12 @@ window.calcularCR05 = function() {
       recomendacao: statusPrazo
     });
   }
+
+}
+window.calcularCR05 = function(){
+  var ent=cr05LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularCR05')){ LH_PONTE.executar('calcularCR05', ent); return; }
+  cr05Render(cr05CalcularLocal(ent), ent, null);
 };
 
 function calcularCR05Live() {
