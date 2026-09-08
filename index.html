@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v765";</script>
+<body><script>window.LH_VERSAO="v766";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3847,14 +3847,17 @@ window.LH_PONTE = (function(){
        o servidor usa a fatia do DAS (art. 47 §9º II, ~15,5% do valor). Por isso o crédito não entra na comparação. */
     snRenderC: { calc:'simnotas',
       entradas:function(G){ var reg=((G.el('snc_forn_reg')||{}).value)||'regular'; var ano=(typeof window.SN_ANO==='number')?window.SN_ANO:2027;
-        return (window.SN_C||[]).map(function(it){ return { valor:+(it.tot||0), regime_emitente:reg, aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano }; }); },   /* manda a alíquota que a TELA usou (NaN → 0), para comparar motor com motor */
+        return (window.SN_C||[]).map(function(it){ return { valor:+(it.tot||0), regime_emitente:reg, aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano,
+          aliq_velha:(window.SN_VELHO_ALIQ?window.SN_VELHO_ALIQ('snc'):0), tipo_velho:(window.SN_VELHO_TIPO?window.SN_VELHO_TIPO('snc'):'icms') }; }); },   /* manda a alíquota que a TELA usou (NaN → 0), para comparar motor com motor */
       esperado:function(lista){ if(!Array.isArray(lista)) return null; var d=0; lista.forEach(function(r){ d+=Number((r&&r.nota_de_venda&&r.nota_de_venda.ibs_cbs_destacado)||0); }); return { destacado:+d.toFixed(2) }; },
-      local:function(){ var d=0; (window.SN_C||[]).forEach(function(it){ d+=(+it.cbs||0)+(+it.ibs||0); }); return { destacado:+d.toFixed(2) }; } },
+      local:function(){ var d=0; (window.SN_C||[]).forEach(function(it){ d+=(+it.cbs||0)+(+it.ibs||0); }); return { destacado:+d.toFixed(2) }; },
+      render:function(r, ent, motivo){ sncRender(r, ent, motivo); } },
     snRenderV: { calc:'simnotas',
       entradas:function(G){ var ano=(typeof window.SN_ANO==='number')?window.SN_ANO:2027;
         return (window.SN_V||[]).map(function(it){ return { valor:+(it.tot||0), regime_emitente:'regular', aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano }; }); },
       esperado:function(lista){ if(!Array.isArray(lista)) return null; var d=0; lista.forEach(function(r){ d+=Number((r&&r.nota_de_venda&&r.nota_de_venda.ibs_cbs_destacado)||0); }); return { destacado:+d.toFixed(2) }; },
-      local:function(){ var d=0; (window.SN_V||[]).forEach(function(it){ d+=(+it.cbs||0)+(+it.ibs||0); }); return { destacado:+d.toFixed(2) }; } },
+      local:function(){ var d=0; (window.SN_V||[]).forEach(function(it){ d+=(+it.cbs||0)+(+it.ibs||0); }); return { destacado:+d.toFixed(2) }; },
+      render:function(r, ent, motivo){ snvRender(r, ent, motivo); } },
 
     /* ═══ v701 · PATRIMONIAL 2 — Valuation, Reorganização (n18), Regime Imobiliário, Construção ═══
        Fora, com motivo (todas têm aba no Mestre — próximo bloco é lá):
@@ -57398,7 +57401,38 @@ function snTabela(itens,delFn,credFator){
   });
   return h+'</table>';
 }
-function snRenderV(){
+/* ═══ v766 · CUTOVER — Simulador de Notas (snRenderV): ler · calcular · desenhar ═══ */
+function snvLerEntradas(){
+  var reg=((document.getElementById('snv_forn_reg')||{value:'regular'}).value)||'regular';
+  var ano=(typeof window.SN_ANO==='number')?window.SN_ANO:2027;
+  var velhoAliq=(window.SN_VELHO_ALIQ?window.SN_VELHO_ALIQ('snv'):0);
+  var velhoTipo=(window.SN_VELHO_TIPO?window.SN_VELHO_TIPO('snv'):'icms');
+  return (window.SN_V||[]).map(function(it){ return { valor:+(it.tot||0), regime_emitente:reg,
+    aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano, aliq_velha:velhoAliq, tipo_velho:velhoTipo,
+    _id:it.id }; });
+}
+function snvCalcularLocal(ent){
+  /* o cálculo por item já foi feito em snItem() quando o item entrou na nota */
+  return (window.SN_V||[]).map(function(it){ return { ok:true, ano:(typeof window.SN_ANO==='number')?window.SN_ANO:2027,
+    nota_de_venda:{ ibs_cbs_destacado:(+it.ibs||0)+(+it.cbs||0), ibs:(+it.ibs||0), cbs:(+it.cbs||0) },
+    tributo_velho:{ valor:(+it.velho||0), tipo:String(it.velhoTipo||'icms'), aliquota_pct:(+it.velhoAliq||0), fator_do_ano:(+it.velhoFat||1) } }; });
+}
+function snvRender(r, ent, motivo){
+  var _box=document.getElementById('snv_lista'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  /* valores tributários do servidor entram na lista da tela, item a item, na mesma ordem */
+  var _lista=Array.isArray(r)?r:null;
+  if(_lista && _lista.length===(window.SN_V||[]).length){
+    window.SN_V.forEach(function(it,ix){ var x=_lista[ix]; if(!x||x.ok===false) return;
+      var nv=x.nota_de_venda||{}, tv=x.tributo_velho||{};
+      if(nv.ibs!=null) it.ibs=+nv.ibs; if(nv.cbs!=null) it.cbs=+nv.cbs;
+      if(nv.ibs==null && nv.ibs_cbs_destacado!=null){ var d=+nv.ibs_cbs_destacado, s0=(+it.ibs||0)+(+it.cbs||0);
+        if(s0>0){ it.ibs=d*((+it.ibs||0)/s0); it.cbs=d*((+it.cbs||0)/s0); } else { it.ibs=d; it.cbs=0; } }
+      if(tv.valor!=null) it.velho=+tv.valor;
+      it.novo=(+it.ibs||0)+(+it.cbs||0); it.trib=it.novo+(+it.velho||0); });
+  }
+
   var l=document.getElementById('snv_lista');
   if(!SN_V.length){l.innerHTML='<div class="vazio">Nota vazia — adicione o primeiro item.</div>';}
   else l.innerHTML=snTabela(SN_V,'snDelV');
@@ -57431,8 +57465,45 @@ function snRenderV(){
   var al=document.getElementById('snv_alerta');
   if(esp){al.style.display='block';al.innerHTML='ℹ <b>Regime específico na nota:</b> Hotelaria e Bares (−40%, arts. 277–283) <b>não geram crédito</b> ao cliente. Eventos/Feiras (−60%, art. 139 + Anexo X) <b>geram</b>. A caracterização correta define a carga e o crédito do adquirente.';}
   else al.style.display='none';
+
 }
-function snRenderC(){
+function snRenderV(){
+  var ent=snvLerEntradas();
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('snRenderV')){ LH_PONTE.executar('snRenderV', ent); return; }
+  snvRender(snvCalcularLocal(ent), ent, null);
+}
+/* ═══ v766 · CUTOVER — Simulador de Notas (snRenderC): ler · calcular · desenhar ═══ */
+function sncLerEntradas(){
+  var reg=((document.getElementById('snc_forn_reg')||{value:'regular'}).value)||'regular';
+  var ano=(typeof window.SN_ANO==='number')?window.SN_ANO:2027;
+  var velhoAliq=(window.SN_VELHO_ALIQ?window.SN_VELHO_ALIQ('snc'):0);
+  var velhoTipo=(window.SN_VELHO_TIPO?window.SN_VELHO_TIPO('snc'):'icms');
+  return (window.SN_C||[]).map(function(it){ return { valor:+(it.tot||0), regime_emitente:reg,
+    aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano, aliq_velha:velhoAliq, tipo_velho:velhoTipo,
+    _id:it.id }; });
+}
+function sncCalcularLocal(ent){
+  /* o cálculo por item já foi feito em snItem() quando o item entrou na nota */
+  return (window.SN_C||[]).map(function(it){ return { ok:true, ano:(typeof window.SN_ANO==='number')?window.SN_ANO:2027,
+    nota_de_venda:{ ibs_cbs_destacado:(+it.ibs||0)+(+it.cbs||0), ibs:(+it.ibs||0), cbs:(+it.cbs||0) },
+    tributo_velho:{ valor:(+it.velho||0), tipo:String(it.velhoTipo||'icms'), aliquota_pct:(+it.velhoAliq||0), fator_do_ano:(+it.velhoFat||1) } }; });
+}
+function sncRender(r, ent, motivo){
+  var _box=document.getElementById('snc_lista'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  /* valores tributários do servidor entram na lista da tela, item a item, na mesma ordem */
+  var _lista=Array.isArray(r)?r:null;
+  if(_lista && _lista.length===(window.SN_C||[]).length){
+    window.SN_C.forEach(function(it,ix){ var x=_lista[ix]; if(!x||x.ok===false) return;
+      var nv=x.nota_de_venda||{}, tv=x.tributo_velho||{};
+      if(nv.ibs!=null) it.ibs=+nv.ibs; if(nv.cbs!=null) it.cbs=+nv.cbs;
+      if(nv.ibs==null && nv.ibs_cbs_destacado!=null){ var d=+nv.ibs_cbs_destacado, s0=(+it.ibs||0)+(+it.cbs||0);
+        if(s0>0){ it.ibs=d*((+it.ibs||0)/s0); it.cbs=d*((+it.cbs||0)/s0); } else { it.ibs=d; it.cbs=0; } }
+      if(tv.valor!=null) it.velho=+tv.valor;
+      it.novo=(+it.ibs||0)+(+it.cbs||0); it.trib=it.novo+(+it.velho||0); });
+  }
+
   var reg=document.getElementById('snc_forn_reg').value, fator=reg==='simples'?0.20:1; /* ⚒ padrão-casa: crédito SN ≈ parcela DAS ≈ 20% do cheio */
   var l=document.getElementById('snc_lista');
   if(!SN_C.length){l.innerHTML='<div class="vazio">Nota vazia — adicione o primeiro item.</div>';}
@@ -57448,6 +57519,12 @@ function snRenderC(){
   var al=document.getElementById('snc_alerta');
   if(reg==='simples'){al.style.display='block';al.innerHTML='⚠ <b>Fornecedor do Simples/MEI:</b> na Reforma o crédito fica <b>limitado ao efetivamente recolhido</b> pelo fornecedor — aqui estimamos 50% (valor editável na validação). O regime do fornecedor passa a pesar na decisão de compra: compare o <b>custo líquido real</b>, não só o preço.';}
   else al.style.display='none';
+
+}
+function snRenderC(){
+  var ent=sncLerEntradas();
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('snRenderC')){ LH_PONTE.executar('snRenderC', ent); return; }
+  sncRender(sncCalcularLocal(ent), ent, null);
 }
 function snFech(){
   var deb=SN_V.reduce(function(a,i){return a+i.trib;},0),
