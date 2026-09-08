@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v763";</script>
+<body><script>window.LH_VERSAO="v764";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3740,7 +3740,8 @@ window.LH_PONTE = (function(){
       /* ag14_kpis (R$): [0] receita projetada · [1] "R$ 3,6 mi" (não casa com centavos, mas casa com _rsNum!) · [2] excesso */
       local:function(){ var t=((document.getElementById('ag14_kpis')||{}).textContent||'').replace(/\s+/g,' ');
         var n=function(rx){ var m=t.match(rx); return m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null; };
-        return { projetada:n(/Receita projetada\s*R\$\s*([\d.]+,\d{2})/), excesso:n(/excesso\s*R\$\s*([\d.]+,\d{2})/) }; } },
+        return { projetada:n(/Receita projetada\s*R\$\s*([\d.]+,\d{2})/), excesso:n(/excesso\s*R\$\s*([\d.]+,\d{2})/) }; },
+      render:function(r, ent, motivo){ ag14Render(r, ent, motivo); } },
     /* ═══ v707 · Analisador de Contrato (reequilíbrio) ═══
        A tela e fn_contrato batem no centavo. O resultado vive na TABELA (ctc_tab), não em KPI:
        colunas ANO · só indexado · indexado+reequilíbrio · Δ. A ponte lê a linha de 2027 e a de 2033.
@@ -13085,13 +13086,20 @@ window.LH_AGRO_PARAM = window.LH_AGRO_PARAM || { limiteArt164: 3600000, tolPar3:
    comparava dois objetos vazios e nunca acusou nada. Substituída pela
    verificação de integridade do alias, logo abaixo da fonte única. */
 window._ag14Chart = window._ag14Chart || null;
-function lhAg14Calc(){
+/* ═══ v764 · CUTOVER — lhAg14Calc: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function ag14LerEntradas(){
   var P=window.LH_AGRO_PARAM, LIM=P.limiteArt164, MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
   var meses=[], fill=[];
   for (var i=0;i<12;i++) { var v=document.getElementById('ag14_m'+i).value;
     var n=(v===''||v===null)?null:parseFloat(v); if(n!==null&&isNaN(n)) n=null; meses.push(n); if(n!==null) fill.push(n); }
   var outras=parseFloat(document.getElementById('ag14_outras').value)||0;
   var grupo=parseFloat(document.getElementById('ag14_grupo').value)||0;
+
+  return { meses:meses, outras_receitas:outras, receitas_grupo:grupo, limite:(window.LH_AGRO_PARAM&&window.LH_AGRO_PARAM.limiteArt164)||3600000, tolerancia:((window.LH_AGRO_PARAM&&window.LH_AGRO_PARAM.tolPar3)!=null?window.LH_AGRO_PARAM.tolPar3:0.2), _meses:meses };
+}
+function ag14CalcularLocal(ent){
+  var meses=ent._meses, outras=ent.outras_receitas, grupo=ent.receitas_grupo;
+  var P=window.LH_AGRO_PARAM||{}; var LIM=P.limiteArt164||3600000; var MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez']; var fill=(ent._meses||[]).filter(function(x){ return x!==null; });
   var media=fill.length?fill.reduce(function(x,y){return x+y},0)/fill.length:0;
   var quota=(outras+grupo)/12, acum=0, mcross=null, cons=[], acums=[];
   for (var i=0;i<12;i++) { var c=(meses[i]===null?media:meses[i])+quota; var prev=acum; acum+=c;
@@ -13103,7 +13111,17 @@ function lhAg14Calc(){
   if (total<LIM) { quando='NÃO VIRA CONTRIBUINTE NESTE ANO'; prep='—'; regime='fica'; }
   else if (excesso<=P.tolPar3*LIM) { quando='1º/JAN DO ANO SEGUINTE — §3º (excesso ≤ 20%)'; prep=(12-(mcross||12)+1)+' meses'; regime='p3'; }
   else { var m2=mcross+2; quando='2º MÊS APÓS O ESTOURO (§2º): '+(m2<=12?MES[m2-1]:MES[m2-13]+' do ano seguinte'); prep='2 meses'; regime='p2'; }
-  var fmt=function(v){return 'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})};
+ 
+  return { ok:true, limite:LIM, media_mensal_projetada:media, quota_outras_receitas:quota, meses_realizados:(meses.filter(function(x){return x!==null;}).length), receita_projetada:total, excesso:excesso, pct_do_limite:pct*100, excesso_pct:(LIM>0?excesso/LIM*100:0), farol:({'🟢 VERDE':'VERDE','🟡 AMARELO':'AMARELO','🔴 VERMELHO':'VERMELHO'})[farol]||farol, regime:({fica:'fica',p3:'paragrafo_3',p2:'paragrafo_2'})[regime]||regime, cruza_em:(mcross?MES[mcross-1]:null), vira_contribuinte_quando:quando, tempo_de_preparacao:prep, detalhe_mensal:cons.map(function(v,i){ return { mes:MES[i], valor:v, acumulado:acums[i], realizado:(meses[i]!==null) }; }) };
+}
+function ag14Render(r, ent, motivo){
+  var _box=document.getElementById('ag14_kpis'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var meses=ent._meses, outras=ent.outras_receitas, grupo=ent.receitas_grupo;
+  var P=window.LH_AGRO_PARAM||{}; var LIM=P.limiteArt164||3600000; var MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez']; var fill=(ent._meses||[]).filter(function(x){ return x!==null; });
+  var P=window.LH_AGRO_PARAM, LIM=+r.limite, MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez']; var meses=ent._meses, outras=ent.outras_receitas, grupo=ent.receitas_grupo; var media=+r.media_mensal_projetada, quota=+r.quota_outras_receitas; var _det=(r.detalhe_mensal||[]); var cons=_det.map(function(d){ return +d.valor; }), acums=_det.map(function(d){ return +d.acumulado; }); var acum=+r.receita_projetada, total=acum, excesso=+r.excesso, pct=(+r.pct_do_limite)/100; var mcross=null; if(r.cruza_em){ var _ix=MES.indexOf(String(r.cruza_em)); if(_ix>=0) mcross=_ix+1; } var farol=({VERDE:'🟢 VERDE',AMARELO:'🟡 AMARELO',VERMELHO:'🔴 VERMELHO'})[String(r.farol||'')]||String(r.farol||''); var regime=({fica:'fica',paragrafo_3:'p3',paragrafo_2:'p2'})[String(r.regime||'')]||'fica'; var quando=String(r.vira_contribuinte_quando||''), prep=String(r.tempo_de_preparacao||'');
+ var fmt=function(v){return 'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})};
   var fmtK=function(v){return v>=1e6?('R$ '+(v/1e6).toLocaleString('pt-BR',{maximumFractionDigits:2})+' mi'):fmt(v)};
   var COR = regime==='fica' ? '#10b981' : (regime==='p3' ? '#c9a227' : '#ef4444');
   document.getElementById('ag14_out').style.display='block';
@@ -13176,6 +13194,12 @@ function lhAg14Calc(){
       _b.onclick=function(){ window.gerarPdfCalc(_b); };
       _sec.appendChild(_b);
     } }catch(_e){}
+
+}
+function lhAg14Calc(){
+  var ent=ag14LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('lhAg14Calc')){ LH_PONTE.executar('lhAg14Calc', ent); return; }
+  ag14Render(ag14CalcularLocal(ent), ent, null);
 }
 </script>
 <div class="page" id="page-agroSuper1">
