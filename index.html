@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v762";</script>
+<body><script>window.LH_VERSAO="v763";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3755,7 +3755,8 @@ window.LH_PONTE = (function(){
       local:function(){ var t=((document.getElementById('ctc_tab')||{}).textContent||'').replace(/\s+/g,' ');
         var n=function(ano){ var re=new RegExp(ano+'\\s*R\\$\\s*[\\d.]+,\\d{2}\\s*R\\$\\s*([\\d.]+,\\d{2})');
           var m=t.match(re); return m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null; };
-        return { a2027:n(2027), a2033:n(2033) }; } },
+        return { a2027:n(2027), a2033:n(2033) }; },
+      render:function(r, ent, motivo){ ctcRender(r, ent, motivo); } },
     /* ═══ v708 · Rentabilidade por Cliente (fn_c09, Mestre C09) ═══
        P1 na prática: o campo c09_nome é NOME DE CLIENTE e não sai do navegador — a ponte manda só números.
        O despachante ainda barra qualquer chave "nome" (porteiro de identificadores), então é dupla trava. */
@@ -15523,11 +15524,18 @@ function ctcObj(){
  var o=document.getElementById('ctc_obj').value, d=document.getElementById('ctc_dentro');
  if(d && ['8.65','20.65',''].indexOf(String(d.value))>=0) d.value=(o==='servico')?'8.65':'20.65';
 }
-function ctcCalc(){
+/* ═══ v763 · CUTOVER — ctcCalc: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function ctcLerEntradas(){
  function gv(id){return parseFloat((document.getElementById('ctc_'+id)||{value:0}).value)||0;}
  var preco=gv('preco'), infl=gv('infl')/100, dentro=gv('dentro')/100, desc=gv('desc')/100, plena=gv('balde');
  var reeq=document.getElementById('ctc_reeq').value;
- if(preco<=0){ if(typeof mostrarToast==='function')mostrarToast('Confirme o preço atual (condicionante 1)','error'); else alert('Confirme o preço atual do contrato.'); return; }
+ if(preco<=0){ if(typeof mostrarToast==='function')mostrarToast('Confirme o preço atual (condicionante 1)','error'); else alert('Confirme o preço atual do contrato.'); return null; }
+
+  return { preco:preco, pct_dentro:dentro*100, aliquota_plena:plena, inflacao_aa:infl*100, desconto:desc*100, reequilibrio:reeq, cenario:'A', _infl:infl, _dentro:dentro, _desc:desc };
+}
+function ctcCalcularLocal(ent){
+  var preco=ent.preco, plena=ent.aliquota_plena, reeq=ent.reequilibrio, infl=ent._infl, dentro=ent._dentro, desc=ent._desc;
+  
  var precoLiqDesc=preco*(1-desc);
  var F_ICMS=LH_MAPA_ANOS('icms',{2026:1,2027:1,2028:1,2029:.9,2030:.8,2031:.7,2032:.6,2033:0});
  var F_IBSR=LH_MAPA_ANOS('ibsr',{2026:0,2027:0,2028:0,2029:.1,2030:.2,2031:.3,2032:.4,2033:1});
@@ -15553,6 +15561,16 @@ function ctcCalc(){
     +'<td style="text-align:right;padding:6px 9px;font-weight:700;color:var(--gold2,#e0b93a);border-bottom:1px solid rgba(255,255,255,.05)">R$ '+_apN(precoTotal)+'</td>'
     +'<td style="text-align:right;padding:6px 9px;color:'+(dif>=0?'#e8916f':'#3ecf8e')+';border-bottom:1px solid rgba(255,255,255,.05)">'+(dif>=0?'+':'')+'R$ '+_apN(dif)+'</td></tr>';
  }
+
+  return { ok:true, preco_atual:preco, preco_liquido:precoLiqDesc, desconto_pct:desc*100, tributo_por_dentro_pct:dentro*100, aliquota_plena_pct:plena, fracao_pis_cofins:pcFrac, reequilibrio:reeq, projecao:estagios.map(function(c){ return { ano:c.ano, preco_indexado:c.idx, preco_total:c.reeq, diferenca:c.dif,   diferenca_pct:(c.idx>0?c.dif/c.idx*100:0) }; }), impacto_2027:(estagios[1]?estagios[1].dif:0), impacto_2033:(estagios[7]?estagios[7].dif:0) };
+}
+function ctcRender(r, ent, motivo){
+  var _box=document.getElementById('ctc_tab'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var preco=ent.preco, plena=ent.aliquota_plena, reeq=ent.reequilibrio, infl=ent._infl, dentro=ent._dentro, desc=ent._desc;
+  
+  var preco=ent.preco, infl=ent._infl, dentro=ent._dentro, desc=ent._desc, plena=ent.aliquota_plena, reeq=ent.reequilibrio; var precoLiqDesc=+r.preco_liquido, pcFrac=+r.fracao_pis_cofins; var F_ICMS=LH_MAPA_ANOS('icms',{2026:1,2027:1,2028:1,2029:.9,2030:.8,2031:.7,2032:.6,2033:0}); var F_IBSR=LH_MAPA_ANOS('ibsr',{2026:0,2027:0,2028:0,2029:.1,2030:.2,2031:.3,2032:.4,2033:1}); var estagios=(r.projecao||[]).map(function(p){ return { ano:+p.ano, idx:+p.preco_indexado, reeq:+p.preco_total, dif:+p.diferenca }; }); var linhas=''; estagios.forEach(function(c){ var ano=c.ano, precoIdx=c.idx, precoTotal=c.reeq, dif=c.dif;  linhas+='<tr><td style="padding:6px 9px;color:#d4dce6;border-bottom:1px solid rgba(255,255,255,.05)">'+ano+(ano===2026?' · teste':'')+'</td>'  +'<td style="text-align:right;padding:6px 9px;color:#c8d2de;border-bottom:1px solid rgba(255,255,255,.05)">R$ '+_apN(precoIdx)+'</td>'  +'<td style="text-align:right;padding:6px 9px;font-weight:700;color:var(--gold2,#e0b93a);border-bottom:1px solid rgba(255,255,255,.05)">R$ '+_apN(precoTotal)+'</td>'  +'<td style="text-align:right;padding:6px 9px;color:'+(dif>=0?'#e8916f':'#3ecf8e')+';border-bottom:1px solid rgba(255,255,255,.05)">'+(dif>=0?'+':'')+'R$ '+_apN(dif)+'</td></tr>'; });
  document.getElementById('ctc_tab').innerHTML='<table style="width:100%;border-collapse:collapse;font-size:.84rem;min-width:520px">'
   +'<tr><th style="text-align:left;padding:7px 9px;color:#8a97a8;font-size:.7rem;border-bottom:1px solid rgba(255,255,255,.12)">ANO</th><th style="text-align:right;padding:7px 9px;color:#9aa7b8;border-bottom:1px solid rgba(255,255,255,.12)">SÓ INDEXADO ('+(document.getElementById('ctc_idx').value)+')</th><th style="text-align:right;padding:7px 9px;color:var(--gold2,#e0b93a);border-bottom:1px solid rgba(255,255,255,.12)">INDEXADO + REEQUILÍBRIO TRIBUTÁRIO</th><th style="text-align:right;padding:7px 9px;color:#9aa7b8;border-bottom:1px solid rgba(255,255,255,.12)">Δ do reequilíbrio</th></tr>'+linhas+'</table>'
   +'<div style="font-size:.72rem;color:#8a97a8;margin-top:8px">Metodologia: preço × (1−desconto); tributos velhos POR DENTRO decaindo (ICMS/ISS em décimos 2029-2033, PIS/COFINS extintos em 2027); CBS/IBS POR FORA sobre a base sem o ICMS remanescente — a mesma da Formação de Preço. 2026: CBS 0,9%+IBS 0,1% compensáveis (efeito neutro, art. 348 LC 214).</div>';
@@ -15564,6 +15582,12 @@ function ctcCalc(){
   +'<div style="background:rgba(201,162,39,.05);border:1px solid rgba(201,162,39,.3);border-radius:12px;padding:14px"><div style="font-weight:800;color:var(--gold2,#e0b93a);font-size:.86rem">3 · Blindar o próximo contrato</div><div style="font-size:.78rem;color:#d4dce6;margin-top:6px;line-height:1.55">Em contratos novos e renovações, incluir cláusula-padrão: preço líquido de tributos + destaque do IBS/CBS por fora + gatilho automático de recomposição a cada etapa da transição (2027 / 2029-2033). Redação final: <b>O2 valida</b>.</div></div>';
  document.getElementById('ctc_base').innerHTML='<b style="color:#9aa7b8">Base legal (O2 valida a fundamentação):</b> CC arts. 317 e 478 (revisão por fato superveniente / onerosidade excessiva) · Lei 14.133/2021 art. 124 (reequilíbrio em contratos públicos) · LC 214/2025 (curva da transição e destaque por fora) · art. 348 LC 214 (compensação do teste 2026). Esta análise <b>orienta, não crava</b>: os campos confirmados por você são a fonte; a leitura automática é sugestão.';
  document.getElementById('ctc_res').style.display='block';
+
+}
+function ctcCalc(){
+  var ent=ctcLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('ctcCalc')){ LH_PONTE.executar('ctcCalc', ent); return; }
+  ctcRender(ctcCalcularLocal(ent), ent, null);
 }
 </script>
 <div class="page" id="page-simnotas">
