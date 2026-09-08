@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v769";</script>
+<body><script>window.LH_VERSAO="v770";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4039,15 +4039,43 @@ window.LH_PONTE = (function(){
          • o resultado local (modo 'local'/'sombra') tem as MESMAS chaves do servidor — a convenção única
        A virada global (definir('servidor')) só acontece quando todas as telas tiverem render.        */
     convertida: function(nomeFn){ var m = MAPA[nomeFn]; return !!(m && typeof m.render === 'function'); },
+    /* ═══ v770 · FREIO DE RAJADA ═══════════════════════════════════════════════
+       Descoberto na passada de fumaça: um clique dispara a mesma calculadora
+       ~15 vezes em um segundo (campos com oninput, propagação global, cascata do
+       Motor). No modo LOCAL isso era invisível — cálculo instantâneo, custo zero.
+       No modo SERVIDOR cada repetição vira uma chamada HTTP e consome COTA: o
+       teto diário evaporaria em poucos cliques.
+       Três travas, nesta ordem:
+       1) ÚLTIMA VENCE — chamada nova para a mesma tela cancela o desenho da
+          anterior (resposta atrasada e fora de ordem não sobrescreve a atual);
+       2) IDÊNTICA EM VOO — mesma tela + mesmas entradas com uma requisição em
+          andamento: não abre outra, aproveita a que está voando;
+       3) ESPERA CURTA (180ms) — agrupa a rajada de digitação num pedido só. */
     executar: function(nomeFn, ent){
       var m = MAPA[nomeFn]; if(!m || typeof m.render !== 'function') return false;
+      var assinatura;
+      try { assinatura = nomeFn + '|' + JSON.stringify(ent); } catch(_a){ assinatura = nomeFn + '|?'; }
+      var estado = LH_PONTE._voo[nomeFn];
+      if (estado && estado.assinatura === assinatura && estado.emVoo) return true;   /* (2) */
+      if (estado && estado.timer) clearTimeout(estado.timer);                        /* (3) */
+      var seq = (LH_PONTE._seq[nomeFn] = (LH_PONTE._seq[nomeFn] || 0) + 1);          /* (1) */
       try { m.render(null, ent, 'aguardando'); } catch(e){}
+      LH_PONTE._voo[nomeFn] = { assinatura: assinatura, emVoo: false, timer: setTimeout(function(){
+        LH_PONTE._voo[nomeFn].emVoo = true;
+        LH_PONTE._disparar(nomeFn, m, ent, seq);
+      }, 180) };
+      return true;
+    },
+    _voo: {}, _seq: {},
+    _disparar: function(nomeFn, m, ent, seq){
       var promessa = Array.isArray(ent)
         ? Promise.all(ent.map(function(e){ return chamar(m.calc, e); })).then(function(lista){
             var ruim = null; lista.forEach(function(r){ if(!ruim && (!r || !r.ok)) ruim = r; });
             return ruim ? { ok:false, motivo:(ruim && ruim.motivo) || 'sem resposta em uma das chamadas' } : { ok:true, resultado:lista.map(function(r){ return r.resultado; }) }; })
         : chamar(m.calc, ent);
       promessa.then(function(res){
+        var v = LH_PONTE._voo[nomeFn]; if (v) v.emVoo = false;
+        if (LH_PONTE._seq[nomeFn] !== seq) return;   /* chegou atrasada: outra chamada já a substituiu */
         if (!res || !res.ok){ try { m.render(null, ent, (res && res.motivo) || 'sem resposta do servidor'); } catch(e){} return; }
         try { m.render(res.resultado, ent, null); } catch(e){ try { console.error('[LH_PONTE] render falhou em '+nomeFn, e); } catch(_e){} }
         registrar({ quando:new Date().toISOString(), tela:nomeFn, calc:m.calc, entradas:ent, status:'servidor' });
@@ -4064,7 +4092,11 @@ window.LH_PONTE = (function(){
 
     /* chamado pelas telas DEPOIS do cálculo local */
     sombra: function(nomeFn){
-      if (modo === 'local') return;
+      /* ★ v770 — só o modo SOMBRA compara. Antes o teste era `modo === 'local'`, e no modo
+         SERVIDOR a sombra continuava chamando o servidor: cada tela fazia DUAS requisições
+         (a do cálculo e a da comparação), dobrando o consumo de cota — e comparando com um
+         cálculo local que nem rodou. Achado na passada de fumaça de 07/09. */
+      if (modo !== 'sombra') return;
       var m = MAPA[nomeFn]; if(!m) return;
       var ent;
       try { ent = m.entradas(G); } catch(e){ return; }
