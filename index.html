@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v766";</script>
+<body><script>window.LH_VERSAO="v767";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2936,7 +2936,8 @@ window.LH_PONTE = (function(){
         if(/AD REM/.test(t)) return { aliquota_ano_pct: -1 };
         var m=t.match(/al[ií]quota do produto no ano \d{4}: ([\d.]+)%/);   /* o CORE imprime com PONTO decimal (toFixed) */
         return { aliquota_ano_pct: m ? parseFloat(m[1]) : null };
-      }
+      },
+      render:function(r, ent, motivo){ rxRender(r, ent, motivo); }
     },
 
     /* ═══ v683 · ONDA 4 · seis telas de espinha comum (fn_setor) ═══
@@ -53691,11 +53692,12 @@ function lhEnriquecerTax(pid){
     if(vEl && window.lhNotaConsultiva) vEl.innerHTML=lhNotaConsultiva({confianca:{nivel:cfg.viab.nivel,motivo:cfg.viab.motivo},nota:cfg.viab.nota,premissas:cfg.viab.prem,rotuloValor:'Leitura',valor:'consultiva'});
   }catch(e){}
 }
-function calcularRaioX360(){
+/* ═══ v767 · CUTOVER — calcularRaioX360: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function rxLerEntradas(){
   var q=document.getElementById('rx_ncm').value;
   var hits=lhBuscaNCM(q); var prod=hits.length?hits[0]:null;
   var fat=parseFloat(document.getElementById('rx_fat').value)||0;
-  if(fat<=0){ if(window.mostrarToast)mostrarToast('Informe o faturamento do produto','error'); return; }
+  if(fat<=0){ if(window.mostrarToast)mostrarToast('Informe o faturamento do produto','error'); return null; }
   var pExp=(parseFloat(document.getElementById('rx_exp').value)||0)/100;
   var pIns=(parseFloat(document.getElementById('rx_insumos').value)||0)/100;
   var pImp=(parseFloat(document.getElementById('rx_imp').value)||0)/100;
@@ -53706,7 +53708,13 @@ function calcularRaioX360(){
   var benef=document.getElementById('rx_benef').value;
   var margem=(parseFloat(document.getElementById('rx_margem').value)||0)/100;
   var ano=parseInt(document.getElementById('rx_ano').value)||2027;
-  var ALIQ_ANO; try{ ALIQ_ANO=getAliq(ano).total; }catch(e){ ALIQ_ANO=(ano>=2033?0.265:(ano<=2026?0.01:0.265)); }
+ 
+  return { itens:[{ ncm:q }], ano:ano, cenario:'A', _q:q, _pExp:pExp, _pIns:pIns, _pImp:pImp, _ii:ii, _pSN:pSN, _prazo:prazo, _temST:temST, _benef:benef, _margem:margem, faturamento:fat };
+}
+function rxCalcularLocal(ent){
+  var q=ent._q, ano=ent.ano, pExp=ent._pExp, pIns=ent._pIns, pImp=ent._pImp, ii=ent._ii, pSN=ent._pSN, prazo=ent._prazo, temST=ent._temST, benef=ent._benef, margem=ent._margem, fat=ent.faturamento;
+  var hits=(typeof lhBuscaNCM==='function')?lhBuscaNCM(ent._q):[]; var prod=hits.length?hits[0]:null; var BALDE={zero:0,red60:0.4,red30:0.7,cheia:1,'cheia+IS':1,imune:0,difer:0,adrem:null};
+ var ALIQ_ANO; try{ ALIQ_ANO=getAliq(ano).total; }catch(e){ ALIQ_ANO=(ano>=2033?0.265:(ano<=2026?0.01:0.265)); }
   var BALDE={zero:0,red60:0.4,red30:0.7,cheia:1,'cheia+IS':1,imune:0,difer:0,adrem:null};
   var fator=prod?BALDE[prod.trat]:1;
   var temIS=prod&&prod.trat==='cheia+IS';
@@ -53717,6 +53725,16 @@ function calcularRaioX360(){
   var aliqProd=ALIQ_ANO*fator;
   /* crédito de insumos: cheio nos regulares, ~0 no SN */
   var credIns=fat*pIns*ALIQ_ANO*(1-pSN);
+
+  return { ok:true, ano:ano, aliquota_referencia_pct:26.5, fator_do_ano:(ALIQ_ANO/0.265), resultados:[{ linha:1, ncm_base:(prod?q:null), tratamento:(prod?prod.trat:'cheia'), rotulo:trat,   fundamento:(prod?prod.fonte:'Verificar Anexos LC 214'), ad_rem:adrem,   aliquota_ano_pct:(adrem?null:aliqProd*100), confianca:(condic?'media':'alta') }] };
+}
+function rxRender(r, ent, motivo){
+  var _box=document.getElementById('rx_analises'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var q=ent._q, ano=ent.ano, pExp=ent._pExp, pIns=ent._pIns, pImp=ent._pImp, ii=ent._ii, pSN=ent._pSN, prazo=ent._prazo, temST=ent._temST, benef=ent._benef, margem=ent._margem, fat=ent.faturamento;
+  var hits=(typeof lhBuscaNCM==='function')?lhBuscaNCM(ent._q):[]; var prod=hits.length?hits[0]:null; var BALDE={zero:0,red60:0.4,red30:0.7,cheia:1,'cheia+IS':1,imune:0,difer:0,adrem:null};
+  var q=ent._q, fat=ent.faturamento, pExp=ent._pExp, pIns=ent._pIns, pImp=ent._pImp, ii=ent._ii, pSN=ent._pSN, prazo=ent._prazo, temST=ent._temST, benef=ent._benef, margem=ent._margem, ano=ent.ano; var _it=(r && r.resultados && r.resultados[0]) ? r.resultados[0] : null; var ALIQ_ANO=+(r && r.aliquota_referencia_pct!=null ? (+r.aliquota_referencia_pct/100)*(+r.fator_do_ano) : 0); if(!(ALIQ_ANO>0)){ try{ ALIQ_ANO=getAliq(ano).total; }catch(_e){ ALIQ_ANO=(ano>=2033?0.265:(ano<=2026?0.01:0.265)); } } var trat=_it?String(_it.rotulo||''):'26,5% (regra geral — NCM fora da base)'; var adrem=!!(_it&&_it.ad_rem), temIS=!!(_it&&/Seletivo|cheia\+IS/i.test(String(_it.rotulo||'')+String(_it.tratamento||''))); var condic=!!(_it&&(_it.confianca!=='alta')); var aliqProd=(_it&&_it.aliquota_ano_pct!=null)?(+_it.aliquota_ano_pct)/100:ALIQ_ANO; var prod=_it?{ trat:String(_it.tratamento||''), fonte:String(_it.fundamento||''), cond:condic }:null; var credIns=fat*pIns*ALIQ_ANO*(1-pSN);
   /* ═══ CAMADA 1 — ANÁLISES SEPARADAS ═══ */
   var cards=[];
   cards.push({t:'1 · Enquadramento (NCM)',v:trat,d:(prod?prod.fonte:'Verificar Anexos LC 214')+' — alíquota do produto no ano '+ano+': <b>'+(adrem?'AD REM (R$/un)':(aliqProd*100).toFixed(2)+'%</b>'+(ano<2033?' <span style="font-size:0.85em;color:var(--text3)">(IBS/CBS — na transição, ICMS/ISS correm por fora até 2032)</span>':'')+(condic?' <span style="color:#f59e0b;font-weight:700;font-size:0.85em">⚠ ENQUADRAMENTO CONDICIONAL — confirmar presença do produto na lista taxativa antes de cravar</span>':'')),go:null});
@@ -53759,7 +53777,13 @@ function calcularRaioX360(){
   document.getElementById('recs-raiox360').innerHTML='';
   lhEnriquecerTax('raiox360'); lhMostraRes('raiox360');
   if(window.mostrarToast)mostrarToast('✓ Raio-X 360° gerado');
-try{var _pg=document.getElementById('page-raiox360');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-raiox360');if(!_mv){_mv=document.createElement('div');_mv.id='mem-raiox360';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'Raio-X 360° — consolidação por NCM',aliquotas:[{label:'NCM informado',valor:''},{label:'Dimensões analisadas',valor:''},{label:'Rota ótima',valor:''}],porque:'O Raio-X consolida as memórias das calculadoras específicas (alíquota, crédito, seletivo, regime) para o NCM informado; cada dimensão herda a memória da calculadora de origem.',baseLegal:[{lei:'LC 214/2025 e anexos'}]});}}catch(e){}}
+try{var _pg=document.getElementById('page-raiox360');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-raiox360');if(!_mv){_mv=document.createElement('div');_mv.id='mem-raiox360';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'Raio-X 360° — consolidação por NCM',aliquotas:[{label:'NCM informado',valor:''},{label:'Dimensões analisadas',valor:''},{label:'Rota ótima',valor:''}],porque:'O Raio-X consolida as memórias das calculadoras específicas (alíquota, crédito, seletivo, regime) para o NCM informado; cada dimensão herda a memória da calculadora de origem.',baseLegal:[{lei:'LC 214/2025 e anexos'}]});}}catch(e){}
+}
+function calcularRaioX360(){
+  var ent=rxLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularRaioX360')){ LH_PONTE.executar('calcularRaioX360', ent); return; }
+  rxRender(rxCalcularLocal(ent), ent, null);
+}
 window.LH_MEMVIAB_TAX=window.LH_MEMVIAB_TAX||{};
 window.LH_MEMVIAB_TAX.raiox360={mem:{titulo:'Por que o produto pede várias análises',porque:'A Reforma tributa o MESMO produto de formas diferentes conforme quatro variáveis: enquadramento no NCM (Anexos da LC 214), destino da venda (interno tributa; exportação é imune COM crédito mantido), origem dos insumos (importado carrega II perene + cascata substituível) e momento (rampa 2026-2033). As análises rodam separadas para serem auditáveis — cada número com sua fonte — e depois se cruzam nas rotas, porque interagem: exportar zera a saída mas transforma o crédito da entrada em ressarcimento; drawback só existe se importa E exporta; o IS integra a base do IVA.',aliq:[{label:'Baldes',valor:'0 · −60% · −30% · cheia'},{label:'IS',valor:'por fora, sem crédito'},{label:'Exportação',valor:'imune c/ crédito'}],leis:[{lei:'LC 214/2025 — Anexos, exportação, IS',link:'https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm'},{lei:'Lei 11.945/2009 (drawback)',link:'https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2009/lei/l11945.htm'}]},viab:{nivel:'media',motivo:'Modelo de rotas simplificado (carga líquida IBS/CBS) — logística, demanda e ICMS da transição entram no estudo profundo.',nota:'Uso consultivo: este é o mapa que orienta QUAIS estudos vender. Cada rota vencedora vira um projeto (drawback, ressarcimento, reprecificação).',prem:[{label:'Escopo',valor:'IBS/CBS + II'}]}};
 document.addEventListener('input',function(ev){ if(ev.target&&ev.target.id==='rx_ncm'){ var r=lhBuscaNCM(ev.target.value); document.getElementById('rx_ncm_hint').innerHTML=r.length?('→ <b style="color:var(--gold2)">'+r[0].ncm+'</b> '+r[0].desc+' · '+window.LH_NCM_BASE.rotulo[r[0].trat]):(ev.target.value?'fora da base — regra geral 26,5%':''); } });
