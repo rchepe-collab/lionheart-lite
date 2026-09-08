@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v759";</script>
+<body><script>window.LH_VERSAO="v760";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3594,7 +3594,8 @@ window.LH_PONTE = (function(){
         return { valor_operacao:f('s2_valor'), no_anexo_ix:(v('s2_anexo9','1')==='1'), registro_mapa:(v('s2_mapa','1')==='1'), elo1:v('s2_elo1','regular'), elo2:v('s2_elo2','regular'),
                  destino:v('s2_destino','tributado'), valor_venda:f('s2_venda'), coeficiente:parseFloat(v('s2_credpres','9.25'))||9.25, com_lc224:(v('s2_lc224','1')==='1'), ano:2033 }; },
       esperado:function(r){ return r?{ a_recolher:Number(r.debito_sem_diferimento) }:null; },
-      local:function(){ return { a_recolher:LH_PONTE._rsNum('kpi-agroSuper2',0) }; } },
+      local:function(){ return { a_recolher:LH_PONTE._rsNum('kpi-agroSuper2',0) }; },
+      render:function(r, ent, motivo){ s2Render(r, ent, motivo); } },
     calcularAgroSuper3: { calc:'agrosuper3',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { aquisicoes_pf:f('s3_aquis'), compra_insumos:f('s3_insumos'), coeficiente:parseFloat((G.el('s3_cadeia')||{}).value)||9.25, meses_desde_corte:Math.max(1,f('s3_meses')||5),
@@ -3654,7 +3655,8 @@ window.LH_PONTE = (function(){
                  unico_imovel:(v('n17_unico')==='sim'), reinvestimento:(v('n17_reinvest')==='sim'?f('n17_reinvest_val'):0), residente:(v('n17_residente')==='sim') }; },
       esperado:function(r){ return r?{ ganho:Number(r.ganho_bruto), imposto:Number(r.imposto) }:null; },
       /* kpi-n17 (R$): [0] ganho de capital · [1] venda · [2] custo · [3] IR (DARF 4600) · [4] líquido */
-      local:function(){ var R=LH_PONTE._rsNum; return { ganho:R('kpi-n17',0), imposto:R('kpi-n17',3) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { ganho:R('kpi-n17',0), imposto:R('kpi-n17',3) }; },
+      render:function(r, ent, motivo){ n17Render(r, ent, motivo); } },
     calcularAluguelPFPJ: { calc:'aluguel-pfpj',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||''));return isNaN(v)?0:v;};
         return { aluguel_anual:f('al_bruto'), despesas:f('al_desp'), outros_rendimentos:f('al_outros'), custo_pj_anual:f('al_custopj'), constituicao:f('al_constit'),
@@ -10340,9 +10342,16 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <div class="input-group">
           <label>Residente no Brasil?</label>
           <select id="n17_residente">
-            <option value="sim" selected>Sim</option>
-            <option value="nao">Não — alíq. fixa 25%</option>
-          </select>
+              <option value="sim" selected>Sim</option>
+              <option value="nao">Não — residente no exterior</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>País com tributação favorecida? <span style="color:var(--text-dim);font-size:.85em">(só para não residente)</span></label>
+            <select id="n17_paraiso">
+              <option value="nao" selected>Não — progressiva 15% a 22,5%</option>
+              <option value="sim">Sim — alíquota única de 25%</option>
+            </select>
         </div>
         <div class="input-group">
           <label>Outras alienações no mesmo mês (R$)</label>
@@ -27584,7 +27593,8 @@ function calcularAgroSuper4(){
   agroS4Render(agroS4CalcularLocal(ent), ent, null);
 }
 
-function calcularAgroSuper2(){
+/* ═══ v760 · CUTOVER — calcularAgroSuper2: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function s2LerEntradas(){
   /* v661 · BUG DE ESCOPO — 'var C' estava declarado DENTRO do ramo
      (difere && encerra && hipoteseB). Em todo outro caminho C ficava
      undefined e a chamada do grafico estourava em C.liquido: a tela
@@ -27593,8 +27603,8 @@ function calcularAgroSuper2(){
   var V=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(d||0):v; };
   var G=function(id,d){ var e=document.getElementById(id); return e?e.value:(d||''); };
   var valor=V('s2_valor',0);
-  if(valor<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o valor da operação com o insumo','error'); return; }
-  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(valor,1000,'Valor da operação')) return;
+  if(valor<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o valor da operação com o insumo','error'); return null; }
+  if(typeof lhValorSuspeito==='function' && lhValorSuspeito(valor,1000,'Valor da operação')) return null;
 
   var noAnexo = G('s2_anexo9','1')==='1';
   var temMapa = G('s2_mapa','1')==='1';
@@ -27609,6 +27619,12 @@ function calcularAgroSuper2(){
   var ALIQ = (typeof window.LH_ALIQ_REF==='number' && window.LH_ALIQ_REF>0) ? window.LH_ALIQ_REF : 26.5;
   var aliqReduzida = ALIQ*0.40;            /* redução de 60% do caput */
 
+
+  return { valor_operacao:valor, no_anexo_ix:noAnexo, registro_mapa:temMapa, elo1:elo1, elo2:elo2, destino:destino, valor_venda:venda, coeficiente:credPres, com_lc224:comLC224, ano:2033 };
+}
+function s2CalcularLocal(ent){
+  var valor=ent.valor_operacao, noAnexo=ent.no_anexo_ix, temMapa=ent.registro_mapa, elo1=ent.elo1, elo2=ent.elo2, destino=ent.destino, venda=ent.valor_venda, credPres=ent.coeficiente, comLC224=ent.com_lc224;
+  var C={bruto:0,liquido:0}; var ALIQ=(typeof window.LH_ALIQ_REF==='number' && window.LH_ALIQ_REF>0)?window.LH_ALIQ_REF:26.5; var aliqReduzida=ALIQ*0.40; var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
   /* ── 1 · o diferimento chega a existir? ── */
   var difere = true, motivoNao = '';
   if(!noAnexo){ difere=false; motivoNao='o item não está no Anexo IX — sem redução e sem diferimento'; }
@@ -27658,6 +27674,16 @@ function calcularAgroSuper2(){
   }
 
   /* ── KPIs ── */
+
+  return { ok:true, ano:2033, aliquota_ano:ALIQ/100, aliquota_reduzida_60:aliqReduzida/100, diferimento_existe:difere, motivo_sem_diferimento:(motivoNao||null), encerra:encerra, onde_encerra:comoEncerra, quem_paga_no_fim:quemPaga, debito_sem_diferimento:valorEncerramento, debito_com_diferimento:(difere?0:valorEncerramento), efeito_caixa_no_elo:valorEncerramento, reducao_credito_art138_9:(typeof reducaoCredito!=='undefined'?reducaoCredito:0), credito_presumido_bruto:(typeof credBruto!=='undefined'?credBruto:0), credito_presumido_ao_adquirente:(typeof credLiquido!=='undefined'?credLiquido:0) };
+}
+function s2Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-agroSuper2'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var valor=ent.valor_operacao, noAnexo=ent.no_anexo_ix, temMapa=ent.registro_mapa, elo1=ent.elo1, elo2=ent.elo2, destino=ent.destino, venda=ent.valor_venda, credPres=ent.coeficiente, comLC224=ent.com_lc224;
+  var C={bruto:0,liquido:0}; var ALIQ=(typeof window.LH_ALIQ_REF==='number' && window.LH_ALIQ_REF>0)?window.LH_ALIQ_REF:26.5; var aliqReduzida=ALIQ*0.40; var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
+  var valor=ent.valor_operacao, noAnexo=ent.no_anexo_ix, temMapa=ent.registro_mapa, elo1=ent.elo1, elo2=ent.elo2, destino=ent.destino, venda=ent.valor_venda, credPres=ent.coeficiente, comLC224=ent.com_lc224; var ALIQ=(+r.aliquota_ano)*100, aliqReduzida=(+r.aliquota_reduzida_60)*100; var difere=!!r.diferimento_existe, motivoNao=String(r.motivo_sem_diferimento||r.motivo||''); var hipoteseB=(elo2==='produtorNC'); var encerra=!!r.encerra, comoEncerra=String(r.onde_encerra||''), quemPaga=String(r.quem_paga_no_fim||''); var valorEncerramento=+(r.debito_sem_diferimento||0), reducaoCredito=+(r.reducao_credito_art138_9||0); var credBruto=+(r.credito_presumido_bruto||0), credLiquido=+(r.credito_presumido_ao_adquirente||0); var C={bruto:credBruto, liquido:credLiquido};
   var kpis='';
   kpis+='<div class="kpi-card '+(difere?'':'kpi-alerta')+'"><div class="kpi-label">Há diferimento?</div><div class="kpi-value" style="font-size:1.05em">'+(difere?'SIM':'NÃO')+'</div></div>';
   kpis+='<div class="kpi-card"><div class="kpi-label">Alíquota do insumo</div><div class="kpi-value">'+((noAnexo&&temMapa)?aliqReduzida.toFixed(2).replace('.',','):ALIQ.toFixed(2).replace('.',','))+'%</div></div>';
@@ -27760,6 +27786,12 @@ function calcularAgroSuper2(){
   var res=document.getElementById('res-agroSuper2'); if(res) res.style.display='block';
 
   try{ lhAgroSuperChart('agroSuper2', ['Tributo no ato','Em suspenso (diferido)','Devido no encerramento'], [valor*(aliqReduzida/100), C.liquido, valorEncerramento], ['rgba(201,162,39,0.9)','rgba(74,158,255,0.7)','rgba(239,68,68,0.85)']); }catch(_e){ console.warn('chart s2',_e); }
+
+}
+function calcularAgroSuper2(){
+  var ent=s2LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAgroSuper2')){ LH_PONTE.executar('calcularAgroSuper2', ent); return; }
+  s2Render(s2CalcularLocal(ent), ent, null);
 }
 
 /* ═══ v726 · CUTOVER — calcularAgroSuper1: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
@@ -31048,7 +31080,8 @@ function calcularN15(){
 // ══════════════════════════════════════════
 // N-17: GANHO DE CAPITAL PF
 // ══════════════════════════════════════════
-function calcularN17(){
+/* ═══ v760 · CUTOVER — calcularN17: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function n17LerEntradas(){
   const tipo=document.getElementById('n17_tipo').value;
   const custo=parseFloat(document.getElementById('n17_custo').value)||0;
   const venda=parseFloat(document.getElementById('n17_venda').value)||0;
@@ -31058,7 +31091,13 @@ function calcularN17(){
   const reinvestVal=parseFloat(document.getElementById('n17_reinvest_val').value)||0;
   const benfeit=parseFloat(document.getElementById('n17_benfeit').value)||0;
   const residente=document.getElementById('n17_residente').value==='sim';
-  if(venda<=0||custo<=0){ mostrarToast('Informe custo e valor de venda','error'); return; }
+  if(venda<=0||custo<=0){ mostrarToast('Informe custo e valor de venda','error'); return null; }
+
+  return { tipo:tipo, custo:custo, venda:venda, benfeitorias:benfeit, ano_aquisicao:anoAq, ano_venda:(parseInt((document.getElementById('n17_ano_venda')||{value:''}).value) || new Date().getFullYear()), unico_imovel:(unico==='sim'), reinvestimento:(reinvest==='sim'?venda:(reinvest==='parcial'?reinvestVal:0)), residente:residente, paraiso_fiscal:(((document.getElementById('n17_paraiso')||{value:'nao'}).value)==='sim'), _unico:unico, _reinvest:reinvest };
+}
+function n17CalcularLocal(ent){
+  var tipo=ent.tipo, custo=ent.custo, venda=ent.venda, benfeit=ent.benfeitorias, anoAq=ent.ano_aquisicao, residente=ent.residente, unico=ent._unico, reinvest=ent._reinvest;
+  
   const custoTotal=custo+benfeit;
   const ganhoCapital=Math.max(0,venda-custoTotal);
   let isento=false,isentoParc=false,motivoIsencao='',ganhoTributavel=ganhoCapital,pctIsento=0;
@@ -31100,9 +31139,25 @@ function calcularN17(){
   if(venda<=35000&&!isento){
     isento=true; motivoIsencao='Alienação de valor até R$35.000 no mês (bem de pequeno valor)'; ganhoTributavel=0;
   }
+  /* ★ v760 · NÃO RESIDENTE — Lei 9.249/1995 art. 18: o ganho de capital de residente no exterior é
+     "apurado e tributado de acordo com as regras aplicáveis aos residentes no País" — ou seja, a MESMA
+     progressiva de 15% a 22,5% (Lei 8.981/1995 art. 21, red. Lei 13.259/2016). Os 25% ficam para quem
+     reside em país com tributação favorecida (Lei 9.779/1999 art. 7º · IN RFB 1.455/2014 art. 21).
+     Antes a tela cobrava 25% de TODO não residente — superestimava abaixo de R$ 5 mi e desalinhava do servidor. */
+  var paraisoFiscal = ((document.getElementById('n17_paraiso')||{value:'nao'}).value)==='sim';
   let irDevido=0,aliqEfetiva=0;
-  if(!residente){ irDevido=ganhoTributavel*0.25; aliqEfetiva=ganhoTributavel>0?25:0; }
+  if(!residente && paraisoFiscal){ irDevido=ganhoTributavel*0.25; aliqEfetiva=ganhoTributavel>0?25:0; }
   else{ irDevido=calcIRGanhoCapital(ganhoTributavel); aliqEfetiva=ganhoTributavel>0?irDevido/ganhoTributavel*100:0; }
+
+  return { ok:true, tipo:tipo, ano_venda:anoVendaN17, custo_total:custoTotal, ganho_bruto:ganhoCapital, isencao:{ isento:isento, motivo:(motivoIsencao||null), pct_isento:pctIsento*100 }, reducoes_imovel:{ red_7713:red7713, fr1:fr1mult, fr2:fr2mult }, ganho_tributavel:ganhoTributavel, residente:residente, paraiso_fiscal:paraisoFiscal, imposto:irDevido, aliquota_efetiva_sobre_ganho_pct:(ganhoCapital>0?irDevido/ganhoCapital*100:0) };
+}
+function n17Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-n17'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var tipo=ent.tipo, custo=ent.custo, venda=ent.venda, benfeit=ent.benfeitorias, anoAq=ent.ano_aquisicao, residente=ent.residente, unico=ent._unico, reinvest=ent._reinvest;
+  
+  var tipo=ent.tipo, custo=ent.custo, venda=ent.venda, benfeit=ent.benfeitorias, anoAq=ent.ano_aquisicao, anoVendaN17=ent.ano_venda, unico=ent._unico, reinvest=ent._reinvest, reinvestVal=ent.reinvestimento, residente=ent.residente, paraisoFiscal=ent.paraiso_fiscal; var custoTotal=+r.custo_total, ganhoCapital=+r.ganho_bruto, ganhoTributavel=+r.ganho_tributavel; var _is=r.isencao||{}; var isento=!!_is.isento, motivoIsencao=String(_is.motivo||''), pctIsento=(+(_is.pct_isento||0))/100, isentoParc=(pctIsento>0 && !isento); var _rd=r.reducoes_imovel||{}; var red7713=+(_rd.red_7713||0), fr1mult=+(_rd.fr1||1), fr2mult=+(_rd.fr2||1), mult7713=1-red7713, fr1=1-fr1mult, fr2=1-fr2mult, multTotal=mult7713*fr1mult*fr2mult, fatorReducao=Math.min(0.999999, 1-multTotal), ehImovel=(tipo==='imovel_resid'||tipo==='imovel_comerc'); var irDevido=+r.imposto, aliqEfetiva=+r.aliquota_efetiva_sobre_ganho_pct*(ganhoCapital>0?ganhoCapital/Math.max(ganhoTributavel,1e-9):1); if(ganhoTributavel>0) aliqEfetiva=irDevido/ganhoTributavel*100; else aliqEfetiva=0;
   const liquidoVendedor=venda-irDevido;
   const aliqSobreVenda=venda>0?irDevido/venda*100:0;
   document.getElementById('kpi-n17').innerHTML=`
@@ -31184,6 +31239,12 @@ function calcularN17(){
         : 'Recolher DARF até o último dia útil do mês seguinte à alienação (multa 0,33%/dia + SELIC se atrasar).'
   });
   mostrarToast('✓ Ganho de capital calculado','success');
+
+}
+function calcularN17(){
+  var ent=n17LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularN17')){ LH_PONTE.executar('calcularN17', ent); return; }
+  n17Render(n17CalcularLocal(ent), ent, null);
 }
 
 // ══════════════════════════════════════════
