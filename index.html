@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v764";</script>
+<body><script>window.LH_VERSAO="v765";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3332,7 +3332,8 @@ window.LH_PONTE = (function(){
                  taxa_honorario:f('cr04_taxa_honor')||10, horas_setup:parseInt((G.el('cr04_horas_setup')||{}).value,10)||20 }; },
       esperado:function(r){ return r&&r.ok!==false ? { credito:Number(r.credito_anual), mensal:Number(r.credito_mensal), honorario:Number(r.honorario_anual), setup:Number(r.setup) } : null; },
       /* kpi-cr04: [0] crédito do ano · [1] mensal · [2] honorário anual · [3] honorário mensal · [4] setup */
-      local:function(){ return { credito:LH_PONTE._kpiNum('kpi-cr04',0), mensal:LH_PONTE._kpiNum('kpi-cr04',1), honorario:LH_PONTE._kpiNum('kpi-cr04',2), setup:LH_PONTE._kpiNum('kpi-cr04',4) }; } },
+      local:function(){ return { credito:LH_PONTE._kpiNum('kpi-cr04',0), mensal:LH_PONTE._kpiNum('kpi-cr04',1), honorario:LH_PONTE._kpiNum('kpi-cr04',2), setup:LH_PONTE._kpiNum('kpi-cr04',4) }; },
+      render:function(r, ent, motivo){ cr04Render(r, ent, motivo); } },
 
     /* ═══ v694 · CONTENCIOSO — 7 telas ═══
        Campos de data são <input type="month"> ('2024-03'); o servidor recebe o mesmo texto.
@@ -29751,7 +29752,8 @@ window.calcularCR04Live = function() {
   }
 };
 
-window.calcularCR04 = function() {
+/* ═══ v765 · CUTOVER — Créditos Plenos CBS/IBS (CR04): ler · calcular · desenhar ═══ */
+function cr04LerEntradas(){
   var regime = (document.getElementById('cr04_regime')||{value:'lr'}).value;
   var aliquota = parseFloat((document.getElementById('cr04_aliquota')||{value:26.5}).value) || 26.5;
   var ano = (document.getElementById('cr04_ano')||{value:'2029'}).value;
@@ -29767,7 +29769,7 @@ window.calcularCR04 = function() {
       '<div style="font-size:0.86em;color:var(--text2);line-height:1.55;">O Simples Nacional mantém recolhimento unificado pós-Reforma. <strong>Mas pode optar pelo destaque de CBS/IBS</strong> (art. 28 LC 214/2025) — neste caso passa a gerar crédito para clientes B2B. Avalie no <strong>C05 Regime Ótimo</strong> e <strong>N04 SN→Regime Regular</strong> se vale a pena migrar para LR/LP para aproveitar créditos plenos.</div>' +
       '</div>';
     document.getElementById('res-cr04').style.display = 'block';
-    return;
+    return null;
   }
 
   /* Soma categorias marcadas */
@@ -29787,9 +29789,14 @@ window.calcularCR04 = function() {
 
   if(totalDespesa === 0) {
     mostrarToast('Marque ao menos 1 categoria e informe o valor anual', 'error');
-    return;
+    return null;
   }
 
+
+  return { despesas:(function(){ var d={}; (window.CR04_CATEGORIAS||[]).forEach(function(c){ var chk=document.getElementById('cr04_chk_'+c.id), val=document.getElementById('cr04_val_'+c.id); if(chk && chk.checked && val){ var v=parseFloat(val.value)||0; if(v>0) d[c.id]=v; } }); return d; })(), regime:regime, aliquota:aliquota, ano:(parseInt(ano,10)||2029), cenario:'A', taxa_honorario:taxaHonor, horas_setup:horasSetup, custo_hora:250, _regime:regime, _ano:ano, _aliquota:aliquota, _taxaHonor:taxaHonor, _horasSetup:horasSetup, _totalDespesa:totalDespesa, _detalhes:detalhes };
+}
+function cr04CalcularLocal(ent){
+  var regime=ent._regime, aliquota=ent._aliquota, ano=ent._ano, taxaHonor=ent._taxaHonor, horasSetup=ent._horasSetup, totalDespesa=ent._totalDespesa, detalhes=ent._detalhes;
   /* Cálculo principal */
   /* ★ v692 · A CURVA DO ANO PASSOU A VALER — o seletor cr04_ano era DECORATIVO.
      "Trocar o seletor tem que trocar o resultado": trocar 2029 por 2033 não mudava um
@@ -29824,6 +29831,14 @@ window.calcularCR04 = function() {
                creditoTotal >= 10000 ? 'Economia MODERADA · avaliar com cliente' :
                'Economia BAIXA · pouca despesa nas categorias';
 
+
+  return { ok:true, ano:(parseInt(ano,10)||2029), regime:regime, cenario:'A', despesa_total_anual:totalDespesa, aliquota_informada:aliquota, fator_ano:_fatorCR04, aliquota_efetiva_ano:aliquota*_fatorCR04, credito_carga_plena:creditoPlena, credito_anual:creditoTotal, credito_mensal:creditoMes, honorario_anual:honorAnualEscritorio, honorario_mensal:honorMesEscritorio, setup:honorSetup, beneficio_liquido_cliente:creditoTotal-honorAnualEscritorio, faixa:(creditoTotal>=200000?'alta':creditoTotal>=50000?'relevante':creditoTotal>=10000?'moderada':'baixa'), rotulo:labelR };
+}
+function cr04Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-cr04'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&(r.motivo||r.saida))); return; }
+  var regime=ent._regime, aliquota=ent._aliquota, ano=ent._ano, taxaHonor=ent._taxaHonor, horasSetup=ent._horasSetup, totalDespesa=+r.despesa_total_anual, detalhes=(ent._detalhes||[]); var _fatorCR04=+r.fator_ano, creditoPlena=+r.credito_carga_plena, creditoTotal=+r.credito_anual, creditoMes=+r.credito_mensal; var honorAnualEscritorio=+r.honorario_anual, honorMesEscritorio=+r.honorario_mensal, custoHoraSetup=250, honorSetup=+r.setup, perdaLPCumulativo=(regime==='lp'?creditoTotal*0.5:0); var corR = creditoTotal >= 200000 ? '#10b981' : creditoTotal >= 50000 ? '#eab308' : creditoTotal >= 10000 ? '#c9a227' : '#dc2626'; var labelR = String(r.rotulo||'');
   /* KPIs */
   var kpis = '';
   kpis += '<div class="kpi-card kpi-destaque" style="border-color:'+corR+';"><div class="kpi-label">Crédito anual estimado</div><div class="kpi-value" style="color:'+corR+';">'+fmtR(creditoTotal)+'</div><div class="kpi-sub">'+labelR+'</div></div>';
@@ -29892,6 +29907,12 @@ window.calcularCR04 = function() {
   if(window.LGPD && window.LGPD.log) window.LGPD.log('calc_executada', { calc:'cr04', resultado: fmtR(creditoTotal) });
   mostrarToast('✓ Créditos Plenos CBS/IBS: '+fmtR(creditoTotal)+'/ano', 'success');
   try{ if(window.LH_SAUDE_registrar){ window.LH_SAUDE_registrar('creditosCBS', { rodou:true, nivel:'ok', rotulo:'Mapeado' }); } }catch(e){}
+
+}
+window.calcularCR04 = function(){
+  var ent=cr04LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularCR04')){ LH_PONTE.executar('calcularCR04', ent); return; }
+  cr04Render(cr04CalcularLocal(ent), ent, null);
 };
 
 // ══════ CR-05: SALDO CREDOR PIS/COFINS (espelha Excel-mestre CR05) ══════
