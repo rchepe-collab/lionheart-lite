@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v760";</script>
+<body><script>window.LH_VERSAO="v761";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3765,7 +3765,8 @@ window.LH_PONTE = (function(){
                  complexidade:f('c09_complexidade')||1, margem_alvo_pct:f('c09_margem_alvo')||25, meses_retencao:f('c09_meses_retencao')||36, churn_anual_pct:f('c09_churn')||15, cac:f('c09_cac') }; },
       esperado:function(r){ return (r&&r.ltv)?{ margem:Number(r.margem_rs), custo:Number(r.custo_do_cliente), alvo:Number(r.honorario_alvo), ltv:Number(r.ltv.conservador), ltv_liq:Number(r.ltv.liquido_de_cac) }:null; },
       /* kpi-c09 (R$): [0] margem · [1] custo alocado · [2] custo-hora "R$ 95,00/h" · [3] honorário alvo · [4] break-even · [5] LTV · [6] LTV líquido · [7] CAC */
-      local:function(){ var R=LH_PONTE._rsNum; return { margem:R('kpi-c09',0), custo:R('kpi-c09',1), alvo:R('kpi-c09',3), ltv:R('kpi-c09',5), ltv_liq:R('kpi-c09',6) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { margem:R('kpi-c09',0), custo:R('kpi-c09',1), alvo:R('kpi-c09',3), ltv:R('kpi-c09',5), ltv_liq:R('kpi-c09',6) }; },
+      render:function(r, ent, motivo){ c09Render(r, ent, motivo); } },
     /* ═══ v709 · Fator R (page-fatorR — R maiúsculo, por isso o censo não achava) ═══
        fn_fator_r devolve LINHA (folha_total, fator_r, anexo, limite, falta_folha, margem_folga), não jsonb.
        O DAS por anexo (III × V) a tela calcula pela SN_ANEXOS_LITE — não está na função; fica fora da comparação. */
@@ -3831,7 +3832,8 @@ window.LH_PONTE = (function(){
                  ganho_anual_cliente:f('c10_ganho')||0, pct_exito:f('c10_exito')||0 }; },
       esperado:function(r){ return r?{ honorario:Number(r.honorario_sugerido_mes), piso:Number(r.piso_tecnico), exito:Number(r.componente_exito_mes) }:null; },
       /* kpi-c10 (R$): [0] honorário/mês · [1] anual · [2] piso · [3] custo-hora "R$ 95,00/h" · [4] êxito · [5] ganho */
-      local:function(){ var R=LH_PONTE._rsNum; return { honorario:R('kpi-c10',0), piso:R('kpi-c10',2), exito:R('kpi-c10',4) }; } },
+      local:function(){ var R=LH_PONTE._rsNum; return { honorario:R('kpi-c10',0), piso:R('kpi-c10',2), exito:R('kpi-c10',4) }; },
+      render:function(r, ent, motivo){ c10Render(r, ent, motivo); } },
     /* ═══ v714 · SIMULADOR DE NOTAS — primeira tela de LINHA na ponte (multi-chamada) ═══
        Uma chamada por item da nota: fn_simnotas(valor, regime do emitente, alíquota do balde, ano). Compara-se o
        IBS+CBS DESTACADO somado (a parte que o servidor modela). O "velho" (ICMS/ISS na transição) é camada só da
@@ -31250,7 +31252,8 @@ function calcularN17(){
 // ══════════════════════════════════════════
 // C-10: PRECIFICAÇÃO DE HONORÁRIOS
 // ══════════════════════════════════════════
-function calcularC10(){
+/* ═══ v761 · CUTOVER — calcularC10: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function c10LerEntradas(){
   /* ★ v713 · TELA REDESENHADA no modelo do Mestre C10 (OURO #58, 25/07): precifica POR CLIENTE.
      piso técnico = horas × custo-hora ÷ (1 − margem) × fator (1 simples · 1,5 média · 2 alta)
      + componente de êxito = ganho anual × % êxito ÷ 12. Sanidade: ticket anual ÷ ganho > 0,5 come o valor.
@@ -31262,13 +31265,29 @@ function calcularC10(){
   const fator={simples:1.0,media:1.5,alta:2.0}[complexidade]||1.5;
   let custoHora=V('c10_custohora');
   if(custoHora==null){ const cf=V('c10_custofixo'), hp=V('c10_horasprod'); if(cf&&hp) custoHora=cf/hp; }
-  if(horas<=0||!custoHora||custoHora<=0){ mostrarToast('Informe as horas do cliente e o custo-hora (ou folha+estrutura e horas produtivas)','error'); return; }
-  if(margem>=1){ mostrarToast('Margem alvo tem que ser menor que 100%','error'); return; }
+  if(horas<=0||!custoHora||custoHora<=0){ mostrarToast('Informe as horas do cliente e o custo-hora (ou folha+estrutura e horas produtivas)','error'); return null; }
+  if(margem>=1){ mostrarToast('Margem alvo tem que ser menor que 100%','error'); return null; }
+
+  return { horas_mes:horas, custo_hora:custoHora, margem_alvo_pct:margem*100, complexidade:complexidade, ganho_anual_cliente:ganho, pct_exito:exito*100, _margem:margem, _exito:exito, _fator:fator, _complexidade:complexidade };
+}
+function c10CalcularLocal(ent){
+  var horas=ent.horas_mes, custoHora=ent.custo_hora, complexidade=ent._complexidade, ganho=ent.ganho_anual_cliente, margem=ent._margem, exito=ent._exito, fator=ent._fator;
+  
   const piso=horas*custoHora/(1-margem)*fator;
   const compExito=ganho*exito/12;
   const honorario=piso+compExito, anual=honorario*12;
   const sanidade=ganho>0?anual/ganho:null;
   const alerta=(sanidade!=null&&sanidade>0.5);
+
+  return { ok:true, piso_tecnico:piso, componente_exito_mes:compExito, honorario_sugerido_mes:honorario, honorario_anual:anual, fator_complexidade:fator, ticket_sobre_ganho:(sanidade==null?null:sanidade) };
+}
+function c10Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-c10'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var horas=ent.horas_mes, custoHora=ent.custo_hora, complexidade=ent._complexidade, ganho=ent.ganho_anual_cliente, margem=ent._margem, exito=ent._exito, fator=ent._fator;
+  
+  var horas=ent.horas_mes, custoHora=ent.custo_hora, margem=ent._margem, ganho=ent.ganho_anual_cliente, exito=ent._exito, complexidade=ent._complexidade, fator=+r.fator_complexidade; var piso=+r.piso_tecnico, compExito=+r.componente_exito_mes, honorario=+r.honorario_sugerido_mes, anual=+r.honorario_anual, sanidade=(r.ticket_sobre_ganho==null?null:+r.ticket_sobre_ganho), alerta=(sanidade!=null&&sanidade>0.5);
   document.getElementById('kpi-c10').innerHTML=
     '<div class="kpi-card kpi-destaque"><div class="kpi-label">Honorário sugerido / mês</div><div class="kpi-value">'+fmtR(honorario)+'</div><div class="kpi-sub">'+fmtR(anual)+' / ano</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Piso técnico</div><div class="kpi-value">'+fmtR(piso)+'</div><div class="kpi-sub">'+horas+'h × '+fmtR(custoHora)+'/h ÷ (1 − '+fmtPct(margem*100)+') × '+fator+'</div></div>'+
@@ -31283,12 +31302,19 @@ function calcularC10(){
     descricao:'Piso técnico '+fmtR(piso)+' + êxito '+fmtR(compExito)+' = '+fmtR(honorario)+'/mês ('+fmtR(anual)+'/ano). Métrica do ESCRITÓRIO, não entra na economia da empresa analisada.',
     recomendacao: alerta?'Ticket acima de 50% do ganho gerado: reduzir o % de êxito ou revisar as horas.':'Precificação consistente com o Mestre C10.' }); }
   mostrarToast('✓ Honorário calculado','success');
+
+}
+function calcularC10(){
+  var ent=c10LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularC10')){ LH_PONTE.executar('calcularC10', ent); return; }
+  c10Render(c10CalcularLocal(ent), ent, null);
 }
 
 // ══════════════════════════════════════════
 // C-09: RENTABILIDADE POR CLIENTE
 // ══════════════════════════════════════════
-function calcularC09(){
+/* ═══ v761 · CUTOVER — calcularC09: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function c09LerEntradas(){
   const custoTotal=parseFloat(document.getElementById('c09_custo_total').value)||0;
   const horasTotais=parseFloat(document.getElementById('c09_horas_totais').value)||1;
   const margemAlvo=parseFloat(document.getElementById('c09_margem_alvo').value)/100||0.25;
@@ -31300,7 +31326,13 @@ function calcularC09(){
   const mesesRetencao=parseFloat((document.getElementById('c09_meses_retencao')||{value:36}).value)||36;
   const churnAnual=parseFloat((document.getElementById('c09_churn')||{value:15}).value)/100||0.15;
   const cac=parseFloat((document.getElementById('c09_cac')||{value:0}).value)||0;
-  if(custoTotal<=0||horasTotais<=0){ mostrarToast('Informe os custos e horas do escritório','error'); return; }
+  if(custoTotal<=0||horasTotais<=0){ mostrarToast('Informe os custos e horas do escritório','error'); return null; }
+
+  return { honorario:honorario, horas_cliente:horasCliente, custo_total:custoTotal, horas_totais:horasTotais, custo_hora:undefined, custos_diretos:0, complexidade:multComplexidade, margem_alvo_pct:margemAlvo*100, meses_retencao:mesesRetencao, churn_anual_pct:churnAnual*100, cac:cac, _nome:nome, _margemAlvo:margemAlvo, _churn:churnAnual, _meses:mesesRetencao, _mult:multComplexidade };
+}
+function c09CalcularLocal(ent){
+  var honorario=ent.honorario, horasCliente=ent.horas_cliente, custoTotal=ent.custo_total, horasTotais=ent.horas_totais, multComplexidade=ent._mult, mesesRetencao=ent._meses, cac=ent.cac, nome=ent._nome, margemAlvo=ent._margemAlvo, churnAnual=ent._churn;
+  
   const custoHora=custoTotal/horasTotais;
   const custoRealCliente=horasCliente*custoHora*multComplexidade;
   const margemCliente=honorario>0?(honorario-custoRealCliente)/honorario*100:0;
@@ -31318,6 +31350,16 @@ function calcularC09(){
   const ltvFinal=Math.min(ltvSimples, ltvChurn);
   const ltvLiquido=ltvFinal-cac;
   const ltvCacRatio=cac>0?ltvFinal/cac:0;
+
+  return { ok:true, custo_hora:custoHora, custo_do_cliente:custoRealCliente, margem_pct:margemCliente, margem_rs:lucroCliente, honorario_breakeven:honorarioBreakEven, honorario_alvo:honorarioAlvo, rentavel:rentavel, ltv:{ simples:ltvSimples, por_churn:ltvChurn, conservador:ltvFinal, liquido_de_cac:ltvLiquido, ltv_cac:ltvCacRatio } };
+}
+function c09Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-c09'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var honorario=ent.honorario, horasCliente=ent.horas_cliente, custoTotal=ent.custo_total, horasTotais=ent.horas_totais, multComplexidade=ent._mult, mesesRetencao=ent._meses, cac=ent.cac, nome=ent._nome, margemAlvo=ent._margemAlvo, churnAnual=ent._churn;
+  
+  var honorario=ent.honorario, horasCliente=ent.horas_cliente, custoTotal=ent.custo_total, horasTotais=ent.horas_totais, margemAlvo=ent._margemAlvo, nome=ent._nome, multComplexidade=ent._mult, mesesRetencao=ent._meses, churnAnual=ent._churn, cac=ent.cac; var custoHora=+r.custo_hora, custoRealCliente=+r.custo_do_cliente, margemCliente=+r.margem_pct, lucroCliente=+r.margem_rs, honorarioBreakEven=+r.honorario_breakeven, honorarioAlvo=+r.honorario_alvo, rentavel=!!r.rentavel; var _l=r.ltv||{}; var ltvSimples=+_l.simples, ltvChurn=+_l.por_churn, ltvFinal=+_l.conservador, ltvLiquido=+(_l.liquido_de_cac!=null?_l.liquido_de_cac:ltvFinal-cac), ltvCacRatio=+(_l.ltv_cac||0), churnMensal=1-Math.pow(1-churnAnual,1/12);
   document.getElementById('kpi-c09').innerHTML=`
     <div class="kpi-card ${rentavel?'kpi-ok':'kpi-critico'}"><div class="kpi-label">Rentabilidade — ${nome}</div><div class="kpi-value" style="color:${rentavel?'var(--green)':'var(--red)'}">${fmtR(lucroCliente)}/mês</div><div class="kpi-sub">${rentavel?'Cliente lucrativo':'Cliente no prejuízo'}</div></div>
     <div class="kpi-card ${margemCliente>=margemAlvo*100?'kpi-ok':'kpi-alerta'}"><div class="kpi-label">Margem Real deste Cliente</div><div class="kpi-value">${fmtPct(margemCliente)}</div><div class="kpi-sub">Meta: ${fmtPct(margemAlvo*100)}</div></div>
@@ -31382,6 +31424,12 @@ function calcularC09(){
       : 'Reajustar honorário para ' + fmtR(honorarioAlvo) + ' (aumento de ' + fmtR(honorarioAlvo-honorario) + '). Se cliente não aceitar, reduzir horas alocadas ou reclassificar complexidade.'
   });
   mostrarToast('✓ Rentabilidade calculada','success');
+
+}
+function calcularC09(){
+  var ent=c09LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularC09')){ LH_PONTE.executar('calcularC09', ent); return; }
+  c09Render(c09CalcularLocal(ent), ent, null);
 }
 
 // ══════════════════════════════════════════
