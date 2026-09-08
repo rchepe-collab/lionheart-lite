@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v770";</script>
+<body><script>window.LH_VERSAO="v771";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2538,7 +2538,17 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 window.LH_PONTE = (function(){
   var URL_DESP = 'https://dilrjxsbcejcgprajayo.supabase.co/functions/v1/calcular';
   var CHAVE_LOG = 'LHCORE::lh_ponte_log';
-  var modo = 'local';
+  /* ═══════════════════════════════════════════════════════════════════════════
+     ★ v771 · 07/09/2026 — A VIRADA. O padrão passa a ser SERVIDOR.
+     As 117 telas de forma fechada têm render() e foram provadas em cinco pontos
+     cada uma; o despachante v9 lê o catálogo de pg_proc; a passada de fumaça de
+     hoje rodou dez telas contra o Supabase real com sessão de verdade (10/10) e
+     confirmou que sem token a tela recusa e NÃO mostra número.
+     A partir daqui o cálculo é do servidor: exige login, respeita cota e o motor
+     não viaja mais no arquivo. Quem tiver o HTML sem sessão vê a casca.
+     Para voltar ao antigo em uma linha, no console: LH_PONTE.definir('local').
+     ═══════════════════════════════════════════════════════════════════════════ */
+  var modo = 'servidor';
   var TOLERANCIA = 0.02;  /* 2 centavos — arredondamento de moeda */
 
   /* ── MAPA: tela → calculadora do servidor ──
