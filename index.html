@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v755";</script>
+<body><script>window.LH_VERSAO="v756";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3169,7 +3169,8 @@ window.LH_PONTE = (function(){
         return { cpv:f('ind08_cpv'), margem_pct:f('ind08_marg'), icms_pct:f('ind08_icms'), pis_cofins_pct:f('ind08_pis'), ipi_pct:f('ind08_ipi'), aliquota_plena_pct:f('ind08_ibs')||26.5, ano:parseInt((G.el('ind08_ano')||{}).value,10)||2029 }; },
       esperado:function(r){ return r?{ preco_hoje:Number(r.preco_hoje), preco_2033:Number(r.preco_2033) }:null; },
       /* kpi-ind08: [3] preço hoje · [8] preço 2033 (os demais são % e o preço do ano híbrido) */
-      local:function(){ return { preco_hoje:LH_PONTE._kpiNum('kpi-ind08',3), preco_2033:LH_PONTE._kpiNum('kpi-ind08',8) }; } },
+      local:function(){ return { preco_hoje:LH_PONTE._kpiNum('kpi-ind08',3), preco_2033:LH_PONTE._kpiNum('kpi-ind08',8) }; },
+      render:function(r, ent, motivo){ ind08Render(r, ent, motivo); } },
     calcularIND09: { calc:'ind09',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { beneficio_anual:f('ind09_ben'), ano_fim_ato:parseInt((G.el('ind09_fim')||{}).value,10)||2032, cobertura_fundo_pct:f('ind09_cob') }; },
@@ -3187,7 +3188,8 @@ window.LH_PONTE = (function(){
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { faturamento_mensal:f('ind11_fat'), insumos_mensal:f('ind11_ins'), pme:f('ind11_est'), pmr:f('ind11_rec'), pmp:f('ind11_pag'), float_dias:f('ind11_float'), pct_eletronico:f('ind11_elet'), selic_pct:f('ind11_selic'), ano:2027 }; },
       esperado:function(r){ return r?{ debito:Number(r.debito_liquido_mensal), retido:Number(r.retido_no_split), ncg:Number(r.ncg_adicional), float_ano:Number(r.custo_fim_do_float_ano) }:null; },
-      local:function(){ return { debito:LH_PONTE._kpiNum('kpi-ind11',0), retido:LH_PONTE._kpiNum('kpi-ind11',1), ncg:LH_PONTE._kpiNum('kpi-ind11',3), float_ano:LH_PONTE._kpiNum('kpi-ind11',4) }; } },
+      local:function(){ return { debito:LH_PONTE._kpiNum('kpi-ind11',0), retido:LH_PONTE._kpiNum('kpi-ind11',1), ncg:LH_PONTE._kpiNum('kpi-ind11',3), float_ano:LH_PONTE._kpiNum('kpi-ind11',4) }; },
+      render:function(r, ent, motivo){ ind11Render(r, ent, motivo); } },
     calcularIND12: { calc:'ind12',
       entradas:function(G){ var f=function(id){var v=parseFloat(String((G.el(id)||{}).value||'0'));return isNaN(v)?0:v;};
         return { credito_presumido:f('ind12_cp'), demais_beneficios:f('ind12_dem'), tem_reserva:(((G.el('ind12_res')||{}).value)==='Sim'), prob_exito_pct:f('ind12_prob') }; },
@@ -56750,14 +56752,22 @@ function calcularIND06(){
   ind06Render(ind06CalcularLocal(ent), ent, null);
 }
 
-function calcularIND08(){
+/* ═══ v756 · CUTOVER — calcularIND08: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function ind08LerEntradas(){
   var cpv=parseFloat(document.getElementById('ind08_cpv').value)||0;
   var marg=(parseFloat(document.getElementById('ind08_marg').value)||0)/100;
   var icms=(parseFloat(document.getElementById('ind08_icms').value)||0)/100;
   var pis=(parseFloat(document.getElementById('ind08_pis').value)||0)/100;
   var ipi=(parseFloat(document.getElementById('ind08_ipi').value)||0)/100;
   var ibs=(parseFloat(document.getElementById('ind08_ibs').value)||0)/100;
-  if(cpv<=0){ mostrarToast('Informe o CPV unitário','error'); return; }
+  if(cpv<=0){ mostrarToast('Informe o CPV unitário','error'); return null; }
+
+  var anoT=+((document.getElementById('ind08_ano')||{}).value||2029);
+  return { cpv:cpv, margem_pct:marg*100, icms_pct:icms*100, pis_cofins_pct:pis*100, ipi_pct:ipi*100, aliquota_plena_pct:ibs*100, ano:anoT, cenario:'A', _marg:marg, _icms:icms, _pis:pis, _ipi:ipi, _ibs:ibs, _anoT:anoT };
+}
+function ind08CalcularLocal(ent){
+  var cpv=ent.cpv, anoT=ent._anoT, marg=ent._marg, icms=ent._icms, pis=ent._pis, ipi=ent._ipi, ibs=ent._ibs;
+  var _FI=LH_MAPA_ANOS('icms',{2026:1,2027:1,2028:1,2029:.9,2030:.8,2031:.7,2032:.6,2033:0})[anoT]; if(_FI===undefined)_FI=1; var _FP={2026:1}[anoT]||0; var _FIPI={2026:1}[anoT]||0; var _tA=(anoT===2026)?(ibs*(1.0/26.5)):(ibs*((8.8+17.7*({2029:.1,2030:.2,2031:.3,2032:.4}[anoT]||0))/26.5)); var dentroAno=icms*_FI+pis*_FP;
   var liquido=cpv*(1+marg);
   var denom=1-icms-pis;
   if(denom<=0){ mostrarToast('Tributos por dentro somam 100% ou mais','error'); return; }
@@ -56777,6 +56787,16 @@ function calcularIND08(){
   var novoAno=(pvAno-icmsRAno)*_tA;
   var precoAno=pvAno*(1+ipi*_FIPI)+((anoT===2026)?0:novoAno); /* 2026: teste compensavel */
   var credAno=(anoT===2026)?0:novoAno;
+
+  return { ok:true, cpv:cpv, liquido_desejado:liquido, preco_hoje:precoHoje, preco_2033:preco2033, variacao_2033_pct:variacao*100, ano_hibrido:{ ano:anoT, preco:precoAno, variacao_pct:(precoHoje>0?(precoAno/precoHoje-1):0)*100, novo_por_fora_pct:novoAno*100, credito_pct:credAno*100 } };
+}
+function ind08Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-ind08'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var cpv=ent.cpv, anoT=ent._anoT, marg=ent._marg, icms=ent._icms, pis=ent._pis, ipi=ent._ipi, ibs=ent._ibs;
+  var _FI=LH_MAPA_ANOS('icms',{2026:1,2027:1,2028:1,2029:.9,2030:.8,2031:.7,2032:.6,2033:0})[anoT]; if(_FI===undefined)_FI=1; var _FP={2026:1}[anoT]||0; var _FIPI={2026:1}[anoT]||0; var _tA=(anoT===2026)?(ibs*(1.0/26.5)):(ibs*((8.8+17.7*({2029:.1,2030:.2,2031:.3,2032:.4}[anoT]||0))/26.5)); var dentroAno=icms*_FI+pis*_FP;
+  var cpv=ent.cpv, marg=ent._marg, icms=ent._icms, pis=ent._pis, ipi=ent._ipi, ibs=ent._ibs, anoT=ent._anoT; var liquido=+r.liquido_desejado, precoHoje=+r.preco_hoje, preco2033=+r.preco_2033, variacao=(+r.variacao_2033_pct)/100; var _h=r.ano_hibrido||{}; var precoAno=+_h.preco, varAno=(+_h.variacao_pct)/100, novoAno=(+_h.novo_por_fora_pct)/100, credAno=(+_h.credito_pct)/100;var pvAno=(1-dentroAno)>0? liquido/(1-dentroAno) : 0; var icmsRAno=pvAno*icms*_FI;
   document.getElementById('kpi-ind08').innerHTML=
     '<div class="kpi-card"><div class="kpi-label">Líquido desejado pelo vendedor</div><div class="kpi-value">'+fmtR(liquido)+'</div><div class="kpi-sub">CPV '+fmtR(cpv)+' + margem de '+fmtPct(marg*100)+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Preço ao comprador hoje</div><div class="kpi-value">'+fmtR(precoHoje)+'</div><div class="kpi-sub">gross-up por dentro + IPI por fora</div></div>'+
@@ -56788,9 +56808,16 @@ function calcularIND08(){
     '<div class="rec-card"><b>⚖ A mecânica que muda tudo:</b> hoje ICMS e PIS/COFINS entram <b>por dentro</b> do preço (o imposto incide sobre si mesmo, exigindo gross-up), e o IPI vem <b>por fora</b>. Na LC 214, IBS e CBS são <b>integralmente por fora</b> — o preço da mercadoria fica limpo e o tributo aparece destacado.'+
     '<br><b>Como ler o resultado:</b> a variação de '+(variacao>=0?'+':'')+fmtPct(variacao*100)+' é o que acontece <b>preservando exatamente a mesma margem líquida</b>. Não é ganho nem perda de rentabilidade — é mudança de vitrine.'+
     '<br><b>⚡ E o argumento comercial B2B:</b> o comprador do regime regular <b>credita integralmente</b> o IBS/CBS destacado. Para ele, o custo real é o preço líquido — o que muda a conversa de negociação: quem hoje disputa preço bruto, em 2027 passa a disputar preço líquido de crédito.</div>';
+
+}
+function calcularIND08(){
+  var ent=ind08LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularIND08')){ LH_PONTE.executar('calcularIND08', ent); return; }
+  ind08Render(ind08CalcularLocal(ent), ent, null);
 }
 
-function calcularIND11(){
+/* ═══ v756 · CUTOVER — calcularIND11: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
+function ind11LerEntradas(){
   var fat=parseFloat(document.getElementById('ind11_fat').value)||0;
   var ins=parseFloat(document.getElementById('ind11_ins').value)||0;
   var est=parseFloat(document.getElementById('ind11_est').value)||0;
@@ -56799,13 +56826,29 @@ function calcularIND11(){
   var flt=parseFloat(document.getElementById('ind11_float').value)||0;
   var elet=(parseFloat(document.getElementById('ind11_elet').value)||0)/100;
   var selic=(parseFloat(document.getElementById('ind11_selic').value)||0)/100;
-  if(fat<=0){ mostrarToast('Informe o faturamento mensal','error'); return; }
+  if(fat<=0){ mostrarToast('Informe o faturamento mensal','error'); return null; }
+
+  return { faturamento_mensal:fat, insumos_mensal:ins, pme:est, pmr:rec, pmp:pag, float_dias:flt, pct_eletronico:elet*100, selic_pct:selic*100, ano:2027, cenario:'A', _elet:elet, _selic:selic, _est:est, _rec:rec, _pag:pag, _flt:flt, _ins:ins };
+}
+function ind11CalcularLocal(ent){
+  var fat=ent.faturamento_mensal, ins=ent._ins, est=ent._est, rec=ent._rec, pag=ent._pag, flt=ent._flt, elet=ent._elet, selic=ent._selic;
+  
   var ciclo=est+rec-pag;
   var _aliq11=(typeof getAliq==='function'&&getAliq(2027)&&typeof getAliq(2027).total==='number')?getAliq(2027).total:0.088; /* ★ v689 · era literal 0.088 (cópia de curva); a tela modela 2027-28 e não tem seletor de ano — lê a fonte única */
   var debito=Math.max(0,fat-ins)*_aliq11;
   var retido=debito*elet;
   var custoFloat=retido*selic*flt/365*12;
   var ncg=retido*ciclo/30;
+
+  return { ok:true, ano:2027, aliquota_pct:_aliq11*100, ciclo_financeiro_dias:ciclo, debito_liquido_mensal:debito, retido_no_split:retido, custo_fim_do_float_ano:custoFloat, ncg_adicional:ncg };
+}
+function ind11Render(r, ent, motivo){
+  var _box=document.getElementById('kpi-ind11'); if(!_box) return;
+  if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
+  if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  var fat=ent.faturamento_mensal, ins=ent._ins, est=ent._est, rec=ent._rec, pag=ent._pag, flt=ent._flt, elet=ent._elet, selic=ent._selic;
+  
+  var fat=ent.faturamento_mensal, ins=ent._ins, est=ent._est, rec=ent._rec, pag=ent._pag, flt=ent._flt, elet=ent._elet, selic=ent._selic; var ciclo=+r.ciclo_financeiro_dias, _aliq11=(+r.aliquota_pct)/100, debito=+r.debito_liquido_mensal, retido=+r.retido_no_split, custoFloat=+r.custo_fim_do_float_ano, ncg=+r.ncg_adicional;
   document.getElementById('kpi-ind11').innerHTML=
     '<div class="kpi-card"><div class="kpi-label">Ciclo de caixa</div><div class="kpi-value">'+fmtN(ciclo,0)+' dias</div><div class="kpi-sub">estoque '+est+' + recebimento '+rec+' − pagamento '+pag+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Débito líquido mensal de IBS/CBS</div><div class="kpi-value">'+fmtR(debito)+'</div><div class="kpi-sub">8,8% sobre o valor adicionado (2027)</div></div>'+
@@ -56817,6 +56860,12 @@ function calcularIND11(){
     '<br><b>⚠ Por que o ciclo longo sofre mais:</b> a indústria paga o insumo hoje, produz por '+est+' dias e recebe em '+rec+'. Com o ciclo de <b>'+fmtN(ciclo,0)+' dias</b>, o tributo sai do caixa muito antes de o dinheiro da venda estar plenamente disponível — e o float de '+flt+' dias que existia acaba.'+
     '<br><b>O que fazer com este número:</b> os '+fmtR(ncg)+' de NCG adicional precisam entrar no orçamento de 2027 como <b>necessidade de capital de giro</b>, não como despesa tributária. É negociação com banco, revisão de prazo de recebimento ou renegociação com fornecedor — decisão financeira, não fiscal.'+
     '<br><b>Use junto com:</b> Split Payment &amp; Cash Gap e NCG para consolidar o impacto no fluxo de caixa da empresa inteira.</div>';
+
+}
+function calcularIND11(){
+  var ent=ind11LerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularIND11')){ LH_PONTE.executar('calcularIND11', ent); return; }
+  ind11Render(ind11CalcularLocal(ent), ent, null);
 }
 
 ['ind04','ind06','ind08','ind11'].forEach(function(id){ window.LH_VERT_MAPA[id]=['ind']; });
