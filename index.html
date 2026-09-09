@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v780";</script>
+<body><script>window.LH_VERSAO="v781";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -63813,67 +63813,20 @@ async function lhConsultarCNPJ(){
   }
   function _fmtR(v){ return (typeof fmtR==='function')?fmtR(v):('R$ '+v.toFixed(2)); }
 
-  window.c02MatrizRegimes = function(){
+  window.c02MatrizRegimes = function(r){
     var wrap=document.getElementById('c02_matriz_wrap'); if(!wrap) return;
-    var preco=_num('c02_preco',0); if(preco<=0){ wrap.style.display='none'; return; }
-    var regimeSel=(document.getElementById('c02_regime')||{value:'simples'}).value;
-    var seg=(document.getElementById('c02_segmento')||{value:'servicos'}).value;
-    var margem=_num('c02_margem',22)/100;
-    var ano=parseInt((document.getElementById('c02_ano')||{value:'2029'}).value)||2029;
-    var _sj=parseFloat((document.getElementById('c02_pct_sujeita')||{}).value);
-    var _in=parseFloat((document.getElementById('c02_pct_insumos')||{}).value);
-    var pctSujeita=(isNaN(_sj)?80:_sj)/100;
-    var pctInsumos=(isNaN(_in)?30:_in)/100;
-    var red=(seg==='ncm' && window.C02_RED_NCM!=null)?window.C02_RED_NCM:((typeof REDUCAO_SETORIAL!=='undefined'&&REDUCAO_SETORIAL[seg])||0);
-
-    /* alíquotas do ano (curva canônica) */
-    var ta=getAliq(ano);
-    var fatorVelho=0.55*((typeof ta.pcVelhoEstadual!=='undefined')?ta.pcVelhoEstadual:(ano>=2033?0:1))
-                 + 0.45*((typeof ta.pcPisCofins!=='undefined')?ta.pcPisCofins:(ano>=2027?0:1));
-    var aliqBrutaEfet=ta.total*(1-red)*pctSujeita;              /* destaque integral */
-    var aliqLiq=Math.max(0, aliqBrutaEfet*(1-pctInsumos));      /* líquida de créditos de insumos */
-
-    /* Simples: alíquota efetiva do DAS + fração substituída (mesma lógica v300 do c02) */
-    var segAnexo={servicos:'V',saude:'III',comercio:'I',agro:'I',agroindustria:'II',transporte_inter:'III',
-      transporte_publico:'III',hotelaria:'III',bares:'III',imobiliario:'V',locacao:'V',financeiro:'V',cultura:'III',farmacia:'I'};
-    var ax=segAnexo[seg]||'V';
-    var fracVelho={I:0.428,II:0.484,III:0.45,IV:0.66,V:0.311}[ax]||0.35;
-    var efet={I:0.113,II:0.117,III:0.16,IV:0.14,V:0.205}[ax]||0.12;
-    var rbt=_num('c02_rbt12',0);
-    if(rbt>0 && typeof DXH_LC123!=='undefined' && DXH_LC123[ax]){
-      var T=DXH_LC123[ax];
-      for(var i=0;i<T.length;i++){ if(rbt<=T[i][0]){ var e=(rbt*T[i][1]/100-T[i][2])/rbt; if(e>0)efet=e; break; } }
-    }
-    var pg=window.LH_IMPORT_PGDAS;
-    if(window._c02UsarPGDAS && pg && pg.ok && pg.das && pg.rpa>0) efet=pg.das/pg.rpa;
-
-    /* base líquida da operação, ancorada no regime ATUAL selecionado (modelo do c02) */
-    var tAtual = (regimeSel==='simples') ? efet*fracVelho
-               : ((typeof IMPOSTOS_ATUAIS!=='undefined' && typeof IMPOSTOS_ATUAIS[regimeSel]==='number') ? IMPOSTOS_ATUAIS[regimeSel] : 0.0865);
-    var base = preco*(1-tAtual);
-
-    /* ── cargas por regime de destino ── */
-    var linhas=[];
-    /* Simples puro: DAS preservado → recompõe a fração substituída → preço ≈ atual */
-    linhas.push({nome:'Simples puro <small style="opacity:.7">(dentro do DAS)</small>',
-      carga: efet*fracVelho, credito: 0,
-      nota:'DAS preservado — não destaca IBS/CBS; cliente não credita (só a fatia do DAS, art. 47 §9º II)'});
-    /* Híbrido: IBS/CBS por fora (rampa, c/ crédito de insumos) + fatia velha do DAS vigente */
-    linhas.push({nome:'<b style="color:#c9a227">Híbrido</b> <small style="opacity:.7">(Simples + IBS/CBS por fora)</small>',
-      carga: aliqLiq + efet*fracVelho*fatorVelho, credito: aliqBrutaEfet*base,
-      nota:'destaca IBS/CBS na nota — o cliente B2B credita integralmente'});
-    /* Presumido e Real: rampa + velho vigente (modelo do próprio c02) */
-    var tLP=(typeof IMPOSTOS_ATUAIS!=='undefined'&&IMPOSTOS_ATUAIS.lp)||0.0865;
-    var tLR=(typeof IMPOSTOS_ATUAIS!=='undefined'&&IMPOSTOS_ATUAIS.lr)||0.0925;
-    linhas.push({nome:'Lucro Presumido', carga: aliqLiq + tLP*fatorVelho, credito: aliqBrutaEfet*base, nota:'destaca IBS/CBS — cliente credita'});
-    linhas.push({nome:'Lucro Real',      carga: aliqLiq + tLR*fatorVelho, credito: aliqBrutaEfet*base, nota:'destaca IBS/CBS — cliente credita'});
-
+    /* ★ v781 · a matriz vem do SERVIDOR (fn_c02 → matriz, calculada por fn_c02_matriz). Este bloco calculava
+       aqui com a curva e as tabelas do arquivo — 'duas fontes na mesma tela'. Agora só desenha. */
+    var M=r&&r.matriz; if(!M||M.ok===false||!M.linhas||!M.linhas.length){ wrap.style.display='none'; return; }
+    var ano=M.ano, regimeSel=M.regime_atual||'', base=+M.base_liquida||0;
+    var NOMES={simples_puro:'Simples puro <small style="opacity:.7">(dentro do DAS)</small>', hibrido:'<b style="color:#c9a227">Híbrido</b> <small style="opacity:.7">(Simples + IBS/CBS por fora)</small>', lp:'Lucro Presumido', lr:'Lucro Real'};
+    var linhas=M.linhas.map(function(L){ return {nome:(NOMES[L.regime]||L.nome), cheio:+L.preco_cheio||0, credito:+L.credito_cliente||0, liq:+L.preco_liquido||0, nota:L.nota||''}; });
     var tb=document.getElementById('c02_matriz_body'); if(!tb) return;
     var html='';
     var melhorLiq=Infinity, melhorNome='';
     linhas.forEach(function(L){
-      var cheio=base*(1+L.carga);
-      var liq=cheio-L.credito;
+      var cheio=L.cheio;
+      var liq=L.liq;
       if(liq<melhorLiq){melhorLiq=liq;melhorNome=L.nome.replace(/<[^>]+>/g,'');}
       html+='<tr><td>'+L.nome+'<br><small style="opacity:.6;font-size:.78em">'+L.nota+'</small></td>'
           +'<td><b>'+_fmtR(cheio)+'</b></td>'
@@ -63956,7 +63909,7 @@ async function lhConsultarCNPJ(){
       _c02RenderOrig.apply(this,arguments);
       var _w=document.getElementById('c02_matriz_wrap');
       if(!r || r.ok===false || motivo){ if(_w) _w.style.display='none'; return; }
-      try{ window.c02MatrizRegimes(); }catch(e){ console.warn('matriz c02:',e); }
+      try{ window.c02MatrizRegimes(r); }catch(e){ console.warn('matriz c02:',e); }
     };
   }
 })();
