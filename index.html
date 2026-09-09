@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v784";</script>
+<body><script>window.LH_VERSAO="v785";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -39186,6 +39186,9 @@ window.LH_RADAR = (function(){
         var labelProp = temFeitas ? 'Gerar Proposta Comercial' : 'Abrir Proposta Comercial';
         var titleProp = temFeitas ? 'Pré-preenche a Proposta com os resultados das calcs já rodadas' : 'Abre a Proposta — preencha após rodar as calcs pra ter ROI projetado';
         html += '<button onclick="LH_RADAR.gerarPropostaDoMotor()" title="' + titleProp + '" style="padding:10px 20px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;font-weight:800;font-size:0.86em;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0;margin-left:8px;">' + labelProp + '</button>';
+        /* ★ v785 · o "botão único" (B5.3.6) existia como função e no Tour (passo 4), mas nunca teve botão na tela.
+           Roda as calcs da missão numa chamada só (lote, v784), consolida o Motor e gera a Proposta. */
+        html += '<button onclick="LH_RADAR.executarFluxoCompleto()" title="Roda as ' + (missao.pendentes.length + missao.feitas.length) + ' calculadoras da missão numa chamada só ao servidor, consolida o Motor 360° e gera a Proposta" style="padding:10px 20px;background:rgba(16,185,129,0.12);color:#10b981;border:1.5px solid rgba(16,185,129,0.45);border-radius:8px;font-weight:800;font-size:0.86em;cursor:pointer;font-family:Inter,sans-serif;flex-shrink:0;margin-left:8px;">⚡ Executar Fluxo Completo</button>';
       }
     html += '</div>';
     
