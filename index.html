@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v781";</script>
+<body><script>window.LH_VERSAO="v783";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4062,6 +4062,8 @@ window.LH_PONTE = (function(){
        2) IDÊNTICA EM VOO — mesma tela + mesmas entradas com uma requisição em
           andamento: não abre outra, aproveita a que está voando;
        3) ESPERA CURTA (180ms) — agrupa a rajada de digitação num pedido só. */
+    /* ★ v783 · chamada genérica ao despachante para módulos que não são calcular* (radar de teses) */
+    chamar: function(calc, ent){ return chamar(calc, ent); },
     executar: function(nomeFn, ent){
       var m = MAPA[nomeFn]; if(!m || typeof m.render !== 'function') return false;
       var assinatura;
@@ -12685,119 +12687,133 @@ window.LH_TESES = (function(){
   var CATALOGO = [
     { id:'monofasico', nome:'Monofásico · PIS/COFINS sobre revenda', tela:'monofasico',
       precisa:['receita_monofasica'], opcional:['receita_bruta'],
-      calc:function(R,d,n){ var m=R.resumo(d,'receita_monofasica',n); if(!(m.total>0)) return null;
-        return { valor: m.total*ALIQ.pis_cofins_nc, base:m.total, meses:m.meses,
-          como:'receita monofásica do período × 9,25% (PIS/COFINS não cumulativo pago indevidamente na revenda)' }; },
+      base:function(R,d,n){ var m=R.resumo(d,'receita_monofasica',n); return (m&&m.total>0)?m:null; },
       falta:'Sem NCM nas vendas não se identifica o produto monofásico — traga os XMLs de saída ou o SPED com registro C170.',
       lei:'Lei 10.147/2000 · Lei 10.485/2002' },
 
     { id:'icmsst1125', nome:'Tema 1125 · ICMS-ST fora da base', tela:'icmsst1125',
       precisa:['icms_st_suportado'],
-      calc:function(R,d,n){ var m=R.resumo(d,'icms_st_suportado',n); if(!(m.total>0)) return null;
-        return { valor: m.total*ALIQ.pis_cofins_nc, base:m.total, meses:m.meses,
-          como:'ICMS-ST suportado nas entradas × 9,25% — o substituído exclui o ST da base de PIS/COFINS' }; },
+      base:function(R,d,n){ var m=R.resumo(d,'icms_st_suportado',n); return (m&&m.total>0)?m:null; },
       falta:'O ICMS-ST suportado está no campo vICMSST das notas de compra ou no registro C170 do SPED.',
       lei:'Tema 1125 STJ' },
 
     { id:'cr01', nome:'Tema 69 · ICMS fora da base de PIS/COFINS', tela:'cr01',
       precisa:['icms_saida'],
-      calc:function(R,d,n){ var m=R.resumo(d,'icms_saida',n); if(!(m.total>0)) return null;
-        return { valor: m.total*ALIQ.pis_cofins_nc, base:m.total, meses:m.meses,
-          como:'ICMS destacado nas saídas × 9,25% — a tese do século, já transitada em julgado' }; },
+      base:function(R,d,n){ var m=R.resumo(d,'icms_saida',n); return (m&&m.total>0)?m:null; },
       falta:'O ICMS destacado vem dos XMLs de saída ou do registro C190 do SPED ICMS/IPI.',
       lei:'Tema 69 STF · RE 574.706' },
 
     { id:'credpresumido', nome:'Crédito presumido · compras de produtor PF', tela:'credpresumido',
       precisa:['compras_de_pf'],
-      calc:function(R,d,n){ var m=R.resumo(d,'compras_de_pf',n); if(!(m.total>0)) return null;
-        return { valor: m.total*0.0165, base:m.total, meses:m.meses,
-          como:'aquisições de pessoa física × fração legal (percentual definitivo depende de ato do Executivo)',
-          ressalva:'percentual pendente de regulamentação — número indicativo' }; },
+      base:function(R,d,n){ var m=R.resumo(d,'compras_de_pf',n); return (m&&m.total>0)?m:null; },
       falta:'As compras de produtor pessoa física aparecem nos XMLs de entrada com CPF no emitente.',
       lei:'Lei 10.925 · LC 214/2025 art. 168' },
 
     { id:'cr05', nome:'Saldo credor PIS/COFINS pré-Reforma', tela:'cr05',
       precisa:['saldo_credor_piscofins'], estoque:true,
-      calc:function(R,d,n){ var m=R.resumo(d,'saldo_credor_piscofins',n); if(!(m.total>0)) return null;
-        return { valor:m.total, base:m.total, meses:m.meses, como:'saldo escriturado nos registros M100/M500' }; },
+      base:function(R,d,n){ var m=R.resumo(d,'saldo_credor_piscofins',n); return (m&&m.total>0)?m:null; },
       falta:'O saldo escriturado está nos registros M100 e M500 da EFD-Contribuições — hoje a ferramenta ainda não extrai esses registros.',
       lei:'LC 214/2025 art. 168' },
 
     { id:'cr02', nome:'Previdenciária patronal · verbas indenizatórias', tela:'cr02',
       precisa:['folha_rubricas_indenizatorias'],
-      calc:function(R,d,n){ var m=R.resumo(d,'folha_rubricas_indenizatorias',n); if(!(m.total>0)) return null;
-        return { valor:m.total*ALIQ.inss_patronal, base:m.total, meses:m.meses,
-          como:'rubricas indenizatórias × 20% de contribuição patronal' }; },
+      base:function(R,d,n){ var m=R.resumo(d,'folha_rubricas_indenizatorias',n); return (m&&m.total>0)?m:null; },
       falta:'As rubricas por natureza vêm do eSocial (S-1200) ou da folha detalhada.',
       lei:'Tema 1079 STJ · Tema 985 STF' },
 
     { id:'iss118', nome:'Tema 118 · ISS fora da base', tela:'iss118',
       precisa:['iss_destacado'],
-      calc:function(R,d,n){ var m=R.resumo(d,'iss_destacado',n); if(!(m.total>0)) return null;
-        return { valor:m.total*ALIQ.pis_cofins_nc, base:m.total, meses:m.meses,
-          como:'ISS destacado × 9,25%' }; },
+      base:function(R,d,n){ var m=R.resumo(d,'iss_destacado',n); return (m&&m.total>0)?m:null; },
       falta:'O ISS destacado vem das notas de serviço (NFS-e) ou da EFD-Contribuições.',
       lei:'Tema 118 STF' },
 
     { id:'ins', nome:'Tema 779 · Insumos por essencialidade', tela:'ins',
       precisa:['despesas_creditaveis'],
-      calc:function(R,d,n){ var m=R.resumo(d,'despesas_creditaveis',n); if(!(m.total>0)) return null;
-        return { valor:m.total*ALIQ.pis_cofins_nc, base:m.total, meses:m.meses,
-          como:'despesas essenciais à atividade × 9,25%' }; },
+      base:function(R,d,n){ var m=R.resumo(d,'despesas_creditaveis',n); return (m&&m.total>0)?m:null; },
       falta:'As rubricas de despesa vêm do balancete com plano de contas.',
       lei:'Tema 779 STJ' }
   ];
 
-  function analisar(cnpjDono, nMeses){
-    nMeses = nMeses || 60;
-    var R = window.LH_RAZAO; if(!R) return { comCaso:[], semBase:[], total:0 };
-    var comCaso=[], semBase=[], total=0;
+  /* ★ v783 · RADAR NO PADRÃO DO CUTOVER
+     radarLerEntradas apura as BASES na razão (só totais — P1: nome/CNPJ não saem do navegador);
+     radarCalcularLocal multiplica pelos coeficientes (fica na forja; na casca vira stub);
+     radarRender monta comCaso/semBase a partir do resultado — do servidor (fn_radar_teses) ou local. */
+  function radarLerEntradas(cnpjDono, nMeses){
+    nMeses = nMeses || 60; var R = window.LH_RAZAO;
+    var itens=[], semBase=[], meta={};
+    if(!R) return { itens:itens, meses:nMeses, _meta:meta, _semBase:CATALOGO.map(function(t){ return { id:t.id, nome:t.nome, tela:t.tela, falta:t.falta, lei:t.lei }; }), _cnpj:cnpjDono };
     CATALOGO.forEach(function(t){
-      var r=null; try{ r = t.calc(R, cnpjDono, nMeses); }catch(e){ r=null; }
-      if(r && r.valor>0){
-        /* grau de confiança: quanto do período de prescrição está coberto */
-        var cob = r.meses/nMeses;
-        var grau = cob>=0.8 ? 'alta' : (cob>=0.3 ? 'média' : 'indicativa');
-        var obs = grau!=='alta'
-          ? 'apurado sobre '+r.meses+' de '+nMeses+' meses — traga o período completo para o valor final'
-          : 'período de prescrição coberto';
-        /* v636 · se a série veio de rateio, a tese declara */
-        try{ var _sr=R.serie(cnpjDono, t.precisa[0], nMeses);
-          if(_sr.some(function(x){ return (x.origens||[]).some(function(o){ return /RATEIO/.test(o); }); }))
-            obs = 'base distribuída por rateio mensal (média, não apuração) · ' + obs;
-        }catch(_e){}
-        if(r.ressalva) obs = r.ressalva + ' · ' + obs;
-        /* ★ v636 · PROJEÇÃO SÓ PARA FLUXO — achado nº 2 da auditoria.
-           A projeção linear (valor ÷ meses × 60) vale para o que se repete todo mês:
-           receita, ICMS, frete. Saldo credor é ESTOQUE — a fotografia do mês. Projetá-lo
-           transformava R$ 11.356 reais em R$ 681.390 fictícios. Estoque não projeta. */
-        var _proj = t.estoque ? Math.round(r.valor*100)/100
-                              : (r.meses>0 ? Math.round(r.valor/r.meses*nMeses*100)/100 : 0);
-        if(t.estoque && grau!=='alta'){ obs = 'saldo é fotografia do período — não se projeta · ' + obs; grau = r.meses>0 ? 'alta' : grau; }
-        comCaso.push({ id:t.id, nome:t.nome, tela:t.tela, valor:Math.round(r.valor*100)/100,
-          base:r.base, meses:r.meses, grau:grau, como:r.como, observacao:obs, lei:t.lei,
-          projetado: _proj });
-        total += r.valor;
+      var m=null; try{ m = t.base(R, cnpjDono, nMeses); }catch(e){ m=null; }
+      if(m && m.total>0){
+        var rateio=false; try{ var _sr=R.serie(cnpjDono, t.precisa[0], nMeses); rateio=_sr.some(function(x){ return (x.origens||[]).some(function(o){ return /RATEIO/.test(o); }); }); }catch(_e){}
+        itens.push({ tese:t.id, base:Math.round(m.total*100)/100, meses:m.meses });
+        meta[t.id]={ nome:t.nome, tela:t.tela, lei:t.lei, estoque:!!t.estoque, rateio:rateio };
       } else {
         semBase.push({ id:t.id, nome:t.nome, tela:t.tela, falta:t.falta, lei:t.lei });
       }
     });
-    comCaso.sort(function(a,b){ return b.valor-a.valor; });
-    return { comCaso:comCaso, semBase:semBase, total:Math.round(total*100)/100,
-             projetadoTotal: Math.round(comCaso.reduce(function(a,c){ return a+c.projetado; },0)*100)/100,
-             periodo:nMeses };
+    return { itens:itens, meses:nMeses, _meta:meta, _semBase:semBase, _cnpj:cnpjDono };
   }
-  return { analisar:analisar, CATALOGO:CATALOGO };
+  function radarCalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
+  function radarRender(res, ent, motivo){
+    var a = { comCaso:[], semBase:(ent&&ent._semBase)||[], total:0, projetadoTotal:0, periodo:(ent&&ent.meses)||60, motivo:motivo||null };
+    if(!res || res.ok===false || !res.itens){ a.motivo = motivo || (res&&res.motivo) || 'sem resultado'; return a; }
+    var nM=a.periodo;
+    res.itens.forEach(function(r){
+      var meta=(ent._meta||{})[r.tese]||{};
+      var cob = r.meses/nM;
+      var grau = cob>=0.8 ? 'alta' : (cob>=0.3 ? 'média' : 'indicativa');
+      var obs = grau!=='alta' ? 'apurado sobre '+r.meses+' de '+nM+' meses — traga o período completo para o valor final' : 'período de prescrição coberto';
+      if(meta.rateio) obs = 'base distribuída por rateio mensal (média, não apuração) · ' + obs;
+      if(r.ressalva) obs = r.ressalva + ' · ' + obs;
+      if(r.estoque && grau!=='alta'){ obs = 'saldo é fotografia do período — não se projeta · ' + obs; grau = r.meses>0 ? 'alta' : grau; }
+      a.comCaso.push({ id:r.tese, nome:meta.nome||r.tese, tela:meta.tela||r.tese, valor:+r.valor, base:+r.base, meses:r.meses, grau:grau,
+                       como:r.como, observacao:obs, lei:meta.lei||r.base_legal||'', projetado:+r.projecao });
+      a.total += +r.valor;
+    });
+    a.comCaso.sort(function(x,y){ return y.valor-x.valor; });
+    a.total=Math.round(a.total*100)/100;
+    a.projetadoTotal=Math.round(a.comCaso.reduce(function(x,c){ return x+c.projetado; },0)*100)/100;
+    return a;
+  }
+  /* analisar() síncrono continua existindo (compatibilidade): devolve o LOCAL na forja e, na casca, o objeto
+     com motivo — o strip reescreve a linha de recuo abaixo. O caminho oficial é _tesesRender (servidor). */
+  function analisar(cnpjDono, nMeses){
+    var ent=radarLerEntradas(cnpjDono, nMeses);
+    return radarRender(null, ent, 'calculo indisponivel');
+  }
+
+  return { analisar:analisar, radarLerEntradas:radarLerEntradas, radarCalcularLocal:radarCalcularLocal, radarRender:radarRender, CATALOGO:CATALOGO };
 })();
 </script>
 <script>
 /* ★ v629 · PAINEL DE OPORTUNIDADES — o resultado da varredura, em ordem de valor */
 window.LH_tesesRender = function(destinoId, cnpjDono, nMeses){
   var alvo=document.getElementById(destinoId); if(!alvo) return false;
-  var a=window.LH_TESES.analisar(cnpjDono, nMeses||60);
+  /* ★ v783 · o radar segue o modo da ponte: servidor (fn_radar_teses, uma chamada para as 8 teses) ou local (forja).
+     As bases são apuradas aqui, na razão; só totais viajam. */
+  var T=window.LH_TESES, ent=T.radarLerEntradas(cnpjDono, nMeses||60);
+  var servidor = window.LH_PONTE && LH_PONTE.modo()==='servidor' && typeof LH_PONTE.chamar==='function';
+  if(servidor && ent.itens.length){
+    if(!alvo._lhRadarVoo){ alvo._lhRadarVoo=true;
+      alvo.innerHTML='<div style="font-size:.86em;opacity:.7;padding:10px 0">Calculando no servidor…</div>';
+      LH_PONTE.chamar('radar-teses', { itens:ent.itens, meses:ent.meses }).then(function(res){
+        alvo._lhRadarVoo=false;
+        var a=T.radarRender(res&&res.ok?res.resultado:null, ent, (res&&!res.ok)?(res.motivo||'sem resposta do servidor'):null);
+        _tesesDesenhar(alvo, a, cnpjDono);
+      }).catch(function(e){ alvo._lhRadarVoo=false; _tesesDesenhar(alvo, T.radarRender(null, ent, 'sem resposta do servidor'), cnpjDono); });
+    }
+    return true;
+  }
+  var a = servidor ? T.radarRender(null, ent, null) : T.analisar(cnpjDono, nMeses||60);   /* local só pela porta única (strip) */
+  return _tesesDesenhar(alvo, a, cnpjDono);
+};
+window._tesesDesenhar = function(alvo, a, cnpjDono){
   function fmt(v){ return 'R$ '+(Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
   var h='<div style="font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#c9a227;font-weight:700;margin-bottom:8px">Varredura de teses · onde há caso</div>';
-  if(!a.comCaso.length){
+  if(a.motivo && !a.comCaso.length){
+    h+='<div style="padding:10px 13px;border-radius:9px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.35);font-size:.86em;margin-bottom:10px"><b style="color:#fca5a5">Não foi possível calcular</b> — '+a.motivo+'</div>';
+  } else if(!a.comCaso.length){
     h+='<div style="font-size:.86em;opacity:.75;margin-bottom:10px">Nenhuma tese com base suficiente ainda. Os documentos abaixo destravam as análises:</div>';
   } else {
     h+='<div style="padding:12px 15px;border-radius:10px;background:rgba(16,185,129,.10);border:1px solid rgba(16,185,129,.35);margin-bottom:11px">'
