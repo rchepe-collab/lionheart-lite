@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v773";</script>
+<body><script>window.LH_VERSAO="v776";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -19943,7 +19943,7 @@ const SETOR_ANEXO_LITE = {
   servicos:'III',comercio:'I',industria:'II',saude:'V',/* ⚖ v192: idem clínicas */ti:'V',
   // v26: novos mapeamentos
   hotelaria:'III', /* ⚖ v192: Anexo III DIRETO, sem Fator R (LC 123 art.18 §5º-B) */ servicos_intelectuais:'V', servicos_gerais:'III',
-  imobiliario:'III', transporte_publico:'III', financeiro:'V',
+  imobiliario:'III', transporte_publico:'III', financeiro:'VEDADO', /* ⚖ v776: instituição financeira não pode optar (LC 123 art. 3º §4º VIII; art. 17 I) — igual à tv_simples_setores v775 */
   farmacia:'I', cultura_esporte:'III', saude_hospitalar:'III',
   servicos_tec_prof:'V', servicos_advocacia:'IV', servicos_contabilidade:'III', /* ⚖ v192 */ servicos_vigilancia:'IV',
   servicos_limpeza:'IV', construcao_residencial:'IV'
@@ -20076,6 +20076,7 @@ window.LH_BASE_LEGAL = {
 function calcSNCompleto(fatAnual, seg) {
   if(fatAnual > 4800000) return null;
   const anexo = SETOR_ANEXO_LITE[seg] || 'III';
+  if(anexo==='VEDADO') return null; /* v776: setor vedado ao Simples */
   const tab = SN_ANEXOS_LITE[anexo];
   for(var fi=0;fi<tab.length;fi++){ var f=tab[fi]; if(fatAnual<=f.a){ var ef=(fatAnual*f.t-f.d)/fatAnual; return {ef:ef,impAnual:fatAnual*ef,impMensal:fatAnual/12*ef,anexo:anexo}; } } return null;
 }
@@ -22690,26 +22691,8 @@ function compararSegregacaoCNAE(){
    inteira até a montagem de `regimes`, e o RENDER monta `regimes` a partir do que o SERVIDOR
    devolve (ranking + detalhes por regime) — cores e rótulos são da tela. */
 function c05LerEntradas(){
-  /* auto-reparo do DOM: é manutenção de tela, tem que rodar TAMBÉM em modo servidor */
-  try{
-    var _pgC = document.getElementById('page-c05');
-    if(_pgC){
-      var _sec = _pgC.querySelector('#res-c05') || _pgC.querySelector('.resultado-section') || _pgC;
-      if(!document.getElementById('kpi-c05')){
-        var _k=document.createElement('div'); _k.id='kpi-c05'; _k.className='kpi-grid';
-        _sec.insertBefore(_k, _sec.firstChild);
-        try{ (window._C05_TRACE=window._C05_TRACE||[]).push('01b-KPI reconstruido'); }catch(_t){}
-      }
-      if(!document.getElementById('chart-c05')){
-        var _cc=document.createElement('div'); _cc.className='chart-card';
-        if(_cc) _cc.innerHTML='<h4>Carga tributária por regime</h4><div class="chart-wrapper" style="min-height:240px"><canvas id="chart-c05"></canvas></div>';
-        _sec.appendChild(_cc);
-        try{ (window._C05_TRACE=window._C05_TRACE||[]).push('01c-canvas reconstruido'); }catch(_t){}
-      }
-      /* seções escondidas por uma limpeza anterior voltam a aparecer */
-      _pgC.querySelectorAll('.resultado-section').forEach(function(e){ if(e.style.display==='none') e.style.display=''; });
-    }
-  }catch(_rep){}
+  /* ★ v776 · prepara a tela (reparo, redes de segurança de import) ANTES de ler — nos dois modos */
+  if(c05PrepararTela()===false) return null;
   var N=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(String(e.value).replace(',','.')):NaN; return isNaN(v)?(d||0):v; };
   var T=function(id,d){ var e=document.getElementById(id); return (e&&e.value)||d; };
   var fat=N('c05_fat',0); if(fat<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o faturamento anual','error'); return null; }
@@ -22720,20 +22703,33 @@ function c05LerEntradas(){
   var redSetor=(typeof REDUCAO_CBS_IBS!=='undefined'?(REDUCAO_CBS_IBS[seg]||0):0);
   var icmsAliq=N('c05_icms_aliq',0)/100;
   var compCred=(N('c05_forn_regular',0)+N('c05_forn_import',0))/100; if(!(compCred>0)) compCred=0;
+  var _plLista=null; try{ var _h=document.getElementById('c05_pl_lista'); if(_h&&_h.value){ var _a=JSON.parse(_h.value);
+    if(Array.isArray(_a)&&_a.length){ _plLista=_a.map(function(x){ return Math.max(0,parseFloat(x)||0); }); } } }catch(_e){}
+  var _plSoma=_plLista?_plLista.reduce(function(x,y){return x+y;},0):prol*socios;
   return {
     /* ★ v758 · UNIDADE — os campos da tela são MENSAIS ("Folha de Pagamento Mensal", "Custos/Compras
        Mensais"); fn_regime_otimo espera ANUAIS. Sem a conversão, o INSS patronal saía 12× maior
        (1.000.800 contra 83.400) e o crédito de CBS/IBS zerava (custos×12 > faturamento). */
     fat_anual:fat, setor:seg, folha_anual:folha*12, prolabore:prol, custos_anual:custos*12, lucro_pct:lucPct,
+    /* ★ v776 · pró-labore POR SÓCIO vai ao servidor (fn_regime_otimo v774, p_pl_lista). LC 123 art. 18 §5º-J/M:
+       Fator R é a folha EFETIVA — [15.000, 2.000, 2.000] é 19.000/mês, não 45.000. Sem isto o servidor
+       recomendava o regime errado para quem usa a lista. */
+    pl_lista:_plLista, _plSoma:_plSoma, _plLista:_plLista,
     ano:ano, cenario:'A', aliq_iss:aliqISS, aliq_icms:icmsAliq, reducao_setor:redSetor, comp_credito:compCred, socios:socios,
     _seg:seg, _fat:fat, _folha:folha, _prol:prol, _lucPct:lucPct, _ano:ano, _socios:socios,
     _aliqISS:aliqISS, _redSetor:redSetor, _irpfmAtivo:(T('c05_irpfm','nao')==='sim'), _lucro_anual:fat*lucPct
   };
 }
-function c05CalcularLocal(ent){
+/* ★ v776 · c05PrepararTela — tudo que o Regime Ótimo faz ANTES de calcular e que não é cálculo:
+   auto-reparo do DOM (v601/v621), rede de segurança do segmento pelo XML (v393/v585), alinhamento
+   com o Híbrido (v394), custos pelas compras reais (v404), limpeza de avisos (v408).
+   Vivia dentro do c05CalcularLocal. Em modo servidor (v772) o corpo local não roda, então nada
+   disso rodava — e o LerEntradas lia os campos ANTES dos ajustes. Agora roda no LerEntradas,
+   nos dois modos, antes da leitura. Devolve false quando a tela não montou. */
+function c05PrepararTela(){
   
   
-  try{ window._C05_TRACE=['01-entrou na funcao']; }catch(_t){}
+  try{ window._C05_TRACE=['01-preparar tela']; }catch(_t){}
   /* v601 · guarda de montagem: as páginas são criadas sob demanda. Se a importação dispara o
      auto-recálculo antes de a tela existir, kpi-c05 é null e a função morre ANTES do gráfico. */
   /* ★ v621 · AUTO-REPARO DO DOM (relato real: kpiExiste=false, canvasExiste=false, mas a página
@@ -22765,7 +22761,7 @@ function c05CalcularLocal(ent){
       if(typeof mostrarToast==='function') mostrarToast('A tela do Regime Ótimo não montou por completo — recarregue com Ctrl+Shift+R','error');
       (window._C05_TRACE=window._C05_TRACE||[]).push('02-ABORTOU: DOM ausente mesmo apos reparo');
     }catch(_e){}
-    return;
+    return false;
   }
   /* v393 (C1): rede de seguranca do segmento em QUALQUER caminho de import — NF-e = mercadoria = comercio */
   try{ var _sg=document.getElementById('c05_seg'); var _xmi=window.LH_IMPORT_XML;
@@ -22816,422 +22812,13 @@ function c05CalcularLocal(ent){
   }catch(_e){}
   /* v408: limpa avisos da rodada anterior — senão 'margem não informada (18%)' persiste no PDF mesmo depois de preencher 12 */
   try{['c05-aviso-inputs','c05-margem-aviso'].forEach(function(_ai){var _ae=document.getElementById(_ai); if(_ae&&_ae.parentNode)_ae.parentNode.removeChild(_ae);});}catch(_e){}
-  const fat     = parseFloat(document.getElementById('c05_fat').value)||0;
-  const seg     = document.getElementById('c05_seg').value;
-  const folha   = parseFloat(document.getElementById('c05_folha').value)||0;
-  const lucPct  = parseFloat(document.getElementById('c05_lucro_pct').value)/100||0.18;
-  const _margemInformada = (parseFloat((document.getElementById('c05_lucro_pct')||{}).value)||0) > 0;
-  const ano     = parseInt(document.getElementById('c05_ano').value)||2027;
-  const prol    = parseFloat(document.getElementById('c05_prolabore').value)||0;
-  const socios  = parseInt(document.getElementById('c05_socios').value)||1;
-  /* v243 — pro-labore POR SOCIO: usa lista propagada; fallback = prol repetido × socios (espelha comportamento antigo) */
-  const plLista = (function(){
-    try{ var h=document.getElementById('c05_pl_lista');
-      if(h && h.value){ var a=JSON.parse(h.value);
-        if(Array.isArray(a) && a.length){ return a.map(function(x){ return Math.max(0, parseFloat(x)||0); }); } }
-    }catch(e){}
-    var n=Math.max(1,socios), arr=[]; for(var i=0;i<n;i++) arr.push(prol); return arr;
-  })();
-  const plSoma = plLista.reduce(function(a,b){return a+b;},0);
-  window._C05_DEBUG = { plLista: plLista.slice(), plSoma: plSoma };
-  const custos  = parseFloat(document.getElementById('c05_custos').value)||0;
-  const irpfmAtivo = document.getElementById('c05_irpfm').value==='sim';
-  if(fat<=0){
-    /* ★ v617 · TERCEIRO ESTADO: VAZIO POR FALTA DE DADO.
-       Antes: um toast que some em 3s e a tela ficava com as seções abertas e vazias — sem número,
-       sem gráfico, sem erro. Parecia ferramenta quebrada — foi o que apareceu ao trocar para um
-       cliente sem documentos. Agora a tela DIZ o que falta e como resolver. */
-    try{
-      var _vf=document.getElementById('lh-falta-dado-C05'); if(_vf) _vf.remove();
-      var _al=document.getElementById('kpi-c05') || document.getElementById('res-c05');
-      if(_al){
-        var _ent=''; try{ var _e=window.LH_GRUPO && LH_GRUPO.getEntidadeAtiva ? LH_GRUPO.getEntidadeAtiva() : null; if(_e && _e.nome) _ent=' de "'+_e.nome+'"'; }catch(_x){}
-        var _d=document.createElement('div'); _d.id='lh-falta-dado-C05'; _d.setAttribute('data-lh-faltadado','1');
-        _d.style.cssText='margin:12px 0;padding:14px 17px;border-radius:10px;background:rgba(74,158,255,.10);border:1.5px solid #4a9eff;color:#9ecbff;font-size:.9em';
-        if(_d) _d.innerHTML='<b style="font-size:1.02em">\u2139 Faltam dados para calcular</b>'
-          +'<div style="margin-top:6px;opacity:.92">O <b>Faturamento Anual</b> est\u00e1 vazio. Preencha o campo acima '
-          +'\u2014 ou importe os documentos'+_ent+' na <b>Central de Documentos</b> para as calculadoras se preencherem sozinhas.</div>'
-          +'<div style="margin-top:6px;font-size:.84em;opacity:.7">Os documentos ficam guardados por CNPJ: cada cliente tem os seus.</div>';
-        /* v619 · se a Central já tem faturamento apurado, oferece preencher com um clique */
-        try{
-          var _rb=0;
-          var _c1=document.getElementById('dxh_rbt12'); if(_c1) _rb=parseFloat(String(_c1.value||'').replace(',','.'))||0;
-          if(!_rb){ var _p=window.LH_IMPORT_PGDAS; if(_p && _p.rbt12) _rb=parseFloat(_p.rbt12)||0; }
-          if(_rb>0){
-            _d.innerHTML += '<button type="button" onclick="var e=document.getElementById(\'c05_fat\'); e.value=\''+Math.round(_rb)+'\'; '
-              +'try{e.dispatchEvent(new Event(\'change\',{bubbles:true}));}catch(x){} calcularC05();" '
-              +'style="margin-top:10px;background:#4a9eff;border:none;color:#04121f;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:700;font-size:.9em">'
-              +'usar R$ '+Math.round(_rb).toLocaleString('pt-BR')+' (dos documentos)</button>';
-          }
-        }catch(_e9){}
-        /* ★ v619 · o aviso ficava enterrado junto do KPI, longe do botão — o usuário clicava
-           em Calcular, nada acontecia na vista dele, e o aviso morava a duas telas de distância.
-           Agora ele nasce logo ABAIXO do botão e a página rola até ele. */
-        var _btn=null;
-        try{ _btn=[].slice.call(document.querySelectorAll('#page-c05 button'))
-                    .filter(function(b){ return /Calcular Regime/i.test(b.textContent||''); })[0]; }catch(_b){}
-        if(_btn && _btn.parentNode){ _btn.parentNode.insertBefore(_d, _btn.nextSibling); }
-        else if(_al.parentNode){ _al.parentNode.insertBefore(_d,_al); }
-        try{ _d.scrollIntoView({behavior:'smooth', block:'center'}); }catch(_sc){}
-        if(_al) _al.innerHTML='';
-      }
-      var _pgF=document.getElementById('page-c05');
-      if(_pgF) _pgF.querySelectorAll('.resultado-section .chart-card, .resultado-section details').forEach(function(e){ e.style.display='none'; });
-      if(window.Chart && Chart.getChart){ var _ci=Chart.getChart('chart-c05'); if(_ci) _ci.destroy(); }
-    }catch(_e){}
-    mostrarToast('Informe o faturamento anual — ou importe os documentos deste cliente','error');
-    return;
-  }
+  return true;
+}
 
-  /* v380: trava consultiva — nao recomendar migracao com margem/folha presumidas */
-  try{
-    var _mRaw=(document.getElementById('c05_lucro_pct')||{}).value;
-    var _fRaw=(document.getElementById('c05_folha')||{}).value;
-    /* v382: distingue CAMPO EM BRANCO (falta) de ZERO DIGITADO (declarado, ex: empresa sem folha) */
-    var _mFalta=(String(_mRaw==null?'':_mRaw).trim()==='');
-    var _fFalta=(String(_fRaw==null?'':_fRaw).trim()==='');
-    if(_mFalta||_fFalta){
-      setTimeout(function(){
-        var _r=document.getElementById('res-c05');
-        if(_r && !document.getElementById('c05-aviso-inputs')){
-          var _f=[]; if(_mFalta)_f.push('margem de lucro'); if(_fFalta)_f.push('folha de pagamento');
-          var _b=document.createElement('div'); _b.id='c05-aviso-inputs';
-          _b.style.cssText='margin:0 0 14px;padding:12px 16px;border-radius:10px;background:rgba(224,108,108,.10);border:1.5px solid #E06C6C;color:#f0c0c0;font-size:.9em;line-height:1.5';
-          if(_b) _b.innerHTML='\u26A0 <b>Resultado preliminar \u2014 nao use para recomendar migracao.</b> Faltou informar: <b>'+_f.join(' e ')+'</b>. Rodou com premissas (margem 18%, folha 0), o que distorce o Lucro Real e o Presumido. Informe os valores reais (balancete / eSocial) \u2014 ou digite 0 se a empresa nao tiver folha/pro-labore \u2014 e recalcule.';
-          _r.insertBefore(_b,_r.firstChild);
-        }
-      },60);
-    }
-  }catch(_e){}
-  try{ setTimeout(function(){ if(window.lhConsistDxHC05) window.lhConsistDxHC05('res-c05'); },90); }catch(_e){}
-  try{ if(!_margemInformada){ setTimeout(function(){ var _r=document.getElementById('res-c05'); if(_r && !document.getElementById('c05-margem-aviso')){ var _w=document.createElement('div'); _w.id='c05-margem-aviso'; _w.style.cssText='margin:10px 0;padding:10px 13px;border-radius:9px;background:rgba(224,168,60,.10);border:1.5px solid #E0A83C;font-size:.83em;color:#f0d9a8'; _w.innerHTML='<b>\u26A0 Margem de lucro n\u00e3o informada</b> \u2014 usando <b>18% padr\u00e3o</b> s\u00f3 para estimar. Sem a margem real da empresa, o Lucro Presumido/Real aparece <b>artificialmente barato</b> (lucro baixo = menos IRPJ/CSLL). Informe a margem real para a recomenda\u00e7\u00e3o valer \u2014 sen\u00e3o use o <b>Simples</b> como refer\u00eancia.'; _r.insertBefore(_w, _r.firstChild); } },100); } }catch(_e){}
-
-  // v17 Bug #1: VALIDAÇÃO DE COMPATIBILIDADE REGIME × FATURAMENTO
-  // Empresa com fat > R$ 4,8M NÃO PODE estar no SN (LC 123/2006 art. 3º)
-  // Empresa com fat > R$ 78M NÃO PODE estar no LP (art. 13 Lei 9.718/98)
-  var regimeAtualInput = ((document.getElementById('gi_regime')||{value:'simples'}).value || 'simples');
-  var avisoRegimeIncompat = '';
-  if(regimeAtualInput === 'simples' && fat > 4800000) {
-    avisoRegimeIncompat = 'O regime atual informado é <strong>Simples Nacional</strong>, mas o faturamento anual de <strong>'+fmtR(fat)+'</strong> excede o teto legal de <strong>R$ 4.800.000</strong> (LC 123/2006 art. 3º). A empresa deveria estar enquadrada em <strong>Lucro Presumido</strong> ou <strong>Lucro Real</strong>. Os cálculos abaixo comparam LP e LR — o SN foi automaticamente removido por inelegibilidade.';
-  } else if(regimeAtualInput === 'lp' && fat > 78000000) {
-    avisoRegimeIncompat = 'O regime atual informado é <strong>Lucro Presumido</strong>, mas o faturamento anual de <strong>'+fmtR(fat)+'</strong> excede o teto legal de <strong>R$ 78.000.000</strong> (Lei 9.718/98 art. 13). A empresa é OBRIGADA a estar no <strong>Lucro Real</strong>. O LP foi automaticamente removido por inelegibilidade.';
-  } else if(regimeAtualInput === 'mei' && fat > 81000) {
-    avisoRegimeIncompat = 'O regime atual informado é <strong>MEI</strong>, mas o faturamento anual de <strong>'+fmtR(fat)+'</strong> excede o teto MEI de R$ 81.000. Reavaliar enquadramento (LC 123/2006).';
-  }
-
-  const lucro_anual=fat*lucPct;
-  let pres=SEG_PARA_PRESUNCAO[seg]||SEG_PARA_PRESUNCAO.servicos_gerais;
-  /* v240 · Equiparação hospitalar segregada — SAU01 absorvida no C05 */
-  var _eqOn=(seg==='servicos_saude'||seg==='saude_hospitalar')&&((document.getElementById('c05_equip')||{checked:false}).checked);
-  var _eqEmp=((document.getElementById('c05_equip_emp')||{value:'sim'}).value)==='sim';
-  var _eqAnv=((document.getElementById('c05_equip_anv')||{value:'sim'}).value)==='sim';
-  var _eqPP=Math.max(0,Math.min(100,parseFloat((document.getElementById('c05_pct_proc')||{value:0}).value)||0))/100;
-  var _eqPC=1-_eqPP, _eqApto=_eqOn&&_eqEmp&&_eqAnv;
-  if(_eqApto){ pres={ ir:_eqPC*0.32+_eqPP*0.08, csll:_eqPC*0.32+_eqPP*0.12, label:'Equiparação hospitalar — segregado ('+Math.round(_eqPP*100)+'% proc.)' }; }
-
-  // CBS/IBS plena por ano + redução setorial (LC 214/2025)
-  const aliqCBSIBS_plena=getAliq(ano).total||0;
-  const redSetor=REDUCAO_CBS_IBS[seg]||0;
-  const aliqCBSIBS=aliqCBSIBS_plena*(1-redSetor);
-
-  // ISS para serviços (LP/LR — SN inclui ISS no DAS)
-  const aliqISS=(window.LH_getISS?LH_getISS(seg):(ISS_POR_SETOR[seg]||0));
-
-  // Crédito CBS/IBS proporcional ao % de compras de fornecedores LP/LR (gi_creditos global)
-  const pctCreditos = parseFloat((document.getElementById('gi_creditos')||{value:''}).value||'0')/100;
-  // Cap LR baseado em gi_creditos: se 0%, assume 70% padrão; senão usa 80% das compras informadas (cap em 90%)
-  // v26 FIX GRAVE-03: Fallback conservador quando pctCreditos não preenchido
-  // ANTES: LP 85%, LR 70% — favorecia LP/LR artificialmente (serviços puros NÃO têm 70% crédito real)
-  // AGORA: LP 40%, LR 30% — força usuário a preencher gi_creditos pra análise precisa
-  const capCreditoCBSIBS_LR = pctCreditos > 0 ? Math.min(pctCreditos * 0.90, 0.90) : 0.30;
-  const capCreditoCBSIBS_LP = pctCreditos > 0 ? Math.min(pctCreditos * 0.95, 0.95) : 0.40;
-
-  // ════════════════════════════════════════════════════════════════════
-  // v20 SIMPLES NACIONAL — CÁLCULO HONESTO E COMPLETO
-  // ════════════════════════════════════════════════════════════════════
-  // Bug v17/v19: comparava SN (só DAS) vs LP/LR (DAS + INSS folha + pró-labore)
-  // → SN ficava artificialmente caro porque LP/LR somavam encargos que SN também tem
-  //
-  // Fix v20 incorpora:
-  // 1) Fator R: se (folha + prol×12) / fat ≥ 28% → Anexo V vira Anexo III (mais barato)
-  // 2) Anexo IV (advogados, vigilância, limpeza, construção): CPP 20% folha + RAT
-  //    está POR FORA do DAS (igual LP/LR) — somar para comparação justa
-  // 3) INSS sócio CI (11% sobre pró-labore, teto R$ 8.475,55/mês): pago por GPS
-  //    POR FORA do DAS em todos os anexos do SN — somar para carga real
-  // 4) Resultado mostra 2 colunas: DAS (alíquota oficial) + Carga REAL (DAS + INSS sócio)
-  // ════════════════════════════════════════════════════════════════════
-
-  // ── Passo 1: detectar Fator R ──
-  // Regra: para empresas no Anexo V, se a relação (folha + pró-labore) / receita ≥ 28%,
-  // a empresa pode tributar pelo Anexo III (mais barato)
-  var anexoOriginal = SETOR_ANEXO_LITE[seg] || 'III';
-  var fatorR_aplica = false;
-  var anexoEfetivoSN = anexoOriginal;
-  if(anexoOriginal === 'V' && fat > 0) {
-    var fatorR_valor = (folha*12 + plSoma*12) / fat; /* v243: soma real por socio */
-    if(fatorR_valor >= 0.28) {
-      fatorR_aplica = true;
-      anexoEfetivoSN = 'III';
-          window._C05_FR_MULTI = (plLista.length>1 && ((folha*12 + (plLista[0]||0)*12)/fat) < 0.28); // v243: so passa no Fator R por causa dos demais socios
-    }
-  }
-  // Função local para calcular alíquota efetiva por anexo + fat (incl. anexo IV)
-  function calcSNPorAnexo(fatAnual, anexo) {
-    if(fatAnual > 4800000) return null;
-    var tab = SN_ANEXOS_LITE[anexo];
-    if(!tab) return null;
-    for(var fi=0;fi<tab.length;fi++){
-      var f = tab[fi];
-      if(fatAnual <= f.a){
-        var ef = (fatAnual*f.t - f.d) / fatAnual;
-        return { ef:ef, impAnual: fatAnual*ef, anexo:anexo, faixa:fi+1 };
-      }
-    }
-    return null;
-  }
-
-  /* v617: houve dado — remove o aviso de falta e devolve as seções escondidas */
-  try{ var _vf2=document.getElementById('lh-falta-dado-C05'); if(_vf2) _vf2.remove();
-    var _pgO=document.getElementById('page-c05');
-    if(_pgO) _pgO.querySelectorAll('.resultado-section .chart-card, .resultado-section details').forEach(function(e){ if(e.style.display==='none') e.style.display=''; });
-  }catch(_e){}
-  try{ (window._C05_TRACE=window._C05_TRACE||[]).push('03-aliquota do Simples'); }catch(_t){}
-  var snCalc = calcSNPorAnexo(fat, anexoEfetivoSN);
-  var aliqSN = snCalc ? snCalc.ef : null;
-  /* v596 · HIERARQUIA DE FONTES: efetiva declarada no PGDAS vence a tabela teórica (mesma regra do Dentro×Híbrido). */
-  var _fonteSN='tabela do Anexo (teórica)'; var _aliqTeorica=aliqSN;
-  try{ var _pg=window._LH_ALIQ_EF_SN; if(_pg && _pg.v>0){ var _v=(_pg.v>=0.5? _pg.v/100 : _pg.v); if(_v>0 && _v<0.5){ aliqSN=_v; _fonteSN=_pg.fonte; } } }catch(_e){}
-  try{ window._C05_ALIQ_SN_INFO={usada:aliqSN, teorica:_aliqTeorica, fonte:_fonteSN}; }catch(_e){}
-  // SN: alíquota própria inclui PIS/COFINS+ISS+ICMS+IRPJ+CSLL+CPP (exceto Anexo IV).
-  // CBS/IBS transicional por fora (reduzido em 2026-2032)
-  const aliqCBSIBS_SN = 0; /* 🦁 v45 padrão mestre: piloto 2026 compensável/isento p/ adimplente */
-  var das_SN = aliqSN !== null ? fat * aliqSN + fat * aliqCBSIBS_SN : null;
-
-  // ── Passo 2: encargos POR FORA do DAS ──
-  // (a) INSS sócio CI (11% sobre pró-labore mensal, teto INSS 2026 R$ 8.475,55)
-  const TETO_INSS_2026 = 8475.55;
-  var inss_socio_SN = plLista.reduce(function(s,p){ return s + Math.min(p, TETO_INSS_2026)*0.11*12; }, 0); /* v243: teto POR socio */
-  window._C05_DEBUG.inssSN = inss_socio_SN;
-
-  // (b) Anexo IV: CPP 20% sobre folha + pró-labore (recolhida em GPS, não DAS)
-  //     RAT médio 2% + (sem Sistema S no Anexo IV — LC 123/06 art. 18 §6º)
-  var cpp_anexo_iv = 0;
-  if(anexoEfetivoSN === 'IV') {
-    var rat_iv = 0.02; // RAT médio
-    cpp_anexo_iv = (folha*12 + plSoma*12) * (0.20 + rat_iv); /* v243 */
-  }
-
-  // (c) RAT + Terceiros para outros anexos (na verdade já estão no DAS pra I, II, III, V)
-  //     → não somar de novo
-
-  // CARGA TOTAL DO SN (DAS + tudo por fora)
-  var encargosForaSN = inss_socio_SN + cpp_anexo_iv;
-  var impSN = das_SN !== null ? das_SN + encargosForaSN : null;
-
-  // LP — CORREÇÃO v11: LC 224/2025 aplicada CORRETAMENTE
-  // Lei: aumenta a PRESUNÇÃO em 10% (não a alíquota) sobre receita > R$ 5M/ano
-  // Serviços: 32% → 35,2% | Comércio/Indústria: 8% → 8,8%
-  // Aplica somente sobre o EXCEDENTE de R$ 5M/ano (R$ 1,25M/trim)
-  const LIMITE_LC224 = 5000000;
-  const fat_ate_limite = Math.min(fat, LIMITE_LC224);
-  const fat_excedente = Math.max(0, fat - LIMITE_LC224);
-  const pres_ir_majorada = pres.ir * 1.10;     // ex: 32% → 35,2%
-  const pres_csll_majorada = pres.csll * 1.10; // ex: 32% → 35,2%
-
-  // Base IRPJ: até R$5M com presunção normal + excedente com majorada
-  const base_irpj_lp_normal = fat_ate_limite * pres.ir;
-  const base_irpj_lp_majorada = fat_excedente * pres_ir_majorada;
-  const base_irpj_lp = base_irpj_lp_normal + base_irpj_lp_majorada;
-
-  // IRPJ: 15% sobre toda a base + adicional 10% sobre excedente de R$240k/ano
-  const irpj_lp = base_irpj_lp*0.15 + Math.max(0, base_irpj_lp - 240000)*0.10;
-
-  // CSLL: mesma lógica (vigente desde abr/2026)
-  const base_csll_lp_normal = fat_ate_limite * pres.csll;
-  const base_csll_lp_majorada = fat_excedente * pres_csll_majorada;
-  const csll_lp = (base_csll_lp_normal + base_csll_lp_majorada) * 0.09;
-
-  // Adicional efetivo da LC 224 (para mostrar na tela, comparado ao cenário sem majoração)
-  const irpj_lp_sem_lc224 = (fat * pres.ir)*0.15 + Math.max(0, fat * pres.ir - 240000)*0.10;
-  const csll_lp_sem_lc224 = fat * pres.csll * 0.09;
-  const adicional_lc224 = (irpj_lp + csll_lp) - (irpj_lp_sem_lc224 + csll_lp_sem_lc224);
-
-  const pis_lp=(ano>=2027)?0:fat*0.0065, cofins_lp=(ano>=2027)?0:fat*0.03;
-  var _fISS=(ano<=2028?1:(ano>=2033?0:1-(ano-2028)*0.10)); const iss_lp = aliqISS > 0 ? fat * aliqISS * _fISS : 0; /* 🦁 v45: ISS na transição */
-
-  // CORREÇÃO v11: INSS patronal LP/LR inclui RAT (2% médio) + terceiros (5,8%) = ~27,8% total
-  // Usuário pode ajustar via input ratGrau (1%, 2%, 3%) — usando 2% conservador como default no C05
-  const rat_lp = 0.02; // RAT médio default
-  const terceiros = 0.058;
-  const inss_patronal_lp = (folha*12)*(0.20 + rat_lp + terceiros); /* v30.16 FIX-NORMA: INSS patronal so folha CLT (Lei 8.212 art.22 + COSIT 120/2016) */
-  // v20: somar também INSS sócio CI (11% sobre pró-labore, teto R$ 8.475,55/mês)
-  // Esse encargo existe em LP/LR também (não só SN) — descontado do sócio + recolhido em GPS
-  const inss_socio_lp = plLista.reduce(function(s,p){ return s + Math.min(p, TETO_INSS_2026)*0.11*12; }, 0); /* v243: teto POR socio */
-  window._C05_DEBUG.inssLP = inss_socio_lp;
-  const inss_lp = inss_patronal_lp + inss_socio_lp;
-
-  const cbsIbs_lp = (ano <= 2026) ? 0 : Math.max(0, fat - custos*12) * (getAliq(ano).total||0) * (1-redSetor); /* v30.16 FIX-NORMA: 2026 sem CBS/IBS no LP (Decreto 12.955/2026) */
-  /* v406 · ICMS na transição — mercadoria (comércio). Não-cumulativo: alíq nominal × valor agregado (vendas − compras creditáveis), fator de saída do ICMS (100% até 2028, −10pp/ano, 0 em 2033). Soma no LP/LR; no SN já está embutido no DAS. Mesma base do CBS/IBS. */
-  var _icmsAliqReg=(parseFloat((document.getElementById('c05_icms_aliq')||{}).value)||0)/100;
-  var _ehMercadoriaReg=(aliqISS<=0); /* comércio: sem ISS → mercadoria/ICMS */
-  var _fatICMSreg=(ano<=2028?1:(ano>=2033?0:1-(ano-2028)*0.10));
-  /* VA período-consistente: usa a RAZÃO compras/vendas dos XMLs (invariante ao período) sobre o faturamento. Evita misturar RBT12 (fat) com run-rate (custos). Fallback = VA absoluto. */
-  /* v408 BLINDAGEM: 'vendas' do ratio direto das notas cujo EMITENTE = CNPJ do PGDAS (fonte que não mente). vNFSaida pode vir inflado com as ENTRADAS (NF-e do fornecedor também é tpNF=1) quando o CNPJ não estava setado na agregação — foi isso que gerou consumo 354k em vez de 240k. Fallbacks: vNFSaida só se plausível (nSaida<n), depois receita do PGDAS (mesmo período). */
-  var _xmR=window.LH_IMPORT_XML, _crtR=window.LH_IMPORT_CRT, _pgIc=window.LH_IMPORT_PGDAS;
-  var _cnpjIc=(_pgIc&&_pgIc.cnpj)?String(_pgIc.cnpj).replace(/\D/g,''):'';
-  var _vendPer=0;
-  try{ var _nts=window.LH_XML_NOTAS||window._LH_XML_NOTAS;
-    if(_cnpjIc && _nts && _nts.length){ for(var _vi=0;_vi<_nts.length;_vi++){ var _no=_nts[_vi]; if(String(_no.emitCNPJ||'').replace(/\D/g,'')===_cnpjIc) _vendPer+=(_no.vNF||0); } }
-  }catch(_e){}
-  if(_vendPer<=0 && _xmR && (_xmR.nSaida||0)>0 && (_xmR.nSaida<(_xmR.n||0))) _vendPer=_xmR.vNFSaida||0;
-  if(_vendPer<=0 && _pgIc && _pgIc.rpa>0) _vendPer=_pgIc.rpa;
-  var _compPer=_crtR?((_crtR.somaReg||0)+(_crtR.somaSN||0)):0;
-  var _vaICMS=(_vendPer>0&&_compPer>0)?fat*Math.max(0,1-_compPer/_vendPer):Math.max(0, fat - custos*12);
-  var icms_reg=(_ehMercadoriaReg && _icmsAliqReg>0)?_vaICMS*_icmsAliqReg*_fatICMSreg:0;
-  const impLP=irpj_lp+csll_lp+pis_lp+cofins_lp+iss_lp+inss_lp+cbsIbs_lp+icms_reg;
-
-  // LR — também aplicar RAT + terceiros + INSS sócio CI
-  const irpj_lr=Math.max(0,lucro_anual)*0.15+Math.max(0,lucro_anual-240000)*0.10;
-  const csll_lr=Math.max(0,lucro_anual)*0.09;
-  const pis_lr=(ano>=2027)?0:fat*0.0165, cofins_lr=(ano>=2027)?0:fat*0.076;
-  // Crédito PIS/COFINS no LR — fat já é ANUAL
-  const cred = (ano>=2027)?0:custos*12*(0.0165+0.076); /* FIX: crédito PIS/COFINS LR só sobre custos reais informados — alinhado ao Excel-mestre (remove o crédito fantasma do legacy gi_creditos=48) */
-  const iss_lr = aliqISS > 0 ? fat * aliqISS * _fISS : 0;
-  const inss_patronal_lr=(folha*12)*(0.20 + rat_lp + terceiros); /* v30.16 FIX-NORMA: INSS patronal so folha CLT */
-  const inss_socio_lr = inss_socio_lp; // mesma fórmula (mesmo pró-labore)
-  const inss_lr = inss_patronal_lr + inss_socio_lr;
-  const cbsIbs_lr = (ano <= 2026) ? 0 : Math.max(0, fat - custos*12) * (getAliq(ano).total||0) * (1-redSetor); /* v30.16 FIX-NORMA: 2026 sem CBS/IBS no LR */
-  const impLR=Math.max(0,irpj_lr+csll_lr+Math.max(0,pis_lr+cofins_lr-cred)+iss_lr+inss_lr+cbsIbs_lr+icms_reg);
-
-  // v17 Bug #1: bloquear LP da lista se fat > R$ 78M (limite legal LP)
-  var lpElegivel = fat <= 78000000;
-  // v20: decomposição honesta do SN — separa DAS, INSS sócio, Anexo IV CPP
-  /* ═══ v315 · FASE 1 DA FUSÃO — coluna SIMPLES HÍBRIDO no Regime Ótimo ═══
-     Reusa a mecânica validada da Dentro × Híbrido:
-     DAS reduzido (sem a fatia IBS/CBS) + IBS/CBS por fora (curva do ano) − crédito das compras.
-     Fonte: LC 214/2025 + curva canônica LH_fatorAno. */
-  var impHibrido=null, hibDetalhe=null;
-  if(aliqSN!==null && das_SN>0){
-    var _anoH=ano;
-    var _fAnoH=(typeof window.LH_fatorAno==='function')?window.LH_fatorAno(_anoH,false):1;
-    /* ═══ FASE C — alíquota pelo bucket NBS do produto vendido ═══ */
-    var _agH=parseFloat((document.getElementById('c05_hib_bucket')||{}).value);
-    if(isNaN(_agH)) _agH=0.265;                       /* fallback: padrão */
-    /* modo preciso (mix de NBS): usa a média ponderada dos produtos */
-    var _mixMedia=(typeof window.c05MixAliqMedia==='function')?window.c05MixAliqMedia():null;
-    if(_mixMedia!=null) _agH=_mixMedia;
-    /* o bucket JÁ reflete a redução do produto; não aplicar redSetor de novo (evita dupla redução) */
-    var _aliqRefH=_agH;
-    /* fatia de IBS/CBS que SAI do DAS (aprox. via anexo/faixa oficial) */
-    var _fatiaFrac=0;
-    if(typeof window.LH_fatiaDAS==='function' && snCalc && snCalc.faixa){
-      var _axMap={III:'III',IV:'IV',V:'V',I:'I',II:'II'};
-      var _axH=_axMap[anexoEfetivoSN]||'III';
-      var _rFat=window.LH_fatiaDAS(_axH, fat, _anoH);
-      if(_rFat) _fatiaFrac=_rFat.fatia/100;
-    }
-    /* ═══ FASE C — monofásico: na fatia monofásica não havia PIS/COFINS a sair do DAS ═══ */
-    var _monoH=parseFloat((document.getElementById('c05_monofasico')||{}).value)||0; if(_monoH<0)_monoH=0; if(_monoH>100)_monoH=100;
-    var _fatiaAjustada=_fatiaFrac*(1-_monoH/100*0.5);  /* aprox: metade da fatia é federal (PIS/COFINS); reduz proporcional ao monofásico */
-    var _dasReduzidoH=das_SN*(1-_fatiaAjustada);       /* DAS sem a parcela que virou IBS/CBS (ajustado p/ monofásico) */
-    /* ═══ FASE A — motor de saída: exportação imune reduz o débito ═══ */
-    var _expH=parseFloat((document.getElementById('c05_export')||{}).value)||0; if(_expH<0)_expH=0; if(_expH>100)_expH=100;
-    var _fatInternoH=fat*(1-_expH/100);                /* só a parte interna gera débito */
-    var _debH=_fatInternoH*_aliqRefH*_fAnoH;           /* débito IBS/CBS por fora (exportação imune) */
-    /* ═══ FASE B — crédito de entrada preciso por regime do fornecedor ═══ */
-    var _fReg=parseFloat((document.getElementById('c05_forn_regular')||{}).value)||0;
-    var _fSN=parseFloat((document.getElementById('c05_forn_simples')||{}).value)||0;
-    var _fImp=parseFloat((document.getElementById('c05_forn_import')||{}).value)||0;
-    var _somaForn=_fReg+_fSN+_fImp;
-    var _baseCompras=(typeof _vendPer!=='undefined'&&_vendPer>0&&_compPer>0)?fat*Math.min(0.95,_compPer/_vendPer):((custos>0)?custos*12:0); /* ★ v677 · CRÉDITO FANTASMA REMOVIDO — o fallback usava fat×pctCreditos, e pctCreditos vem de gi_creditos, um <input type="hidden" value="48"> que o usuário NÃO vê e NÃO pode mudar. Resultado: quem informava compras=0 recebia crédito sobre 48% do faturamento no lado híbrido — 4.320/ano na persona-padrão de 2026 e 114.480/ano em 2033 com o fator cheio. Podía VIRAR a recomendação de manchete por uma premissa invisível. O caminho do Lucro Real já tinha sido limpo do mesmo legado; o híbrido passou batido. A aba C05 do Mestre só tem SN/LP/LR — o lastro do híbrido é a aba dxh, e lá compras=0 significa crédito=0 (mesma disciplina de fn_dxh). Princípio do campo em branco: o que o usuário não informou, a ferramenta não inventa. Prova: 900k · TI · folha 25k/mês · pró-labore 15k · 2026 → híbrido 128.547,73, idêntico a fn_regime_otimo. */ /* v413 FIX período-consistente: débito é sobre RBT12 (fat), então o crédito usa a RAZÃO compras/vendas dos XMLs sobre o MESMO fat — antes usava custos×12 (run-rate) contra débito RBT12, inflando o crédito e lisonjeando o híbrido (0,5% vs os ~16% do DxH). Fallbacks: custos×12 → premissa. */
-    /* v323 · LC 214 art.47 — bens do ativo creditam INTEGRAL e IMEDIATO na compra */
-    var _bensH=parseFloat((document.getElementById('c05_bens')||{}).value)||0;
-    _baseCompras+=_bensH;
-    var _credH;
-    if(_somaForn>0){
-      /* Regular credita cheio, Simples só a fatia do DAS (15,5% — carimbo 25/07, mestre dxh B10; espelha LH_fatiaDAS caso-base), Import cheio */
-      var _fatorCred=(_fReg + _fSN*0.155 + _fImp)/_somaForn;
-      _credH=_baseCompras*_fatorCred*_aliqRefH*_fAnoH;
-    } else {
-      _credH=_baseCompras*_aliqRefH*_fAnoH;             /* fallback: premissa geral (comportamento v316) */
-    }
-    var _ibscbsH=Math.max(0,_debH-_credH);
-    impHibrido=_dasReduzidoH + _ibscbsH + encargosForaSN; /* + encargos fora do DAS (iguais ao SN) */
-    /* ═══ FASE A — crédito transferido ao cliente (arma comercial) ═══ */
-    var _cliReg=parseFloat((document.getElementById('c05_cli_regular')||{}).value)||0;
-    var _cliSN=parseFloat((document.getElementById('c05_cli_simples')||{}).value)||0;
-    var _cliB2C=parseFloat((document.getElementById('c05_cli_b2c')||{}).value)||0;
-    var _somaCli=_cliReg+_cliSN+_cliB2C;
-    /* crédito cheio ao cliente = débito de IBS/CBS destacado na nota (parte que o cliente PJ aproveita) */
-    var _debCheioH=_fatInternoH*_aliqRefH*_fAnoH;
-    var _credCliente = _somaCli>0 ? _debCheioH*((_cliReg + _cliSN*0)/_somaCli) /* ★ v677 · CARIMBO HERDADO DO v672 — LC 214/2025 art. 47 §9º I: cliente optante do Simples que ficou POR DENTRO do DAS não apropria crédito nenhum de IBS/CBS. O peso legal é ZERO. O 0,20 era premissa sem base — já removida do DxH no v672 e sobrevivente aqui. Cliente do Simples que optou pelo regime regular (art. 41 §3º) credita cheio e deve ser contado no campo de clientes Regular. */ : _debCheioH;  /* Regular=cheio, Simples=fatia, B2C=0 */
-    hibDetalhe={dasReduzido:_dasReduzidoH, debito:_debH, credito:_credH, ibscbs:_ibscbsH, ano:_anoH, fator:_fAnoH,
-                export:_expH, credCliente:_credCliente, temSaida:(_somaCli>0)};
-  }
-
-  const regimes=[
-      ...(aliqSN!==null?[{nome:'Simples Nacional',total:impSN,
-        irpjCsll:das_SN*0.30,  // estimativa IRPJ+CSLL dentro do DAS
-        inss:inss_socio_SN + cpp_anexo_iv + das_SN*0.20, // INSS sócio + Anexo IV + parcela CPP do DAS
-        pisCofinsIbs:das_SN*0.50, // PIS+COFINS+ISS+ICMS dentro do DAS + CBS/IBS
-        das: das_SN,
-        encargosFora: encargosForaSN,
-        fatorRAplica: fatorR_aplica,
-        anexoOriginal: anexoOriginal,
-        anexoEfetivo: anexoEfetivoSN,
-        faixaSN: snCalc ? snCalc.faixa : null,
-        cor:'rgba(168,108,255,0.88)'}]:[]),
-      ...(impHibrido!==null?[{nome:'Simples Híbrido',total:impHibrido,
-        irpjCsll:hibDetalhe.dasReduzido*0.30, /* v414: partilha sobre o DAS REDUZIDO (não o cheio) — as colunas passam a somar o total */
-        inss:(inss_socio_SN + cpp_anexo_iv)+hibDetalhe.dasReduzido*0.20,
-        pisCofinsIbs:hibDetalhe.dasReduzido*0.50+hibDetalhe.ibscbs,
-        das:hibDetalhe.dasReduzido,
-        encargosFora:encargosForaSN,
-        hibrido:true, hibDetalhe:hibDetalhe,
-        cor:'rgba(232,185,58,0.88)'}]:[]),
-      ...(lpElegivel?[{nome:'Lucro Presumido',total:impLP,
-        irpjCsll:irpj_lp+csll_lp,inss:inss_lp,pisCofinsIbs:pis_lp+cofins_lp+iss_lp+cbsIbs_lp+icms_reg,
-        cor:'rgba(232,160,32,0.75)'}]:[]),
-      {nome:'Lucro Real',total:Math.max(0,impLR),
-        irpjCsll:irpj_lr+csll_lr,inss:inss_lr,pisCofinsIbs:Math.max(0,pis_lr+cofins_lr+iss_lr+cbsIbs_lr-cred)+icms_reg,
-        cor:'rgba(14,159,110,0.75)'},
-    ].sort((a,b)=>a.total-b.total);
-
-  /* v410 · dedupe na tela: se houver mais de um "Base legal"/"Viabilidade" na página do C05, só o primeiro fica visível (o PDF já ignorava; agora a tela também) */
-  try{ var _pg5=document.getElementById('res-c05'); _pg5=_pg5?(_pg5.closest('.page')||_pg5):null;
-    if(_pg5){ var _grp5={bl:[],vb:[]};
-      _pg5.querySelectorAll('details').forEach(function(_d5){ var _s5=_d5.querySelector('summary'); if(!_s5)return; var _k5=_s5.textContent.replace(/\s+/g,' ').trim().toLowerCase();
-        if(_k5.indexOf('base legal')>-1)_grp5.bl.push(_d5); else if(_k5.indexOf('viabilidade')>-1)_grp5.vb.push(_d5); });
-      /* v416: entre duplicatas, mantém a VIVA (a que contém #viab-c05, atualizada a cada cálculo) — antes mantinha a primeira, que podia ser a cópia congelada com premissas velhas (margem 18% no PDF) */
-      ['bl','vb'].forEach(function(_kk){ var _L=_grp5[_kk]; if(_L.length<1)return; if(_L.length===1){ _L[0].style.display=''; return; }
-        var _keep=null;
-        if(_kk==='vb'){ for(var _i5=0;_i5<_L.length;_i5++){ if(_L[_i5].querySelector('#viab-c05')){ _keep=_L[_i5]; break; } } }
-        if(!_keep)_keep=_L[0];
-        _L.forEach(function(_d){ _d.style.display=(_d===_keep)?'':'none'; });
-      }); } }catch(_e){}
-  /* v412 · padrão parecer + PDF cliente no Regime Ótimo (roda pós-render via setTimeout) */
-  setTimeout(function(){ try{
-    var _R=window._C05_REGIMES||[]; if(!_R.length) return;
-    var _RS=_R.slice().sort(function(a,b){return a.total-b.total;});
-    var _r1=_RS[0], _r2=_RS[1]||_r1, _rp=_RS[_RS.length-1];
-    var _eco=(_rp.total-_r1.total), _dif12=_r2.total-_r1.total, _empate=(_dif12/Math.max(1,_r1.total))<0.02;
-    var _sec5=document.getElementById('res-c05'); _sec5=_sec5?(_sec5.closest('.resultado-section')||_sec5):null; if(!_sec5) return;
-    function _box5(id,titulo,aberto){ var el=document.getElementById(id); if(!el){ var det=document.createElement('details'); if(aberto)det.open=true; det.style.marginTop='12px'; det.className='lh-acc t-info'; det.innerHTML='<summary>'+titulo+'</summary><div class="lh-acc-body"><div id="'+id+'"></div></div>'; _sec5.appendChild(det); el=document.getElementById(id); } return el; }
-    var _fmt5=function(v){return Math.round(v).toLocaleString('pt-BR');};
-    var _ano5=(document.getElementById('c05_ano')||{}).value||'2027';
-    var _mg5=(document.getElementById('c05_lucro_pct')||{}).value||'';
-    var _p5=_box5('c05Parecer','\u270D\uFE0F Parecer do consultor',true);
-    if(_p5 && !document.getElementById('c05ParecerTxt')){ _p5.innerHTML='<textarea id="c05ParecerTxt" rows="4" placeholder="Parecer sintetizado \u2014 entra nos dois PDFs." style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.14);border-radius:10px;color:#dbe4ee;padding:10px;font-size:.85rem;line-height:1.5;resize:vertical"></textarea>'; }
-    var _pd5=_box5('c05ParecerDet','\ud83d\udcdc Parecer detalhado \u2014 gerado autom\u00e1tico (edite \u00e0 vontade)',false);
-    if(_pd5 && !document.getElementById('c05ParecerDetTxt')){ _pd5.innerHTML='<div id="c05ParecerDetTxt" contenteditable="true" style="min-height:120px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.14);border-radius:10px;color:#dbe4ee;padding:12px;font-size:.85rem;line-height:1.6;white-space:pre-wrap;outline:none"></div>'; }
-    var _tx5=document.getElementById('c05ParecerTxt');
-    if(_tx5 && (!_tx5.value||_tx5.value===_tx5.getAttribute('data-auto'))){ _tx5.value='Comparados Simples, h\u00edbrido, Presumido e Real com os documentos reais da empresa ('+_ano5+'): '+(_empate?('empate t\u00e9cnico entre '+_r1.nome+' ('+_fmt5(_r1.total)+') e '+_r2.nome+' ('+_fmt5(_r2.total)+') \u2014 diferen\u00e7a inferior a 2%. Em empate, recomendo permanecer no regime atual pela simplicidade e menor risco de transi\u00e7\u00e3o.'):(_r1.nome+' apresenta a menor carga ('+_fmt5(_r1.total)+'/ano), economia de R$ '+_fmt5(_eco)+'/ano frente ao pior cen\u00e1rio.'))+' Reavaliar anualmente e enviar o balancete para consolidar a margem.'; _tx5.setAttribute('data-auto',_tx5.value); }
-    var _dt5=document.getElementById('c05ParecerDetTxt');
-    if(_dt5 && (!_dt5.textContent.trim()||_dt5.textContent===_dt5.getAttribute('data-auto'))){
-      var _lst5=_RS.map(function(r){return r.nome+': R$ '+_fmt5(r.total)+'/ano';}).join(' \u00b7 ');
-      _dt5.textContent='Parecer t\u00e9cnico \u2014 compara\u00e7\u00e3o de regimes tribut\u00e1rios \u00b7 ano-base '+_ano5+'\n\nCom base nos documentos fiscais reais da empresa (PGDAS-D, XMLs de NF-e de entrada e sa\u00edda'+(_mg5?', margem de lucro informada de '+_mg5+'%':'')+'), a carga anual estimada por regime \u00e9: '+_lst5+'.\n\n'+(_empate?('Conclus\u00e3o: h\u00e1 EMPATE T\u00c9CNICO entre '+_r1.nome+' e '+_r2.nome+' (diferen\u00e7a de R$ '+_fmt5(_dif12)+'/ano, inferior a 2%). Em cen\u00e1rios de empate, os fatores qualitativos decidem: simplicidade operacional, obriga\u00e7\u00f5es acess\u00f3rias, exposi\u00e7\u00e3o a fiscaliza\u00e7\u00e3o e o custo de migra\u00e7\u00e3o. Recomendamos permanecer no regime atual e reavaliar a cada exerc\u00edcio.'):('Conclus\u00e3o: recomendamos o '+_r1.nome+', com economia estimada de R$ '+_fmt5(_eco)+'/ano frente ao pior cen\u00e1rio elegível.'))+'\n\nRessalvas: (1) a compara\u00e7\u00e3o \u00e9 sens\u00edvel \u00e0 margem de lucro real \u2014 o envio do balancete consolida o resultado do Lucro Real; (2) a migra\u00e7\u00e3o de regime, em regra, s\u00f3 produz efeitos no in\u00edcio do ano-calend\u00e1rio e deve refletir prop\u00f3sito negocial; (3) valores estimados nas al\u00edquotas de refer\u00eancia da LC 214/2025 \u2014 sujeitos \u00e0 Resolu\u00e7\u00e3o do Senado.'; _dt5.setAttribute('data-auto',_dt5.textContent);
-    }
-    if(!window.c05PdfCliente){ window.c05PdfCliente=function(){
+function c05CalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
+/* ★ v776 · gerador do PDF do cliente — função estática, lê window._C05_REGIMES que o c05Render escreve.
+   Vivia dentro do c05CalcularLocal, que em modo servidor nunca roda. */
+(function(){ if(!window.c05PdfCliente){ window.c05PdfCliente=function(){
       var _Rr=(window._C05_REGIMES||[]).slice().sort(function(a,b){return a.total-b.total;}); if(!_Rr.length)return;
       var _f=function(v){return Math.round(v).toLocaleString('pt-BR');};
       var _w1=_Rr[0], _wp=_Rr[_Rr.length-1]; var _ecoC=_f(_wp.total-_w1.total);
@@ -23254,21 +22841,17 @@ function c05CalcularLocal(ent){
        +'<div style="font-size:12.5px;color:#7a8694;border-top:1px solid rgba(0,0,0,.12);padding-top:14px">Estudo elaborado com dados reais da empresa (PGDAS-D e XMLs de NF-e) \u00b7 Metodologia Lionheart \u00b7 A troca de regime, em regra, vale a partir do in\u00edcio do ano-calend\u00e1rio \u00b7 Valores estimados na al\u00edquota de refer\u00eancia (LC 214/2025); confirme com seu contador.</div>';
       var _fb5={style:{},getAttribute:function(a){return a==='data-pdf-target'?'c05PdfCli':null;}};
       window.gerarPdfCalc(_fb5);
-    }; }
-    if(!document.getElementById('c05BtnPdfCli')){ var _bt5=document.createElement('button'); _bt5.id='c05BtnPdfCli'; _bt5.type='button'; _bt5.className='btn-pdf-calc'; _bt5.setAttribute('data-html2canvas-ignore','true'); _bt5.textContent='\ud83d\udcc4 PDF cliente'; _bt5.style.marginLeft='8px';
-      _bt5.addEventListener('click',function(){ try{ window.c05PdfCliente(); }catch(_e){ if(window.mostrarToast)mostrarToast('Erro no PDF do cliente','error'); } });
-      _sec5.appendChild(_bt5); } if(window.LH_pdfBtnsAoFim)LH_pdfBtnsAoFim(_sec5);
-  }catch(_e5){} },0);
+    }; } })();
 
-  return { ok:true, ano:ano, setor:seg, socios:socios, ranking:regimes.map(function(x){ return { regime:x.nome, total:x.total }; }), melhor:regimes[0].nome, melhor_total:regimes[0].total, economia_vs_pior:regimes[regimes.length-1].total-regimes[0].total, simples:(aliqSN!==null?{ disponivel:true, das:das_SN, aliquota_efetiva:aliqSN, anexo_original:anexoOriginal,   anexo_efetivo:anexoEfetivoSN, fator_r_aplica:fatorR_aplica, cpp_anexo_iv:cpp_anexo_iv, inss_socio:inss_socio_SN,   faixa:(snCalc&&snCalc.faixa!=null?snCalc.faixa:null), total_anual:impSN }:{ disponivel:false }), simples_hibrido:(impHibrido!==null?{ total_anual:impHibrido, fatia_das:(hibDetalhe&&hibDetalhe.fatia!=null?hibDetalhe.fatia:null), detalhe:{   das_reduzido:hibDetalhe.dasReduzido, ibs_cbs_liquido:hibDetalhe.ibscbs, total:hibDetalhe.total,   debito:(hibDetalhe.debito!=null?hibDetalhe.debito:null), credito_util:(hibDetalhe.credCliente!=null?hibDetalhe.credCliente:null),   credito_cliente:(hibDetalhe.credCliente!=null?hibDetalhe.credCliente:null), temSaida:!!hibDetalhe.temSaida } }:null), lucro_presumido:(lpElegivel?{ ok:true, irpj:irpj_lp, csll:csll_lp, pis:pis_lp, cofins:cofins_lp, iss:iss_lp, icms:icms_reg,   cbs_ibs:cbsIbs_lp, inss_socio:inss_socio_lp, inss_patronal:Math.max(0,inss_lp-inss_socio_lp), adicional_lc224:adicional_lc224, total_anual:impLP }:{ ok:false }), lucro_real:{ ok:true, irpj:irpj_lr, csll:csll_lr, pis:pis_lr, cofins:cofins_lr, iss:iss_lr, icms:icms_reg, cbs_ibs:cbsIbs_lr,   inss_socio:inss_socio_lp, inss_patronal:Math.max(0,inss_lr-inss_socio_lp), lucro_anual:lucro_anual, total_anual:Math.max(0,impLR) } };
-}
 function c05Render(r, ent, motivo){
   var _box=document.getElementById('res-c05'); if(!_box) return;
   if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
   if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
   
   
-    try{     var _pgC = document.getElementById('page-c05');     if(_pgC){       var _sec = _pgC.querySelector('#res-c05') || _pgC.querySelector('.resultado-section') || _pgC;       if(!document.getElementById('kpi-c05')){         var _k=document.createElement('div'); _k.id='kpi-c05'; _k.className='kpi-grid';         _sec.insertBefore(_k, _sec.firstChild);         try{ (window._C05_TRACE=window._C05_TRACE||[]).push('01b-KPI reconstruido'); }catch(_t){}       }       if(!document.getElementById('chart-c05')){         var _cc=document.createElement('div'); _cc.className='chart-card';         if(_cc) _cc.innerHTML='<h4>Carga tributária por regime</h4><div class="chart-wrapper" style="min-height:240px"><canvas id="chart-c05"></canvas></div>';         _sec.appendChild(_cc);         try{ (window._C05_TRACE=window._C05_TRACE||[]).push('01c-canvas reconstruido'); }catch(_t){}       }       /* seções escondidas por uma limpeza anterior voltam a aparecer */       _pgC.querySelectorAll('.resultado-section').forEach(function(e){ if(e.style.display==='none') e.style.display=''; });     }   }catch(_rep){} var seg=ent._seg, fat=ent._fat, folha=ent._folha, prol=ent._prol, lucPct=ent._lucPct, ano=ent._ano, socios=ent._socios, aliqISS=ent._aliqISS, redSetor=ent._redSetor, irpfmAtivo=ent._irpfmAtivo, lucro_anual=ent._lucro_anual; var TETO_INSS_2026=8475.55, plSoma=prol*socios; var _sn=r.simples||{}, _hb=r.simples_hibrido||{}, _lp=r.lucro_presumido||{}, _lr=r.lucro_real||{}; var aliqSN=(_sn.aliquota_efetiva!=null?+_sn.aliquota_efetiva:null), anexoOriginal=String(_sn.anexo_original||'III'), anexoEfetivoSN=String(_sn.anexo_efetivo||anexoOriginal), fatorR_aplica=!!_sn.fator_r_aplica, cpp_anexo_iv=+(_sn.cpp_anexo_iv||0), inss_socio_SN=+(_sn.inss_socio||0), inss_socio_lp=+(_lp.inss_socio||inss_socio_SN), das_SN=+(_sn.das||0), encargosForaSN=cpp_anexo_iv; var aliqCBSIBS_plena=(typeof getAliq==='function'?(getAliq(ano).total||0):0), aliqCBSIBS=aliqCBSIBS_plena*(1-redSetor); var pres=(typeof SEG_PARA_PRESUNCAO!=='undefined'?(SEG_PARA_PRESUNCAO[seg]||SEG_PARA_PRESUNCAO.servicos_gerais):{ir:0.32,csll:0.32}); var pres_ir_majorada=pres.ir*1.10, fat_excedente=Math.max(0, fat-5000000), adicional_lc224=+(_lp.adicional_lc224||0); var _eqAnv=((document.getElementById('c05_equip_anv')||{value:'sim'}).value)==='sim'; var _eqEmp=((document.getElementById('c05_equip_emp')||{value:'sim'}).value)==='sim'; var _eqOn=(seg==='servicos_saude'||seg==='saude_hospitalar')&&((document.getElementById('c05_equip')||{checked:false}).checked); var hibDetalhe=(_hb.detalhe||null); var _porNome={}; if(_sn.disponivel!==false && aliqSN!==null) _porNome['Simples Nacional']={nome:'Simples Nacional', total:+_sn.total_anual,   irpjCsll:das_SN*0.30, inss:inss_socio_SN+cpp_anexo_iv+das_SN*0.20, pisCofinsIbs:das_SN*0.50, das:das_SN,   encargosFora:encargosForaSN, fatorRAplica:fatorR_aplica, anexoOriginal:anexoOriginal, anexoEfetivo:anexoEfetivoSN,   faixaSN:(_sn.faixa!=null?+_sn.faixa:null), cor:'rgba(168,108,255,0.88)'}; if(hibDetalhe) _porNome['Simples Híbrido']={nome:'Simples Híbrido', total:+_hb.total_anual,   irpjCsll:(+hibDetalhe.das_reduzido)*0.30, inss:(inss_socio_SN+cpp_anexo_iv)+(+hibDetalhe.das_reduzido)*0.20,   pisCofinsIbs:(+hibDetalhe.das_reduzido)*0.50+(+hibDetalhe.ibs_cbs_liquido), das:+hibDetalhe.das_reduzido,   encargosFora:encargosForaSN, hibrido:true, hibDetalhe:hibDetalhe, cor:'rgba(232,185,58,0.88)'}; if(_lp.ok!==false && _lp.total_anual!=null) _porNome['Lucro Presumido']={nome:'Lucro Presumido', total:+_lp.total_anual,   irpjCsll:(+_lp.irpj)+(+_lp.csll), inss:(+_lp.inss_socio)+(+_lp.inss_patronal),   pisCofinsIbs:(+_lp.pis)+(+_lp.cofins)+(+_lp.iss)+(+_lp.cbs_ibs)+(+_lp.icms), cor:'rgba(232,160,32,0.75)'}; if(_lr.total_anual!=null) _porNome['Lucro Real']={nome:'Lucro Real', total:Math.max(0,+_lr.total_anual),   irpjCsll:(+_lr.irpj)+(+_lr.csll), inss:(+_lr.inss_socio)+(+_lr.inss_patronal),   pisCofinsIbs:Math.max(0,(+_lr.pis)+(+_lr.cofins)+(+_lr.iss)+(+_lr.cbs_ibs))+(+_lr.icms), cor:'rgba(14,159,110,0.75)'}; var regimes=(r.ranking||[]).map(function(x){ return _porNome[String(x.regime)]; }).filter(function(x){ return !!x; }); if(!regimes.length){ regimes=Object.keys(_porNome).map(function(k){ return _porNome[k]; }).sort(function(a,b){ return a.total-b.total; }); }
+    try{     var _pgC = document.getElementById('page-c05');     if(_pgC){       var _sec = _pgC.querySelector('#res-c05') || _pgC.querySelector('.resultado-section') || _pgC;       if(!document.getElementById('kpi-c05')){         var _k=document.createElement('div'); _k.id='kpi-c05'; _k.className='kpi-grid';         _sec.insertBefore(_k, _sec.firstChild);         try{ (window._C05_TRACE=window._C05_TRACE||[]).push('01b-KPI reconstruido'); }catch(_t){}       }       if(!document.getElementById('chart-c05')){         var _cc=document.createElement('div'); _cc.className='chart-card';         if(_cc) _cc.innerHTML='<h4>Carga tributária por regime</h4><div class="chart-wrapper" style="min-height:240px"><canvas id="chart-c05"></canvas></div>';         _sec.appendChild(_cc);         try{ (window._C05_TRACE=window._C05_TRACE||[]).push('01c-canvas reconstruido'); }catch(_t){}       }       /* seções escondidas por uma limpeza anterior voltam a aparecer */       _pgC.querySelectorAll('.resultado-section').forEach(function(e){ if(e.style.display==='none') e.style.display=''; });     }   }catch(_rep){} var seg=ent._seg, fat=ent._fat, folha=ent._folha, prol=ent._prol, lucPct=ent._lucPct, ano=ent._ano, socios=ent._socios, aliqISS=ent._aliqISS, redSetor=ent._redSetor, irpfmAtivo=ent._irpfmAtivo, lucro_anual=ent._lucro_anual; var TETO_INSS_2026=8475.55, plSoma=(ent._plSoma!=null?ent._plSoma:prol*socios); /* v776: soma efetiva da lista */ var _sn=r.simples||{}, _hb=r.simples_hibrido||{}, _lp=r.lucro_presumido||{}, _lr=r.lucro_real||{};
+    /* ★ v776 · a tela irmã (v596) lê daqui a alíquota do Simples usada. Antes era escrita no corpo local — em modo servidor nunca era. */
+    try{ if(_sn.aliquota_efetiva!=null){ window._C05_ALIQ_SN_INFO={usada:_sn.aliquota_efetiva, teorica:_sn.aliquota_efetiva, fonte:(r._origem==='local'?'tabela do Anexo (teórica)':'servidor · tabela do Anexo')}; } }catch(_e){} var aliqSN=(_sn.aliquota_efetiva!=null?+_sn.aliquota_efetiva:null), anexoOriginal=String(_sn.anexo_original||'III'), anexoEfetivoSN=String(_sn.anexo_efetivo||anexoOriginal), fatorR_aplica=!!_sn.fator_r_aplica, cpp_anexo_iv=+(_sn.cpp_anexo_iv||0), inss_socio_SN=+(_sn.inss_socio||0), inss_socio_lp=+(_lp.inss_socio||inss_socio_SN), das_SN=+(_sn.das||0), encargosForaSN=cpp_anexo_iv; var aliqCBSIBS_plena=(typeof getAliq==='function'?(getAliq(ano).total||0):0), aliqCBSIBS=aliqCBSIBS_plena*(1-redSetor); var pres=(typeof SEG_PARA_PRESUNCAO!=='undefined'?(SEG_PARA_PRESUNCAO[seg]||SEG_PARA_PRESUNCAO.servicos_gerais):{ir:0.32,csll:0.32}); var pres_ir_majorada=pres.ir*1.10, fat_excedente=Math.max(0, fat-5000000), adicional_lc224=+(_lp.adicional_lc224||0); var _eqAnv=((document.getElementById('c05_equip_anv')||{value:'sim'}).value)==='sim'; var _eqEmp=((document.getElementById('c05_equip_emp')||{value:'sim'}).value)==='sim'; var _eqOn=(seg==='servicos_saude'||seg==='saude_hospitalar')&&((document.getElementById('c05_equip')||{checked:false}).checked); var hibDetalhe=(_hb.detalhe||null); var _porNome={}; if(_sn.disponivel!==false && aliqSN!==null) _porNome['Simples Nacional']={nome:'Simples Nacional', total:+_sn.total_anual,   irpjCsll:das_SN*0.30, inss:inss_socio_SN+cpp_anexo_iv+das_SN*0.20, pisCofinsIbs:das_SN*0.50, das:das_SN,   encargosFora:encargosForaSN, fatorRAplica:fatorR_aplica, anexoOriginal:anexoOriginal, anexoEfetivo:anexoEfetivoSN,   faixaSN:(_sn.faixa!=null?+_sn.faixa:null), cor:'rgba(168,108,255,0.88)'}; if(hibDetalhe) _porNome['Simples Híbrido']={nome:'Simples Híbrido', total:+_hb.total_anual,   irpjCsll:(+hibDetalhe.das_reduzido)*0.30, inss:(inss_socio_SN+cpp_anexo_iv)+(+hibDetalhe.das_reduzido)*0.20,   pisCofinsIbs:(+hibDetalhe.das_reduzido)*0.50+(+hibDetalhe.ibs_cbs_liquido), das:+hibDetalhe.das_reduzido,   encargosFora:encargosForaSN, hibrido:true, hibDetalhe:hibDetalhe, cor:'rgba(232,185,58,0.88)'}; if(_lp.ok!==false && _lp.total_anual!=null) _porNome['Lucro Presumido']={nome:'Lucro Presumido', total:+_lp.total_anual,   irpjCsll:(+_lp.irpj)+(+_lp.csll), inss:(+_lp.inss_socio)+(+_lp.inss_patronal),   pisCofinsIbs:(+_lp.pis)+(+_lp.cofins)+(+_lp.iss)+(+_lp.cbs_ibs)+(+_lp.icms), cor:'rgba(232,160,32,0.75)'}; if(_lr.total_anual!=null) _porNome['Lucro Real']={nome:'Lucro Real', total:Math.max(0,+_lr.total_anual),   irpjCsll:(+_lr.irpj)+(+_lr.csll), inss:(+_lr.inss_socio)+(+_lr.inss_patronal),   pisCofinsIbs:Math.max(0,(+_lr.pis)+(+_lr.cofins)+(+_lr.iss)+(+_lr.cbs_ibs))+(+_lr.icms), cor:'rgba(14,159,110,0.75)'}; var regimes=(r.ranking||[]).map(function(x){ return _porNome[String(x.regime)]; }).filter(function(x){ return !!x; }); if(!regimes.length){ regimes=Object.keys(_porNome).map(function(k){ return _porNome[k]; }).sort(function(a,b){ return a.total-b.total; }); }
   window._C05_REGIMES=regimes.map(function(r){return {nome:r.nome,total:Math.round(r.total),hibrido:!!r.hibrido,hibDetalhe:r.hibDetalhe||null,encargosFora:r.encargosFora||0};});
   const melhor=regimes[0];
   const pior=regimes[regimes.length-1];
@@ -23411,7 +22994,7 @@ try {
     if(infoEl) {
       var infoTxt = '';
       if(fatorR_aplica) {
-        infoTxt += '<strong>Fator R aplicado automaticamente:</strong> Sua atividade (Anexo V) foi migrada para Anexo III pela relação folha+pró-labore ≥ 28%. ' + (window._C05_FR_MULTI ? '<br><b style="color:#E8B84B">⚠ A migração só acontece porque o pró-labore foi multiplicado pelos ' + socios + ' sócios. Se o valor que você digitou já é o TOTAL da empresa, informe 1 no número de sócios — senão o anexo sai errado.</b>' : '') + '';
+        infoTxt += '<strong>Fator R aplicado automaticamente:</strong> Sua atividade (Anexo V) foi migrada para Anexo III pela relação folha+pró-labore ≥ 28%. ' + ((_sn.fator_r_multi!=null?_sn.fator_r_multi:window._C05_FR_MULTI) ? '<br><b style="color:#E8B84B">⚠ A migração só acontece porque o pró-labore foi multiplicado pelos ' + socios + ' sócios. Se o valor que você digitou já é o TOTAL da empresa, informe 1 no número de sócios — senão o anexo sai errado.</b>' : '') + '';
       } else if(anexoOriginal === 'V') {
         infoTxt += '<strong>Atividade Anexo V</strong> sem Fator R aplicado (folha+pró-labore < 28% da receita). Avalie aumentar pró-labore para migrar ao Anexo III. ';
       }
@@ -23666,7 +23249,7 @@ try {
 function calcularC05(){
   var ent=c05LerEntradas(); if(!ent) return;
   if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularC05')){ LH_PONTE.executar('calcularC05', ent); return; }
-  c05Render(c05CalcularLocal(ent), ent, null);
+  c05Render(null, ent, 'calculo indisponivel');
 }
 
 // v30.11.15 — CALC FATOR R · Anexo III vs V (LC 123/2006 §25)
