@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v783";</script>
+<body><script>window.LH_VERSAO="v784";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4064,8 +4064,40 @@ window.LH_PONTE = (function(){
        3) ESPERA CURTA (180ms) — agrupa a rajada de digitação num pedido só. */
     /* ★ v783 · chamada genérica ao despachante para módulos que não são calcular* (radar de teses) */
     chamar: function(calc, ent){ return chamar(calc, ent); },
+    /* ★ v784 · LOTE — uma requisição para N telas (Fluxo Completo do Diagnóstico dispara até 31).
+       Modo COLETA: enquanto _coleta é uma lista, executar() não dispara — anota {tela, m, ent}. Cada
+       calcularX() continua rodando o PRÓPRIO LerEntradas; só o transporte muda. Depois: uma chamada
+       calc:'lote' (uma autorização, uma linha de uso), e cada resultado vai ao render da sua tela.
+       aoTerminar(res) roda DEPOIS de todos os renders — é o que permite ao fluxo consolidar o Motor
+       e gerar a Proposta com os números certos (antes rodava 700 ms após o disparo, com o Motor velho). */
+    _coleta: null,
+    executarLote: function(nomes, aoTerminar){
+      var itens = []; LH_PONTE._coleta = itens;
+      (nomes||[]).forEach(function(fn){ try{ if(typeof window[fn]==='function') window[fn](); }catch(e){} });
+      LH_PONTE._coleta = null;
+      var fim = function(res){ try{ if(typeof aoTerminar==='function') aoTerminar(res, itens); }catch(e){} };
+      if(!itens.length){ fim({ ok:true, resultado:{ itens:[], total:0, falhas:0 } }); return 0; }
+      itens.forEach(function(it){ try{ it.m.render(null, it.ent, 'aguardando'); }catch(e){} });
+      chamar('lote', { itens: itens.map(function(it){ return { calc: it.m.calc, entradas: it.ent }; }) }).then(function(res){
+        try { document.querySelectorAll('[data-lh-espera]').forEach(function(el){ var p=el.parentNode; if(p) p.removeChild(el); }); } catch(_l){}
+        if(!res || !res.ok){
+          itens.forEach(function(it){ try{ it.m.render(null, it.ent, (res && res.motivo) || 'sem resposta do servidor'); }catch(e){} });
+          fim(res); return;
+        }
+        var lista = (res.resultado && res.resultado.itens) || [];
+        itens.forEach(function(it, i){
+          var r = lista[i];
+          try{ if(r && r.ok) it.m.render(r.resultado, it.ent, null); else it.m.render(null, it.ent, (r && r.motivo) || 'sem resultado'); }
+          catch(e){ try{ console.error('[LH_PONTE] render falhou em '+it.nomeFn, e); }catch(_e){} }
+          registrar({ quando:new Date().toISOString(), tela:it.nomeFn, calc:it.m.calc, lote:true, ok:!!(r&&r.ok) });
+        });
+        fim(res);
+      });
+      return itens.length;
+    },
     executar: function(nomeFn, ent){
       var m = MAPA[nomeFn]; if(!m || typeof m.render !== 'function') return false;
+      if(Array.isArray(LH_PONTE._coleta)){ LH_PONTE._coleta.push({ nomeFn:nomeFn, m:m, ent:ent }); return true; }   /* v784: coleta */
       var assinatura;
       try { assinatura = nomeFn + '|' + JSON.stringify(ent); } catch(_a){ assinatura = nomeFn + '|?'; }
       var estado = LH_PONTE._voo[nomeFn];
@@ -39303,23 +39335,33 @@ window.LH_RADAR = (function(){
       setTimeout(function(){
         var calcs = missao.pendentes.concat(missao.feitas).map(function(c){return c.id;});
         var MAP = {'c01':'calcularC01','c02':'calcularC02','c04':'calcularC04','c05':'calcularC05','c06':'calcularC06','c07':'calcularC07','c08':'calcularC08','c09':'calcularC09','n04':'calcularN04','calc03':'calcularCalc03','n29':'calcularN29','n33':'calcularN33','n15':'calcularN15','n16':'calcularN16','n17':'calcularN17','n30':'calcularN30','cr01':'calcularCR01','cr02':'calcularCR02','cr03':'calcularCR03','cr04':'calcularCR04','cr05':'calcularCR05','iss118':'calcularISS118','icmsst1125':'calcularICMSST1125','monofasico':'calcularMonofasico','credpresumido':'calcularCredPresumido','c11':'calcularC11','imob_ret':'calcularImobRET','imobref':'calcularImobReforma','difal':'calcularDIFAL','fatorR':'calcularFatorR','sublimite':'calcularSublimite'};
-        calcs.forEach(function(cid){
-          var fn = MAP[cid];
-          if(fn && typeof window[fn] === 'function') try{ window[fn](); }catch(e){}
-        });
-
-        setEtapa('3/4 · Consolidando Motor 360°...', 70);
-        setTimeout(function(){
-          /* Motor já consolida via setMotorResultado durante o cálculo */
-
-          setEtapa('4/4 · Gerando Proposta + Roadmap LTV...', 95);
+        var fns = calcs.map(function(cid){ return MAP[cid]; }).filter(function(fn){ return fn && typeof window[fn]==='function'; });
+        var etapas34 = function(){
+          setEtapa('3/4 · Consolidando Motor 360°...', 70);
           setTimeout(function(){
-            gerarPropostaDoMotor();
-            var p = document.getElementById('lh-fluxo-progresso');
-            if(p) p.remove();
-            if(typeof toast === 'function') toast('Fluxo completo · Proposta + Roadmap gerados', 'success');
-          }, 400);
-        }, 300);
+            /* Motor já consolida via setMotorResultado durante o render */
+            setEtapa('4/4 · Gerando Proposta + Roadmap LTV...', 95);
+            setTimeout(function(){
+              gerarPropostaDoMotor();
+              var p = document.getElementById('lh-fluxo-progresso');
+              if(p) p.remove();
+              if(typeof toast === 'function') toast('Fluxo completo · Proposta + Roadmap gerados', 'success');
+            }, 400);
+          }, 300);
+        };
+        /* ★ v784 · em modo servidor as N telas vão numa requisição só (calc:'lote') e as etapas 3/4
+           só rodam DEPOIS das respostas. Antes: N requisições e a Proposta gerada 700 ms após o
+           disparo — com o Motor ainda vazio. */
+        if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && typeof LH_PONTE.executarLote==='function'){
+          setEtapa('2/4 · Executando '+fns.length+' calculadoras no servidor (lote)...', 45);
+          LH_PONTE.executarLote(fns, function(res){
+            if(res && res.ok===false && typeof toast==='function') toast('Lote recusado: '+(res.motivo||'sem resposta'), 'error');
+            etapas34();
+          });
+        } else {
+          fns.forEach(function(fn){ try{ window[fn](); }catch(e){} });
+          etapas34();
+        }
       }, 400);
     }, 200);
   }
