@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v778";</script>
+<body><script>window.LH_VERSAO="v779";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -18400,42 +18400,13 @@ function imobrefLerEntradas(){
 
   return { operacao:op, valor:valor, custo:custo, tipo_imovel:tipoImovel, unidades:unid, regime_regular:regimeRegular, aliq_ref_pct:aliqRef*100, _aliqRef:aliqRef, _reducao:reducao, _opLabel:opLabel, _perOp:perOp };
 }
-function imobrefCalcularLocal(ent){
-  var op=ent.operacao, valor=ent.valor, custo=ent.custo, tipoImovel=ent.tipo_imovel, unid=ent.unidades, regimeRegular=ent.regime_regular, aliqRef=ent._aliqRef, reducao=ent._reducao, opLabel=ent._opLabel, perOp=ent._perOp;
-  var aliqEf=aliqRef*(1-reducao); var residencial=(tipoImovel==='res_novo'||tipoImovel==='res_usado');
-  var redutorAjuste=0, redutorSocial=0, base=0, imposto=0, impostoCheio=0, baseBruta=valor;
-  if(op==='venda'){
-    redutorAjuste=Math.min(custo,valor);
-    var baseAposAjuste=Math.max(0,valor-redutorAjuste);
-    if(regimeRegular){
-      if(tipoImovel==='res_novo') redutorSocial=100000*unid;
-      else if(tipoImovel==='lote') redutorSocial=30000*unid;
-    }
-    redutorSocial=Math.min(redutorSocial,baseAposAjuste);
-    base=Math.max(0,baseAposAjuste-redutorSocial);
-    imposto=base*aliqEf;
-    impostoCheio=valor*aliqRef;
-  } else if(op==='locacao'){
-    if(regimeRegular && residencial) redutorSocial=Math.min(600*unid,valor);
-    base=Math.max(0,valor-redutorSocial);
-    imposto=base*aliqEf;
-    impostoCheio=valor*aliqRef;
-  } else {
-    base=valor;
-    imposto=base*aliqEf;
-    impostoCheio=valor*aliqRef;
-  }
-  var economia=impostoCheio-imposto;
-      try{ setMotorResultado('imobref', { tipo:'info', valor:0, valorReferencia:(economia>0?economia:0), contexto:'Imobiliário na Reforma (CBS/IBS)', descricao:(economia>0 ? ('Economia ESTIMADA de '+fmtR(economia)+' sob o tratamento imobiliário da Reforma vs imposto cheio (por operação). Validar antes de incluir no ROI.') : 'Sem economia sob o tratamento imobiliário da Reforma neste caso.'), recomendacao:'Quantificar e validar a economia por operação antes de somar na proposta.' }); }catch(e){}
-  var aliqSobreBruto=baseBruta>0?(imposto/baseBruta):0;
-
-  var resEl=document.getElementById('res-imobref'); if(resEl) resEl.style.display='block';
-
-  // KPIs
-
-  return { ok:true, valor:valor, operacao:opLabel, reducao_pct:reducao*100, redutor_de_ajuste:redutorAjuste, redutor_social:redutorSocial, base_de_calculo:base, aliquota_efetiva_pct:aliqEf*100, ibs_cbs:imposto, se_fosse_aliquota_cheia:impostoCheio, economia_do_regime:economia, aliquota_sobre_valor_pct:aliqSobreBruto*100 };
-}
+function imobrefCalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
 function imobrefRender(r, ent, motivo){
+  /* ★ v779 · Motor 360 é alimentado pelo RENDER, como nas demais telas. Vivia dentro do cálculo local —
+     em modo servidor o Motor nunca recebia o imobiliário. */
+  if(r&&r.ok!==false){
+      try{ setMotorResultado('imobref', { tipo:'info', valor:0, valorReferencia:(r.economia_do_regime>0?r.economia_do_regime:0), contexto:'Imobiliário na Reforma (CBS/IBS)', descricao:(r.economia_do_regime>0 ? ('Economia ESTIMADA de '+fmtR(r.economia_do_regime)+' sob o tratamento imobiliário da Reforma vs imposto cheio (por operação). Validar antes de incluir no ROI.') : 'Sem economia sob o tratamento imobiliário da Reforma neste caso.'), recomendacao:'Quantificar e validar a economia por operação antes de somar na proposta.' }); }catch(e){}
+  }
   var _box=document.getElementById('kpi-imobref'); if(!_box) return;
   if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
   if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
@@ -18497,7 +18468,7 @@ function imobrefRender(r, ent, motivo){
 function calcularImobReforma(){
   var ent=imobrefLerEntradas(); if(!ent) return;
   if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularImobReforma')){ LH_PONTE.executar('calcularImobReforma', ent); return; }
-  imobrefRender(imobrefCalcularLocal(ent), ent, null);
+  imobrefRender(null, ent, 'calculo indisponivel');
 }
 
 /* ═══ v755 · CUTOVER — calcularImobRET: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
@@ -26329,62 +26300,11 @@ function s2LerEntradas(){
 
   return { valor_operacao:valor, no_anexo_ix:noAnexo, registro_mapa:temMapa, elo1:elo1, elo2:elo2, destino:destino, valor_venda:venda, coeficiente:credPres, com_lc224:comLC224, ano:2033 };
 }
-function s2CalcularLocal(ent){
-  var valor=ent.valor_operacao, noAnexo=ent.no_anexo_ix, temMapa=ent.registro_mapa, elo1=ent.elo1, elo2=ent.elo2, destino=ent.destino, venda=ent.valor_venda, credPres=ent.coeficiente, comLC224=ent.com_lc224;
-  var C={bruto:0,liquido:0}; var ALIQ=(typeof window.LH_ALIQ_REF==='number' && window.LH_ALIQ_REF>0)?window.LH_ALIQ_REF:26.5; var aliqReduzida=ALIQ*0.40; var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
-  /* ── 1 · o diferimento chega a existir? ── */
-  var difere = true, motivoNao = '';
-  if(!noAnexo){ difere=false; motivoNao='o item não está no Anexo IX — sem redução e sem diferimento'; }
-  else if(!temMapa){ difere=false; motivoNao='registro no MAPA exigido e ausente (§1º) — a redução e o diferimento não se aplicam'; }
-  else if(elo1!=='regular'){ difere=false; motivoNao='quem fornece não é contribuinte do regime regular (§2º, I)'; }
-  else if(elo2==='outro'){ difere=false; motivoNao='o destinatário não é contribuinte regular nem produtor rural não contribuinte (§2º, I)'; }
-  else if(elo2==='produtorNC' && destino!=='creditoPres' && destino!=='insumo'){
-    difere=false; motivoNao='o produtor rural não contribuinte só tem diferimento quando o bem produzido é vendido a quem tem direito ao crédito presumido (§2º, I, "b")';
-  }
-
-  /* ── 2 · onde encerra e quem paga ── */
-  var hipoteseB = (elo2==='produtorNC');   /* alínea "b": produtor rural não contribuinte */
-  var encerra=false, comoEncerra='', quemPaga='', valorEncerramento=0, reducaoCredito=0;
-
-  if(difere){
-    if(destino==='insumo'){
-      encerra=false; comoEncerra='O produto resultante também é insumo do Anexo IX — o diferimento SEGUE na cadeia.';
-    } else if(hipoteseB){
-      /* §9º: encerra reduzindo o crédito presumido do adquirente — o produtor não recolhe */
-      encerra=true;
-      var base = venda>0 ? venda : valor;
-      reducaoCredito = valor*(aliqReduzida/100);
-      var credBruto = base*(credPres/100)*(comLC224?0.90:1);
-      var credLiquido = Math.max(0, credBruto - reducaoCredito);
-      comoEncerra='§9º — o encerramento se dá pela REDUÇÃO do crédito presumido do adquirente. O produtor rural não contribuinte NÃO recolhe.';
-      quemPaga='O adquirente, na forma de crédito menor: '+R(credBruto)+' − '+R(reducaoCredito)+' = '+R(credLiquido);
-      valorEncerramento = reducaoCredito;
-      window._LH_S2_CRED = {bruto:credBruto, liquido:credLiquido};
-    } else {
-      /* §5º e §6º: encerra e quem promove a operação recolhe */
-      if(destino==='tributado'){
-        encerra=true; comoEncerra='§5º, I, "a" — o produto resultante não está alcançado pelo diferimento: a fase se encerra.';
-      } else if(destino==='isento'){
-        encerra=true; comoEncerra='§5º, I, "b" — operação isenta, não tributada, suspensa ou com alíquota zero: a fase se encerra AINDA QUE não haja tributo na saída.';
-      } else if(destino==='exportacao'){
-        encerra=true; comoEncerra='§5º, I, "b" — a exportação é imune, e a imunidade encerra a fase do diferimento.';
-      } else if(destino==='semdoc'){
-        encerra=true; comoEncerra='§5º, II — operação sem documento fiscal: encerra e ainda expõe a autuação pela falta do documento.';
-      } else if(destino==='creditoPres'){
-        encerra=true; comoEncerra='O adquirente apura crédito presumido; a operação não segue diferida.';
-      }
-      valorEncerramento = valor*(aliqReduzida/100);
-      quemPaga='Quem promove a operação que encerra (§6º) — neste desenho, quem recebeu o insumo.';
-    }
-  } else {
-    valorEncerramento = valor*((noAnexo&&temMapa)?aliqReduzida:ALIQ)/100;
-  }
-
-  /* ── KPIs ── */
-
-  return { ok:true, ano:2033, aliquota_ano:ALIQ/100, aliquota_reduzida_60:aliqReduzida/100, diferimento_existe:difere, motivo_sem_diferimento:(motivoNao||null), encerra:encerra, onde_encerra:comoEncerra, quem_paga_no_fim:quemPaga, debito_sem_diferimento:valorEncerramento, debito_com_diferimento:(difere?0:valorEncerramento), efeito_caixa_no_elo:valorEncerramento, reducao_credito_art138_9:(typeof reducaoCredito!=='undefined'?reducaoCredito:0), credito_presumido_bruto:(typeof credBruto!=='undefined'?credBruto:0), credito_presumido_ao_adquirente:(typeof credLiquido!=='undefined'?credLiquido:0) };
-}
+function s2CalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
 function s2Render(r, ent, motivo){
+  /* ★ v779 · o bloco de memória de cálculo e os KPIs leem window._LH_S2_CRED. Era escrito dentro do
+     s2CalcularLocal — em modo servidor nunca era. Agora nasce do resultado, nos dois modos. */
+  try{ if(r&&r.ok!==false){ window._LH_S2_CRED={bruto:(r.credito_presumido_bruto||0), liquido:(r.credito_presumido_ao_adquirente||0)}; } }catch(_e){}
   var _box=document.getElementById('kpi-agroSuper2'); if(!_box) return;
   if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
   if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
@@ -26498,7 +26418,7 @@ function s2Render(r, ent, motivo){
 function calcularAgroSuper2(){
   var ent=s2LerEntradas(); if(!ent) return;
   if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('calcularAgroSuper2')){ LH_PONTE.executar('calcularAgroSuper2', ent); return; }
-  s2Render(s2CalcularLocal(ent), ent, null);
+  s2Render(null, ent, 'calculo indisponivel');
 }
 
 /* ═══ v726 · CUTOVER — calcularAgroSuper1: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
