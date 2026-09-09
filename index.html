@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v785";</script>
+<body><script>window.LH_VERSAO="v786";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4062,6 +4062,7 @@ window.LH_PONTE = (function(){
        2) IDÊNTICA EM VOO — mesma tela + mesmas entradas com uma requisição em
           andamento: não abre outra, aproveita a que está voando;
        3) ESPERA CURTA (180ms) — agrupa a rajada de digitação num pedido só. */
+    MAPA: MAPA,   /* ★ v786 · exposto para quem precisa da LISTA de telas convertidas (o Fluxo Completo deriva o MAP daqui em vez de manter lista à mão) */
     /* ★ v783 · chamada genérica ao despachante para módulos que não são calcular* (radar de teses) */
     chamar: function(calc, ent){ return chamar(calc, ent); },
     /* ★ v784 · LOTE — uma requisição para N telas (Fluxo Completo do Diagnóstico dispara até 31).
@@ -34997,6 +34998,23 @@ function renderizarPropostasSalvas() {
 // PDF DA PROPOSTA — White-label profissional
 // ────────────────────────────────────────────────────
 function gerarPDFProposta() {
+  /* ★ v786 · PORTÃO DA PEÇA — sem número calculado, não sai PDF.
+     Antes: a Proposta era gerada com as oportunidades do Diagnóstico como se fossem resultado, e o
+     contador entregava ao cliente uma peça em papel timbrado com valores que nunca passaram pelo
+     servidor. Aviso em letra miúda não resolve: a responsabilidade profissional é de quem assina.
+     A tela pode listar as oportunidades como PAUTA; a peça que sai da ferramenta, não. */
+  try {
+    var _st = (window._motorState || {});
+    var _apurados = Object.keys(_st).filter(function(k){ var v=_st[k]; return v && typeof v==='object' && (+v.valorReferencia>0 || +v.valor>0); });
+    if(!_apurados.length){
+      var _f = window.LH_FLUXO_ULTIMO || {};
+      var _pend = _f.rodadas || (_f.pedidas ? _f.pedidas - (_f.paineis||[]).length - (_f.semCalc||[]).length : 0);
+      var _msg = 'Nenhuma análise apurada ainda' + (_pend ? ' — execute o Fluxo Completo (' + _pend + ' análises pendentes).' : ' — rode as calculadoras da missão antes de gerar a peça.');
+      if(typeof mostrarToast === 'function') mostrarToast(_msg, 'error'); else alert(_msg);
+      return;
+    }
+  } catch(_e){}
+
   var nome = (document.getElementById('prop_cliente_nome')||{value:''}).value.trim();
   if(!nome) { mostrarToast('Informe o nome do cliente antes de gerar PDF','error'); return; }
   if(Object.keys(window.PROPOSTA_ESTADO.selecoes).length === 0 && window.PROPOSTA_ESTADO.itensLivres.length === 0) {
@@ -39251,6 +39269,24 @@ window.LH_RADAR = (function(){
         var el = document.getElementById(id);
         if(el && val != null && val !== ''){ el.value = val; el.dispatchEvent(new Event('input', {bubbles:true})); }
       };
+      /* ★ v786 · o que o Fluxo Completo NÃO conseguiu rodar aparece na peça, não só na tela.
+         Distingue painel (normal — não é calculadora) de calculadora que não rodou (falha). */
+      try {
+        var _f = window.LH_FLUXO_ULTIMO;
+        var _box = document.getElementById('prop_aviso_fluxo');
+        if(!_box){ _box = document.createElement('div'); _box.id='prop_aviso_fluxo';
+          var _anc = document.getElementById('prop_cliente_nome');
+          if(_anc && _anc.parentNode && _anc.parentNode.parentNode) _anc.parentNode.parentNode.insertBefore(_box, _anc.parentNode); }
+        if(_box){
+          if(_f && ((_f.semCalc||[]).length || (_f.paineis||[]).length)){
+            _box.innerHTML = '<div style="padding:10px 14px;border-radius:9px;background:rgba(224,168,60,.10);border:1px solid rgba(224,168,60,.40);font-size:.84em;margin-bottom:12px">'
+              + '<b style="color:#E0A83C">Cobertura desta proposta</b><br>' + (_f.rodadas||0) + ' de ' + (_f.pedidas||0) + ' análises da missão foram calculadas.'
+              + ((_f.semCalc||[]).length ? '<br><b style="color:#fca5a5">Não calculadas:</b> ' + _f.semCalc.join(', ') + ' — sem calculadora ligada; o valor destas não entra na peça.' : '')
+              + ((_f.paineis||[]).length ? '<br><span style="opacity:.75">Painéis (não são calculadora, é normal): ' + _f.paineis.join(', ') + '</span>' : '')
+              + '</div>';
+          } else { _box.innerHTML=''; }
+        }
+      } catch(_e){}
       setIf('prop_cliente_nome', emp.nome || '');
       setIf('prop_cliente_cnpj', emp.cnpj || '');
       /* Porte sugerido pelo faturamento (se houver) */
@@ -39337,8 +39373,30 @@ window.LH_RADAR = (function(){
       setEtapa('2/4 · Executando calculadoras em cascata...', 45);
       setTimeout(function(){
         var calcs = missao.pendentes.concat(missao.feitas).map(function(c){return c.id;});
-        var MAP = {'c01':'calcularC01','c02':'calcularC02','c04':'calcularC04','c05':'calcularC05','c06':'calcularC06','c07':'calcularC07','c08':'calcularC08','c09':'calcularC09','n04':'calcularN04','calc03':'calcularCalc03','n29':'calcularN29','n33':'calcularN33','n15':'calcularN15','n16':'calcularN16','n17':'calcularN17','n30':'calcularN30','cr01':'calcularCR01','cr02':'calcularCR02','cr03':'calcularCR03','cr04':'calcularCR04','cr05':'calcularCR05','iss118':'calcularISS118','icmsst1125':'calcularICMSST1125','monofasico':'calcularMonofasico','credpresumido':'calcularCredPresumido','c11':'calcularC11','imob_ret':'calcularImobRET','imobref':'calcularImobReforma','difal':'calcularDIFAL','fatorR':'calcularFatorR','sublimite':'calcularSublimite'};
-        var fns = calcs.map(function(cid){ return MAP[cid]; }).filter(function(fn){ return fn && typeof window[fn]==='function'; });
+        /* ★ v786 · o MAP era escrito à mão: 31 entradas para as 120 análises que o Diagnóstico sabe
+           sugerir. As outras 89 eram puladas em SILÊNCIO — o "1 click" rodava a interseção da missão
+           com uma lista de 2026 e a Proposta saía com oportunidades nunca calculadas. Quarta vez que
+           um catálogo escrito à mão mente (a primeira foi o despachante v9).
+           Agora deriva do MAPA da ponte (109 telas) pelo sufixo do nome, com apelidos declarados
+           para o que foge da convenção. O que não casar aparece na tela e na Proposta — nada some. */
+        var MAP = (function(){
+          var m = {}, P = window.LH_PONTE;
+          if(P && P.MAPA) Object.keys(P.MAPA).forEach(function(fn){ m[fn.slice(8).toLowerCase()] = fn; });
+          var APELIDOS = { classmassa:'calcularClassificador', imob_ret:'calcularImobRET', imobref:'calcularImobReforma' };
+          Object.keys(APELIDOS).forEach(function(id){ if(typeof window[APELIDOS[id]]==='function') m[id.toLowerCase()] = APELIDOS[id]; });
+          /* painéis e telas de compliance: não são calculadora, e não devem virar aviso de falha */
+          m.__paineis = { raiox360:1, cp01:1, cp02:1, cp03:1, auditorcad:1, decisor:1, ma:1, valuation:1 };
+          return m;
+        })();
+        var semCalc = [], paineis = [];
+        calcs.forEach(function(cid){
+          var k = String(cid).toLowerCase();
+          if(MAP.__paineis[k]) { paineis.push(cid); return; }
+          if(!MAP[k] || typeof window[MAP[k]] !== 'function') semCalc.push(cid);
+        });
+        window.LH_FLUXO_ULTIMO = { pedidas: calcs.length, paineis: paineis, semCalc: semCalc, rodadas: 0, quando: new Date().toISOString() };
+        var fns = calcs.map(function(cid){ var k=String(cid).toLowerCase(); return MAP.__paineis[k]?null:MAP[k]; }).filter(function(fn){ return fn && typeof window[fn]==='function'; });
+        window.LH_FLUXO_ULTIMO.rodadas = fns.length;
         var etapas34 = function(){
           setEtapa('3/4 · Consolidando Motor 360°...', 70);
           setTimeout(function(){
@@ -39357,10 +39415,20 @@ window.LH_RADAR = (function(){
            disparo — com o Motor ainda vazio. */
         if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && typeof LH_PONTE.executarLote==='function'){
           setEtapa('2/4 · Executando '+fns.length+' calculadoras no servidor (lote)...', 45);
-          LH_PONTE.executarLote(fns, function(res){
-            if(res && res.ok===false && typeof toast==='function') toast('Lote recusado: '+(res.motivo||'sem resposta'), 'error');
-            etapas34();
-          });
+          /* ★ v786 · lotes de 40 — o teto existe para o servidor não engasgar; limite que se estica
+             para caber um caso deixa de ser limite. Cliente com 60 análises gasta 2 usos. */
+          var blocos = []; for(var _b=0;_b<fns.length;_b+=40) blocos.push(fns.slice(_b,_b+40));
+          var _i=0, _falhou=null;
+          var proximo = function(){
+            if(_i >= blocos.length){
+              if(_falhou && typeof toast==='function') toast('Lote recusado: '+_falhou, 'error');
+              etapas34(); return;
+            }
+            var bl = blocos[_i++];
+            setEtapa('2/4 · Executando '+fns.length+' calculadoras no servidor (lote '+_i+'/'+blocos.length+')...', 45);
+            LH_PONTE.executarLote(bl, function(res){ if(res && res.ok===false) _falhou = res.motivo||'sem resposta'; proximo(); });
+          };
+          proximo();
         } else {
           fns.forEach(function(fn){ try{ window[fn](); }catch(e){} });
           etapas34();
