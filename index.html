@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v790";</script>
+<body><script>window.LH_VERSAO="v791";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4213,7 +4213,14 @@ window.LH_PONTE = (function(){
 window.LH_mapaCalcs = function(){
   var m = {}, P = window.LH_PONTE;
   if(P && P.MAPA) Object.keys(P.MAPA).forEach(function(fn){ m[fn.slice(8).toLowerCase()] = fn; });
-  var APELIDOS = { classmassa:'calcularClassificador', imob_ret:'calcularImobRET', imobref:'calcularImobReforma' };
+  /* ★ v791 · APELIDOS — ids do Diagnóstico cujo nome de função foge da convenção calcularXxx.
+     Auditoria de 10/09/2026: 8 ids eram sugeridos pelo questionário e não tinham entrada no mapa.
+     Nenhum estava morto — todos têm tela e função; faltava o apelido. O `dxh` (Simples 2027:
+     Dentro × Híbrido) era citado por 5 opções e nunca entrava na missão; o `classif`, por 9. */
+  var APELIDOS = { classmassa:'calcularClassificador', imob_ret:'calcularImobRET', imobref:'calcularImobReforma',
+                   classif:'calcularClassificador', dxh:'dxhCalc', contrato:'calcularTodosContratos',
+                   simnotas:'calcularIND12', formpreco:'fpCalc', agro14sent:'calcularAgroSuper1',
+                   agro21frete:'lhAg21Calc', agro22zero:'lhAg22Calc' };
   Object.keys(APELIDOS).forEach(function(id){ if(typeof window[APELIDOS[id]]==='function') m[id.toLowerCase()] = APELIDOS[id]; });
   m.__paineis = { raiox360:1, cp01:1, cp02:1, cp03:1, auditorcad:1, decisor:1, ma:1, valuation:1 };
   m.__triar = function(ids){
@@ -39333,7 +39340,7 @@ window.LH_RADAR = (function(){
         var fatAnual = fat * 12;
         if(fatAnual <= 360000) porteSugerido = 'mei';
         else if(fatAnual <= 4800000) porteSugerido = 'pequeno';
-        else if(fatAnual <= 48000000) porteSugerido = 'medio';
+        else if(fatAnual <= 78000000) porteSugerido = 'medio';   /* ★ v791 · era 48.000.000: teto do Lucro Presumido ATÉ 2013. Desde a Lei 12.814/2013 (art. 13 da Lei 9.718) é 78 milhões, e a Reforma não alterou. Acima dele o Lucro Real é obrigatório (Lei 9.718 art. 14, I) — é ali que o trabalho muda de patamar. */
         else porteSugerido = 'grande';
       }
       var sel = document.getElementById('prop_porte');
@@ -40487,7 +40494,7 @@ window.LH_renderProjecaoLTV = function(){
   var recorrenteProposta = honor.mensal || 0;
 
   var fat = (emp.gi_faturamento || emp.faturamento || 0);
-  var porte = (function(f){ if(!f||f<=0) return 'pequena'; if(f<=81000) return 'mei'; if(f<=4800000) return 'pequena'; if(f<=48000000) return 'media'; return 'grande'; })(fat);
+  var porte = (function(f){ if(!f||f<=0) return 'pequena'; if(f<=81000) return 'mei'; if(f<=4800000) return 'pequena'; if(f<=78000000) return 'media'; return 'grande'; })(fat);
 
   /* Estado das flags (persistido por cliente) */
   var flags = window.LH_LTV_FLAGS.get();
@@ -40625,7 +40632,7 @@ window.LH_LTV_CARTEIRA = (function(){
     if(!fatAnual || fatAnual <= 0) return 'pequena';
     if(fatAnual <= 81000) return 'mei';
     if(fatAnual <= 4800000) return 'pequena';
-    if(fatAnual <= 48000000) return 'media';
+    if(fatAnual <= 78000000) return 'media';   /* ★ v791 · era 48.000.000: teto do Lucro Presumido ATÉ 2013. Desde a Lei 12.814/2013 (art. 13 da Lei 9.718) é 78 milhões, e a Reforma não alterou. Acima dele o Lucro Real é obrigatório (Lei 9.718 art. 14, I) — é ali que o trabalho muda de patamar. */
     return 'grande';
   }
 
