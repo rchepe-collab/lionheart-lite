@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v789";</script>
+<body><script>window.LH_VERSAO="v790";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -40642,30 +40642,39 @@ window.LH_LTV_CARTEIRA = (function(){
   }
 
   /* Calcula LTV de um "cliente da carteira" (entidade solo OU grupo consolidado) */
-  function calcularLTVdoItem(idTipo){
-    /* idTipo: { tipo:'entidade'|'grupo', id, nome, faturamento } */
-    /* v30.12 — usa honorário REAL da proposta salva, se houver; senão estima por porte */
-    try {
-      var _hp = (typeof window.LH_lerHonorarioProposta==='function' && idTipo && idTipo.nome) ? window.LH_lerHonorarioProposta(idTipo.nome) : null;
-      if(_hp && _hp.salva && ((_hp.mensal||0)>0 || (_hp.pontual||0)>0)){
-        var _rec24 = (_hp.mensal||0)*24;
-        return { porte: porteDoFat(idTipo.faturamento||0), porteLabel:'honorário real da proposta', recMensal:(_hp.mensal||0), rec24:_rec24, pontual:(_hp.pontual||0), ltv:_rec24+(_hp.pontual||0), real:true };
-      }
-    } catch(e){}
-    var porte = porteDoFat(idTipo.faturamento || 0);
-    var h = HONORARIO_POR_PORTE[porte] || HONORARIO_POR_PORTE.pequena;
-    var recMensal = h.mensal;
-    var rec24 = recMensal * 24;
-    /* Pontual estimado: % do anual aplicado em projetos = 30% */
-    var pontualEstimado = recMensal * 12 * 0.30;
-    return {
-      porte: porte,
-      porteLabel: h.rotulo,
-      recMensal: recMensal,
-      rec24: rec24,
-      pontual: pontualEstimado,
-      ltv: rec24 + pontualEstimado
-    };
+  /* ★ v790 · LTV DE CARTEIRA no padrão do cutover (uma porta só para o cálculo).
+     ltvLerEntradas monta {clientes, itens} — os itens NÃO levam nome nem CNPJ, só uma ref opaca e o
+     faturamento (P1); ltvCalcularLocal fica na forja e vira o 120º stub na casca; ltvRender desenha
+     e devolve os totais, do servidor (fn_ltv_carteira) ou local.
+     A tabela 350/1.200/3.500/8.500, a retenção de 24 meses e o pontual de 30% não são lei — são
+     premissa comercial do escritório, e foram para tv_honorario_porte / tv_ltv_parametros com rastro. */
+  function ltvLerEntradas(clientes){
+    return { clientes:(clientes||[]), itens:(clientes||[]).map(function(c, idx){
+      var hp = null;
+      try { hp = (typeof window.LH_lerHonorarioProposta==='function' && c && c.nome) ? window.LH_lerHonorarioProposta(c.nome) : null; } catch(e){}
+      var real = hp && hp.salva && ((hp.mensal||0)>0 || (hp.pontual||0)>0);
+      return { ref:'i'+idx, faturamento:(c.faturamento||0),
+               mensal_real: real ? (hp.mensal||0) : null, pontual_real: real ? (hp.pontual||0) : null };
+    }) };
+  }
+  function ltvCalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
+  function ltvRender(r, ent, motivo){
+    var clientes = (ent && ent.clientes) || [];
+    var box = document.getElementById('ltv-carteira-conteudo');
+    if(!r || r.ok===false || motivo){
+      if(box) box.innerHTML = (window.LH_PONTE && LH_PONTE.cardErro) ? LH_PONTE.cardErro(motivo || (r&&r.motivo) || 'cálculo indisponível')
+        : '<div style="color:#fca5a5;padding:30px;text-align:center">Não foi possível calcular o LTV da carteira.</div>';
+      return null;
+    }
+    var porRef = {}; r.itens.forEach(function(x){ porRef[x.ref]=x; });
+    var t = { qtd: clientes.length, recMensal:0, rec24:0, pontual:0, ltv:0 };
+    clientes.forEach(function(c, idx){
+      var x = porRef['i'+idx] || { rec_mensal:0, rec24:0, pontual:0, ltv:0, porte_rotulo:'—', porte:'pequena' };
+      c._ltv = { porte:x.porte, porteLabel:x.porte_rotulo, recMensal:+x.rec_mensal||0, rec24:+x.rec24||0,
+                 pontual:+x.pontual||0, ltv:+x.ltv||0, real:!!x.real };
+      t.recMensal+=c._ltv.recMensal; t.rec24+=c._ltv.rec24; t.pontual+=c._ltv.pontual; t.ltv+=c._ltv.ltv;
+    });
+    return t;
   }
 
   /* Identifica todos os "clientes da carteira" (grupos > 1 ent são 1 cliente; ents solo são 1 cada) */
@@ -40822,15 +40831,24 @@ window.LH_LTV_CARTEIRA = (function(){
     if(!box) return;
 
     var clientes = listarClientesDaCarteira();
-    var totaisCart = { qtd: clientes.length, recMensal:0, rec24:0, pontual:0, ltv:0 };
-    clientes.forEach(function(c){
-      var l = calcularLTVdoItem(c);
-      c._ltv = l;
-      totaisCart.recMensal += l.recMensal;
-      totaisCart.rec24 += l.rec24;
-      totaisCart.pontual += l.pontual;
-      totaisCart.ltv += l.ltv;
-    });
+    /* ★ v790 · uma chamada para a carteira inteira; sem nome nem CNPJ no payload (P1). */
+    var ent = ltvLerEntradas(clientes);
+    var totaisCart;
+    if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && typeof LH_PONTE.chamar==='function' && ent.itens.length && !box._lhLtvRes){
+      if(!box._lhLtvVoo){
+        box._lhLtvVoo = true;
+        box.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text2);font-size:.9em">Calculando no servidor…</div>';
+        LH_PONTE.chamar('ltv-carteira', { itens: ent.itens }).then(function(res){
+          box._lhLtvVoo = false;
+          if(res && res.ok){ box._lhLtvRes = res.resultado; render(); }
+          else { ltvRender(null, ent, (res && res.motivo) || 'sem resposta do servidor'); }
+        }).catch(function(){ box._lhLtvVoo = false; ltvRender(null, ent, 'sem resposta do servidor'); });
+      }
+      return;
+    }
+    if(box._lhLtvRes){ totaisCart = ltvRender(box._lhLtvRes, ent, null); box._lhLtvRes = null; }
+    else { totaisCart = ltvRender(null, ent, 'calculo indisponivel'); }
+    if(!totaisCart) return;
     /* Ordena por LTV desc */
     clientes.sort(function(a,b){ return b._ltv.ltv - a._ltv.ltv; });
     _clientesAtual = clientes;
@@ -40932,7 +40950,8 @@ window.LH_LTV_CARTEIRA = (function(){
     };
   }
 
-  return { render: render, listarClientesDaCarteira: listarClientesDaCarteira, toggleExp: toggleExp };
+  return { render: render, listarClientesDaCarteira: listarClientesDaCarteira, toggleExp: toggleExp,
+           ltvLerEntradas: ltvLerEntradas, ltvCalcularLocal: ltvCalcularLocal, ltvRender: ltvRender };   /* v790 */
 })();
 console.log('[LTV CARTEIRA] ✓ LH_LTV_CARTEIRA pronto · visão consolidada do escritório');
 
