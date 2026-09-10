@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v787";</script>
+<body><script>window.LH_VERSAO="v788";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4205,6 +4205,27 @@ window.LH_PONTE = (function(){
     limpar: function(){ try { localStorage.removeItem(CHAVE_LOG); } catch(e){} return 'log limpo'; }
   };
 })();
+
+/* ★ v788 · LH_mapaCalcs — o ÚNICO mapa id-da-missão → calcularX. Derivado do MAPA da ponte (todas as telas
+   convertidas) + apelidos declarados. Substitui as listas escritas à mão do Fluxo Completo (31) e do
+   pós-importação AOA (29), que pulavam em silêncio o que não conheciam. Devolve também __paineis, para
+   distinguir "não é calculadora" (normal) de "é calculadora e não rodou" (falha). */
+window.LH_mapaCalcs = function(){
+  var m = {}, P = window.LH_PONTE;
+  if(P && P.MAPA) Object.keys(P.MAPA).forEach(function(fn){ m[fn.slice(8).toLowerCase()] = fn; });
+  var APELIDOS = { classmassa:'calcularClassificador', imob_ret:'calcularImobRET', imobref:'calcularImobReforma' };
+  Object.keys(APELIDOS).forEach(function(id){ if(typeof window[APELIDOS[id]]==='function') m[id.toLowerCase()] = APELIDOS[id]; });
+  m.__paineis = { raiox360:1, cp01:1, cp02:1, cp03:1, auditorcad:1, decisor:1, ma:1, valuation:1 };
+  m.__triar = function(ids){
+    var fns=[], paineis=[], semCalc=[];
+    (ids||[]).forEach(function(cid){ var k=String(cid).toLowerCase();
+      if(m.__paineis[k]) paineis.push(cid);
+      else if(m[k] && typeof window[m[k]]==='function') fns.push(m[k]);
+      else semCalc.push(cid); });
+    return { fns:fns, paineis:paineis, semCalc:semCalc };
+  };
+  return m;
+};
 
 </script>
 <script>try{console.log("%c[LIONHEART] CORE "+window.LH_VERSAO,"color:#b8941f;font-weight:700");}catch(e){}/* v670 - o selo da tela estava CHUMBADO em v665 desde o v665. Cinco versoes mostrando numero errado no canto. Agora o selo le LH_VERSAO: nao tem como descolar. */try{document.addEventListener("DOMContentLoaded",function(){var e=document.getElementById("lh-selo-versao");if(e)e.textContent=window.LH_VERSAO;});}catch(e){}</script><div style="position:fixed;bottom:8px;right:10px;z-index:9999;font-size:.62rem;color:#3ecf8e;background:rgba(0,0,0,.5);padding:2px 8px;border-radius:6px;font-family:monospace;pointer-events:none">CORE <span id="lh-selo-versao">v670</span></div>
@@ -39379,15 +39400,7 @@ window.LH_RADAR = (function(){
            um catálogo escrito à mão mente (a primeira foi o despachante v9).
            Agora deriva do MAPA da ponte (109 telas) pelo sufixo do nome, com apelidos declarados
            para o que foge da convenção. O que não casar aparece na tela e na Proposta — nada some. */
-        var MAP = (function(){
-          var m = {}, P = window.LH_PONTE;
-          if(P && P.MAPA) Object.keys(P.MAPA).forEach(function(fn){ m[fn.slice(8).toLowerCase()] = fn; });
-          var APELIDOS = { classmassa:'calcularClassificador', imob_ret:'calcularImobRET', imobref:'calcularImobReforma' };
-          Object.keys(APELIDOS).forEach(function(id){ if(typeof window[APELIDOS[id]]==='function') m[id.toLowerCase()] = APELIDOS[id]; });
-          /* painéis e telas de compliance: não são calculadora, e não devem virar aviso de falha */
-          m.__paineis = { raiox360:1, cp01:1, cp02:1, cp03:1, auditorcad:1, decisor:1, ma:1, valuation:1 };
-          return m;
-        })();
+        var MAP = window.LH_mapaCalcs();   /* v788: mapa único, derivado */
         var semCalc = [], paineis = [];
         calcs.forEach(function(cid){
           var k = String(cid).toLowerCase();
@@ -41452,20 +41465,15 @@ window.LH_RADAR_Excel = (function(){
           var respCli = todasResp['emp' + idxEmp] || {};
           var missaoPos = window.LH_RADAR ? window.LH_RADAR.getMissao(respCli) : { pendentes:[], feitas:[] };
           var calcsRodar = missaoPos.pendentes.concat(missaoPos.feitas).map(function(c){return c.id;});
-          var MAP_CALC_FN = {
-            'c01':'calcularC01','c02':'calcularC02','c04':'calcularC04','c05':'calcularC05',
-            'c06':'calcularC06','c07':'calcularC07','c08':'calcularC08','c09':'calcularC09',
-            'cr01':'calcularCR01','cr02':'calcularCR02','cr03':'calcularCR03','cr04':'calcularCR04',
-            'n04':'calcularN04','n15':'calcularDIFAL','n16':'calcularFatorR','n17':'calcularSublimite',
-            'n29':'calcularN29','n33':'calcularN33','calc03':'calcularCalc03',
-            'difal':'calcularDIFAL','fatorR':'calcularFatorR','sublimite':'calcularSublimite'
-          ,'hotel':'calcularHotel','logcarga':'calcularLogCarga','drawback':'calcularDrawback','cr06':'calcularCR06','cp01':'calcularCP01','cp02':'calcularCP02','cp03':'calcularCP03'};
-          calcsRodar.forEach(function(cid){
-            var fnName = MAP_CALC_FN[cid];
-            if(fnName && typeof window[fnName] === 'function'){
-              try { window[fnName](); calculadasOk++; } catch(e){ console.warn('[B5.3.2] '+cid+':', e.message); }
-            }
-          });
+          /* ★ v788 · era MAP_CALC_FN escrito à mão (29). Agora o mapa único derivado, com lote em modo servidor. */
+          var _tri = window.LH_mapaCalcs().__triar(calcsRodar);
+          var lotesEnviados = 0;
+          if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && typeof LH_PONTE.executarLote==='function' && _tri.fns.length){
+            for(var _b=0;_b<_tri.fns.length;_b+=40){ LH_PONTE.executarLote(_tri.fns.slice(_b,_b+40)); lotesEnviados++; }
+            calculadasOk = _tri.fns.length;
+          } else {
+            _tri.fns.forEach(function(fn){ try { window[fn](); calculadasOk++; } catch(e){ console.warn('[B5.3.2] '+fn+':', e.message); } });
+          }
 
           /* Resumo */
           var msg = '✓ Importação concluída\n\n';
@@ -41479,6 +41487,9 @@ window.LH_RADAR_Excel = (function(){
           }
           if(propagouOk) msg += '• Inputs do Cliente propagados pras calcs automaticamente\n';
           if(calculadasOk > 0) msg += '• ' + calculadasOk + ' calculadoras executadas automaticamente\n';
+          if(_tri.semCalc.length) msg += '• Não calculadas (sem calculadora ligada): ' + _tri.semCalc.join(', ') + '\n';
+          if(_tri.paineis.length) msg += '• Painéis (não são calculadora): ' + _tri.paineis.join(', ') + '\n';
+          if(lotesEnviados) msg += '• Enviadas ao servidor em ' + lotesEnviados + ' lote(s) — os resultados chegam nas telas\n';
           msg += '\nAbra o Motor 360° pra ver o resultado consolidado.';
           alert(msg);
           if(window.LGPD && window.LGPD.log) window.LGPD.log('importacao_excel', { aplicados: aplicados, total: aplicados+ignorados+naoAchados.length });
