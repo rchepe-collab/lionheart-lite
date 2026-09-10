@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v791";</script>
+<body><script>window.LH_VERSAO="v792";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -38839,6 +38839,36 @@ window.LH_RADAR = (function(){
     { txt:'Incorporação imobiliária ou obra própria', score:4, calcs:['imob_ret','imobref','obra'] }
   ] }
 ];
+
+  /* ★ v792 · FONTE DO QUESTIONÁRIO — o array acima passa a ser a REDE, não a verdade.
+     Em modo servidor, busca tv_diagnostico_* (30 perguntas, 148 opções, conferidas por md5 contra
+     este embutido em 10/09/2026: 8b5981d0… e 07dedcfc…). Assim os pesos e, principalmente, as listas
+     `calcs[]` — que decidem a missão — podem mudar com rastro, sem republicar o CORE.
+     Se o servidor não responder, ou devolver um questionário incompleto, fica o embutido: a tela do
+     Diagnóstico tem que abrir mesmo offline. */
+  window.LH_DIAG_FONTE = 'embutido';
+  (function(){
+    if(!(window.LH_PONTE && LH_PONTE.modo()==='servidor' && typeof LH_PONTE.chamar==='function')) return;
+    setTimeout(function(){
+      try{
+        LH_PONTE.chamar('diag-questionario', {}).then(function(res){
+          try{
+            var r = res && res.ok && res.resultado;
+            if(!r || r.ok === false || !Array.isArray(r.perguntas) || r.perguntas.length !== PERGUNTAS.length) return;
+            var ok = r.perguntas.every(function(q){ return q && q.id && Array.isArray(q.opcoes) && q.opcoes.length; });
+            if(!ok) return;
+            PERGUNTAS.length = 0; r.perguntas.forEach(function(q){ PERGUNTAS.push(q); });
+            if(Array.isArray(r.dimensoes) && r.dimensoes.length === 6 && r.pesos_somam_um &&
+               typeof SCORE_DIMENSOES !== 'undefined' && Array.isArray(SCORE_DIMENSOES)){
+              SCORE_DIMENSOES.length = 0; r.dimensoes.forEach(function(d){ SCORE_DIMENSOES.push(d); });
+            }
+            window.LH_DIAG_FONTE = 'servidor';
+            console.log('[LH_DIAG] questionário do servidor · ' + PERGUNTAS.length + ' perguntas · pesos somam 1: ' + r.pesos_somam_um);
+          }catch(_e){}
+        }).catch(function(){});
+      }catch(_e){}
+    }, 1200);
+  })();
 
   var PILARES = {
   perfil: { titulo:'Perfil da Empresa', cor:'#0891b2', desc:'Quem é o cliente. Elimina blocos inteiros e liga o setorial certo.' },
