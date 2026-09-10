@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v788";</script>
+<body><script>window.LH_VERSAO="v789";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -32619,26 +32619,30 @@ function renderizarContratos() {
   if(btnTodos) btnTodos.style.display = CONTRATOS_TEMP.length >= 2 ? 'block' : 'none';
 }
 
-function calcularTodosContratos() {
+/* ★ v789 · "Reprecificar todos os contratos" no padrão do cutover. O reajuste do ano vem do servidor
+   (fn_reajuste_contrato, curva canônica); a lista de contratos (descrição, preço) é do cliente e nunca sai
+   do navegador (P1). contratosCalcularLocal fica na forja e vira stub na casca (119º). */
+function contratosLerEntradas(){
   var res = document.getElementById('contratos-resultado');
-  if(!res || !CONTRATOS_TEMP.length) return;
-  var margem = parseFloat((document.getElementById('c02_margem')||{value:''}).value||'30')/100;
-  var carga  = parseFloat((document.getElementById('c02_carga_atual')||{value:''}).value||'12')/100;
-  var ano    = parseInt((document.getElementById('c02_ano')||{value:''}).value||'2027');
-  var fmtR   = function(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); };
-  var fmtP   = function(v){ return v.toFixed(1)+'%'; };
-
-      /* v655 · CORREÇÃO — esta tabela estava ERRADA e VIVA.
-         Interpolava linearmente 2027-2032, ignorando que a CBS é reduzida em
-         0,1 p.p. em 2027-28 (art. 347) e que o IBS entra a 10/20/30/40% da
-         referência em 2029-2032 (EC 132 ADCT art. 128). Em 2030 mandava
-         reajustar 13,79% onde o certo é 0,59%. Agora lê a fonte única. */
-      var _al = (typeof getAliq === 'function') ? getAliq(ano) : null;
-      var aliqNova = _al ? _al.total : 0.265;
-  var delta = Math.max(0, aliqNova - carga);
-  var reajuste = delta/(1-(margem+carga));
-
-  res.innerHTML = '<div style="font-size:0.78em;font-weight:600;color:#c9a227;margin-bottom:8px">Reajuste necessário em '+ano+': '+fmtPct(reajuste*100)+'</div>' +
+  if(!res || !CONTRATOS_TEMP.length) return null;
+  return {
+    ano: parseInt((document.getElementById('c02_ano')||{value:''}).value||'2027'),
+    carga_atual_pct: parseFloat((document.getElementById('c02_carga_atual')||{value:''}).value||'12'),
+    margem_pct: parseFloat((document.getElementById('c02_margem')||{value:''}).value||'30'),
+    cenario: (typeof CENARIO_ATUAL==='string'?CENARIO_ATUAL:'A')
+  };
+}
+function contratosCalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
+function contratosRender(r, ent, motivo){
+  var res = document.getElementById('contratos-resultado'); if(!res) return;
+  if(!r || r.ok===false || motivo){
+    res.innerHTML = (window.LH_PONTE && LH_PONTE.cardErro) ? LH_PONTE.cardErro(motivo || (r&&r.motivo) || 'cálculo indisponível')
+      : '<div style="color:#fca5a5;font-size:.86em">Não foi possível calcular — '+(motivo||(r&&r.motivo)||'')+'</div>';
+    return;
+  }
+  var reajuste = (+r.reajuste_pct||0)/100;
+  var fmtR = function(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  res.innerHTML = '<div style="font-size:0.78em;font-weight:600;color:#c9a227;margin-bottom:8px">Reajuste necessário em '+r.ano+': '+fmtPct(reajuste*100)+'</div>' +
     CONTRATOS_TEMP.map(function(c){
       var novoPreco = c.preco*(1+reajuste);
       var diff = novoPreco - c.preco;
@@ -32650,6 +32654,18 @@ function calcularTodosContratos() {
       '</div>';
     }).join('');
   mostrarToast('✓ Contratos calculados','success');
+}
+function calcularTodosContratos() {
+  var ent = contratosLerEntradas(); if(!ent) return;
+  if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && typeof LH_PONTE.chamar==='function'){
+    var res = document.getElementById('contratos-resultado');
+    if(res && LH_PONTE.cardAguardando) res.innerHTML = LH_PONTE.cardAguardando();
+    LH_PONTE.chamar('reajuste-contrato', { ano:ent.ano, carga_atual_pct:ent.carga_atual_pct, margem_pct:ent.margem_pct, cenario:ent.cenario })
+      .then(function(r){ contratosRender(r&&r.ok?r.resultado:null, ent, (r&&!r.ok)?(r.motivo||'sem resposta do servidor'):null); })
+      .catch(function(){ contratosRender(null, ent, 'sem resposta do servidor'); });
+    return;
+  }
+  contratosRender(null, ent, 'calculo indisponivel');
 }
 
 // ════════════════════════════════════════════════════════════════════════
