@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v792";</script>
+<body><script>window.LH_VERSAO="v793";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4210,6 +4210,102 @@ window.LH_PONTE = (function(){
    convertidas) + apelidos declarados. Substitui as listas escritas à mão do Fluxo Completo (31) e do
    pós-importação AOA (29), que pulavam em silêncio o que não conheciam. Devolve também __paineis, para
    distinguir "não é calculadora" (normal) de "é calculadora e não rodou" (falha). */
+/* ═══════════════════════════════════════════════════════════════════════════
+   ★ v793 · LH_PLANO — cadeado e convite de upgrade
+   O banco já recusa (fn_autorizar, camada 5). Isto é a cara disso: cadeado no item,
+   selo no bloco e, ao clicar, um convite no lugar do cálculo. Sem plano carregado
+   (offline, ou servidor mudo) nada é trancado — cadeado só existe com resposta.
+   ═══════════════════════════════════════════════════════════════════════════ */
+window.LH_PLANO = (function(){
+  var meu = null, ordemMeu = 99, escada = [], modulos = {}, categorias = {}, carregado = false;
+  var ORD = {};
+
+  function ordemDe(pl){ return ORD[pl] != null ? ORD[pl] : 0; }
+  function planoDe(id){ return modulos[id] || null; }
+  function liberado(id){
+    if(!carregado) return true;                       /* sem resposta, não tranca */
+    var exig = planoDe(id); if(!exig) return true;    /* tela que não passa pelo despachante */
+    return ordemMeu >= ordemDe(exig);
+  }
+  function rotuloDe(pl){ for(var i=0;i<escada.length;i++) if(escada[i].plano===pl) return escada[i].rotulo; return pl; }
+  function promessaDe(pl){ for(var i=0;i<escada.length;i++) if(escada[i].plano===pl) return escada[i].promessa||''; return ''; }
+
+  function cardConvite(id){
+    var exig = planoDe(id) || 'consultoria';
+    return '<div style="max-width:560px;margin:40px auto;padding:26px 28px;border-radius:14px;'
+      + 'background:linear-gradient(135deg,rgba(201,162,39,.10),rgba(201,162,39,.03));'
+      + 'border:1px solid rgba(201,162,39,.42);text-align:center">'
+      + '<div style="font-size:2em;line-height:1">🔒</div>'
+      + '<div style="font-family:Syne,Inter,sans-serif;font-size:1.25em;font-weight:800;color:#c9a227;margin:10px 0 4px">Disponível no plano ' + rotuloDe(exig) + '</div>'
+      + '<div style="font-size:.9em;color:var(--text2);line-height:1.5;margin-bottom:16px">' + promessaDe(exig) + '</div>'
+      + '<div style="font-size:.82em;color:var(--text2);opacity:.8">Seu plano atual: <b style="color:#e8edf5">' + rotuloDe(meu) + '</b></div>'
+      + '<button onclick="LH_PLANO.pedirUpgrade(\'' + exig + '\')" style="margin-top:16px;padding:11px 26px;background:linear-gradient(135deg,#c9a227,#a8891f);color:#0c1628;border:0;border-radius:9px;font-weight:800;cursor:pointer;font-size:.92em">Quero o plano ' + rotuloDe(exig) + '</button>'
+      + '</div>';
+  }
+
+  function pedirUpgrade(plano){
+    try{ if(typeof mostrarToast==='function') mostrarToast('Pedido de upgrade para ' + rotuloDe(plano) + ' registrado. Entraremos em contato.', 'success'); }catch(e){}
+    try{ console.log('[LH_PLANO] upgrade pedido:', plano); }catch(e){}
+  }
+
+  /* pinta o menu: cadeado no item, selo no bloco */
+  function pintarMenu(){
+    if(!carregado) return;
+    try{
+      document.querySelectorAll('.nav-item[onclick*="abrirPagina("]').forEach(function(el){
+        var m = /abrirPagina\('([\w-]+)'/.exec(el.getAttribute('onclick')||''); if(!m) return;
+        var id = m[1];
+        var lab = el.querySelector('.ni-label'); if(!lab) return;
+        var jaTem = el.querySelector('.lh-cadeado');
+        if(liberado(id)){ if(jaTem) jaTem.remove(); el.style.opacity=''; return; }
+        el.style.opacity = '.55';
+        if(!jaTem){
+          var c = document.createElement('span');
+          c.className = 'lh-cadeado';
+          c.title = 'Disponível no plano ' + rotuloDe(planoDe(id));
+          c.textContent = ' 🔒';
+          c.style.cssText = 'font-size:.8em;opacity:.85;margin-left:4px';
+          lab.appendChild(c);
+        }
+      });
+      document.querySelectorAll('.nav-group-title').forEach(function(t){
+        var cat = (t.textContent||'').replace(/[▼▲►🔒]/g,'').trim();
+        var pl = null;
+        Object.keys(categorias).forEach(function(k){ if(k.replace(/[^\wÀ-ÿ]/g,'').indexOf(cat.replace(/[^\wÀ-ÿ]/g,''))===0) pl = categorias[k]; });
+        if(!pl || pl==='livre' || ordemMeu >= ordemDe(pl)) return;
+        if(t.querySelector('.lh-selo')) return;
+        var s = document.createElement('span');
+        s.className = 'lh-selo'; s.textContent = rotuloDe(pl);
+        s.style.cssText = 'margin-left:7px;padding:1px 7px;border-radius:8px;font-size:.62em;font-weight:700;'
+          + 'background:rgba(201,162,39,.18);color:#c9a227;border:1px solid rgba(201,162,39,.40);vertical-align:middle';
+        t.appendChild(s);
+      });
+    }catch(e){ try{ console.warn('[LH_PLANO] pintarMenu:', e); }catch(_e){} }
+  }
+
+  function carregar(){
+    if(!(window.LH_PONTE && LH_PONTE.modo()==='servidor' && typeof LH_PONTE.chamar==='function')) return;
+    LH_PONTE.chamar('meu-plano', {}).then(function(res){
+      try{
+        if(!res || !res.ok || !res.resultado) return;
+        var r = res.resultado;
+        escada = r.escada || []; modulos = r.modulos || {}; categorias = r.categorias || {};
+        escada.forEach(function(p){ ORD[p.plano] = p.ordem; });
+        meu = (res.sessao && res.sessao.plano) || 'preparacao';
+        ordemMeu = (ORD[meu] != null) ? ORD[meu] : 99;   /* plano fora da escada (core) = tudo */
+        carregado = true;
+        pintarMenu();
+        console.log('[LH_PLANO] plano ' + rotuloDe(meu) + ' · ' + Object.keys(modulos).length + ' módulos mapeados');
+      }catch(e){}
+    }).catch(function(){});
+  }
+
+  return { carregar:carregar, pintarMenu:pintarMenu, liberado:liberado, planoDe:planoDe,
+           rotuloDe:rotuloDe, cardConvite:cardConvite, pedirUpgrade:pedirUpgrade,
+           meu:function(){ return meu; }, carregado:function(){ return carregado; } };
+})();
+setTimeout(function(){ try{ LH_PLANO.carregar(); }catch(e){} }, 1500);
+
 window.LH_mapaCalcs = function(){
   var m = {}, P = window.LH_PONTE;
   if(P && P.MAPA) Object.keys(P.MAPA).forEach(function(fn){ m[fn.slice(8).toLowerCase()] = fn; });
@@ -18784,6 +18880,18 @@ function abrirPagina(id, navEl){
   const pg = document.getElementById('page-'+id);
   if(pg) pg.classList.add('active');
   if(navEl) navEl.classList.add('active');
+
+  /* ★ v793 · plano não contratado: convite no lugar do conteúdo. O banco já recusa;
+     isto evita que a pessoa preencha a tela inteira para tomar um card no fim. */
+  try{
+    if(pg && window.LH_PLANO && LH_PLANO.carregado() && !LH_PLANO.liberado(id)){
+      if(!pg._lhOriginal) pg._lhOriginal = pg.innerHTML;
+      pg.innerHTML = LH_PLANO.cardConvite(id);
+      return;
+    } else if(pg && pg._lhOriginal){
+      pg.innerHTML = pg._lhOriginal; pg._lhOriginal = null;
+    }
+  }catch(_e){}
 
   /* v330 — abas Central: gerar diagnóstico ao abrir */
   if(id==='transpax' && typeof tpxSubChange==='function'){ setTimeout(function(){ tpxSubChange(); },50); }
