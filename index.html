@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v800";</script>
+<body><script>window.LH_VERSAO="v801";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -59178,6 +59178,38 @@ function lhBuscaCNAE(q){
       if(_prep && refo) refo.insertAdjacentElement('beforebegin', _prep);
       if(_cons && reg)  reg.insertAdjacentElement('beforebegin', _cons);
       if(_espec && c2)  c2.insertAdjacentElement('beforebegin', _espec);
+    }catch(_e){}
+
+    /* ★ v801 · COERÊNCIA ENTRE SELO E CADEADO.
+       O sub-bloco "Descubra sua alíquota" (Alíquota Efetiva por Setor, Mix, Raio-X,
+       CAPEX) vivia dentro de Serviços·Comércio·Turismo, que tem selo ESPECIALISTA —
+       mas são ferramentas de PREPARAÇÃO. O contador via o selo Especialista, clicava,
+       e o card dizia "Disponível no plano Preparação". Selo e cadeado discordando é
+       pior que qualquer um dos dois errado: destrói a confiança na escada inteira.
+       Agora esses itens mudam de bloco, para o menu dizer a verdade.
+       O CAPEX estava duplicado (já existe em Reforma Tributária) — a cópia sai. */
+    try{
+      var _subs = c2 ? Array.prototype.slice.call(c2.querySelectorAll('.nav-subdiv')) : [];
+      var _descubra = _subs.filter(function(d){ return /Descubra sua al[íi]quota/i.test(d.textContent||''); })[0];
+      var _destino = refo ? (refo.querySelector('.nav-cat-itens') || refo.querySelector('.nav-group-items')) : null;
+      if(_descubra && _destino){
+        var _mover = [], _n = _descubra.nextElementSibling;
+        while(_n && !/nav-subdiv/.test((_n.className||'').toString())){
+          if(/nav-item/.test((_n.className||'').toString())) _mover.push(_n);
+          _n = _n.nextElementSibling;
+        }
+        _mover.forEach(function(el){
+          var _oc = el.getAttribute('onclick') || '';
+          var _id = (/abrirPagina\('([\w-]+)'/.exec(_oc) || [])[1];
+          /* já existe no destino? é duplicata (o CAPEX era) */
+          var _rep = _id && _destino.querySelector('[onclick*="abrirPagina(\'' + _id + '\'"]');
+          if(_rep){ if(el.parentNode) el.parentNode.removeChild(el); return; }
+          _destino.appendChild(el);
+        });
+        if(_descubra.parentNode) _descubra.parentNode.removeChild(_descubra);
+        /* o "Regimes específicos" perde a razão de existir: virou o bloco inteiro */
+        _subs.forEach(function(d){ if(/Regimes espec/i.test(d.textContent||'') && d.parentNode) d.parentNode.removeChild(d); });
+      }
     }catch(_e){}
 
     /* as supercategorias antigas somem: viraram os planos */
