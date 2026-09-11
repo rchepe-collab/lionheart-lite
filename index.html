@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v796";</script>
+<body><script>window.LH_VERSAO="v797";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4321,6 +4321,105 @@ window.LH_PLANO = (function(){
            rotuloDe:rotuloDe, cardConvite:cardConvite, pedirUpgrade:pedirUpgrade,
            meu:function(){ return meu; }, carregado:function(){ return carregado; } };
 })();
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ★ v797 · LH_ADMIN — cortesia e correção de plano, só para a administração.
+   O item de menu só nasce se o servidor confirmar admin_lh. Sem confirmação,
+   nem o menu aparece: a tela não deve existir para o cliente, nem escondida.
+   ═══════════════════════════════════════════════════════════════════════════ */
+window.LH_ADMIN = (function(){
+  var contas = [], planos = [], eAdmin = false;
+  var fmtD = function(d){ if(!d) return '—'; var p=String(d).slice(0,10).split('-'); return p[2]+'/'+p[1]+'/'+p[0]; };
+  var esc = function(t){ return String(t==null?'':t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+
+  function carregar(busca){
+    if(!(window.LH_PONTE && typeof LH_PONTE.chamar==='function')) return;
+    return LH_PONTE.chamar('admin-contas', busca ? { busca: busca } : {}).then(function(res){
+      var r = res && res.ok && res.resultado;
+      if(!r || r.ok === false){ eAdmin = false; return false; }
+      eAdmin = true; contas = r.contas || []; planos = r.planos || [];
+      return true;
+    }).catch(function(){ return false; });
+  }
+
+  function desenhar(){
+    var box = document.getElementById('admin-conteudo'); if(!box) return;
+    if(!eAdmin){ box.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2)">Área restrita.</div>'; return; }
+    var h = '<div style="display:flex;gap:8px;margin-bottom:14px">'
+      + '<input id="admin-busca" placeholder="Buscar por escritório, nome ou e-mail" onkeydown="if(event.key===\'Enter\')LH_ADMIN.buscar()" style="flex:1;background:var(--bg1);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px 13px;color:var(--text1);font-size:.9em">'
+      + '<button onclick="LH_ADMIN.buscar()" style="padding:10px 18px;background:var(--gold);color:#0c1628;border:0;border-radius:8px;font-weight:700;cursor:pointer">Buscar</button></div>';
+    if(!contas.length){ h += '<div style="text-align:center;padding:30px;color:var(--text2)">Nenhuma conta encontrada.</div>'; box.innerHTML = h; return; }
+    h += '<div style="font-size:.78em;color:var(--text2);margin-bottom:8px">' + contas.length + ' conta(s)</div>';
+    contas.forEach(function(c, i){
+      var venc = c.valido_ate && (new Date(c.valido_ate) < new Date());
+      h += '<div style="background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px 16px;margin-bottom:10px">'
+        + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
+        +   '<div><div style="font-weight:700;color:var(--text1)">' + esc(c.empresa) + '</div>'
+        +     '<div style="font-size:.78em;color:var(--text2);margin-top:2px">' + esc(c.dono || '—') + '</div></div>'
+        +   '<div style="text-align:right;font-size:.8em">'
+        +     '<div><b style="color:var(--gold)">' + esc(c.plano) + '</b> · ' + c.usuarios_ativos + '/' + c.assentos + ' assento(s)</div>'
+        +     '<div style="color:' + (venc ? '#fca5a5' : 'var(--text2)') + '">validade: ' + fmtD(c.valido_ate) + (venc ? ' (vencida)' : '') + '</div>'
+        +   '</div></div>'
+        + '<div style="display:flex;gap:6px;align-items:center;margin-top:12px;flex-wrap:wrap">'
+        +   '<select id="admin-plano-' + i + '" style="background:var(--bg1);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:7px 9px;color:var(--text1);font-size:.82em">'
+        +     planos.map(function(p){ return '<option value="' + p.plano + '"' + (p.plano===c.plano?' selected':'') + '>' + esc(p.rotulo) + '</option>'; }).join('')
+        +   '</select>'
+        +   '<input id="admin-assentos-' + i + '" type="number" min="1" value="' + c.assentos + '" title="assentos" style="width:70px;background:var(--bg1);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:7px 9px;color:var(--text1);font-size:.82em">'
+        +   '<input id="admin-ate-' + i + '" type="date" value="' + (c.valido_ate ? String(c.valido_ate).slice(0,10) : '') + '" title="validade (vazio = sem vencimento)" style="background:var(--bg1);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:7px 9px;color:var(--text1);font-size:.82em">'
+        +   '<input id="admin-motivo-' + i + '" placeholder="Motivo (obrigatório)" style="flex:1;min-width:180px;background:var(--bg1);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:7px 9px;color:var(--text1);font-size:.82em">'
+        +   '<button onclick="LH_ADMIN.aplicar(' + i + ')" style="padding:7px 16px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:0;border-radius:7px;font-weight:700;font-size:.82em;cursor:pointer">Aplicar</button>'
+        + '</div>'
+        + '<div id="admin-msg-' + i + '" style="font-size:.78em;margin-top:8px;min-height:16px"></div>'
+        + '</div>';
+    });
+    box.innerHTML = h;
+  }
+
+  function aplicar(i){
+    var c = contas[i]; if(!c) return;
+    var plano = (document.getElementById('admin-plano-'+i)||{}).value;
+    var assentos = parseInt((document.getElementById('admin-assentos-'+i)||{}).value || '0', 10);
+    var ate = (document.getElementById('admin-ate-'+i)||{}).value || null;
+    var motivo = ((document.getElementById('admin-motivo-'+i)||{}).value || '').trim();
+    var msg = document.getElementById('admin-msg-'+i);
+    var diz = function(t, cor){ if(msg){ msg.style.color = cor || '#fca5a5'; msg.textContent = t; } };
+    if(!motivo) return diz('Diga por que está liberando — fica no histórico.');
+    diz('Aplicando…', 'var(--text2)');
+    LH_PONTE.chamar('definir-plano', { empresa_id: c.empresa_id, plano: plano,
+        assentos: assentos, valido_ate: ate, motivo: motivo })
+    .then(function(res){
+      var r = res && res.ok && res.resultado;
+      if(!r || r.ok === false) return diz((r && r.motivo) || (res && res.motivo) || 'Não foi possível aplicar.');
+      diz(r.de + '  →  ' + r.para, '#10b981');
+      carregar((document.getElementById('admin-busca')||{}).value).then(function(){ desenhar(); });
+    }).catch(function(){ diz('Sem resposta do servidor.'); });
+  }
+
+  function buscar(){ carregar((document.getElementById('admin-busca')||{}).value).then(function(){ desenhar(); }); }
+
+  /* o item de menu só nasce se o servidor confirmar — a tela não existe para o cliente */
+  function instalar(){
+    carregar().then(function(ok){
+      if(!ok) return;
+      try{
+        var nav = document.querySelector('nav.nav-section') || document.querySelector('.nav-section');
+        if(!nav || document.getElementById('lh-nav-admin')) return;
+        var sep = document.createElement('div'); sep.className='nav-secao-js'; sep.textContent='Administração';
+        var item = document.createElement('div');
+        item.className='nav-item'; item.id='lh-nav-admin';
+        item.setAttribute('onclick', "abrirPagina('admin', this); LH_ADMIN.desenhar();");
+        item.innerHTML = '<span class="ni-ic">🛡️</span><span class="ni-label">Contas &amp; Planos</span>';
+        nav.appendChild(sep); nav.appendChild(item);
+        console.log('[LH_ADMIN] administração disponível · ' + contas.length + ' conta(s)');
+      }catch(e){}
+    });
+  }
+
+  return { instalar:instalar, carregar:carregar, desenhar:desenhar, aplicar:aplicar, buscar:buscar,
+           eAdmin:function(){ return eAdmin; }, contas:function(){ return contas; } };
+})();
+setTimeout(function(){ try{ LH_ADMIN.instalar(); }catch(e){} }, 2200);
+
 setTimeout(function(){ try{ LH_PLANO.carregar(); }catch(e){} }, 1500);
 /* ★ v794 · o menu é montado em etapas (colapsáveis, reestruturação por plano). Uma pintada só,
    aos 1,5 s, era desfeita pela montagem seguinte. Repinta depois de cada etapa e para. */
@@ -17645,7 +17744,24 @@ function ctcCalc(){
   <!-- ══════════════════════════════════════════════
        v28 ONDA D.1 — TERMO DE USO completo
        ══════════════════════════════════════════════ -->
-  <div class="page" id="page-termos">
+  <!-- ★ v797 · ADMINISTRAÇÃO LIONHEART — cortesia e correção de plano.
+     Só aparece para quem tem usuarios.admin_lh (marca que só se dá por SQL: quem
+     pode liberar de graça não deve poder ser criado pela porta da frente).
+     Existe para os 100% de desconto (sócio, parceiro) sem virar cobrança de R$ 0
+     no financeiro, para ver o produto pelos olhos do cliente, e para socorrer
+     quem pagou e o webhook falhou. -->
+<div id="page-admin" class="page">
+  <div class="page-header">
+    <div class="page-icon" style="background:linear-gradient(135deg,#c9a227,#8a6f1a)">🛡️</div>
+    <div><h1>Administração Lionheart</h1>
+      <p class="page-sub">Conceder plano, ajustar assentos e validade. Toda mudança fica registrada.</p></div>
+  </div>
+  <div id="admin-conteudo" style="padding:8px 0">
+    <div style="text-align:center;padding:40px 20px;color:var(--text2);font-size:.9em">Carregando…</div>
+  </div>
+</div>
+
+<div class="page" id="page-termos">
     <div class="calc-page-header">
       <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.25),rgba(232,176,32,0.15));"></div>
       <div>
