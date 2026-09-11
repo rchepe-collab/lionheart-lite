@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v798";</script>
+<body><script>window.LH_VERSAO="v799";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4459,6 +4459,358 @@ window.LH_ADMIN = (function(){
   return { instalar:instalar, carregar:carregar, desenhar:desenhar, aplicar:aplicar, buscar:buscar,
            eAdmin:function(){ return eAdmin; }, contas:function(){ return contas; } };
 })();
+/* ═══════════════════════════════════════════════════════════════════════════
+   ★ v799 · LH_TOUR — imersão guiada dentro da própria ferramenta
+   11/09/2026
+
+   Por que tour e não vídeo: vídeo gravado hoje fica velho quando a tela muda —
+   foi o que aconteceu com os tutoriais atuais. O tour roda na tela de agora,
+   sempre. Não pesa nada, não precisa de gravação nem edição, e termina com o
+   contador DENTRO da calculadora, com os campos preenchidos — é só trocar pelos
+   dados do cliente dele e clicar.
+
+   E o cadeado funciona junto: se um passo cair numa tela que o plano não cobre,
+   o tour mostra o convite em vez de travar. Vídeo não faz isso.
+
+   Desenho:
+   - roteiro é DADO, não código (LH_TOUR.ROTEIROS). Trocar texto não mexe no motor.
+   - cada passo é um ato: abrir tela, digitar, escolher, clicar, explicar, esperar.
+   - digitação caractere a caractere, na velocidade de quem digita — o contador
+     precisa ver o campo sendo preenchido para saber onde fica.
+   - pausar, voltar, pular e sair sempre disponíveis. Contador é interrompido.
+   - a Jornada é um iframe com srcdoc (mesma origem), então o tour alcança os
+     campos lá dentro. Se um dia virar endereço externo, o passo 'dentro' para de
+     funcionar e o tour segue com o balão por cima — sem quebrar.
+   ═══════════════════════════════════════════════════════════════════════════ */
+window.LH_TOUR = (function(){
+  'use strict';
+
+  var estado = { rodando:false, pausado:false, roteiro:null, passo:0, timer:null, saindo:false };
+  var UI = {};
+
+  /* ── documento alvo: a página ou o miolo de um iframe ─────────────────── */
+  function docDe(escopo){
+    if(!escopo) return document;
+    try{
+      var fr = document.getElementById(escopo);
+      return (fr && fr.contentDocument) ? fr.contentDocument : document;
+    }catch(e){ return document; }   /* iframe de outra origem: segue por fora */
+  }
+  function achar(sel, escopo){
+    try{ return docDe(escopo).querySelector(sel); }catch(e){ return null; }
+  }
+
+  /* ── camada visual ────────────────────────────────────────────────────── */
+  function montarUI(){
+    if(UI.caixa) return;
+    var d = document.createElement('div');
+    d.id = 'lh-tour-ui';
+    d.innerHTML =
+      '<div id="lh-tour-foco" style="position:fixed;pointer-events:none;z-index:99998;border-radius:10px;'
+      + 'box-shadow:0 0 0 3px rgba(201,162,39,.9),0 0 0 9999px rgba(4,9,18,.62);transition:all .35s cubic-bezier(.4,0,.2,1);opacity:0"></div>'
+      + '<div id="lh-tour-balao" style="position:fixed;z-index:99999;max-width:340px;background:#0F1B2E;'
+      + 'border:1px solid rgba(201,162,39,.5);border-radius:12px;padding:15px 17px;box-shadow:0 18px 50px rgba(0,0,0,.6);'
+      + 'font-family:Inter,sans-serif;color:#e8edf5;font-size:.88em;line-height:1.5;opacity:0;transition:opacity .3s">'
+      +   '<div id="lh-tour-titulo" style="font-weight:800;color:#c9a227;font-size:.95em;margin-bottom:5px"></div>'
+      +   '<div id="lh-tour-texto"></div>'
+      +   '<div style="display:flex;align-items:center;gap:8px;margin-top:13px;padding-top:11px;border-top:1px solid rgba(255,255,255,.09)">'
+      +     '<span id="lh-tour-conta" style="font-size:.72em;color:#8a97a8;flex:1"></span>'
+      +     '<button onclick="LH_TOUR.voltar()" title="Voltar" style="background:rgba(255,255,255,.07);color:#cfd8e6;border:0;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:.8em">←</button>'
+      +     '<button id="lh-tour-pausa" onclick="LH_TOUR.pausar()" style="background:rgba(255,255,255,.07);color:#cfd8e6;border:0;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:.8em">Pausar</button>'
+      +     '<button onclick="LH_TOUR.proximo()" style="background:#c9a227;color:#0c1628;border:0;border-radius:6px;padding:5px 12px;cursor:pointer;font-weight:700;font-size:.8em">Próximo →</button>'
+      +     '<button onclick="LH_TOUR.sair()" title="Sair do tour" style="background:none;color:#8a97a8;border:0;cursor:pointer;font-size:1.05em;padding:0 3px">×</button>'
+      +   '</div></div>';
+    document.body.appendChild(d);
+    UI.caixa  = d;
+    UI.foco   = document.getElementById('lh-tour-foco');
+    UI.balao  = document.getElementById('lh-tour-balao');
+    UI.titulo = document.getElementById('lh-tour-titulo');
+    UI.texto  = document.getElementById('lh-tour-texto');
+    UI.conta  = document.getElementById('lh-tour-conta');
+    UI.pausa  = document.getElementById('lh-tour-pausa');
+  }
+
+  /* posição do alvo, somando o deslocamento do iframe quando for o caso */
+  function caixaDe(el, escopo){
+    var r = el.getBoundingClientRect();
+    if(escopo){
+      var fr = document.getElementById(escopo);
+      if(fr){ var fb = fr.getBoundingClientRect();
+        return { top:r.top+fb.top, left:r.left+fb.left, width:r.width, height:r.height, bottom:r.bottom+fb.top }; }
+    }
+    return { top:r.top, left:r.left, width:r.width, height:r.height, bottom:r.bottom };
+  }
+
+  function focar(el, escopo){
+    montarUI();
+    if(!el){ UI.foco.style.opacity = '0'; return null; }
+    try{ el.scrollIntoView({ behavior:'smooth', block:'center' }); }catch(e){}
+    var c = caixaDe(el, escopo), p = 6;
+    UI.foco.style.opacity = '1';
+    UI.foco.style.top    = (c.top - p) + 'px';
+    UI.foco.style.left   = (c.left - p) + 'px';
+    UI.foco.style.width  = (c.width + p*2) + 'px';
+    UI.foco.style.height = (c.height + p*2) + 'px';
+    return c;
+  }
+
+  function balao(titulo, texto, c){
+    montarUI();
+    UI.titulo.textContent = titulo || '';
+    UI.titulo.style.display = titulo ? 'block' : 'none';
+    UI.texto.innerHTML = texto || '';
+    /* o balão também serve para avisos fora do roteiro (tour bloqueado por plano,
+       fim do tour) — sem passo para contar. Ler estado.roteiro aqui quebrava. */
+    var temRoteiro = estado.roteiro && estado.roteiro.passos;
+    UI.conta.textContent = temRoteiro ? ('Passo ' + (estado.passo + 1) + ' de ' + estado.roteiro.passos.length) : '';
+    UI.balao.style.opacity = '1';
+    var lg = 340, al = UI.balao.offsetHeight || 150;
+    var top, left;
+    if(c){
+      top  = (c.bottom + 14 + al > window.innerHeight) ? Math.max(14, c.top - al - 14) : c.bottom + 14;
+      left = Math.min(Math.max(14, c.left), window.innerWidth - lg - 14);
+    } else {
+      top  = window.innerHeight/2 - al/2;
+      left = window.innerWidth/2 - lg/2;
+    }
+    UI.balao.style.top = top + 'px';
+    UI.balao.style.left = left + 'px';
+  }
+
+  /* ── atos ─────────────────────────────────────────────────────────────── */
+  function disparar(el, tipos){
+    var d = docDe(null);
+    (tipos||['input','change']).forEach(function(t){
+      try{ el.dispatchEvent(new (el.ownerDocument.defaultView || window).Event(t, {bubbles:true})); }catch(e){}
+    });
+  }
+
+  function digitar(el, valor, escopo, pronto){
+    var txt = String(valor), i = 0;
+    el.value = '';
+    try{ el.focus(); }catch(e){}
+    (function bate(){
+      if(estado.saindo) return;
+      if(estado.pausado){ estado.timer = setTimeout(bate, 220); return; }
+      if(i >= txt.length){ disparar(el); return pronto && pronto(); }
+      el.value += txt[i++];
+      disparar(el, ['input']);
+      estado.timer = setTimeout(bate, 55);
+    })();
+  }
+
+  function executar(p, pronto){
+    var escopo = p.escopo || null;
+    var el = p.alvo ? achar(p.alvo, escopo) : null;
+
+    if(p.abrir){
+      try{ if(typeof abrirPagina === 'function') abrirPagina(p.abrir, null); }catch(e){}
+      return setTimeout(function(){
+        var e2 = p.alvo ? achar(p.alvo, escopo) : null;
+        balao(p.titulo, p.texto, focar(e2, escopo));
+        pronto && pronto();
+      }, 550);
+    }
+
+    /* alvo ainda não existe (tela pesada, iframe carregando): tenta de novo */
+    if(p.alvo && !el){
+      if(!p._tentou){ p._tentou = 1; return setTimeout(function(){ executar(p, pronto); }, 700); }
+      balao(p.titulo, p.texto, null);   /* desistiu do foco, mas explica assim mesmo */
+      return pronto && pronto();
+    }
+
+    var c = focar(el, escopo);
+    balao(p.titulo, p.texto, c);
+
+    if(p.digitar != null && el) return digitar(el, p.digitar, escopo, pronto);
+
+    if(p.escolher != null && el){
+      el.value = p.escolher; disparar(el);
+      return setTimeout(function(){ pronto && pronto(); }, 300);
+    }
+
+    if(p.clicar && el){
+      return setTimeout(function(){
+        try{ el.click(); }catch(e){}
+        setTimeout(function(){ pronto && pronto(); }, p.espera || 900);
+      }, 500);
+    }
+
+    setTimeout(function(){ pronto && pronto(); }, 200);
+  }
+
+  /* ── condução ─────────────────────────────────────────────────────────── */
+  function tocar(){
+    if(estado.saindo || !estado.roteiro) return;
+    var p = estado.roteiro.passos[estado.passo];
+    if(!p) return fim();
+    executar(p, function(){
+      if(estado.saindo || estado.pausado) return;
+      var pausa = p.pausa != null ? p.pausa : 2600;
+      estado.timer = setTimeout(function(){
+        if(estado.pausado || estado.saindo) return;
+        estado.passo++; tocar();
+      }, pausa);
+    });
+  }
+
+  function fim(){
+    montarUI();
+    UI.foco.style.opacity = '0';
+    var r = estado.roteiro, prox = r && r.proximo;
+    balao('Tour concluído',
+      (r && r.fecho ? r.fecho : 'Agora troque pelos dados de um cliente seu e calcule.')
+      + (prox ? '<div style="margin-top:11px"><a href="javascript:void(0)" onclick="LH_TOUR.iniciar(\'' + prox + '\')" style="color:#c9a227;font-weight:700">Próximo tour: ' + (ROTEIROS[prox] ? ROTEIROS[prox].nome : prox) + ' →</a></div>' : ''),
+      null);
+    estado.rodando = false;
+  }
+
+  /* ── API ──────────────────────────────────────────────────────────────── */
+  function iniciar(id){
+    var r = ROTEIROS[id];
+    if(!r){ try{ console.warn('[LH_TOUR] roteiro inexistente:', id); }catch(e){} return false; }
+    /* o plano cobre a tela deste tour? */
+    if(r.exige && window.LH_PLANO && LH_PLANO.carregado && LH_PLANO.carregado() && !LH_PLANO.liberado(r.exige)){
+      montarUI();
+      balao('Este tour é do plano ' + LH_PLANO.rotuloDe(LH_PLANO.planoDe(r.exige)),
+        'A tela deste tour não está no seu plano atual. Abra-a pelo menu para ver as condições.', null);
+      UI.foco.style.opacity = '0';
+      return false;
+    }
+    sair(true);
+    estado = { rodando:true, pausado:false, roteiro:r, passo:0, timer:null, saindo:false };
+    r.passos.forEach(function(p){ delete p._tentou; });
+    montarUI();
+    tocar();
+    return true;
+  }
+  function pausar(){
+    estado.pausado = !estado.pausado;
+    if(UI.pausa) UI.pausa.textContent = estado.pausado ? 'Continuar' : 'Pausar';
+    if(!estado.pausado) tocar();
+  }
+  function proximo(){ clearTimeout(estado.timer); estado.pausado=false; if(UI.pausa) UI.pausa.textContent='Pausar'; estado.passo++; tocar(); }
+  function voltar(){ clearTimeout(estado.timer); estado.pausado=false; if(UI.pausa) UI.pausa.textContent='Pausar'; estado.passo=Math.max(0, estado.passo-1); tocar(); }
+  function sair(silencioso){
+    estado.saindo = true; clearTimeout(estado.timer);
+    if(UI.caixa){ UI.foco.style.opacity='0'; UI.balao.style.opacity='0'; }
+    estado.rodando = false;
+    if(!silencioso) estado.roteiro = null;
+  }
+
+  var ROTEIROS = {};
+  function registrar(id, r){ ROTEIROS[id] = r; }
+
+  return { iniciar:iniciar, pausar:pausar, proximo:proximo, voltar:voltar, sair:sair,
+           registrar:registrar, ROTEIROS:ROTEIROS,
+           rodando:function(){ return estado.rodando; } };
+})();
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ★ v799 · ROTEIROS DOS TOURS
+   O caso é o mesmo nos três: prestadora de serviços de TI, R$ 1,2 milhão ao ano,
+   três sócios. Escolhido porque dá o empate técnico de 0,24% entre Simples e
+   Lucro Real — resultado que mostra a ferramenta pensando, não só somando.
+
+   O texto aqui é DADO. Mudar a explicação não mexe no motor.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1 · SPLIT PAYMENT — a dor que chega primeiro ──────────────────────── */
+LH_TOUR.registrar('split', {
+  nome: 'Split Payment · o dinheiro que sai na hora',
+  exige: 'c01',
+  proximo: 'regime',
+  fecho: 'Agora troque pelo faturamento de um cliente seu. O número que importa é o de 2029 — é quando o buraco de caixa fica visível no extrato.',
+  passos: [
+    { abrir:'c01', titulo:'Split Payment', pausa:4200,
+      texto:'A partir de 2027 o imposto sai da conta <b>no momento da venda</b>, não mais no mês seguinte. Quem vive do prazo entre receber e recolher perde esse prazo. Vamos ver quanto isso custa.' },
+
+    { alvo:'#c01_faturamento', digitar:'1200000', titulo:'Faturamento anual', pausa:3000,
+      texto:'Uma prestadora de serviços de TI, R$ 1,2 milhão por ano. Use o faturamento anual, não o mensal.' },
+
+    { alvo:'#c01_regime', escolher:'lp', titulo:'Regime atual', pausa:3200,
+      texto:'Lucro Presumido. O regime importa porque define quanto imposto está embutido no preço hoje — e é esse valor que passa a sair na hora.' },
+
+    { alvo:'#c01_prazo_recolhimento', digitar:'25', titulo:'Prazo de recolhimento', pausa:4000,
+      texto:'Quantos dias hoje entre receber do cliente e recolher o imposto. É <b>esse prazo que desaparece</b> — é de onde vem o aperto de caixa, não de aumento de alíquota.' },
+
+    { alvo:'#c01_pct_incidencia', digitar:'100', titulo:'Quanto passa pelo split', pausa:3400,
+      texto:'Percentual da receita que será recolhido na liquidação. Cem por cento para quem recebe tudo por meio eletrônico. Se o cliente recebe muito em dinheiro, reduza.' },
+
+    { alvo:'button[onclick*="calcularC01"]', clicar:true, espera:1600, titulo:'Calcular', pausa:1200,
+      texto:'O cálculo roda no servidor Lionheart — não fica no seu navegador.' },
+
+    { alvo:'#kpi-c01', titulo:'A necessidade de capital de giro', pausa:5200,
+      texto:'Aqui está quanto caixa a mais a empresa precisa para sustentar a mesma operação. <b>Nada mudou no negócio dela</b> — mudou só quando o imposto sai.' },
+
+    { alvo:'#res-c01', titulo:'A curva até 2033', pausa:5000,
+      texto:'Repare que o impacto não chega de uma vez: começa pequeno em 2027 e cresce até 2033. É o que dá tempo de negociar prazo com fornecedor e linha de crédito preventiva — desde que se saiba disso agora.' }
+  ]
+});
+
+/* ── 2 · REGIME ÓTIMO — a decisão que decorre ──────────────────────────── */
+LH_TOUR.registrar('regime', {
+  nome: 'Regime Ótimo · Simples, Presumido ou Real',
+  exige: 'c05',
+  proximo: 'jornada',
+  fecho: 'Rode com um cliente seu. E preste atenção no aviso do Fator R: ele já evitou enquadramento errado em escritório que fazia a conta na mão.',
+  passos: [
+    { abrir:'c05', titulo:'Regime Ótimo', pausa:4200,
+      texto:'A mesma empresa do tour anterior. Agora a pergunta é outra: <b>ela está no regime certo?</b> A ferramenta compara Simples, Híbrido, Presumido e Real com os mesmos dados.' },
+
+    { alvo:'#c05_fat', digitar:'1200000', titulo:'Faturamento anual', pausa:2600,
+      texto:'R$ 1,2 milhão — o mesmo do Split Payment.' },
+
+    { alvo:'#c05_seg', escolher:'servicos_tec', titulo:'Segmento', pausa:3600,
+      texto:'Serviços técnicos. O segmento define o Anexo do Simples e a presunção do Lucro Presumido — errar aqui erra tudo o que vem depois.' },
+
+    { alvo:'#c05_ano', escolher:'2027', titulo:'Ano da simulação', pausa:3000,
+      texto:'2027, quando a CBS entra plena e o PIS/COFINS acaba. A decisão de regime precisa ser tomada olhando para lá, não para hoje.' },
+
+    { alvo:'#c05_prolabore', digitar:'15000', titulo:'Pró-labore por sócio', pausa:4600,
+      texto:'<b>Por sócio, não o total.</b> É o erro mais comum, e muda o Anexo: o Fator R considera a folha efetiva, e multiplicar por três muda o enquadramento inteiro.' },
+
+    { alvo:'#c05_socios', digitar:'3', titulo:'Número de sócios', pausa:3200,
+      texto:'Três sócios recebendo pró-labore. A ferramenta multiplica e avisa se a migração de Anexo depender disso.' },
+
+    { alvo:'#c05_custos', digitar:'25000', titulo:'Custos mensais com crédito', pausa:3000,
+      texto:'Compras e despesas que geram crédito de CBS/IBS. É o que diferencia o Lucro Real dos demais em 2027.' },
+
+    { alvo:'button[onclick*="calcularC05"]', clicar:true, espera:2000, titulo:'Calcular', pausa:1200,
+      texto:'Quatro regimes calculados de uma vez, com a curva do ano escolhido.' },
+
+    { alvo:'#kpi-c05', titulo:'O regime recomendado', pausa:5400,
+      texto:'Repare no que a ferramenta fez: Simples e Lucro Real ficaram separados por <b>0,24%</b>. Abaixo de 2%, ela avisa que é <i>empate técnico</i> — e que quem decide são os critérios qualitativos, não a planilha.' },
+
+    { alvo:'#res-c05', titulo:'A decisão é sua', pausa:5000,
+      texto:'A ferramenta mostra a conta e o aviso; quem conhece o cliente e assina o parecer é você. Essa é a diferença entre uma calculadora e um consultor com calculadora.' }
+  ]
+});
+
+/* ── 3 · JORNADA DO CLIENTE — a visão de carteira ──────────────────────── */
+LH_TOUR.registrar('jornada', {
+  nome: 'Jornada do Cliente · o que vender, e quando',
+  exige: 'jornada',
+  proximo: null,
+  fecho: 'A Jornada não é sobre um cliente — é sobre a sua carteira inteira. É o que transforma 123 análises numa agenda comercial com data.',
+  passos: [
+    { abrir:'jornada', titulo:'Jornada do Cliente', pausa:5200,
+      texto:'As duas telas anteriores respondem <i>o que fazer com este cliente</i>. Esta responde outra pergunta: <b>o que vender, para quem, e em que ano</b> — da preparação de 2026 até a extinção do sistema antigo em 2033.' },
+
+    { escopo:'jornadaFrame', alvo:'select, input', titulo:'O perfil do cliente', pausa:4600,
+      texto:'Informe setor, regime e porte. A Jornada cruza isso com 123 serviços catalogados e devolve só o que faz sentido para este cliente.' },
+
+    { escopo:'jornadaFrame', alvo:'table, .grid, canvas', titulo:'A curva de cada serviço', pausa:5600,
+      texto:'Cada serviço tem uma janela própria. A recuperação de PIS/COFINS decai até 2031 — porque o crédito prescreve em cinco anos. Já o saldo credor de ICMS só aparece em 2032, quando começa a habilitação em 240 parcelas.' },
+
+    { escopo:'jornadaFrame', alvo:'table, .grid, canvas', titulo:'Por que isso importa', pausa:5600,
+      texto:'Vender recuperação em 2032 é tarde — o crédito prescreveu. Vender reprecificação em 2033 é tarde — o contrato já quebrou. <b>A Jornada diz a hora certa de cada conversa</b>, e essa hora tem prazo de validade.' },
+
+    { titulo:'O ciclo completo', pausa:6000,
+      texto:'Split Payment mostra a dor. Regime Ótimo mostra a decisão. A Jornada mostra a agenda. Junte ao Diagnóstico, que roda tudo isso de uma vez para um cliente, e você tem a proposta comercial pronta antes da reunião.' }
+  ]
+});
+
 setTimeout(function(){ try{ LH_ADMIN.instalar(); }catch(e){} }, 2200);
 
 setTimeout(function(){ try{ LH_PLANO.carregar(); }catch(e){} }, 1500);
@@ -17957,6 +18309,38 @@ function ctcCalc(){
        v25 — TOUR GUIADO (placeholder em breve)
        ══════════════════════════════════════════════ -->
   <div class="page" id="page-tour">
+  <!-- ★ v799 · TOURS GUIADOS. A ferramenta se preenche sozinha e explica cada campo.
+       Não é vídeo: roda na tela de agora, então nunca desatualiza — e termina com o
+       contador dentro da calculadora, com os campos prontos para ele trocar pelos
+       dados de um cliente dele. -->
+  <div style="margin:18px 0 26px">
+    <div style="font-family:Syne,Inter,sans-serif;font-size:1.15em;font-weight:800;color:var(--gold);margin-bottom:4px">Imersão guiada · 3 tours</div>
+    <div style="font-size:.88em;color:var(--text2);margin-bottom:14px;max-width:620px;line-height:1.5">
+      A ferramenta se preenche sozinha e explica cada passo. Pode pausar, voltar ou sair a qualquer momento.
+      O caso é o mesmo nos três: prestadora de serviços de TI, R$ 1,2 milhão por ano, três sócios.
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px">
+      <div style="background:var(--bg2);border:1px solid rgba(201,162,39,.28);border-radius:11px;padding:16px">
+        <div style="font-size:.68em;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);margin-bottom:5px">Tour 1 · 2 min</div>
+        <div style="font-weight:800;color:var(--text1);font-size:1.02em;margin-bottom:5px">Split Payment</div>
+        <div style="font-size:.82em;color:var(--text2);line-height:1.5;margin-bottom:12px">A partir de 2027 o imposto sai da conta na hora da venda. Quanto de caixa isso custa?</div>
+        <button onclick="LH_TOUR.iniciar('split')" style="width:100%;padding:9px;background:linear-gradient(135deg,#c9a227,#a8891f);color:#0c1628;border:0;border-radius:8px;font-weight:800;cursor:pointer;font-size:.86em">Começar</button>
+      </div>
+      <div style="background:var(--bg2);border:1px solid rgba(201,162,39,.28);border-radius:11px;padding:16px">
+        <div style="font-size:.68em;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);margin-bottom:5px">Tour 2 · 3 min</div>
+        <div style="font-weight:800;color:var(--text1);font-size:1.02em;margin-bottom:5px">Regime Ótimo</div>
+        <div style="font-size:.82em;color:var(--text2);line-height:1.5;margin-bottom:12px">Simples, Híbrido, Presumido ou Real — e o aviso do Fator R que evita enquadramento errado.</div>
+        <button onclick="LH_TOUR.iniciar('regime')" style="width:100%;padding:9px;background:linear-gradient(135deg,#c9a227,#a8891f);color:#0c1628;border:0;border-radius:8px;font-weight:800;cursor:pointer;font-size:.86em">Começar</button>
+      </div>
+      <div style="background:var(--bg2);border:1px solid rgba(201,162,39,.28);border-radius:11px;padding:16px">
+        <div style="font-size:.68em;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);margin-bottom:5px">Tour 3 · 2 min</div>
+        <div style="font-weight:800;color:var(--text1);font-size:1.02em;margin-bottom:5px">Jornada do Cliente</div>
+        <div style="font-size:.82em;color:var(--text2);line-height:1.5;margin-bottom:12px">O que vender, para quem e em que ano — de 2026 até a extinção do sistema antigo.</div>
+        <button onclick="LH_TOUR.iniciar('jornada')" style="width:100%;padding:9px;background:linear-gradient(135deg,#c9a227,#a8891f);color:#0c1628;border:0;border-radius:8px;font-weight:800;cursor:pointer;font-size:.86em">Começar</button>
+      </div>
+    </div>
+  </div>
+
     <div style="background:linear-gradient(135deg,rgba(8,145,178,0.20),rgba(6,182,212,0.10));border:1.5px solid rgba(6,182,212,0.3);border-radius:14px;padding:24px 28px;margin-bottom:20px;">
       <div style="font-size:1.7em;font-weight:800;color:var(--gold);font-family:'Syne',sans-serif;margin-bottom:6px;">Onboarding em 10 minutos</div>
       <div style="font-size:0.92em;color:var(--text2);max-width:760px;line-height:1.6;">5 passos guiados para extrair valor real da ferramenta no primeiro uso. Não pula passos — cada um desbloqueia o próximo.</div>
