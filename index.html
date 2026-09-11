@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v794";</script>
+<body><script>window.LH_VERSAO="v795";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4375,6 +4375,24 @@ Troque a URL em LH_LOGIN_URL pela URL do seu Apps Script publicado.
       style="width:100%;background:linear-gradient(135deg,#c9a227,#e0b94a);color:#0a1628;border:none;border-radius:8px;padding:12px;font-weight:800;font-size:0.95em;cursor:pointer;font-family:Inter,sans-serif;">Entrar</button>
 
     <div id="lh-login-msg" style="margin-top:14px;text-align:center;font-size:0.82em;color:#ff6b6b;min-height:18px;"></div>
+
+    <!-- ★ v795 · PORTA DE CADASTRO. Até aqui só entrava quem o Chepe criasse na mão.
+         O plano Livre com o Diagnóstico aberto é o que faz a ferramenta se vender: cada
+         análise que o contador não tem mostra "Disponível no plano Consultoria". Sem
+         porta de entrada, esse motor nunca liga. -->
+    <div id="lh-cad-campos" style="display:none">
+      <label style="display:block;color:#9fb0c8;font-size:0.74em;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 5px;">Seu nome</label>
+      <input id="lh-cad-nome" type="text" autocomplete="name" placeholder="Nome e sobrenome" style="width:100%;box-sizing:border-box;background:#0a1628;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 13px;color:#e8edf5;font-size:0.92em;outline:none;">
+      <label style="display:block;color:#9fb0c8;font-size:0.74em;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 5px;">Escritório <span style="text-transform:none;opacity:.6">(opcional)</span></label>
+      <input id="lh-cad-empresa" type="text" autocomplete="organization" placeholder="Nome do escritório" style="width:100%;box-sizing:border-box;background:#0a1628;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 13px;color:#e8edf5;font-size:0.92em;outline:none;">
+      <button id="lh-cad-btn" onclick="lhCriarConta()" style="width:100%;margin-top:18px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;padding:12px;font-weight:800;font-size:0.95em;cursor:pointer;font-family:Inter,sans-serif;">Criar minha conta grátis</button>
+      <div style="margin-top:10px;text-align:center;font-size:0.72em;color:#9fb0c8;line-height:1.5">Plano <b style="color:#c9a227">Livre</b>, sem cartão.<br>O Diagnóstico já vem liberado.</div>
+    </div>
+
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);text-align:center;font-size:0.8em;color:#9fb0c8;">
+      <span id="lh-cad-pergunta">Ainda não tem conta?</span>
+      <a href="javascript:void(0)" id="lh-cad-link" onclick="lhAlternarCadastro()" style="color:#c9a227;font-weight:700;text-decoration:none">Criar conta grátis</a>
+    </div>
   </div>
 </div>
 
@@ -4471,6 +4489,67 @@ function lhFazerLogin(){
 document.getElementById('lh-login-senha').addEventListener('keydown', function(e){
   if(e.key === 'Enter') lhFazerLogin();
 });
+
+/* ★ v795 · CADASTRO — alterna a porta e cria a conta. O servidor (`cadastrar`) cria o
+   login no Auth e a ficha comercial no mesmo passo; se a segunda falhar, desfaz a
+   primeira. Aqui é só a tela. */
+var LH_CAD_URL = "https://dilrjxsbcejcgprajayo.supabase.co/functions/v1/cadastrar";
+var _lhModoCadastro = false;
+
+function lhAlternarCadastro(){
+  _lhModoCadastro = !_lhModoCadastro;
+  var campos = document.getElementById('lh-cad-campos');
+  var btnLogin = document.getElementById('lh-login-btn');
+  var pergunta = document.getElementById('lh-cad-pergunta');
+  var link = document.getElementById('lh-cad-link');
+  var msg = document.getElementById('lh-login-msg');
+  if(msg){ msg.textContent=''; msg.style.color='#ff6b6b'; }
+  if(campos)   campos.style.display   = _lhModoCadastro ? 'block' : 'none';
+  if(btnLogin) btnLogin.style.display = _lhModoCadastro ? 'none' : 'block';
+  if(pergunta) pergunta.textContent   = _lhModoCadastro ? 'Já tem conta?' : 'Ainda não tem conta?';
+  if(link)     link.textContent       = _lhModoCadastro ? 'Entrar' : 'Criar conta grátis';
+  try{ (document.getElementById(_lhModoCadastro ? 'lh-cad-nome' : 'lh-login-email')||{}).focus(); }catch(e){}
+}
+
+function lhCriarConta(){
+  var nome    = (document.getElementById('lh-cad-nome').value || '').trim();
+  var empresa = (document.getElementById('lh-cad-empresa').value || '').trim();
+  var email   = (document.getElementById('lh-login-email').value || '').trim();
+  var senha   = (document.getElementById('lh-login-senha').value || '');
+  var msg = document.getElementById('lh-login-msg');
+  var btn = document.getElementById('lh-cad-btn');
+  var dizer = function(t, cor){ if(msg){ msg.style.color = cor || '#ff6b6b'; msg.textContent = t; } };
+
+  /* confere aqui o que dá para conferir aqui: erra rápido, sem ida ao servidor */
+  if(nome.length < 3) return dizer('Informe seu nome completo.');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return dizer('Informe um e-mail válido.');
+  if(senha.length < 8) return dizer('A senha precisa de pelo menos 8 caracteres.');
+
+  if(btn){ btn.disabled = true; btn.textContent = 'Criando...'; }
+  dizer('', '#9fb0c8');
+
+  fetch(LH_CAD_URL, { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ nome: nome, email: email, senha: senha, empresa: empresa }) })
+  .then(function(r){ return r.json(); })
+  .then(function(res){
+    if(btn){ btn.disabled = false; btn.textContent = 'Criar minha conta grátis'; }
+    if(!res || !res.ok) return dizer((res && res.motivo) || 'Não foi possível criar a conta.');
+    try{
+      if(res.token){ localStorage.setItem('lh_token', res.token); localStorage.setItem('lh_token_em', String(Date.now())); }
+      localStorage.setItem('lh_nome', res.nome||'');
+      localStorage.setItem('lh_plano', res.plano||'livre');
+      localStorage.setItem('lh_nivel', res.nivel||'livre');
+      sessionStorage.setItem('lh_logado','sim');
+    }catch(e){}
+    dizer('Conta criada. Entrando...', '#10b981');
+    setTimeout(function(){ location.reload(); }, res.token ? 700 : 1400);
+  })
+  .catch(function(){
+    if(btn){ btn.disabled = false; btn.textContent = 'Criar minha conta grátis'; }
+    dizer('Sem conexão com o servidor. Tente de novo.');
+  });
+}
+
 </script>
 
 <!-- 🦁 LIONHEART — TELA DE TROCA DE SENHA (primeiro acesso) -->
