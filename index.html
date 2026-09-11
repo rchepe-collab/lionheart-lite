@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v799";</script>
+<body><script>window.LH_VERSAO="v800";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4485,7 +4485,12 @@ window.LH_ADMIN = (function(){
 window.LH_TOUR = (function(){
   'use strict';
 
-  var estado = { rodando:false, pausado:false, roteiro:null, passo:0, timer:null, saindo:false };
+  /* ★ v800 · 'geracao' invalida os timers de um tour anterior. Sem isso, quem trocasse
+     de tour enquanto o primeiro tinha um setTimeout pendente via a tela ser puxada de
+     volta pelo tour velho — foi o que fez o Regime Ótimo "não abrir" no teste do Chepe. */
+  var geracao = 0;
+  var estado = { rodando:false, pausado:false, roteiro:null, passo:0, timer:null, saindo:false, ger:0 };
+  function atual(g){ return g === geracao && !estado.saindo; }
   var UI = {};
 
   /* ── documento alvo: a página ou o miolo de um iframe ─────────────────── */
@@ -4520,7 +4525,16 @@ window.LH_TOUR = (function(){
       +     '<button onclick="LH_TOUR.proximo()" style="background:#c9a227;color:#0c1628;border:0;border-radius:6px;padding:5px 12px;cursor:pointer;font-weight:700;font-size:.8em">Próximo →</button>'
       +     '<button onclick="LH_TOUR.sair()" title="Sair do tour" style="background:none;color:#8a97a8;border:0;cursor:pointer;font-size:1.05em;padding:0 3px">×</button>'
       +   '</div></div>';
+    /* ★ v800 · clicar em qualquer lugar pausa e continua. O contador quer parar para
+       ler com calma sem caçar o botão, e a área escura ao redor do foco é o alvo natural. */
+    var capa = document.createElement('div');
+    capa.id = 'lh-tour-capa';
+    capa.style.cssText = 'position:fixed;inset:0;z-index:99997;display:none;cursor:pointer';
+    capa.title = 'Clique para pausar ou continuar';
+    capa.onclick = function(){ pausar(); };
+    document.body.appendChild(capa);
     document.body.appendChild(d);
+    UI.capa   = capa;
     UI.caixa  = d;
     UI.foco   = document.getElementById('lh-tour-foco');
     UI.balao  = document.getElementById('lh-tour-balao');
@@ -4605,16 +4619,21 @@ window.LH_TOUR = (function(){
 
     if(p.abrir){
       try{ if(typeof abrirPagina === 'function') abrirPagina(p.abrir, null); }catch(e){}
+      /* ★ v800 · 550 ms não bastavam: o Regime Ótimo tem 39 campos e gráficos, e a
+         tela ainda montava quando o tour procurava o alvo. */
+      var g = geracao;
       return setTimeout(function(){
+        if(!atual(g)) return;
         var e2 = p.alvo ? achar(p.alvo, escopo) : null;
         balao(p.titulo, p.texto, focar(e2, escopo));
         pronto && pronto();
-      }, 550);
+      }, 1100);
     }
 
     /* alvo ainda não existe (tela pesada, iframe carregando): tenta de novo */
     if(p.alvo && !el){
-      if(!p._tentou){ p._tentou = 1; return setTimeout(function(){ executar(p, pronto); }, 700); }
+      p._tentou = (p._tentou || 0) + 1;
+      if(p._tentou <= 4){ var g2 = geracao; return setTimeout(function(){ if(atual(g2)) executar(p, pronto); }, 600); }
       balao(p.titulo, p.texto, null);   /* desistiu do foco, mas explica assim mesmo */
       return pronto && pronto();
     }
@@ -4630,10 +4649,12 @@ window.LH_TOUR = (function(){
     }
 
     if(p.clicar && el){
+      var g3 = geracao;
       return setTimeout(function(){
+        if(!atual(g3)) return;
         try{ el.click(); }catch(e){}
-        setTimeout(function(){ pronto && pronto(); }, p.espera || 900);
-      }, 500);
+        setTimeout(function(){ if(atual(g3)) pronto && pronto(); }, p.espera || 1400);
+      }, 600);
     }
 
     setTimeout(function(){ pronto && pronto(); }, 200);
@@ -4646,7 +4667,12 @@ window.LH_TOUR = (function(){
     if(!p) return fim();
     executar(p, function(){
       if(estado.saindo || estado.pausado) return;
-      var pausa = p.pausa != null ? p.pausa : 2600;
+      /* ★ v800 · o tempo do balão vem do TEXTO, não é fixo. A primeira versão dava
+         2,6 s para tudo e não dava para ler — com razão: 40 palavras em 2,6 s são
+         15 palavras por segundo, o triplo da leitura confortável.
+         Agora: 4,5 s de piso + 0,35 s por palavra, teto de 18 s. */
+      var palavras = String(p.texto||'').replace(/<[^>]+>/g,' ').split(/\s+/).filter(Boolean).length;
+      var pausa = p.pausa != null ? p.pausa : Math.min(18000, 4500 + palavras * 350);
       estado.timer = setTimeout(function(){
         if(estado.pausado || estado.saindo) return;
         estado.passo++; tocar();
@@ -4657,6 +4683,7 @@ window.LH_TOUR = (function(){
   function fim(){
     montarUI();
     UI.foco.style.opacity = '0';
+    if(UI.capa) UI.capa.style.display = 'none';
     var r = estado.roteiro, prox = r && r.proximo;
     balao('Tour concluído',
       (r && r.fecho ? r.fecho : 'Agora troque pelos dados de um cliente seu e calcule.')
@@ -4667,6 +4694,7 @@ window.LH_TOUR = (function(){
 
   /* ── API ──────────────────────────────────────────────────────────────── */
   function iniciar(id){
+    geracao++;                      /* qualquer timer do tour anterior morre aqui */
     var r = ROTEIROS[id];
     if(!r){ try{ console.warn('[LH_TOUR] roteiro inexistente:', id); }catch(e){} return false; }
     /* o plano cobre a tela deste tour? */
@@ -4678,22 +4706,28 @@ window.LH_TOUR = (function(){
       return false;
     }
     sair(true);
-    estado = { rodando:true, pausado:false, roteiro:r, passo:0, timer:null, saindo:false };
+    estado = { rodando:true, pausado:false, roteiro:r, passo:0, timer:null, saindo:false, ger:geracao };
     r.passos.forEach(function(p){ delete p._tentou; });
     montarUI();
+    if(UI.capa) UI.capa.style.display = 'block';
     tocar();
     return true;
   }
   function pausar(){
+    if(!estado.roteiro) return;
     estado.pausado = !estado.pausado;
-    if(UI.pausa) UI.pausa.textContent = estado.pausado ? 'Continuar' : 'Pausar';
+    if(UI.pausa) UI.pausa.textContent = estado.pausado ? '\u25B6 Continuar' : '\u23F8 Pausar';
+    if(UI.foco)  UI.foco.style.boxShadow = estado.pausado
+      ? '0 0 0 3px rgba(16,185,129,.95),0 0 0 9999px rgba(4,9,18,.62)'
+      : '0 0 0 3px rgba(201,162,39,.9),0 0 0 9999px rgba(4,9,18,.62)';
     if(!estado.pausado) tocar();
   }
   function proximo(){ clearTimeout(estado.timer); estado.pausado=false; if(UI.pausa) UI.pausa.textContent='Pausar'; estado.passo++; tocar(); }
   function voltar(){ clearTimeout(estado.timer); estado.pausado=false; if(UI.pausa) UI.pausa.textContent='Pausar'; estado.passo=Math.max(0, estado.passo-1); tocar(); }
   function sair(silencioso){
-    estado.saindo = true; clearTimeout(estado.timer);
+    estado.saindo = true; geracao++; clearTimeout(estado.timer);
     if(UI.caixa){ UI.foco.style.opacity='0'; UI.balao.style.opacity='0'; }
+    if(UI.capa) UI.capa.style.display='none';
     estado.rodando = false;
     if(!silencioso) estado.roteiro = null;
   }
@@ -4722,28 +4756,28 @@ LH_TOUR.registrar('split', {
   proximo: 'regime',
   fecho: 'Agora troque pelo faturamento de um cliente seu. O número que importa é o de 2029 — é quando o buraco de caixa fica visível no extrato.',
   passos: [
-    { abrir:'c01', titulo:'Split Payment', pausa:4200,
+    { abrir:'c01', titulo:'Split Payment',
       texto:'A partir de 2027 o imposto sai da conta <b>no momento da venda</b>, não mais no mês seguinte. Quem vive do prazo entre receber e recolher perde esse prazo. Vamos ver quanto isso custa.' },
 
-    { alvo:'#c01_faturamento', digitar:'1200000', titulo:'Faturamento anual', pausa:3000,
+    { alvo:'#c01_faturamento', digitar:'1200000', titulo:'Faturamento anual',
       texto:'Uma prestadora de serviços de TI, R$ 1,2 milhão por ano. Use o faturamento anual, não o mensal.' },
 
-    { alvo:'#c01_regime', escolher:'lp', titulo:'Regime atual', pausa:3200,
+    { alvo:'#c01_regime', escolher:'lp', titulo:'Regime atual',
       texto:'Lucro Presumido. O regime importa porque define quanto imposto está embutido no preço hoje — e é esse valor que passa a sair na hora.' },
 
-    { alvo:'#c01_prazo_recolhimento', digitar:'25', titulo:'Prazo de recolhimento', pausa:4000,
+    { alvo:'#c01_prazo_recolhimento', digitar:'25', titulo:'Prazo de recolhimento',
       texto:'Quantos dias hoje entre receber do cliente e recolher o imposto. É <b>esse prazo que desaparece</b> — é de onde vem o aperto de caixa, não de aumento de alíquota.' },
 
-    { alvo:'#c01_pct_incidencia', digitar:'100', titulo:'Quanto passa pelo split', pausa:3400,
+    { alvo:'#c01_pct_incidencia', digitar:'100', titulo:'Quanto passa pelo split',
       texto:'Percentual da receita que será recolhido na liquidação. Cem por cento para quem recebe tudo por meio eletrônico. Se o cliente recebe muito em dinheiro, reduza.' },
 
-    { alvo:'button[onclick*="calcularC01"]', clicar:true, espera:1600, titulo:'Calcular', pausa:1200,
+    { alvo:'button[onclick*="calcularC01"]', clicar:true, espera:1600, titulo:'Calcular',
       texto:'O cálculo roda no servidor Lionheart — não fica no seu navegador.' },
 
-    { alvo:'#kpi-c01', titulo:'A necessidade de capital de giro', pausa:5200,
+    { alvo:'#kpi-c01', titulo:'A necessidade de capital de giro',
       texto:'Aqui está quanto caixa a mais a empresa precisa para sustentar a mesma operação. <b>Nada mudou no negócio dela</b> — mudou só quando o imposto sai.' },
 
-    { alvo:'#res-c01', titulo:'A curva até 2033', pausa:5000,
+    { alvo:'#res-c01', titulo:'A curva até 2033',
       texto:'Repare que o impacto não chega de uma vez: começa pequeno em 2027 e cresce até 2033. É o que dá tempo de negociar prazo com fornecedor e linha de crédito preventiva — desde que se saiba disso agora.' }
   ]
 });
@@ -4755,61 +4789,77 @@ LH_TOUR.registrar('regime', {
   proximo: 'jornada',
   fecho: 'Rode com um cliente seu. E preste atenção no aviso do Fator R: ele já evitou enquadramento errado em escritório que fazia a conta na mão.',
   passos: [
-    { abrir:'c05', titulo:'Regime Ótimo', pausa:4200,
+    { abrir:'c05', titulo:'Regime Ótimo',
       texto:'A mesma empresa do tour anterior. Agora a pergunta é outra: <b>ela está no regime certo?</b> A ferramenta compara Simples, Híbrido, Presumido e Real com os mesmos dados.' },
 
-    { alvo:'#c05_fat', digitar:'1200000', titulo:'Faturamento anual', pausa:2600,
+    { alvo:'#c05_fat', digitar:'1200000', titulo:'Faturamento anual',
       texto:'R$ 1,2 milhão — o mesmo do Split Payment.' },
 
-    { alvo:'#c05_seg', escolher:'servicos_tec', titulo:'Segmento', pausa:3600,
+    { alvo:'#c05_seg', escolher:'servicos_tec', titulo:'Segmento',
       texto:'Serviços técnicos. O segmento define o Anexo do Simples e a presunção do Lucro Presumido — errar aqui erra tudo o que vem depois.' },
 
-    { alvo:'#c05_ano', escolher:'2027', titulo:'Ano da simulação', pausa:3000,
+    { alvo:'#c05_ano', escolher:'2027', titulo:'Ano da simulação',
       texto:'2027, quando a CBS entra plena e o PIS/COFINS acaba. A decisão de regime precisa ser tomada olhando para lá, não para hoje.' },
 
-    { alvo:'#c05_prolabore', digitar:'15000', titulo:'Pró-labore por sócio', pausa:4600,
+    { alvo:'#c05_prolabore', digitar:'15000', titulo:'Pró-labore por sócio',
       texto:'<b>Por sócio, não o total.</b> É o erro mais comum, e muda o Anexo: o Fator R considera a folha efetiva, e multiplicar por três muda o enquadramento inteiro.' },
 
-    { alvo:'#c05_socios', digitar:'3', titulo:'Número de sócios', pausa:3200,
+    { alvo:'#c05_socios', digitar:'3', titulo:'Número de sócios',
       texto:'Três sócios recebendo pró-labore. A ferramenta multiplica e avisa se a migração de Anexo depender disso.' },
 
-    { alvo:'#c05_custos', digitar:'25000', titulo:'Custos mensais com crédito', pausa:3000,
+    { alvo:'#c05_custos', digitar:'25000', titulo:'Custos mensais com crédito',
       texto:'Compras e despesas que geram crédito de CBS/IBS. É o que diferencia o Lucro Real dos demais em 2027.' },
 
-    { alvo:'button[onclick*="calcularC05"]', clicar:true, espera:2000, titulo:'Calcular', pausa:1200,
+    { alvo:'button[onclick*="calcularC05"]', clicar:true, espera:2000, titulo:'Calcular',
       texto:'Quatro regimes calculados de uma vez, com a curva do ano escolhido.' },
 
-    { alvo:'#kpi-c05', titulo:'O regime recomendado', pausa:5400,
+    { alvo:'#kpi-c05', titulo:'O regime recomendado',
       texto:'Repare no que a ferramenta fez: Simples e Lucro Real ficaram separados por <b>0,24%</b>. Abaixo de 2%, ela avisa que é <i>empate técnico</i> — e que quem decide são os critérios qualitativos, não a planilha.' },
 
-    { alvo:'#res-c05', titulo:'A decisão é sua', pausa:5000,
+    { alvo:'#res-c05', titulo:'A decisão é sua',
       texto:'A ferramenta mostra a conta e o aviso; quem conhece o cliente e assina o parecer é você. Essa é a diferença entre uma calculadora e um consultor com calculadora.' }
   ]
 });
 
 /* ── 3 · JORNADA DO CLIENTE — a visão de carteira ──────────────────────── */
 LH_TOUR.registrar('jornada', {
-  nome: 'Jornada do Cliente · o que vender, e quando',
+  nome: 'Jornada do Cliente · quanto a sua carteira vale até 2033',
   exige: 'jornada',
   proximo: null,
-  fecho: 'A Jornada não é sobre um cliente — é sobre a sua carteira inteira. É o que transforma 123 análises numa agenda comercial com data.',
+  fecho: 'Rode com o perfil de um cliente seu. E depois mude para "Carteira do escritório" e informe a composição real da sua base — é ali que aparece o tamanho da oportunidade que você já tem na mão.',
   passos: [
-    { abrir:'jornada', titulo:'Jornada do Cliente', pausa:5200,
-      texto:'As duas telas anteriores respondem <i>o que fazer com este cliente</i>. Esta responde outra pergunta: <b>o que vender, para quem, e em que ano</b> — da preparação de 2026 até a extinção do sistema antigo em 2033.' },
+    { abrir:'jornada', titulo:'Por que esta tela existe', pausa:9000,
+      texto:'As duas anteriores olham <b>um</b> cliente. Esta responde outra pergunta: <b>quanto a Reforma vale para você, em serviços, até 2033</b>. A Reforma não é um evento — é sete anos de trabalho, e cada ano abre uma frente diferente. Quem enxerga o calendário vende o ano inteiro; quem não enxerga corre atrás do que já passou.' },
 
-    { escopo:'jornadaFrame', alvo:'select, input', titulo:'O perfil do cliente', pausa:4600,
-      texto:'Informe setor, regime e porte. A Jornada cruza isso com 123 serviços catalogados e devolve só o que faz sentido para este cliente.' },
+    { escopo:'jornadaFrame', alvo:'#btn-cli', titulo:'Dois modos, duas perguntas', pausa:9500,
+      texto:'<b>Cliente específico</b> responde: "o que eu posso vender para <i>este</i> cliente, e quando?" <br><br><b>Carteira do escritório</b> responde outra coisa, e é a mais valiosa: "com a base que eu já tenho, quantas frentes de trabalho a Reforma abre para mim?" Começamos pelo cliente.' },
 
-    { escopo:'jornadaFrame', alvo:'table, .grid, canvas', titulo:'A curva de cada serviço', pausa:5600,
-      texto:'Cada serviço tem uma janela própria. A recuperação de PIS/COFINS decai até 2031 — porque o crédito prescreve em cinco anos. Já o saldo credor de ICMS só aparece em 2032, quando começa a habilitação em 240 parcelas.' },
+    { escopo:'jornadaFrame', alvo:'#regime', titulo:'O perfil do cliente', pausa:7000,
+      texto:'Regime, porte e CNAE. A ferramenta cruza isso com o catálogo de serviços e devolve só o que faz sentido para este perfil — não uma lista genérica.' },
 
-    { escopo:'jornadaFrame', alvo:'table, .grid, canvas', titulo:'Por que isso importa', pausa:5600,
-      texto:'Vender recuperação em 2032 é tarde — o crédito prescreveu. Vender reprecificação em 2033 é tarde — o contrato já quebrou. <b>A Jornada diz a hora certa de cada conversa</b>, e essa hora tem prazo de validade.' },
+    { escopo:'jornadaFrame', alvo:'.scale', titulo:'Frio e quente: a régua', pausa:10000,
+      texto:'Esta é a chave para ler a tela. Cada célula é a <b>intensidade da demanda</b> daquele serviço naquele ano — não é valor em reais, é aquecimento. <br><br>Quente significa que a dor está viva e o cliente aceita conversar. Frio significa que ainda não doeu, ou que já passou da hora.' },
 
-    { titulo:'O ciclo completo', pausa:6000,
-      texto:'Split Payment mostra a dor. Regime Ótimo mostra a decisão. A Jornada mostra a agenda. Junte ao Diagnóstico, que roda tudo isso de uma vez para um cliente, e você tem a proposta comercial pronta antes da reunião.' }
+    { escopo:'jornadaFrame', alvo:'table', titulo:'A tabela: o que vender, e quando', pausa:12000,
+      texto:'Linhas são serviços, colunas são anos, de 2026 a 2033. Repare que as faixas quentes <b>não estão todas no mesmo ano</b>. <br><br>Recuperação de PIS/COFINS esquenta agora e esfria até 2031, porque o crédito prescreve em cinco anos. Reprecificação de contrato esquenta em 2027, com a CBS. Saldo credor de ICMS só aquece em 2032, quando abre a habilitação em 240 parcelas. <br><br>Vender recuperação em 2032 é tarde. Vender reprecificação em 2033 é tarde. <b>A tabela diz a hora.</b>' },
+
+    { escopo:'jornadaFrame', alvo:'#barrasJornada', titulo:'Quantas frentes por ano', pausa:11000,
+      texto:'O gráfico soma a tabela: quantos serviços ficam ativos em cada ano. <br><br>É isto que responde a pergunta do sócio: "essa Reforma dura até quando?" Ela não é um pico em 2027 — é uma sequência de janelas até 2033, e cada barra é um ano de faturamento possível que ainda não está na sua agenda.' },
+
+    { escopo:'jornadaFrame', alvo:'#btn-cart', clicar:true, espera:1800, titulo:'Agora a carteira inteira', pausa:8500,
+      texto:'Mudando para <b>Carteira do escritório</b>, a pergunta deixa de ser sobre um cliente e passa a ser sobre o seu negócio.' },
+
+    { escopo:'jornadaFrame', alvo:'#pane-cart', titulo:'A composição da sua base', pausa:10000,
+      texto:'Aqui você informa como sua carteira se divide: quanto é Simples, quanto é comércio, indústria, serviço, agro. <br><br>A ferramenta pondera o catálogo por essa mistura e mostra <b>o mapa de calor da sua carteira</b> — não de um cliente. É a diferença entre "tenho uma oportunidade" e "tenho uma linha de receita".' },
+
+    { escopo:'jornadaFrame', alvo:'#pitch', titulo:'A leitura pronta', pausa:9000,
+      texto:'E a ferramenta escreve a leitura: quais frentes priorizar, em que ordem, com que argumento. É o que você leva para a reunião de sócios — ou para a conversa com o cliente.' },
+
+    { titulo:'O ciclo completo', pausa:11000,
+      texto:'Split Payment mostra a <b>dor</b>. Regime Ótimo mostra a <b>decisão</b>. A Jornada mostra a <b>agenda comercial</b> — do cliente e da carteira. <br><br>Junte o Diagnóstico, que roda tudo isso de uma vez, e você chega na reunião com a proposta pronta em vez de sair dela prometendo enviar depois.' }
   ]
 });
+
 
 setTimeout(function(){ try{ LH_ADMIN.instalar(); }catch(e){} }, 2200);
 
