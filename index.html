@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v797";</script>
+<body><script>window.LH_VERSAO="v798";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4232,7 +4232,7 @@ window.LH_PONTE = (function(){
    ═══════════════════════════════════════════════════════════════════════════ */
 window.LH_PLANO = (function(){
   var meu = null, ordemMeu = 99, escada = [], modulos = {}, categorias = {}, carregado = false;
-  var ORD = {};
+  var ORD = {}, precos = {}, assentoExtra = 0;   /* ★ v798 · preço no card de upgrade */
 
   function ordemDe(pl){ return ORD[pl] != null ? ORD[pl] : 0; }
   function planoDe(id){ return modulos[id] || null; }
@@ -4242,20 +4242,53 @@ window.LH_PLANO = (function(){
     return ordemMeu >= ordemDe(exig);
   }
   function rotuloDe(pl){ for(var i=0;i<escada.length;i++) if(escada[i].plano===pl) return escada[i].rotulo; return pl; }
+  function precoDe(pl){ return precos[pl] || null; }
+  function reais(v){ return 'R$ ' + Number(v||0).toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0}); }
   function promessaDe(pl){ for(var i=0;i<escada.length;i++) if(escada[i].plano===pl) return escada[i].promessa||''; return ''; }
 
   function cardConvite(id){
     var exig = planoDe(id) || 'consultoria';
+    var pr = precoDe(exig);
+    /* ★ v798 · o card mostra o preço. Convite sem valor obriga o contador a sair da
+       ferramenta para descobrir quanto custa — e quem sai, não volta no mesmo dia.
+       A âncora cruzada aparece sozinha: o anual deste plano é o mensal do de baixo. */
+    var bloco = '';
+    if(pr && pr.mensal){
+      bloco = '<div style="display:flex;gap:10px;justify-content:center;margin:16px 0 4px;flex-wrap:wrap">'
+        + '<div style="flex:1;min-width:130px;max-width:190px;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09)">'
+        +   '<div style="font-size:.68em;text-transform:uppercase;letter-spacing:.06em;color:var(--text2)">Mensal</div>'
+        +   '<div style="font-size:1.35em;font-weight:800;color:#e8edf5;margin-top:2px">' + reais(pr.mensal) + '</div>'
+        +   '<div style="font-size:.7em;color:var(--text2)">por mês</div>'
+        + '</div>'
+        + '<div style="flex:1;min-width:130px;max-width:190px;padding:12px 14px;border-radius:10px;background:rgba(201,162,39,.12);border:1.5px solid rgba(201,162,39,.5);position:relative">'
+        +   '<div style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#c9a227;color:#0c1628;font-size:.6em;font-weight:800;padding:2px 8px;border-radius:6px;white-space:nowrap">MELHOR OFERTA</div>'
+        +   '<div style="font-size:.68em;text-transform:uppercase;letter-spacing:.06em;color:#c9a227">Anual</div>'
+        +   '<div style="font-size:1.35em;font-weight:800;color:#c9a227;margin-top:2px">' + reais(pr.anual_mes) + '</div>'
+        +   '<div style="font-size:.7em;color:var(--text2)">por mês · ' + reais(pr.anual_ano) + ' no ano</div>'
+        + '</div></div>'
+        + '<div style="font-size:.74em;color:var(--text2);margin-bottom:4px">' + pr.assentos + ' usuário(s) incluído(s)'
+        + (assentoExtra ? ' · adicional ' + reais(assentoExtra) + '/mês' : '') + '</div>';
+      /* a âncora, quando existe: o anual daqui é o mensal do plano de baixo */
+      var abaixo = null;
+      for(var i=0;i<escada.length;i++) if(ORD[escada[i].plano] === ordemDe(exig) - 1) abaixo = escada[i].plano;
+      var pb = abaixo && precoDe(abaixo);
+      if(pb && pb.mensal && Number(pb.mensal) === Number(pr.anual_mes)){
+        bloco += '<div style="font-size:.78em;color:#c9a227;margin:8px 0 2px;line-height:1.45">'
+          + 'Pelo que você pagaria por mês no <b>' + rotuloDe(abaixo) + '</b>,<br>leva o <b>' + rotuloDe(exig) + '</b> no plano anual.</div>';
+      }
+    }
     return '<div style="max-width:560px;margin:40px auto;padding:26px 28px;border-radius:14px;'
       + 'background:linear-gradient(135deg,rgba(201,162,39,.10),rgba(201,162,39,.03));'
       + 'border:1px solid rgba(201,162,39,.42);text-align:center">'
-      + '<div style="font-size:2em;line-height:1">🔒</div>'
+      + '<div style="font-size:2em;line-height:1">\u{1F512}</div>'
       + '<div style="font-family:Syne,Inter,sans-serif;font-size:1.25em;font-weight:800;color:#c9a227;margin:10px 0 4px">Disponível no plano ' + rotuloDe(exig) + '</div>'
-      + '<div style="font-size:.9em;color:var(--text2);line-height:1.5;margin-bottom:16px">' + promessaDe(exig) + '</div>'
-      + '<div style="font-size:.82em;color:var(--text2);opacity:.8">Seu plano atual: <b style="color:#e8edf5">' + rotuloDe(meu) + '</b></div>'
-      + '<button onclick="LH_PLANO.pedirUpgrade(\'' + exig + '\')" style="margin-top:16px;padding:11px 26px;background:linear-gradient(135deg,#c9a227,#a8891f);color:#0c1628;border:0;border-radius:9px;font-weight:800;cursor:pointer;font-size:.92em">Quero o plano ' + rotuloDe(exig) + '</button>'
+      + '<div style="font-size:.9em;color:var(--text2);line-height:1.5;margin-bottom:6px">' + promessaDe(exig) + '</div>'
+      + bloco
+      + '<div style="font-size:.8em;color:var(--text2);opacity:.8;margin-top:10px">Seu plano atual: <b style="color:#e8edf5">' + rotuloDe(meu) + '</b></div>'
+      + '<button onclick="LH_PLANO.pedirUpgrade(\'' + exig + '\')" style="margin-top:14px;padding:11px 26px;background:linear-gradient(135deg,#c9a227,#a8891f);color:#0c1628;border:0;border-radius:9px;font-weight:800;cursor:pointer;font-size:.92em">Quero o plano ' + rotuloDe(exig) + '</button>'
       + '</div>';
   }
+
 
   function pedirUpgrade(plano){
     try{ if(typeof mostrarToast==='function') mostrarToast('Pedido de upgrade para ' + rotuloDe(plano) + ' registrado. Entraremos em contato.', 'success'); }catch(e){}
@@ -4312,12 +4345,20 @@ window.LH_PLANO = (function(){
         ordemMeu = (ORD[meu] != null) ? ORD[meu] : 99;   /* plano fora da escada (core) = tudo */
         carregado = true;
         pintarMenu();
+        /* ★ v798 · preços em segundo plano: se não vierem, o card sai sem valor, mas sai */
+        LH_PONTE.chamar('precos', {}).then(function(rp){
+          try{
+            var r = rp && rp.ok && rp.resultado; if(!r || r.ok === false) return;
+            (r.planos||[]).forEach(function(p){ if(p.mensal) precos[p.plano] = p; });
+            assentoExtra = +r.assento_adicional || 0;
+          }catch(e){}
+        }).catch(function(){});
         console.log('[LH_PLANO] plano ' + rotuloDe(meu) + ' · ' + Object.keys(modulos).length + ' módulos mapeados');
       }catch(e){}
     }).catch(function(){});
   }
 
-  return { carregar:carregar, pintarMenu:pintarMenu, liberado:liberado, planoDe:planoDe,
+  return { carregar:carregar, pintarMenu:pintarMenu, liberado:liberado, planoDe:planoDe, precoDe:precoDe,
            rotuloDe:rotuloDe, cardConvite:cardConvite, pedirUpgrade:pedirUpgrade,
            meu:function(){ return meu; }, carregado:function(){ return carregado; } };
 })();
