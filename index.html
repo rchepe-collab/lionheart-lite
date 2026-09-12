@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v803";</script>
+<body><script>window.LH_VERSAO="v804";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4285,6 +4285,9 @@ window.LH_PLANO = (function(){
       + '<div style="font-size:.9em;color:var(--text2);line-height:1.5;margin-bottom:6px">' + promessaDe(exig) + '</div>'
       + bloco
       + '<div style="font-size:.8em;color:var(--text2);opacity:.8;margin-top:10px">Seu plano atual: <b style="color:#e8edf5">' + rotuloDe(meu) + '</b></div>'
+      /* ★ v804 · na hora de decidir pagar, a objeção que trava contador é "onde ficam os
+         dados dos meus clientes". A resposta tem que estar aqui, não no contrato. */
+      + '<div style="font-size:.72em;color:#10b981;margin-top:8px;opacity:.9">\u{1F512} Os dados dos seus clientes continuam no seu computador.</div>'
       /* ★ v803 · dois botões, um por ciclo, cada um abrindo o link do Asaas daquele
          plano. O anual vem primeiro e destacado: é a melhor oferta e o que trava o
          cliente por doze meses. Sem link cadastrado, cai no aviso de antes — o card
@@ -4955,6 +4958,23 @@ Troque a URL em LH_LOGIN_URL pela URL do seu Apps Script publicado.
     <div id="lh-cad-campos" style="display:none">
       <button id="lh-cad-btn" onclick="lhCriarConta()" style="width:100%;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;padding:12px;font-weight:800;font-size:0.95em;cursor:pointer;font-family:Inter,sans-serif;">Criar minha conta grátis</button>
       <div style="margin-top:10px;text-align:center;font-size:0.72em;color:#9fb0c8;line-height:1.5">Senha: 8 caracteres, com letras e números.<br>Plano <b style="color:#c9a227">Livre</b>, sem cartão · o Diagnóstico já vem liberado.</div>
+    </div>
+
+    <!-- ★ v804 · O ARGUMENTO QUE ESTAVA ENTERRADO NO CONTRATO.
+         As cláusulas 9.1 e 10.3 do contrato dizem, com precisão jurídica, que o dado do
+         cliente final não sai da máquina do contador — e que por isso a Lionheart não é
+         operadora daqueles dados. Isso é raro no mercado e responde a maior objeção de
+         quem vai pôr carteira de cliente numa ferramenta nova.
+         Estava na cláusula 10.3 de um contrato de 22 cláusulas. Agora é a primeira coisa
+         que se lê na porta de entrada. -->
+    <div style="margin-top:16px;padding:11px 13px;border-radius:9px;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.28);">
+      <div style="display:flex;align-items:flex-start;gap:9px">
+        <span style="font-size:1.05em;line-height:1.2">\u{1F512}</span>
+        <div style="font-size:0.76em;color:#b8c4d4;line-height:1.5">
+          <b style="color:#10b981">Os dados dos seus clientes não saem do seu computador.</b><br>
+          Nome, CNPJ e faturamento ficam no seu navegador. Para calcular, só números viajam — nunca a identificação.
+        </div>
+      </div>
     </div>
 
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);text-align:center;font-size:0.8em;color:#9fb0c8;">
