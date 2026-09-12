@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v802";</script>
+<body><script>window.LH_VERSAO="v803";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4285,10 +4285,31 @@ window.LH_PLANO = (function(){
       + '<div style="font-size:.9em;color:var(--text2);line-height:1.5;margin-bottom:6px">' + promessaDe(exig) + '</div>'
       + bloco
       + '<div style="font-size:.8em;color:var(--text2);opacity:.8;margin-top:10px">Seu plano atual: <b style="color:#e8edf5">' + rotuloDe(meu) + '</b></div>'
-      + '<button onclick="LH_PLANO.pedirUpgrade(\'' + exig + '\')" style="margin-top:14px;padding:11px 26px;background:linear-gradient(135deg,#c9a227,#a8891f);color:#0c1628;border:0;border-radius:9px;font-weight:800;cursor:pointer;font-size:.92em">Quero o plano ' + rotuloDe(exig) + '</button>'
+      /* ★ v803 · dois botões, um por ciclo, cada um abrindo o link do Asaas daquele
+         plano. O anual vem primeiro e destacado: é a melhor oferta e o que trava o
+         cliente por doze meses. Sem link cadastrado, cai no aviso de antes — o card
+         nunca fica sem saída. */
+      + (pr && (pr.link_anual || pr.link_mensal)
+          ? '<div style="display:flex;gap:9px;justify-content:center;margin-top:15px;flex-wrap:wrap">'
+            + (pr.link_anual ? '<a href="' + pr.link_anual + '" target="_blank" rel="noopener" onclick="try{LH_PLANO.registrarIntencao(\'' + exig + '\',\'anual\')}catch(e){}" style="text-decoration:none;padding:11px 22px;background:linear-gradient(135deg,#c9a227,#a8891f);color:#0c1628;border-radius:9px;font-weight:800;font-size:.9em">Assinar anual · ' + reais(pr.anual_mes) + '/mês</a>' : '')
+            + (pr.link_mensal ? '<a href="' + pr.link_mensal + '" target="_blank" rel="noopener" onclick="try{LH_PLANO.registrarIntencao(\'' + exig + '\',\'mensal\')}catch(e){}" style="text-decoration:none;padding:11px 22px;background:rgba(255,255,255,.07);color:#e8edf5;border:1px solid rgba(255,255,255,.18);border-radius:9px;font-weight:700;font-size:.9em">Assinar mensal · ' + reais(pr.mensal) + '</a>' : '')
+            + '</div>'
+            + '<div style="font-size:.72em;color:var(--text2);opacity:.75;margin-top:9px;line-height:1.45">Pagamento pelo Asaas · Pix, boleto ou cartão.<br>O acesso libera assim que o pagamento for confirmado.</div>'
+          : '<button onclick="LH_PLANO.pedirUpgrade(\'' + exig + '\')" style="margin-top:14px;padding:11px 26px;background:linear-gradient(135deg,#c9a227,#a8891f);color:#0c1628;border:0;border-radius:9px;font-weight:800;cursor:pointer;font-size:.92em">Quero o plano ' + rotuloDe(exig) + '</button>')
       + '</div>';
   }
 
+
+  /* ★ v803 · quem clicou em qual plano e ciclo. Sem isso não dá para saber quantos
+     chegaram no checkout e não pagaram — que é o número mais útil dos primeiros meses. */
+  function registrarIntencao(plano, ciclo){
+    try{
+      if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && typeof LH_PONTE.chamar==='function'){
+        LH_PONTE.chamar('registrar-intencao', { plano: plano, ciclo: ciclo }).catch(function(){});
+      }
+      console.log('[LH_PLANO] checkout aberto:', plano, ciclo);
+    }catch(e){}
+  }
 
   function pedirUpgrade(plano){
     try{ if(typeof mostrarToast==='function') mostrarToast('Pedido de upgrade para ' + rotuloDe(plano) + ' registrado. Entraremos em contato.', 'success'); }catch(e){}
@@ -4358,7 +4379,7 @@ window.LH_PLANO = (function(){
     }).catch(function(){});
   }
 
-  return { carregar:carregar, pintarMenu:pintarMenu, liberado:liberado, planoDe:planoDe, precoDe:precoDe,
+  return { carregar:carregar, pintarMenu:pintarMenu, liberado:liberado, planoDe:planoDe, precoDe:precoDe, registrarIntencao:registrarIntencao,
            rotuloDe:rotuloDe, cardConvite:cardConvite, pedirUpgrade:pedirUpgrade,
            meu:function(){ return meu; }, carregado:function(){ return carregado; } };
 })();
