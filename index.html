@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v801";</script>
+<body><script>window.LH_VERSAO="v802";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4933,7 +4933,7 @@ Troque a URL em LH_LOGIN_URL pela URL do seu Apps Script publicado.
     </div>
     <div id="lh-cad-campos" style="display:none">
       <button id="lh-cad-btn" onclick="lhCriarConta()" style="width:100%;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;padding:12px;font-weight:800;font-size:0.95em;cursor:pointer;font-family:Inter,sans-serif;">Criar minha conta grátis</button>
-      <div style="margin-top:10px;text-align:center;font-size:0.72em;color:#9fb0c8;line-height:1.5">Plano <b style="color:#c9a227">Livre</b>, sem cartão.<br>O Diagnóstico já vem liberado.</div>
+      <div style="margin-top:10px;text-align:center;font-size:0.72em;color:#9fb0c8;line-height:1.5">Senha: 8 caracteres, com letras e números.<br>Plano <b style="color:#c9a227">Livre</b>, sem cartão · o Diagnóstico já vem liberado.</div>
     </div>
 
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);text-align:center;font-size:0.8em;color:#9fb0c8;">
@@ -5100,7 +5100,12 @@ function lhCriarConta(){
   /* confere aqui o que dá para conferir aqui: erra rápido, sem ida ao servidor */
   if(nome.length < 3) return dizer('Informe seu nome completo.');
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return dizer('Informe um e-mail válido.');
+  /* ★ v802 · a mesma regra que o Supabase exige (8 caracteres, letras e dígitos).
+     Regra que o servidor cobra e a tela não conhece é armadilha: o contador digita,
+     acha que está certo, e toma um erro em inglês que ele não entende — e desiste ali. */
   if(senha.length < 8) return dizer('A senha precisa de pelo menos 8 caracteres.');
+  if(!/[A-Za-zÀ-ÿ]/.test(senha) || !/[0-9]/.test(senha))
+    return dizer('A senha precisa misturar letras e números.');
 
   if(btn){ btn.disabled = true; btn.textContent = 'Criando...'; }
   dizer('', '#9fb0c8');
