@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v804";</script>
+<body><script>window.LH_VERSAO="v805";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4353,6 +4353,30 @@ window.LH_PLANO = (function(){
         s.style.cssText = 'margin-left:7px;padding:1px 7px;border-radius:8px;font-size:.62em;font-weight:700;'
           + 'background:rgba(201,162,39,.18);color:#c9a227;border:1px solid rgba(201,162,39,.40);vertical-align:middle';
         t.appendChild(s);
+      });
+      /* ★ v805 · cada degrau da escada diz o que é DELE e o que custa.
+         O encadeamento não se explica com texto sobre conjuntos: o contador só
+         precisa saber onde pode clicar. No que ele já tem, o nome do plano some e
+         entra "incluído" — nome de plano em cima de coisa comprada é vender para
+         quem já comprou. No que ele não tem, entra o preço, e o cabeçalho clica. */
+      document.querySelectorAll('.nav-secao-js[data-lh-plano]').forEach(function(sp){
+        var pl = sp.getAttribute('data-lh-plano');
+        var velho = sp.querySelector('.lh-sec-estado'); if(velho) velho.remove();
+        var e = document.createElement('span');
+        e.className = 'lh-sec-estado';
+        var base = 'margin-left:auto;font-size:.84em;font-weight:600;text-transform:none;letter-spacing:0;';
+        if(ordemMeu >= ordemDe(pl)){
+          e.textContent = '✓ incluído';
+          e.style.cssText = base + 'color:#3ecf8e';
+          sp.style.cursor = ''; sp.onclick = null;
+        } else {
+          var pr = precoDe(pl);
+          e.textContent = '🔒' + (pr && pr.anual_mes ? ' desde ' + reais(pr.anual_mes) + '/mês' : '');
+          e.style.cssText = base + 'color:#c9a227';
+          sp.style.cursor = 'pointer';
+          sp.onclick = function(){ try{ pedirUpgrade(pl); }catch(_e){} };
+        }
+        sp.appendChild(e);
       });
     }catch(e){ try{ console.warn('[LH_PLANO] pintarMenu:', e); }catch(_e){} }
   }
@@ -45939,18 +45963,47 @@ window.LH_SAUDE = (function(){
         /* ★ v794 · as supercategorias passam a ser os PLANOS. "Centrais de Análises" tinha virado
            rótulo histórico: depois que os regimes específicos entraram, TODA calculadora é análise —
            o rótulo não separava mais nada. Um eixo só, e é o que o contador compra. */
+        /* ★ v805 · TRÊS CORREÇÕES DE LEITURA DO MENU.
+           1) "Imersão Lionheart" e "Carteira & Vendas" nomeavam a marca, não o conteúdo.
+           2) Os três planos eram irmãos soltos, e três cabeçalhos lado a lado se leem
+              como três produtos alternativos — quando são uma escada cumulativa. Quem
+              assina Consultoria via "Preparação" logo acima e entendia que não tinha.
+              Subvender o que o cliente já paga não gera chamado: ele só usa menos.
+              Agora um super-pilar cerca os três e diz o encadeamento numa linha.
+           3) Privacidade (plano Livre) aparecia debaixo do cabeçalho ESPECIALISTA,
+              porque o grupo não tinha onde fechar. "Sua Conta" fecha a escada.
+           O rótulo Preparação virou Adequação: descrevia o momento e envelhecia em
+           2027 — metade destas telas é operar sob a lei nova, não se preparar para
+           ela. O id continua 'preparacao'; rótulo é cosmético, id é estrutural. */
         var _secoes = {
-          'Formação Lionheart': ['','Imersão Lionheart'],
-          'Clientes & Grupos': ['','Carteira & Vendas'],
-          'Reforma Tributária': ['','Preparação'],
-          'Regime & PJ': ['','Consultoria'],
-          'Serviços · Comércio · Turismo': ['','Especialista']
+          'Formação Lionheart':            { rot:'Aprendizado e Imersão' },
+          'Clientes & Grupos':             { rot:'Carteira de Clientes e Vendas' },
+          'Reforma Tributária':            { rot:'Adequação',    plano:'preparacao',
+                                             sup:'Planos de Assinatura',
+                                             nota:'cada plano inclui tudo dos anteriores' },
+          'Regime & PJ':                   { rot:'Consultoria',  plano:'consultoria' },
+          'Serviços · Comércio · Turismo': { rot:'Especialista', plano:'especialista' },
+          'Privacidade':                   { rot:'Sua Conta' }
         };
         for(var _k in _secoes){
           if(_t.indexOf(_k)>=0){
+            var _cfg = _secoes[_k];
+            if(_cfg.sup){
+              var _sup = document.createElement('div');
+              _sup.className = 'nav-super-js';
+              _sup.style.cssText = "font-family:'Syne',sans-serif;font-size:.74em;font-weight:800;letter-spacing:.07em;"
+                + "text-transform:uppercase;color:#f4cc4a;padding:9px 11px 7px;margin:18px 8px 0;"
+                + "border:1px solid rgba(244,204,74,.32);border-bottom:0;border-radius:10px 10px 0 0;"
+                + "background:linear-gradient(180deg,rgba(201,162,39,.20),rgba(201,162,39,.05));";
+              _sup.innerHTML = _cfg.sup
+                + '<div style="font-family:inherit;font-size:.82em;font-weight:500;letter-spacing:0;'
+                + 'text-transform:none;color:#c9bb92;margin-top:3px">' + _cfg.nota + '</div>';
+              g.titulo.parentNode.insertBefore(_sup, g.titulo);
+            }
             var _sep = document.createElement('div');
             _sep.className = 'nav-secao-js';
-            _sep.innerHTML = (_secoes[_k][0] ? '<span class="ns-ic">'+_secoes[_k][0]+'</span>' : '')+_secoes[_k][1];
+            if(_cfg.plano) _sep.setAttribute('data-lh-plano', _cfg.plano);
+            _sep.innerHTML = _cfg.rot;
             g.titulo.parentNode.insertBefore(_sep, g.titulo);
             break;
           }
@@ -59193,7 +59246,7 @@ function lhBuscaCNAE(q){
         (chev?chev.outerHTML:'<span class="lh-cat-chevron">▼</span>');
     }
     /* ★ v794 · 2 — a ordem passa a ser a do PLANO, não a histórica:
-         PREPARAÇÃO   Reforma · Cadastro & Preço · Compliance
+         ADEQUAÇÃO    Reforma · Cadastro & Preço · Compliance          (v805: era PREPARAÇÃO)
          CONSULTORIA  Regime & PJ · Sócio · Crédito · Patrimonial · Imobiliário · Contencioso · Comex
          ESPECIALISTA Serviços·Comércio·Turismo · Agronegócio · Indústria · Painel do Escritório */
     var cad  = achaCat(sec,/CADASTRO\s*&\s*PRE[ÇC]O/i);
@@ -59220,8 +59273,13 @@ function lhBuscaCNAE(q){
     try{
       var _seps = Array.prototype.slice.call(sec.querySelectorAll('.nav-secao-js'));
       var _acha = function(re){ return _seps.find(function(el){ return re.test(el.textContent||''); }); };
-      var _prep = _acha(/PREPARA[ÇC][ÃA]O/i), _cons = _acha(/CONSULTORIA/i), _espec = _acha(/ESPECIALISTA/i);
+      /* ★ v805 · o rótulo virou Adequação; o /PREPARA/ fica como rede para arquivo
+         antigo em cache. E o super-pilar viaja colado no primeiro separador da escada,
+         senão ele fica órfão no topo e não cerca nada. */
+      var _prep = _acha(/ADEQUA[ÇC][ÃA]O|PREPARA[ÇC][ÃA]O/i), _cons = _acha(/CONSULTORIA/i), _espec = _acha(/ESPECIALISTA/i);
+      var _sup  = sec.querySelector('.nav-super-js');
       if(_prep && refo) refo.insertAdjacentElement('beforebegin', _prep);
+      if(_sup  && _prep) _prep.insertAdjacentElement('beforebegin', _sup);
       if(_cons && reg)  reg.insertAdjacentElement('beforebegin', _cons);
       if(_espec && c2)  c2.insertAdjacentElement('beforebegin', _espec);
     }catch(_e){}
