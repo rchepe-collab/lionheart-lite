@@ -31,6 +31,8 @@ setTimeout(()=>{
   ex('diz "a partir de"', ops[0].textContent.includes('a partir de'));
   ex('convite para escolher', ops[0].textContent.includes('Escolher este plano'));
   ex('selo de preço de fundador', a.querySelector('.fundador').textContent.includes('31 de dezembro de 2026'));
+  ex('tem botão de voltar ao site', !!a.querySelector('.voltar[href="./"]'));
+  ex('logo também volta', !!a.querySelector('.faixa a[href="./"]'));
   ex('escada cumulativa dita', a.querySelector('.linha-fina').textContent.includes('inclui tudo'));
   console.log('  -- propostas de valor --');
   ops.forEach((o,i)=>{

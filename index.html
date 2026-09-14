@@ -239,13 +239,13 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
    no celular, que é justo onde o contador vai abrir isto. */
 .pb-marca img{display:block;height:34px;width:auto}
 .menu{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
-.menu a{font-size:.72rem;letter-spacing:.11em;text-transform:uppercase;
-  color:var(--cinza);text-decoration:none;padding:7px 11px;white-space:nowrap;
+.menu a{font-size:.85rem;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--cinza);text-decoration:none;padding:9px 13px;white-space:nowrap;
   border-bottom:1px solid transparent;transition:color .15s,border-color .15s}
 .menu a:hover{color:var(--ouro-cl)}
 .menu a.aqui{color:var(--ouro-cl);border-bottom-color:var(--ouro)}
 .menu a.menu-cta{background:linear-gradient(135deg,#d9b53a,#c9a227);color:var(--onyx);
-  font-weight:600;padding:9px 18px;margin-left:6px;border-bottom:0}
+  font-weight:600;padding:11px 20px;margin-left:8px;border-bottom:0}
 .menu a.menu-cta:hover{filter:brightness(1.1);color:var(--onyx)}
 @media(max-width:900px){
   .menu{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;
@@ -391,17 +391,17 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
 /* ═══ BOTÃO FLUTUANTE ══════════════════════════════════════════════════════
    Só aparece depois que a pessoa desceu da primeira dobra: botão de comprar
    em cima de quem ainda está lendo o título é anúncio, não convite. */
-.flutua{position:fixed;right:22px;bottom:22px;z-index:95;
+.flutua{position:fixed;right:46px;bottom:42px;z-index:95;
   background:linear-gradient(135deg,#d9b53a,#c9a227);color:var(--onyx);
-  font-family:'Sora',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.16em;
-  text-transform:uppercase;text-decoration:none;padding:15px 24px;
-  box-shadow:0 10px 34px rgba(0,0,0,.55);
+  font-family:'Sora',sans-serif;font-size:.92rem;font-weight:700;letter-spacing:.15em;
+  text-transform:uppercase;text-decoration:none;padding:21px 40px;
+  box-shadow:0 14px 44px rgba(0,0,0,.6);
   opacity:0;transform:translateY(14px);pointer-events:none;
   transition:opacity .3s,transform .3s,filter .14s}
 .flutua.vis{opacity:1;transform:none;pointer-events:auto}
 .flutua:hover{filter:brightness(1.1)}
 @media(max-width:620px){
-  .flutua{left:16px;right:16px;bottom:16px;text-align:center;padding:16px}
+  .flutua{left:20px;right:20px;bottom:20px;text-align:center;padding:19px;font-size:.86rem}
 }
 @media(prefers-reduced-motion:reduce){.flutua{transition:none}}
 
@@ -414,8 +414,8 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
    abre com mouse é menu que metade das pessoas nunca vê. */
 .menu-drop{position:relative}
 .menu-drop > button{background:none;border:0;cursor:pointer;font:inherit;
-  font-size:.72rem;letter-spacing:.11em;text-transform:uppercase;color:var(--cinza);
-  padding:7px 11px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;
+  font-size:.85rem;letter-spacing:.09em;text-transform:uppercase;color:var(--cinza);
+  padding:9px 13px;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;
   border-bottom:1px solid transparent;transition:color .15s,border-color .15s}
 .menu-drop > button:hover{color:var(--ouro-cl)}
 .menu-drop > button.aqui{color:var(--ouro-cl);border-bottom-color:var(--ouro)}
