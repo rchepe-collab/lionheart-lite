@@ -62,6 +62,14 @@ setTimeout(()=>{
   ex('nomeia Sentinela do Teto', /Sentinela do Teto/.test(pp.textContent));
   ex('total 153, não 164', /153/.test(pp.textContent) && !/164/.test(pp.textContent));
   ex('CTA do especialista', !!pp.querySelector('a[href="assinar.html?p=especialista"]'));
+  console.log('  -- agendar demonstração --');
+  const wz=d.querySelector('.conversa a');
+  ex('bloco existe', !!wz);
+  ex('número certo', /wa\.me\/5553999823848/.test(wz.getAttribute('href')));
+  ex('abre em aba nova com noopener', wz.target==='_blank' && /noopener/.test(wz.rel));
+  ex('mensagem já preenchida', /text=/.test(wz.getAttribute('href')));
+  ex('vem DEPOIS do botão de assinar', d.querySelector('#comecar a[href="assinar.html"]')
+      .compareDocumentPosition(wz)===4);
   console.log('  -- botão flutuante --');
   const fl=d.getElementById('flutua');
   ex('existe', !!fl);

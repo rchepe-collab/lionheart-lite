@@ -436,6 +436,27 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
   .drop{position:fixed;left:12px;right:12px;top:auto;min-width:0}
 }
 
+
+/* ═══ FALAR COM A GENTE ════════════════════════════════════════════════════
+   Fica DEPOIS dos três passos, não ao lado do botão de assinar. Quem já
+   decidiu não precisa de conversa; quem ficou com dúvida precisa de uma
+   saída que não seja fechar a aba. Oferecer conversa cedo demais transforma
+   venda que se resolvia sozinha em reunião para agendar. */
+.conversa{margin:52px 0 0;padding:30px;border:1px solid var(--linha);
+  background:linear-gradient(160deg,#0e0e0f,#0a0a0a);
+  display:flex;align-items:center;justify-content:space-between;gap:26px;flex-wrap:wrap}
+.conversa .txt{flex:1;min-width:250px}
+.conversa h3{font-family:'Cormorant Garamond',serif;font-size:1.72rem;line-height:1.2;
+  margin:0 0 7px;color:var(--ouro-cl)}
+.conversa p{margin:0;font-size:.89rem;color:var(--cinza);max-width:48ch;line-height:1.6}
+.conversa a{display:inline-flex;align-items:center;gap:10px;text-decoration:none;
+  border:1px solid rgba(201,162,39,.55);color:var(--ouro-cl);
+  font-family:'Sora',sans-serif;font-size:.8rem;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;padding:16px 28px;white-space:nowrap;
+  transition:background-color .14s,color .14s}
+.conversa a:hover{background:var(--ouro);border-color:var(--ouro);color:var(--onyx)}
+@media(max-width:620px){.conversa{padding:24px}.conversa a{width:100%;justify-content:center}}
+
 </style>
 </head>
 <body id="topo" data-perfil="contador" class="nojs">
@@ -813,6 +834,16 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
     <p class="revela" style="margin-top:40px">
       <a class="btn btn-p" href="assinar.html">Ver planos e assinar</a>
     </p>
+
+    <div class="conversa revela">
+      <div class="txt">
+        <h3>Prefere conversar antes?</h3>
+        <p>Se ficou uma dúvida que o site não respondeu, ou se você quer ver a ferramenta
+           rodando com um caso da sua carteira, é só chamar. Agendamos uma demonstração.</p>
+      </div>
+      <a href="https://wa.me/5553999823848?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Lionheart%20e%20gostaria%20de%20agendar%20uma%20demonstra%C3%A7%C3%A3o." target="_blank" rel="noopener">Agendar demonstração</a>
+    </div>
+
   </div>
 </section>
 <section id="comecar" class="cta">

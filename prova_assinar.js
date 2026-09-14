@@ -73,6 +73,7 @@ setTimeout(()=>{
       ex('envia plano', B.enviado && B.enviado.plano==='especialista');
       ex('envia ciclo', B.enviado && B.enviado.ciclo==='anual');
       ex('envia aceite', B.enviado && B.enviado.aceite===true);
+    ex('tem caminho para tirar dúvida', !!b.querySelector('.duvida a[href*="wa.me/5553999823848"]'));
       console.log(mau?'RESULTADO: FALHOU':'RESULTADO: tudo aprovado');
       process.exitCode=mau?1:0;
     },60);
