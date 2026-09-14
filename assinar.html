@@ -4,19 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Assinar · Lionheart Business Intelligence</title>
-<meta name="description" content="Confirme seu plano na plataforma Lionheart e vá para o pagamento.">
+<meta name="description" content="Escolha seu plano na plataforma Lionheart e vá para o pagamento.">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   /* ── A PÁGINA DE FECHAMENTO ────────────────────────────────────────────
-     Quem chega aqui já decidiu — veio de uma reunião ou do card de upgrade.
-     Então isto NÃO é uma página de venda: não tem argumento, não tem
-     depoimento, não tem lista de benefícios. O trabalho dela é confirmar o
-     que foi combinado, registrar o aceite e sair da frente.
-     A ousadia fica num lugar só: a escolha entre mensal e anual, com a
-     economia em número. É a única decisão que sobra para a pessoa tomar. */
+     Dois caminhos chegam aqui:
+       · sem ?p= → a pessoa ainda escolhe. Vê os três planos.
+       · com ?p= → veio de uma reunião com o plano já combinado. Vai direto.
+     Nos dois casos ela NÃO é página de venda: sem argumento, sem depoimento,
+     sem lista de benefícios. Quem chega já está decidindo, não sendo
+     convencido. A ousadia fica num lugar só — a escada de planos e a
+     economia do anual em número. */
   :root{
     --tinta:#0a1628;        /* o azul da ferramenta — continuidade, não escolha nova */
     --tinta-alta:#0e1d33;
@@ -32,45 +33,49 @@
   body{
     background:var(--tinta); color:var(--papel);
     font-family:'Sora',system-ui,-apple-system,sans-serif;
-    font-size:15px; line-height:1.6;
-    -webkit-font-smoothing:antialiased;
+    font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
   }
   .faixa{ background:#000; padding:20px; text-align:center }
   .faixa img{ width:100%; max-width:460px; height:auto; display:block; margin:0 auto }
 
-  main{ max-width:540px; margin:0 auto; padding:34px 22px 64px }
+  main{ max-width:560px; margin:0 auto; padding:34px 22px 64px }
 
-  .abertura{ margin-bottom:26px }
+  .abertura{ margin-bottom:24px }
   .abertura .sobretitulo{ color:var(--fosco); font-size:.88rem; margin:0 0 4px }
   h1{
     font-family:'Syne',sans-serif; font-weight:800;
-    font-size:2.2rem; line-height:1.1; margin:0 0 10px;
-    color:var(--ouro-claro);
+    font-size:2.1rem; line-height:1.1; margin:0 0 10px; color:var(--ouro-claro);
   }
   .promessa{ margin:0; color:var(--papel); opacity:.82; font-size:.95rem }
+  .escada{ margin:6px 0 0; font-size:.83rem; color:var(--fosco) }
 
   fieldset{ border:0; margin:0 0 24px; padding:0 }
   legend{ padding:0; margin:0 0 10px; font-size:.9rem; color:var(--fosco); font-weight:500 }
 
-  /* os dois ciclos são linhas, não cartões gêmeos: a diferença entre eles
-     é o preço, e preço se compara em coluna alinhada */
-  .ciclo{
+  /* planos e ciclos são LINHAS, não cartões gêmeos: o que se compara entre
+     eles é preço, e preço se lê em coluna alinhada */
+  .opcao{
     display:flex; align-items:baseline; gap:14px; width:100%;
     background:transparent; color:inherit; text-align:left;
     border:1px solid rgba(255,255,255,.14); border-radius:10px;
-    padding:15px 16px; margin-bottom:9px; cursor:pointer;
-    font:inherit; transition:border-color .12s, background-color .12s;
+    padding:15px 16px; margin-bottom:9px; cursor:pointer; font:inherit;
+    transition:border-color .12s, background-color .12s;
   }
-  .ciclo:hover{ border-color:rgba(201,162,39,.5) }
-  .ciclo[aria-pressed="true"]{
+  .opcao:hover{ border-color:rgba(201,162,39,.5) }
+  .opcao[aria-pressed="true"]{
     border-color:var(--ouro); background:rgba(201,162,39,.09);
     box-shadow:inset 3px 0 0 var(--ouro);
   }
-  .ciclo .nome{ font-weight:600; flex:1 }
-  .ciclo .valor{ font-family:'Syne',sans-serif; font-weight:700; font-size:1.3rem; color:var(--papel) }
-  .ciclo .mes{ font-size:.78rem; color:var(--fosco); margin-left:2px }
-  .ciclo .detalhe{ display:block; font-size:.78rem; color:var(--fosco); font-weight:400; margin-top:3px }
-  .ciclo .economia{ color:var(--ouro-claro) }
+  .opcao .nome{ font-weight:600; flex:1 }
+  .opcao .valor{ font-family:'Syne',sans-serif; font-weight:700; font-size:1.28rem; color:var(--papel); white-space:nowrap }
+  .opcao .mes{ font-size:.76rem; color:var(--fosco); margin-left:2px }
+  .opcao .detalhe{ display:block; font-size:.78rem; color:var(--fosco); font-weight:400; margin-top:3px; line-height:1.45 }
+  .opcao .economia{ color:var(--ouro-claro) }
+
+  .trocar{
+    background:none; border:0; color:var(--ouro); font:inherit; font-size:.83rem;
+    padding:0; cursor:pointer; text-decoration:underline; margin-bottom:18px;
+  }
 
   label.campo{ display:block; margin-bottom:6px; font-size:.9rem; color:var(--fosco) }
   input[type=email]{
@@ -106,14 +111,10 @@
   .rodape{ margin-top:26px; font-size:.78rem; color:#71839b; line-height:1.55 }
   a{ color:var(--ouro) }
   :focus-visible{ outline:2px solid var(--ouro-claro); outline-offset:2px }
-
   .carregando{ color:var(--fosco); padding:30px 0 }
 
   @media(prefers-reduced-motion:reduce){ *{ transition:none !important } }
-  @media(max-width:480px){
-    h1{ font-size:1.75rem }
-    main{ padding:26px 17px 52px }
-  }
+  @media(max-width:480px){ h1{ font-size:1.7rem } main{ padding:26px 17px 52px } }
 </style>
 </head>
 <body>
@@ -123,14 +124,27 @@
 </div>
 
 <main>
-  <div id="carregando" class="carregando">Carregando o plano…</div>
+  <div id="carregando" class="carregando">Carregando os planos…</div>
 
-  <div id="conteudo" hidden>
+  <!-- PASSO 1 · escolher o plano (só aparece quando não veio ?p= no endereço) -->
+  <section id="passo-plano" hidden>
+    <div class="abertura">
+      <p class="sobretitulo">Assinatura</p>
+      <h1>Escolha seu plano</h1>
+      <p class="escada">Cada plano inclui tudo dos anteriores.</p>
+    </div>
+    <div id="planos"></div>
+  </section>
+
+  <!-- PASSO 2 · confirmar e pagar -->
+  <section id="passo-compra" hidden>
     <div class="abertura">
       <p class="sobretitulo">Você está assinando</p>
       <h1 id="rotulo"></h1>
       <p class="promessa" id="promessa"></p>
     </div>
+
+    <button class="trocar" id="trocar" type="button" hidden>Escolher outro plano</button>
 
     <fieldset>
       <legend>Como prefere pagar</legend>
@@ -141,7 +155,7 @@
       <label class="campo" for="email">E-mail de acesso à ferramenta</label>
       <input type="email" id="email" placeholder="voce@seuescritorio.com.br"
              autocomplete="email" inputmode="email" spellcheck="false">
-      <p class="ajuda" id="ajuda-email">Use este mesmo e-mail no pagamento — é por ele que o acesso é liberado.</p>
+      <p class="ajuda">Use este mesmo e-mail no pagamento — é por ele que o acesso é liberado.</p>
     </div>
 
     <label class="aceite" for="aceite">
@@ -163,15 +177,14 @@
       Pagamento processado pelo Asaas. Dúvidas:
       <a href="mailto:contato@lionheartintelligence.com.br">contato@lionheartintelligence.com.br</a>
     </p>
-  </div>
+  </section>
 </main>
 
 <script>
 (function(){
   'use strict';
   var API = 'https://dilrjxsbcejcgprajayo.supabase.co/functions/v1/assinar';
-  var PADRAO = 'consultoria';
-  var estado = { plano:null, ciclo:null, dados:null };
+  var estado = { plano:null, ciclo:null, catalogo:null, veioPronto:false };
 
   function $(id){ return document.getElementById(id); }
   function reais(v){
@@ -181,94 +194,124 @@
     var r = $('recado'); r.textContent = txt || '';
     r.className = 'recado' + (erro ? ' erro' : '');
   }
+  function menorMes(ciclos){
+    return ciclos.reduce(function(a,c){ return Math.min(a, Number(c.preco_mes)); }, Infinity);
+  }
 
-  /* o plano vem do endereço: /assinar.html?p=consultoria — é o que muda entre
-     um link mandado depois da reunião e outro */
   var q = new URLSearchParams(location.search);
-  estado.plano = (q.get('p') || PADRAO).toLowerCase();
+  var pedido = (q.get('p') || '').toLowerCase();
+
+  /* ── PASSO 1 ──────────────────────────────────────────────────────── */
+  function desenharPlanos(planos){
+    var caixa = $('planos'); caixa.innerHTML = '';
+    planos.forEach(function(p){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'opcao';
+      b.setAttribute('aria-pressed','false'); b.dataset.plano = p.plano;
+      b.innerHTML =
+        '<span class="nome">' + p.rotulo +
+          '<span class="detalhe">' + (p.promessa || '') + '</span></span>' +
+        '<span class="valor">' + reais(menorMes(p.ciclos)) + '<span class="mes">/mês</span></span>';
+      b.onclick = function(){ irParaCompra(p); };
+      caixa.appendChild(b);
+    });
+  }
+
+  /* ── PASSO 2 ──────────────────────────────────────────────────────── */
+  function irParaCompra(p){
+    estado.plano = p.plano;
+    $('rotulo').textContent = p.rotulo;
+    $('promessa').textContent = p.promessa || '';
+    desenharCiclos(p.ciclos);
+    escolherCiclo(p.ciclos.some(function(c){ return c.ciclo === 'anual'; }) ? 'anual' : p.ciclos[0].ciclo);
+    $('passo-plano').hidden = true;
+    $('passo-compra').hidden = false;
+    $('trocar').hidden = estado.veioPronto;   /* quem veio por link não escolheu nada para trocar */
+    window.scrollTo(0,0);
+    $('email').focus();
+  }
 
   function desenharCiclos(ciclos){
-    var caixa = $('ciclos');
-    caixa.innerHTML = '';
+    var caixa = $('ciclos'); caixa.innerHTML = '';
     var mensal = ciclos.filter(function(c){ return c.ciclo === 'mensal'; })[0];
-
     ciclos.forEach(function(c){
       var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'ciclo';
-      b.setAttribute('aria-pressed', 'false');
-      b.dataset.ciclo = c.ciclo;
-
-      var detalhe = '';
+      b.type = 'button'; b.className = 'opcao';
+      b.setAttribute('aria-pressed','false'); b.dataset.ciclo = c.ciclo;
+      var detalhe;
       if(c.ciclo === 'anual'){
         detalhe = 'Cobrado ' + reais(c.preco_cobrado) + ' uma vez por ano';
         if(mensal){
           /* a economia em número é a única coisa que ajuda a decidir aqui.
-             Calculada, não escrita à mão: preço muda, a conta acompanha. */
+             Calculada do preço vigente, não escrita à mão: preço muda, a conta acompanha. */
           var poupa = (Number(mensal.preco_mes) * 12) - Number(c.preco_cobrado);
           if(poupa > 0) detalhe += ' · <span class="economia">economia de ' + reais(poupa) + '</span>';
         }
       } else {
         detalhe = 'Cobrado todo mês, sem permanência mínima';
       }
-
       b.innerHTML =
         '<span class="nome">' + (c.ciclo === 'anual' ? 'Anual' : 'Mensal') +
           '<span class="detalhe">' + detalhe + '</span></span>' +
         '<span class="valor">' + reais(c.preco_mes) + '<span class="mes">/mês</span></span>';
-
-      b.onclick = function(){ escolher(c.ciclo); };
+      b.onclick = function(){ escolherCiclo(c.ciclo); };
       caixa.appendChild(b);
     });
   }
 
-  function escolher(ciclo){
+  function escolherCiclo(ciclo){
     estado.ciclo = ciclo;
-    Array.prototype.forEach.call(document.querySelectorAll('.ciclo'), function(b){
+    Array.prototype.forEach.call($('ciclos').querySelectorAll('.opcao'), function(b){
       b.setAttribute('aria-pressed', String(b.dataset.ciclo === ciclo));
     });
     conferir();
   }
 
-  function emailOk(){
-    return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(($('email').value || '').trim());
-  }
-  function conferir(){
-    $('seguir').disabled = !(emailOk() && $('aceite').checked && estado.ciclo);
-  }
+  function emailOk(){ return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(($('email').value || '').trim()); }
+  function conferir(){ $('seguir').disabled = !(emailOk() && $('aceite').checked && estado.ciclo); }
 
-  fetch(API + '?o=catalogo&p=' + encodeURIComponent(estado.plano))
+  /* ── carga ────────────────────────────────────────────────────────── */
+  fetch(API + '?o=planos')
     .then(function(r){ return r.json(); })
     .then(function(d){
-      if(!d || !d.ok || !d.ciclos || !d.ciclos.length) throw new Error('catálogo vazio');
-      estado.dados = d;
-      $('rotulo').textContent = d.rotulo || estado.plano;
-      $('promessa').textContent = d.promessa || '';
-      desenharCiclos(d.ciclos);
-      escolher(d.ciclos.some(function(c){ return c.ciclo === 'anual'; }) ? 'anual' : d.ciclos[0].ciclo);
+      if(!d || !d.ok || !d.planos || !d.planos.length) throw new Error('catálogo vazio');
+      estado.catalogo = d.planos;
       $('carregando').hidden = true;
-      $('conteudo').hidden = false;
-      $('email').focus();
+
+      var pronto = pedido && d.planos.filter(function(p){ return p.plano === pedido; })[0];
+      if(pronto){
+        estado.veioPronto = true;      /* link mandado depois da reunião */
+        irParaCompra(pronto);
+      } else {
+        desenharPlanos(d.planos);      /* ainda está escolhendo */
+        $('passo-plano').hidden = false;
+      }
     })
     .catch(function(){
       /* tela vazia não pode ser silêncio: diz o que houve e como sair daqui */
-      $('carregando').innerHTML = 'Não consegui carregar o plano agora. '
+      $('carregando').innerHTML = 'Não consegui carregar os planos agora. '
         + 'Recarregue a página ou fale conosco em '
         + '<a href="mailto:contato@lionheartintelligence.com.br">contato@lionheartintelligence.com.br</a>.';
     });
+
+  $('trocar').addEventListener('click', function(){
+    $('passo-compra').hidden = true;
+    $('passo-plano').hidden = false;
+    desenharPlanos(estado.catalogo);
+    dizer('');
+    window.scrollTo(0,0);
+  });
 
   $('email').addEventListener('input', function(){ dizer(''); conferir(); });
   $('aceite').addEventListener('change', function(){ dizer(''); conferir(); });
 
   $('seguir').addEventListener('click', function(){
-    if($('seguir').disabled) return;
     var btn = $('seguir');
+    if(btn.disabled) return;
     btn.disabled = true; btn.textContent = 'Registrando…';
     dizer('');
-
     fetch(API + '?o=aceitar', {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json' },
+      method:'POST', headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({
         email: $('email').value.trim().toLowerCase(),
         plano: estado.plano, ciclo: estado.ciclo, aceite: true
@@ -278,7 +321,7 @@
     .then(function(d){
       if(d && d.ok && d.link){
         btn.textContent = 'Abrindo o pagamento…';
-        location.href = d.link;     /* o link só existe depois do aceite gravado */
+        location.href = d.link;        /* o link só existe depois do aceite gravado */
       } else {
         btn.disabled = false; btn.textContent = 'Ir para o pagamento';
         dizer((d && d.motivo) || 'Não consegui registrar agora. Tente de novo.', true);
