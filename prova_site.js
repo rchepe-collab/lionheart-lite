@@ -1,0 +1,37 @@
+const fs=require('fs'), {JSDOM}=require('jsdom');
+const dom=new JSDOM(fs.readFileSync('/home/claude/lite/index.html','utf8'),
+  {runScripts:'dangerously',url:'https://lionheartintelligence.com.br/',pretendToBeVisual:true});
+setTimeout(()=>{
+  const d=dom.window.document; let mau=false;
+  const L=(k,v)=>console.log('  '+k.padEnd(34,'.')+' '+v);
+  const ex=(k,v)=>{L(k,v); if(v!==true) mau=true;};
+  console.log('--- PROVA: o site ---');
+  ex('menu existe', !!d.querySelector('.menu'));
+  const links=[...d.querySelectorAll('.menu a')];
+  L('itens do menu', links.map(a=>a.textContent.trim()).join(' · '));
+  ex('toda âncora tem destino', links.filter(a=>a.getAttribute('href').startsWith('#'))
+      .every(a=>!!d.querySelector(a.getAttribute('href'))));
+  ex('menu leva a assinar', links.some(a=>a.getAttribute('href')==='assinar.html'));
+  ex('nenhum link morto #contato', !d.querySelector('a[href="#contato"]'));
+  ex('logo na barra', !!d.querySelector('.pb-marca img'));
+  console.log('  -- linha do tempo --');
+  const anos=[...d.querySelectorAll('.tl-ano')];
+  ex('seis anos', anos.length===6);
+  ex('abre em 2026', anos.find(b=>b.dataset.ano==='2026').getAttribute('aria-selected')==='true');
+  const p=d.getElementById('tl-palco');
+  ex('2026 fala de teste', /teste/i.test(p.textContent));
+  anos.find(b=>b.dataset.ano==='2033').dispatchEvent(new dom.window.Event('click'));
+  ex('2033 troca o conteúdo', /extintos/i.test(p.textContent));
+  ex('2033 fica marcado', anos.find(b=>b.dataset.ano==='2033').getAttribute('aria-selected')==='true');
+  ex('2026 desmarcado', anos.find(b=>b.dataset.ano==='2026').getAttribute('aria-selected')==='false');
+  anos.find(b=>b.dataset.ano==='2029').dispatchEvent(new dom.window.Event('click'));
+  ex('2029 fala de 90%', /90%/.test(p.textContent));
+  ex('não promete alíquota fechada', !/IBS de \d+[,.]?\d*%/.test(d.body.textContent));
+  console.log('  -- como começar --');
+  ex('seção existe', !!d.getElementById('comecar'));
+  ex('três passos', d.querySelectorAll('#comecar .passos li').length===3);
+  ex('CTA para assinar', !!d.querySelector('#comecar a[href="assinar.html"]'));
+  ex('js removeu a classe nojs', !d.body.classList.contains('nojs'));
+  console.log(mau?'RESULTADO: FALHOU':'RESULTADO: tudo aprovado');
+  process.exitCode=mau?1:0;
+},500);
