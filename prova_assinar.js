@@ -42,7 +42,7 @@ setTimeout(()=>{
   });
   ex('Adequação fala de split payment', ops[0].textContent.includes('Split payment'));
   ex('Consultoria fala de honorário', ops[1].textContent.includes('honorário'));
-  ex('Especialista fala de agro 31 telas', ops[2].textContent.includes('31 telas próprias'));
+  ex('Especialista fala de agro 31 soluções', ops[2].textContent.includes('31 soluções próprias'));
   ex('sem HTML cru escapando', !a.getElementById('planos').innerHTML.includes('&lt;li&gt;'));
   ex('bloco grátis existe no passo 1', !!a.querySelector('.gratis'));
   ex('grátis vem DEPOIS dos planos', a.querySelector('.gratis').compareDocumentPosition(a.getElementById('planos'))===2);
