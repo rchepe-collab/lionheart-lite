@@ -121,19 +121,31 @@
     content:''; position:absolute; left:0; top:14px;
     width:9px; height:1px; background:var(--ouro);
   }
+  /* ★ o recorte e o convite brigavam por uma linha só: a frase quebrava em
+     duas e o "escolher" ficava espremido ao lado. Agora cada um tem a sua. */
   .opcao .rodape-opcao{
-    display:flex; align-items:center; justify-content:space-between; gap:14px;
-    margin-top:18px; padding-top:14px; border-top:1px solid rgba(201,162,39,.16);
-    flex-wrap:wrap;
+    display:block; margin-top:20px; padding-top:16px;
+    border-top:1px solid rgba(201,162,39,.18);
   }
   .opcao .conta{
-    font-family:'Cormorant Garamond',Georgia,serif; font-size:1.05rem;
-    font-style:italic; color:var(--ouro-fosco); line-height:1.4; flex:1; min-width:16ch;
+    display:block; font-family:'Cormorant Garamond',Georgia,serif;
+    font-size:1.24rem; font-style:italic; color:var(--linho);
+    line-height:1.45; margin-bottom:16px;
   }
   .opcao .conta strong{ color:var(--ouro-claro); font-weight:600; font-style:normal }
+  /* caixa dourada visível ANTES do mouse chegar — a mesma forma do
+     "ver os outros planos" e do botão de pagamento. Um convite que só
+     aparece no hover não existe para quem está no celular. */
   .opcao .escolher{
-    font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--ouro-claro);
+    display:block; text-align:center;
+    border:1px solid rgba(201,162,39,.55); color:var(--ouro-claro);
+    font-family:'Sora',sans-serif; font-size:.74rem; font-weight:500;
+    letter-spacing:.16em; text-transform:uppercase; padding:13px 20px;
+    transition:background-color .14s, color .14s;
   }
+  .opcao:hover .escolher,
+  .opcao[aria-pressed="true"] .escolher{ background:var(--ouro); color:var(--breu) }
+
   .economia{ color:var(--ouro-claro) }
 
   /* ★ O CAMINHO GRATUITO FICA NO FIM, E QUIETO.
