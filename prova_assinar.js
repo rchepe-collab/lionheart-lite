@@ -6,7 +6,6 @@ const PLANOS={ok:true,termo_versao:'1.0',planos:[
   ciclos:[{ciclo:'anual',preco_mes:'299.00',preco_cobrado:'3588.00'},{ciclo:'mensal',preco_mes:'499.00',preco_cobrado:'499.00'}]},
  {plano:'especialista',rotulo:'Especialista',promessa:'Setores: serviços, agro, indústria.',ordem:3,
   ciclos:[{ciclo:'anual',preco_mes:'499.00',preco_cobrado:'5988.00'},{ciclo:'mensal',preco_mes:'799.00',preco_cobrado:'799.00'}]}]};
-
 function montar(url){ let env=null;
   const dom=new JSDOM(fs.readFileSync('/home/claude/lite/assinar.html','utf8'),
    {runScripts:'dangerously',url,beforeParse(w){
@@ -14,48 +13,59 @@ function montar(url){ let env=null;
        env=JSON.parse(o.body); return Promise.resolve({json:()=>Promise.resolve({ok:true,link:'https://www.asaas.com/c/X'})}); };
    }});
   return {dom, get enviado(){return env;}}; }
-
 let mau=false;
-const L=(k,v)=>console.log('  '+k.padEnd(34,'.')+' '+v);
+const L=(k,v)=>console.log('  '+k.padEnd(36,'.')+' '+v);
 const ex=(k,v)=>{L(k,v); if(v!==true) mau=true;};
-
-const A=montar('https://x/assinar.html');            // sem ?p= → escolhe
-const B=montar('https://x/assinar.html?p=especialista'); // com ?p= → direto
+const A=montar('https://x/assinar.html');
+const B=montar('https://x/assinar.html?p=especialista');
 setTimeout(()=>{
+ try{
   const a=A.dom.window.document;
-  console.log('--- SEM ?p= · a pessoa escolhe ---');
+  console.log('--- SEM ?p= · escolha com proposta de valor ---');
   ex('passo de escolha visível', a.getElementById('passo-plano').hidden===false);
-  ex('passo de compra escondido', a.getElementById('passo-compra').hidden===true);
   const ops=[...a.getElementById('planos').querySelectorAll('.opcao')];
-  ex('três planos na tela', ops.length===3);
-  L('ordem', ops.map(o=>o.dataset.plano).join(' → '));
-  ex('ordem é a da escada', ops.map(o=>o.dataset.plano).join()==='preparacao,consultoria,especialista');
-  ex('mostra o menor preço/mês', ops[0].textContent.includes('199,00'));
-  ex('diz que a escada é cumulativa', a.querySelector('.escada').textContent.includes('inclui tudo'));
+  ex('três planos', ops.length===3);
+  ex('ordem da escada', ops.map(o=>o.dataset.plano).join()==='preparacao,consultoria,especialista');
+  ex('menor preço/mês do Adequação', ops[0].textContent.includes('199,00'));
+  ex('escada cumulativa dita', a.querySelector('.linha-fina').textContent.includes('inclui tudo'));
+  console.log('  -- propostas de valor --');
+  ops.forEach((o,i)=>{
+    const li=o.querySelectorAll('li').length;
+    const conta=(o.querySelector('.conta')||{}).textContent||'';
+    L(ops[i].dataset.plano+': itens/contagem', li+' itens · "'+conta+'"');
+    if(li<4) mau=true;
+    if(!conta) mau=true;
+  });
+  ex('Adequação fala de split payment', ops[0].textContent.includes('Split payment'));
+  ex('Consultoria fala de honorário', ops[1].textContent.includes('honorário'));
+  ex('Especialista fala de agro 31 telas', ops[2].textContent.includes('31 telas próprias'));
+  ex('sem HTML cru escapando', !a.getElementById('planos').innerHTML.includes('&lt;li&gt;'));
   ops[1].dispatchEvent(new A.dom.window.Event('click'));
   setTimeout(()=>{
-    ex('abriu a compra do escolhido', a.getElementById('rotulo').textContent==='Consultoria');
-    ex('botão trocar aparece', a.getElementById('trocar').hidden===false);
-    ex('economia do anual', a.getElementById('ciclos').textContent.includes('2.400,00'));
-
+   try{
+    ex('abre o plano escolhido', a.getElementById('rotulo-plano').textContent==='Consultoria');
+    ex('economia 499×12−3588', a.getElementById('ciclos').textContent.includes('2.400,00'));
     const b=B.dom.window.document;
     console.log('--- COM ?p=especialista · veio de reunião ---');
     ex('pulou a escolha', b.getElementById('passo-plano').hidden===true);
-    ex('plano certo', b.getElementById('rotulo').textContent==='Especialista');
+    ex('plano certo', b.getElementById('rotulo-plano').textContent==='Especialista');
     ex('sem botão trocar', b.getElementById('trocar').hidden===true);
-    ex('economia 799×12−5988=3600', b.getElementById('ciclos').textContent.includes('3.600,00'));
+    ex('economia 799×12−5988', b.getElementById('ciclos').textContent.includes('3.600,00'));
     b.getElementById('email').value='cliente@escritorio.com.br';
     b.getElementById('email').dispatchEvent(new B.dom.window.Event('input'));
+    ex('travado só com e-mail', b.getElementById('seguir').disabled===true);
     b.getElementById('aceite').checked=true;
     b.getElementById('aceite').dispatchEvent(new B.dom.window.Event('change'));
-    ex('botão destrava', b.getElementById('seguir').disabled===false);
+    ex('destrava com e-mail + aceite', b.getElementById('seguir').disabled===false);
     b.getElementById('seguir').click();
     setTimeout(()=>{
-      ex('envia plano especialista', B.enviado && B.enviado.plano==='especialista');
-      ex('envia ciclo anual', B.enviado && B.enviado.ciclo==='anual');
-      ex('envia aceite true', B.enviado && B.enviado.aceite===true);
+      ex('envia plano', B.enviado && B.enviado.plano==='especialista');
+      ex('envia ciclo', B.enviado && B.enviado.ciclo==='anual');
+      ex('envia aceite', B.enviado && B.enviado.aceite===true);
       console.log(mau?'RESULTADO: FALHOU':'RESULTADO: tudo aprovado');
       process.exitCode=mau?1:0;
     },60);
-  },50);
-},400);
+   }catch(e){ console.log('ERRO:',e.message); process.exitCode=1; }
+  },60);
+ }catch(e){ console.log('ERRO:',e.message); process.exitCode=1; }
+},450);

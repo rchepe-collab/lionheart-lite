@@ -8,113 +8,156 @@
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Sora:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* ── A PÁGINA DE FECHAMENTO ────────────────────────────────────────────
+  /* ── PÁGINA DE FECHAMENTO ──────────────────────────────────────────────
+     Mesma paleta e as mesmas duas famílias da vitrine: quem vem de lá tem
+     que sentir que continua na mesma casa. Cormorant Garamond carrega a voz
+     — serifa alta, peso leve, itálico para a frase que respira; Sora faz o
+     trabalho seco de número, rótulo e botão.
+
      Dois caminhos chegam aqui:
-       · sem ?p= → a pessoa ainda escolhe. Vê os três planos.
-       · com ?p= → veio de uma reunião com o plano já combinado. Vai direto.
-     Nos dois casos ela NÃO é página de venda: sem argumento, sem depoimento,
-     sem lista de benefícios. Quem chega já está decidindo, não sendo
-     convencido. A ousadia fica num lugar só — a escada de planos e a
-     economia do anual em número. */
+       · sem ?p= → ainda escolhe. Vê os três planos com o que cada um resolve.
+       · com ?p= → veio de reunião com o plano combinado. Vai direto.
+
+     Continua não sendo página de venda: nada de depoimento, selo ou contador
+     regressivo. O que ajuda a decidir é o que cada plano RESOLVE e quanto
+     custa — e isso vem do que a ferramenta realmente tem dentro. */
   :root{
-    --tinta:#0a1628;        /* o azul da ferramenta — continuidade, não escolha nova */
-    --tinta-alta:#0e1d33;
+    --breu:#080808;
+    --breu-alto:#0e0e0f;
+    --carvao:#141415;
     --ouro:#c9a227;
-    --ouro-claro:#f4cc4a;
-    --papel:#e8edf5;
-    --fosco:#9fb0c8;
+    --ouro-claro:#e6c766;
+    --ouro-fosco:#8f7015;
+    --creme:#f2ede3;
+    --pedra:#8e8a82;
+    --pedra-funda:#5d5a55;
+    --linho:#cfc7b8;
     --verde:#10b981;
-    --alerta:#ff7b7b;
+    --alerta:#e07a7a;
   }
   *{ box-sizing:border-box }
   html,body{ margin:0; padding:0 }
   body{
-    background:var(--tinta); color:var(--papel);
+    background:var(--breu); color:var(--creme);
     font-family:'Sora',system-ui,-apple-system,sans-serif;
-    font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+    font-size:15px; font-weight:300; line-height:1.65;
+    -webkit-font-smoothing:antialiased;
   }
-  .faixa{ background:#000; padding:20px; text-align:center }
-  .faixa img{ width:100%; max-width:460px; height:auto; display:block; margin:0 auto }
 
-  main{ max-width:560px; margin:0 auto; padding:34px 22px 64px }
+  .faixa{ padding:26px 20px 6px; text-align:center }
+  .faixa img{ width:100%; max-width:430px; height:auto; display:block; margin:0 auto }
 
-  .abertura{ margin-bottom:24px }
-  .abertura .sobretitulo{ color:var(--fosco); font-size:.88rem; margin:0 0 4px }
+  main{ max-width:620px; margin:0 auto; padding:26px 24px 80px }
+
+  .rotulo{
+    font-size:.7rem; letter-spacing:.24em; text-transform:uppercase;
+    color:var(--ouro-fosco); font-weight:400; margin:0 0 14px;
+  }
   h1{
-    font-family:'Syne',sans-serif; font-weight:800;
-    font-size:2.1rem; line-height:1.1; margin:0 0 10px; color:var(--ouro-claro);
+    font-family:'Cormorant Garamond',Georgia,serif;
+    font-weight:300; font-size:2.7rem; line-height:1.14;
+    margin:0 0 14px; color:var(--creme); letter-spacing:-.01em;
   }
-  .promessa{ margin:0; color:var(--papel); opacity:.82; font-size:.95rem }
-  .escada{ margin:6px 0 0; font-size:.83rem; color:var(--fosco) }
+  h1 em{ font-style:italic; color:var(--ouro-claro) }
+  .linha-fina{ margin:0 0 30px; color:var(--pedra); font-size:.95rem; max-width:46ch }
 
-  fieldset{ border:0; margin:0 0 24px; padding:0 }
-  legend{ padding:0; margin:0 0 10px; font-size:.9rem; color:var(--fosco); font-weight:500 }
+  hr.regua{ border:0; border-top:1px solid rgba(201,162,39,.22); margin:34px 0 }
 
-  /* planos e ciclos são LINHAS, não cartões gêmeos: o que se compara entre
-     eles é preço, e preço se lê em coluna alinhada */
+  /* Planos e ciclos são LINHAS, não cartões gêmeos: entre eles o que se
+     compara é preço, e preço se lê em coluna alinhada. */
   .opcao{
-    display:flex; align-items:baseline; gap:14px; width:100%;
-    background:transparent; color:inherit; text-align:left;
-    border:1px solid rgba(255,255,255,.14); border-radius:10px;
-    padding:15px 16px; margin-bottom:9px; cursor:pointer; font:inherit;
-    transition:border-color .12s, background-color .12s;
+    display:block; width:100%; text-align:left; font:inherit; cursor:pointer;
+    background:var(--breu-alto); color:inherit;
+    border:1px solid rgba(255,255,255,.09); border-left:2px solid transparent;
+    padding:20px 22px; margin-bottom:11px;
+    transition:border-color .14s, background-color .14s;
   }
-  .opcao:hover{ border-color:rgba(201,162,39,.5) }
+  .opcao:hover{ background:var(--carvao); border-color:rgba(201,162,39,.34) }
   .opcao[aria-pressed="true"]{
-    border-color:var(--ouro); background:rgba(201,162,39,.09);
-    box-shadow:inset 3px 0 0 var(--ouro);
+    background:var(--carvao); border-color:rgba(201,162,39,.4); border-left-color:var(--ouro);
   }
-  .opcao .nome{ font-weight:600; flex:1 }
-  .opcao .valor{ font-family:'Syne',sans-serif; font-weight:700; font-size:1.28rem; color:var(--papel); white-space:nowrap }
-  .opcao .mes{ font-size:.76rem; color:var(--fosco); margin-left:2px }
-  .opcao .detalhe{ display:block; font-size:.78rem; color:var(--fosco); font-weight:400; margin-top:3px; line-height:1.45 }
-  .opcao .economia{ color:var(--ouro-claro) }
+  .opcao .topo{ display:flex; align-items:baseline; gap:16px }
+  .opcao .nome{
+    font-family:'Cormorant Garamond',Georgia,serif; font-weight:600;
+    font-size:1.5rem; line-height:1.2; color:var(--creme); flex:1;
+  }
+  .opcao[aria-pressed="true"] .nome{ color:var(--ouro-claro) }
+  .opcao .valor{ font-weight:400; font-size:1.05rem; color:var(--creme); white-space:nowrap }
+  .opcao .mes{ font-size:.74rem; color:var(--pedra-funda) }
+  .opcao .sub{ margin:4px 0 0; font-size:.83rem; color:var(--pedra); line-height:1.5 }
+  .opcao ul{ margin:13px 0 0; padding:0; list-style:none }
+  .opcao li{
+    font-size:.83rem; color:var(--linho); line-height:1.5;
+    padding:3px 0 3px 17px; position:relative;
+  }
+  .opcao li::before{
+    content:''; position:absolute; left:2px; top:12px;
+    width:5px; height:1px; background:var(--ouro-fosco);
+  }
+  .opcao .conta{
+    display:inline-block; margin-top:12px; font-size:.75rem;
+    letter-spacing:.1em; text-transform:uppercase; color:var(--ouro-fosco);
+  }
+  .economia{ color:var(--ouro-claro) }
 
   .trocar{
     background:none; border:0; color:var(--ouro); font:inherit; font-size:.83rem;
-    padding:0; cursor:pointer; text-decoration:underline; margin-bottom:18px;
+    padding:0; cursor:pointer; margin-bottom:26px;
+    border-bottom:1px solid rgba(201,162,39,.4);
   }
 
-  label.campo{ display:block; margin-bottom:6px; font-size:.9rem; color:var(--fosco) }
+  fieldset{ border:0; margin:0 0 28px; padding:0 }
+  legend, .campo{
+    padding:0; margin:0 0 12px; font-size:.7rem; letter-spacing:.2em;
+    text-transform:uppercase; color:var(--pedra-funda); font-weight:400;
+  }
+  .campo{ display:block; margin-bottom:9px }
   input[type=email]{
-    width:100%; background:var(--tinta-alta); color:var(--papel);
-    border:1px solid rgba(255,255,255,.16); border-radius:9px;
-    padding:13px 14px; font:inherit;
+    width:100%; background:var(--breu-alto); color:var(--creme);
+    border:1px solid rgba(255,255,255,.12); border-radius:0;
+    padding:15px 16px; font:inherit; font-size:1rem;
   }
-  input[type=email]::placeholder{ color:#5f7391 }
-  .ajuda{ margin:7px 0 0; font-size:.8rem; color:var(--fosco) }
+  input[type=email]:focus{ border-color:rgba(201,162,39,.55); outline:none }
+  input[type=email]::placeholder{ color:var(--pedra-funda) }
+  .ajuda{ margin:9px 0 0; font-size:.8rem; color:var(--pedra) }
 
-  .aceite{ display:flex; gap:10px; align-items:flex-start; margin:22px 0 16px; cursor:pointer; font-size:.88rem }
-  .aceite input{ width:18px; height:18px; margin-top:2px; accent-color:var(--ouro); cursor:pointer; flex-shrink:0 }
+  .aceite{ display:flex; gap:11px; align-items:flex-start; margin:26px 0 18px; cursor:pointer; font-size:.88rem; color:var(--linho) }
+  .aceite input{ width:17px; height:17px; margin-top:3px; accent-color:var(--ouro); cursor:pointer; flex-shrink:0 }
 
   button.seguir{
-    width:100%; border:0; border-radius:10px; padding:16px;
-    font-family:'Syne',sans-serif; font-weight:800; font-size:1rem;
-    cursor:pointer; transition:filter .12s;
+    width:100%; border:1px solid var(--ouro); border-radius:0;
+    padding:17px; font-family:'Sora',sans-serif; font-weight:500;
+    font-size:.82rem; letter-spacing:.16em; text-transform:uppercase;
+    cursor:pointer; transition:background-color .14s, color .14s;
+    background:transparent; color:var(--ouro-claro);
   }
-  button.seguir:disabled{ background:rgba(255,255,255,.07); color:#6b7a8d; cursor:not-allowed }
-  button.seguir:not(:disabled){ background:linear-gradient(135deg,#d4a82a,#c9a227); color:#0c1628 }
-  button.seguir:not(:disabled):hover{ filter:brightness(1.07) }
+  button.seguir:hover:not(:disabled){ background:var(--ouro); color:var(--breu) }
+  button.seguir:disabled{ border-color:rgba(255,255,255,.12); color:var(--pedra-funda); cursor:not-allowed }
 
-  .recado{ margin:14px 0 0; font-size:.85rem; min-height:1.2em }
+  .recado{ margin:15px 0 0; font-size:.85rem; min-height:1.2em; color:var(--pedra) }
   .recado.erro{ color:var(--alerta) }
 
   .privacidade{
-    margin-top:30px; padding:13px 15px; border-radius:10px;
-    background:rgba(16,185,129,.07); border:1px solid rgba(16,185,129,.26);
-    font-size:.82rem; color:#b8c4d4;
+    margin-top:36px; padding:16px 18px;
+    border-left:2px solid rgba(16,185,129,.5); background:rgba(16,185,129,.05);
+    font-size:.83rem; color:var(--linho);
   }
-  .privacidade b{ color:var(--verde); font-weight:600 }
+  .privacidade b{ color:var(--verde); font-weight:500 }
 
-  .rodape{ margin-top:26px; font-size:.78rem; color:#71839b; line-height:1.55 }
+  .rodape{ margin-top:30px; font-size:.78rem; color:var(--pedra-funda); line-height:1.7 }
   a{ color:var(--ouro) }
-  :focus-visible{ outline:2px solid var(--ouro-claro); outline-offset:2px }
-  .carregando{ color:var(--fosco); padding:30px 0 }
+  :focus-visible{ outline:1px solid var(--ouro-claro); outline-offset:3px }
+  .carregando{ color:var(--pedra); padding:40px 0 }
 
   @media(prefers-reduced-motion:reduce){ *{ transition:none !important } }
-  @media(max-width:480px){ h1{ font-size:1.7rem } main{ padding:26px 17px 52px } }
+  @media(max-width:520px){
+    h1{ font-size:2.1rem }
+    main{ padding:22px 18px 60px }
+    .opcao{ padding:17px 18px }
+    .opcao .nome{ font-size:1.32rem }
+  }
 </style>
 </head>
 <body>
@@ -126,25 +169,24 @@
 <main>
   <div id="carregando" class="carregando">Carregando os planos…</div>
 
-  <!-- PASSO 1 · escolher o plano (só aparece quando não veio ?p= no endereço) -->
+  <!-- PASSO 1 · escolher -->
   <section id="passo-plano" hidden>
-    <div class="abertura">
-      <p class="sobretitulo">Assinatura</p>
-      <h1>Escolha seu plano</h1>
-      <p class="escada">Cada plano inclui tudo dos anteriores.</p>
-    </div>
+    <p class="rotulo">Assinatura</p>
+    <h1>Escolha por onde<br>você quer <em>começar</em>.</h1>
+    <p class="linha-fina">Cada plano inclui tudo dos anteriores. Sem fidelidade, sem multa,
+      e o valor de hoje fica travado enquanto a assinatura durar.</p>
     <div id="planos"></div>
   </section>
 
   <!-- PASSO 2 · confirmar e pagar -->
   <section id="passo-compra" hidden>
-    <div class="abertura">
-      <p class="sobretitulo">Você está assinando</p>
-      <h1 id="rotulo"></h1>
-      <p class="promessa" id="promessa"></p>
-    </div>
+    <p class="rotulo">Você está assinando</p>
+    <h1 id="rotulo-plano"></h1>
+    <p class="linha-fina" id="promessa"></p>
 
-    <button class="trocar" id="trocar" type="button" hidden>Escolher outro plano</button>
+    <button class="trocar" id="trocar" type="button" hidden>Ver os outros planos</button>
+
+    <hr class="regua">
 
     <fieldset>
       <legend>Como prefere pagar</legend>
@@ -173,8 +215,8 @@
     </div>
 
     <p class="rodape">
-      Sem fidelidade e sem multa — cancele quando quiser.<br>
-      Pagamento processado pelo Asaas. Dúvidas:
+      Cancele quando quiser, sem multa.<br>
+      Pagamento processado pelo Asaas · PIX, boleto ou cartão.<br>
       <a href="mailto:contato@lionheartintelligence.com.br">contato@lionheartintelligence.com.br</a>
     </p>
   </section>
@@ -184,6 +226,46 @@
 (function(){
   'use strict';
   var API = 'https://dilrjxsbcejcgprajayo.supabase.co/functions/v1/assinar';
+
+  /* O QUE CADA PLANO RESOLVE.
+     Contado a partir do que está de fato ligado em cada plano no banco — não
+     é promessa de marketing, é inventário. Os números são telas reais:
+     31 · +66 · +67. Se um dia o conteúdo mudar, isto aqui mente — por isso o
+     número está escrito junto, para a mentira ser visível. */
+  var VALOR = {
+    preparacao: {
+      chamada: 'O que tem data marcada.',
+      itens: [
+        'Split payment: o buraco de caixa do seu cliente, mês a mês, antes de 2027',
+        'Preço refeito para a carga nova — contrato a contrato, com reajuste calculado',
+        'Cadastro auditado em massa: cClassTrib item a item, não no olho',
+        'Custo de não se adequar, e o de regularizar antes da fiscalização'
+      ],
+      conta: '31 telas'
+    },
+    consultoria: {
+      chamada: 'Onde nasce o honorário.',
+      itens: [
+        'Regime ótimo, fator R, sublimite — a conta que justifica a sua proposta',
+        'Recuperação de crédito: monofásico, ICMS-ST, INSS, ISS e mais teses',
+        'Patrimonial e sucessório: holding, aluguel PF × PJ, valuation, offshore',
+        'Contencioso: multa e juros, prescrição, transação, compensação',
+        'A proposta comercial sai da própria análise, pronta para enviar'
+      ],
+      conta: 'mais 66 telas'
+    },
+    especialista: {
+      chamada: 'O escritório inteiro, por setor.',
+      itens: [
+        'Agronegócio com 31 telas próprias — a maior vertical da plataforma',
+        'Indústria, serviços, comércio, turismo, saúde, transporte, combustível',
+        'Painel do escritório: carteira, LTV por cliente, Motor 360',
+        'Relatório com a sua marca, pronto para entregar ao cliente'
+      ],
+      conta: 'mais 67 telas'
+    }
+  };
+
   var estado = { plano:null, ciclo:null, catalogo:null, veioPronto:false };
 
   function $(id){ return document.getElementById(id); }
@@ -197,21 +279,26 @@
   function menorMes(ciclos){
     return ciclos.reduce(function(a,c){ return Math.min(a, Number(c.preco_mes)); }, Infinity);
   }
+  function limpo(t){ var d = document.createElement('div'); d.textContent = t == null ? '' : t; return d.innerHTML; }
 
-  var q = new URLSearchParams(location.search);
-  var pedido = (q.get('p') || '').toLowerCase();
+  var pedido = (new URLSearchParams(location.search).get('p') || '').toLowerCase();
 
   /* ── PASSO 1 ──────────────────────────────────────────────────────── */
   function desenharPlanos(planos){
     var caixa = $('planos'); caixa.innerHTML = '';
     planos.forEach(function(p){
+      var v = VALOR[p.plano] || { chamada:p.promessa || '', itens:[], conta:'' };
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'opcao';
       b.setAttribute('aria-pressed','false'); b.dataset.plano = p.plano;
       b.innerHTML =
-        '<span class="nome">' + p.rotulo +
-          '<span class="detalhe">' + (p.promessa || '') + '</span></span>' +
-        '<span class="valor">' + reais(menorMes(p.ciclos)) + '<span class="mes">/mês</span></span>';
+        '<span class="topo">' +
+          '<span class="nome">' + limpo(p.rotulo) + '</span>' +
+          '<span class="valor">' + reais(menorMes(p.ciclos)) + ' <span class="mes">/mês</span></span>' +
+        '</span>' +
+        '<p class="sub">' + limpo(v.chamada) + '</p>' +
+        '<ul>' + v.itens.map(function(i){ return '<li>' + limpo(i) + '</li>'; }).join('') + '</ul>' +
+        (v.conta ? '<span class="conta">' + limpo(v.conta) + '</span>' : '');
       b.onclick = function(){ irParaCompra(p); };
       caixa.appendChild(b);
     });
@@ -220,8 +307,9 @@
   /* ── PASSO 2 ──────────────────────────────────────────────────────── */
   function irParaCompra(p){
     estado.plano = p.plano;
-    $('rotulo').textContent = p.rotulo;
-    $('promessa').textContent = p.promessa || '';
+    var v = VALOR[p.plano];
+    $('rotulo-plano').innerHTML = limpo(p.rotulo);
+    $('promessa').textContent = (v && v.chamada ? v.chamada + ' ' : '') + (p.promessa || '');
     desenharCiclos(p.ciclos);
     escolherCiclo(p.ciclos.some(function(c){ return c.ciclo === 'anual'; }) ? 'anual' : p.ciclos[0].ciclo);
     $('passo-plano').hidden = true;
@@ -238,22 +326,23 @@
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'opcao';
       b.setAttribute('aria-pressed','false'); b.dataset.ciclo = c.ciclo;
-      var detalhe;
+      var sub;
       if(c.ciclo === 'anual'){
-        detalhe = 'Cobrado ' + reais(c.preco_cobrado) + ' uma vez por ano';
+        sub = 'Cobrado ' + reais(c.preco_cobrado) + ' uma vez por ano';
         if(mensal){
           /* a economia em número é a única coisa que ajuda a decidir aqui.
-             Calculada do preço vigente, não escrita à mão: preço muda, a conta acompanha. */
+             Calculada do preço vigente, nunca escrita à mão. */
           var poupa = (Number(mensal.preco_mes) * 12) - Number(c.preco_cobrado);
-          if(poupa > 0) detalhe += ' · <span class="economia">economia de ' + reais(poupa) + '</span>';
+          if(poupa > 0) sub += ' · <span class="economia">economia de ' + reais(poupa) + '</span>';
         }
       } else {
-        detalhe = 'Cobrado todo mês, sem permanência mínima';
+        sub = 'Cobrado todo mês, sem permanência mínima';
       }
       b.innerHTML =
-        '<span class="nome">' + (c.ciclo === 'anual' ? 'Anual' : 'Mensal') +
-          '<span class="detalhe">' + detalhe + '</span></span>' +
-        '<span class="valor">' + reais(c.preco_mes) + '<span class="mes">/mês</span></span>';
+        '<span class="topo">' +
+          '<span class="nome">' + (c.ciclo === 'anual' ? 'Anual' : 'Mensal') + '</span>' +
+          '<span class="valor">' + reais(c.preco_mes) + ' <span class="mes">/mês</span></span>' +
+        '</span><p class="sub">' + sub + '</p>';
       b.onclick = function(){ escolherCiclo(c.ciclo); };
       caixa.appendChild(b);
     });
@@ -277,13 +366,12 @@
       if(!d || !d.ok || !d.planos || !d.planos.length) throw new Error('catálogo vazio');
       estado.catalogo = d.planos;
       $('carregando').hidden = true;
-
       var pronto = pedido && d.planos.filter(function(p){ return p.plano === pedido; })[0];
       if(pronto){
-        estado.veioPronto = true;      /* link mandado depois da reunião */
+        estado.veioPronto = true;
         irParaCompra(pronto);
       } else {
-        desenharPlanos(d.planos);      /* ainda está escolhendo */
+        desenharPlanos(d.planos);
         $('passo-plano').hidden = false;
       }
     })
@@ -298,8 +386,7 @@
     $('passo-compra').hidden = true;
     $('passo-plano').hidden = false;
     desenharPlanos(estado.catalogo);
-    dizer('');
-    window.scrollTo(0,0);
+    dizer(''); window.scrollTo(0,0);
   });
 
   $('email').addEventListener('input', function(){ dizer(''); conferir(); });
