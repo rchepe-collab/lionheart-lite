@@ -370,7 +370,7 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
 .pr-preco .m{display:block;font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;
   color:var(--cinza2);margin-top:2px}
 .pr-d{margin:0 0 26px;color:var(--cinza);max-width:62ch}
-.pr-blocos{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;
+.pr-blocos{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1px;
   background:var(--linha);border:1px solid var(--linha)}
 .pr-bloco{background:var(--onyx2);padding:20px}
 .pr-bloco .n{font-family:'Cormorant Garamond',serif;font-size:2.1rem;line-height:1;
@@ -379,6 +379,9 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
   text-transform:uppercase;color:var(--cinza2);margin-left:5px}
 .pr-bloco .c{display:block;font-size:.9rem;color:var(--marfim);margin:7px 0 5px;font-weight:400}
 .pr-bloco .e{display:block;font-size:.8rem;color:var(--cinza);line-height:1.5}
+.pr-lista{list-style:none;margin:14px 0 0;padding:0;border-top:1px solid var(--linha);padding-top:12px}
+.pr-lista li{font-size:.79rem;color:var(--cinza);line-height:1.5;padding:3px 0 3px 15px;position:relative}
+.pr-lista li::before{content:'';position:absolute;left:0;top:11px;width:7px;height:1px;background:var(--ouro-es)}
 .pr-rodape{display:flex;align-items:center;justify-content:space-between;gap:18px;
   flex-wrap:wrap;margin-top:26px}
 .pr-total{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-style:italic;
@@ -415,11 +418,11 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
     </div>
   </div>
     <nav class="menu" aria-label="Seções">
+      <a href="#produtos">Produtos</a>
       <a href="#reforma">A reforma</a>
       <a href="#solucoes">O que resolve</a>
       <a href="#setores">Setores</a>
       <a href="#escritorio">Monetizar</a>
-      <a href="#produtos">Produtos</a>
       <a href="#quemfaz">Quem faz</a>
       <a href="#comecar">Como começar</a>
       <a class="menu-cta" href="assinar.html">Assinar</a>
@@ -442,6 +445,25 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
   </div>
 </header>
 
+<section id="produtos">
+  <div class="wrap">
+    <h2 class="revela">O que você leva,<br>plano por <em>plano</em>.</h2>
+    <p class="revela" style="color:var(--cinza);max-width:58ch;margin-top:16px">
+      Cada plano inclui tudo dos anteriores. Os números abaixo são o inventário real da
+      plataforma — contado solução por solução, sem repetir nome.
+    </p>
+
+    <div class="pr-abas" role="tablist" aria-label="Planos">
+      <button class="pr-aba" role="tab" aria-selected="false" data-pl="preparacao">
+        <span class="t">Adequação</span><span class="p">o que tem data marcada</span></button>
+      <button class="pr-aba" role="tab" aria-selected="false" data-pl="consultoria">
+        <span class="t">Consultoria</span><span class="p">onde nasce o honorário</span></button>
+      <button class="pr-aba" role="tab" aria-selected="false" data-pl="especialista">
+        <span class="t">Especialista</span><span class="p">o escritório por setor</span></button>
+    </div>
+    <div class="pr-palco" id="pr-palco" role="tabpanel" aria-live="polite"></div>
+  </div>
+</section>
 <section id="reforma" class="sec-alt">
   <div class="wrap rev">
     <div class="sec-eye">O que está em jogo</div>
@@ -664,25 +686,6 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
 
 
 
-<section id="produtos">
-  <div class="wrap">
-    <h2 class="revela">O que você leva,<br>plano por <em>plano</em>.</h2>
-    <p class="revela" style="color:var(--cinza);max-width:58ch;margin-top:16px">
-      Cada plano inclui tudo dos anteriores. Os números abaixo são o inventário real da
-      plataforma — contado solução por solução, sem repetir nome.
-    </p>
-
-    <div class="pr-abas" role="tablist" aria-label="Planos">
-      <button class="pr-aba" role="tab" aria-selected="false" data-pl="preparacao">
-        <span class="t">Adequação</span><span class="p">o que tem data marcada</span></button>
-      <button class="pr-aba" role="tab" aria-selected="false" data-pl="consultoria">
-        <span class="t">Consultoria</span><span class="p">onde nasce o honorário</span></button>
-      <button class="pr-aba" role="tab" aria-selected="false" data-pl="especialista">
-        <span class="t">Especialista</span><span class="p">o escritório por setor</span></button>
-    </div>
-    <div class="pr-palco" id="pr-palco" role="tabpanel" aria-live="polite"></div>
-  </div>
-</section>
 <section id="quemfaz">
   <div class="wrap">
     <h2 class="revela">Não nasceu numa fábrica de software.<br>Nasceu numa <em>mesa de cliente</em>.</h2>
@@ -996,42 +999,42 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
   var API = 'https://dilrjxsbcejcgprajayo.supabase.co/functions/v1/assinar';
   var PL = {
     preparacao: {
-      frase: 'O que a lei <em>obriga</em>, com data no calendário.',
-      d: 'É o plano de quem precisa responder ao cliente o que muda, quanto custa e o que fazer antes de 2027. Cadastro, preço, caixa e conformidade.',
-      blocos: [
-        [17,'Reforma Tributária','Split payment, cash gap, imposto seletivo, alíquota efetiva por setor e por mix, CAPEX, Raio-X do produto.'],
-        [10,'Cadastro & Preço','Auditor de cClassTrib, classificação em massa, formação de preço 2027-33, simulador de notas, análise de contratos.'],
-        [4,'Compliance & Regularização','Custo do descumprimento, denúncia espontânea contra autuação, central de riscos.']
-      ],
-      total: 31, totaltxt: '<b>31 soluções</b> no plano'
+      frase:'O que a lei <em>obriga</em>, com data no calendário.',
+      d:'É o plano de quem precisa responder ao cliente o que muda, quanto custa e o que fazer antes de 2027. Três pilares: entender o impacto, arrumar cadastro e preço, e não tomar multa no caminho.',
+      total:31, totaltxt:'<b>31 soluções</b> no plano',
+      blocos:[
+      { c:'Reforma Tributária', n:17, p:'O impacto da LC 214/2025 no caixa e no resultado do cliente, antes que ele pergunte.', l:['Alíquota Efetiva por Produto (Mix)', 'Alíquota Efetiva por Setor / Atividade', 'Alíquota de Referência · risco', 'CAPEX · Crédito de Investimentos', 'Imposto Seletivo (IS)', 'NCG Split Payment', 'Pagamentos Antecipados', 'Raio-X 360° do Produto', 'Reprecificação de Contratos', 'Risco Fornecedor SN', 'SN → Regime Regular', 'Split Payment Cash Gap', 'Split por Operação'] },
+      { c:'Cadastro & Preço', n:10, p:'Pôr a casa em ordem: classificação correta e preço que sobrevive à carga nova.', l:['Analisador de Contrato', 'Auditor de Cadastro (cClassTrib)', 'Classificador em Massa CBS/IBS', 'Formação de Preço 2027-33', 'Matriz de Inputs Automáticos', 'Simulador de Notas (emissor)'] },
+      { c:'Compliance & Regularização', n:4, p:'O custo de não se adequar, e o de regularizar antes da fiscalização.', l:['Compliance da Reforma 2026', 'Custo do Descumprimento', 'Denúncia Espontânea × Autuação'] }
+      ]
     },
     consultoria: {
-      frase: 'Onde a conversa vira <em>honorário</em>.',
-      d: 'Tudo do Adequação, mais as análises que sustentam uma proposta de consultoria: regime, sócio, crédito, patrimônio e litígio.',
-      blocos: [
-        [15,'Crédito Tributário','Monofásico, ICMS-ST, INSS, ISS, crédito presumido, duplicidade, retenções. Quinze teses de recuperação.'],
-        [11,'Regime & PJ','Regime ótimo, fator R, sublimite, Lucro Real contra Presumido, PF contra PJ, artigo 127.'],
-        [11,'Patrimonial','Holding, sucessório, aluguel PF × PJ, valuation, offshore, reorganização.'],
-        [7,'Contencioso','Multa e juros, prescrição, transação, compensação, REFIS, decisor de autuação.'],
-        [6,'Comércio Exterior','Importação, exportação, drawback, DIFAL, portos.'],
-        [4,'Imobiliário','RET, obra, reforma, incorporação.'],
-        [4,'Remuneração do Sócio','Pró-labore contra distribuição, stock options.'],
-        [3,'Comercial','Proposta gerada da própria análise, estimativa e histórico.']
-      ],
-      total: 61, totaltxt: 'mais <b>61 soluções</b> — <b>92 no total</b>'
+      frase:'Onde a conversa vira <em>honorário</em>.',
+      d:'Tudo do Adequação, mais oito frentes de análise que sustentam uma proposta de consultoria — da recuperação de crédito ao planejamento sucessório.',
+      total:61, totaltxt:'mais <b>61 soluções</b> — <b>92 no total</b>',
+      blocos:[
+      { c:'Crédito Tributário', n:15, p:'Quinze teses de recuperação, com tema do STF citado e memória que se defende.', l:['Crédito Presumido · Agroindústria', 'Créditos Plenos CBS/IBS', 'Fundo de Compensação ICMS', 'ICMS-ST na base PIS/COFINS · Tema 1125', 'IRPJ/CSLL sobre Selic · Tema 962', 'ISS na base PIS/COFINS · Tema 118', 'Insumos PIS/COFINS · Tema 779', 'Monofásico · PIS/COFINS revenda', 'PIS/COFINS Energia', 'Pagamento em Duplicidade · scanner', 'Previdenciária Patronal', 'Retenções na Fonte · não aproveitadas', 'Saldo Credor PIS/COFINS', 'Tema 69 · ICMS na base PIS/COFINS'] },
+      { c:'Regime & PJ', n:11, p:'A conta que define enquadramento — e que sustenta a sua proposta de honorário.', l:['Fator R · III vs V', 'PF vs PJ — Pejotização', 'Profissões Regulamentadas · art. 127', 'Regime Ótimo (Simples/LP/LR)', 'Simples 2027: Dentro × Híbrido', 'Sublimite Simples'] },
+      { c:'Patrimonial', n:11, p:'Sucessão, holding e reorganização: onde o tíquete de consultoria é maior.', l:['Aluguel PF vs PJ', 'Custo Tributário de M&A', 'Doação vs Herança', 'Ganho de Capital PF', 'Holding Patrimonial 2026', 'ITCMD Progressivo por Estado', 'Offshores & Fundos', 'Reorganização Societária — cisão & fusão', 'Sucessório Completo', 'Valuation Empresarial'] },
+      { c:'Contencioso', n:7, p:'Discutir, transacionar ou pagar — com o número de cada caminho na mesa.', l:['Compensação · PER/DCOMP', 'Decisor · discutir, transacionar ou pagar', 'Multas & Juros · custo do débito', 'Prescrição & Decadência', 'REFIS & Parcelamento', 'Simulador de Autuação', 'Transação PGFN 6/2026 · prazo 30/09'] },
+      { c:'Comércio Exterior & Aduaneiro', n:6, p:'Importação, exportação e regimes especiais na transição.', l:['DIFAL · Interestadual', 'Drawback & Aduaneiros', 'Exportação & Saldo Credor', 'Funrural — Receita × Folha', 'Importação & Regimes', 'Portos & Regimes Aduaneiros'] },
+      { c:'Imobiliário', n:4, p:'RET, incorporação e obra sob o regime específico da reforma.', l:['Construção & Empreitada', 'Incorporação / RET', 'Regime Imobiliário da Reforma'] },
+      { c:'Remuneração do Sócio', n:4, p:'Pró-labore, dividendos e JCP diante da tributação de 2026.', l:['JCP vs. Dividendos 2026', 'Pró-labore Ótimo', 'Stock Options · Tema 1.226', 'Tributação de Dividendos'] },
+      { c:'Comercial', n:3, p:'A proposta sai da própria análise, com o valor já calculado.', l:['Histórico de Propostas', 'Proposta Comercial'] }
+      ]
     },
     especialista: {
-      frase: 'O escritório inteiro, <em>setor por setor</em>.',
-      d: 'Tudo dos anteriores, mais as verticais e o painel de gestão da sua carteira. É o plano de quem atende segmento específico e quer entregar com a própria marca.',
-      blocos: [
-        [26,'Agronegócio','A maior vertical da plataforma: funrural, cooperativas, crédito presumido rural, frete, insumos, defensivos.'],
-        [14,'Serviços · Comércio · Turismo','Hotelaria, bares e restaurantes, saúde, transporte de passageiros, combustível, telecom, apostas, financeiro.'],
-        [12,'Indústria','Doze análises específicas de industrialização, crédito de insumo e cadeia.'],
-        [6,'Painel do Escritório','Carteira de clientes, LTV, Motor 360, cenários, relatório em PDF com a sua marca.'],
-        [2,'Comercial','Jornada do cliente e acompanhamento.'],
-        [1,'Gestão BPO','Controle da operação de BPO.']
-      ],
-      total: 61, totaltxt: 'mais <b>61 soluções</b> — <b>153 no total</b>'
+      frase:'O escritório inteiro, <em>setor por setor</em>.',
+      d:'Tudo dos anteriores, mais as verticais setoriais e o painel de gestão da carteira. É o plano de quem atende segmento específico e entrega com a própria marca.',
+      total:61, totaltxt:'mais <b>61 soluções</b> — <b>153 no total</b>',
+      blocos:[
+      { c:'Agronegócio', n:26, p:'A maior vertical da plataforma, do Funrural à sucessão rural.', l:['Agroindústria & Subrogação', 'Ativo Biológico — AVJ', 'Barter — Insumo × Safra', 'Ciclo de Caixa da Safra', 'Cooperativa — Ato × Terceiro', 'Crédito Presumido do Produtor', 'Custeio — CPR × LCA × Banco', 'Decisor do Produtor — contribuinte?', 'Declaração de Destinação · risco', 'Defensivos & Fertilizantes', 'Exportação de Grão — Crédito', 'Frete Rural · art. 169', 'ITR & Terra Produtiva', 'LC 224 — corte de 10% e a tese', 'Mapa do Diferimento · art. 138', 'Momento Ótimo do Investimento', 'Monitor de Crédito por Fornecedor', 'Produtor PF × PJ Rural', 'Sentinela do Teto — R$ 3,6 mi', 'Sucessão Rural — Custo de Esperar', 'Venda a Alíquota Zero · crédito'] },
+      { c:'Serviços · Comércio · Turismo', n:14, p:'Regimes específicos, setor por setor, onde a regra geral não se aplica.', l:['Agências de Viagem & Turismo', 'Apostas / Prognósticos + SAF', 'Bares & Restaurantes', 'Combustíveis (Monofásico)', 'Cooperativas (Regime Específico)', 'Hotel × Eventos — segregar receita', 'Hotelaria & Parques', 'Insumos Agro & Produtor Rural', 'Logística & Cargas', 'Medicamentos & Dispositivos', 'Planos de Saúde (Operadoras)', 'Serviços Financeiros (Spread)', 'Telecom & Energia', 'Transporte de Passageiros'] },
+      { c:'Indústria', n:12, p:'Crédito de estoque, subvenção, Ex-Tarifário e a virada do IPI.', l:['Crédito de Estoque na Virada', 'Energia — Eletrointensivo', 'Ex-Tarifário — Bem de Capital', 'Fundopem RS & Fundo ADCT', 'ICMS-ST — Ressarcimento T201', 'IPI na Transição & ZFM', 'Lei do Bem — P&D', 'Preço Industrial — Por Fora', 'Reintegra — Exportador', 'Split & Ciclo Longo', 'Subvenção — Lei 14.789', 'Tema 1182 — Benefícios'] },
+      { c:'Painel do Escritório', n:6, p:'A sua carteira vista de cima: rentabilidade, LTV e relatório com a sua marca.', l:['Cenários Salvos', 'Dashboard do Cliente', 'LTV de Carteira', 'Monitor de Carteira', 'Motor 360°', 'Relatório PDF'] },
+      { c:'Comercial', n:2, p:'A proposta sai da própria análise, com o valor já calculado.', l:['Jornada do Cliente', 'Rentabilidade por Cliente'] },
+      { c:'Gestão BPO', n:1, p:'Quanto cobrar pela rotina que o seu escritório já entrega.', l:['Precificação de Honorários'] }
+      ]
     }
   };
 
@@ -1056,8 +1059,14 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
       '<p class="pr-d">' + p.d + '</p>' +
       '<div class="pr-blocos">' +
         p.blocos.map(function(b){
-          return '<div class="pr-bloco"><span class="n">' + b[0] + '<small>soluções</small></span>' +
-                 '<span class="c">' + b[1] + '</span><span class="e">' + b[2] + '</span></div>';
+          return '<div class="pr-bloco">' +
+            '<span class="n">' + b.n + '<small>soluções</small></span>' +
+            '<span class="c">' + b.c + '</span>' +
+            '<span class="e">' + b.p + '</span>' +
+            (b.l.length ? '<ul class="pr-lista">' +
+               b.l.map(function(x){ return '<li>' + x + '</li>'; }).join('') +
+             '</ul>' : '') +
+          '</div>';
         }).join('') +
       '</div>' +
       '<div class="pr-rodape">' +

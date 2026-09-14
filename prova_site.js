@@ -35,10 +35,18 @@ setTimeout(()=>{
   ex('abre em Adequação', abas[0].getAttribute('aria-selected')==='true');
   const pp=d.getElementById('pr-palco');
   ex('Adequação mostra 17 da Reforma', /17/.test(pp.textContent));
+  ex('nomeia Split Payment Cash Gap', /Split Payment Cash Gap/.test(pp.textContent));
+  ex('nomeia Auditor de Cadastro', /Auditor de Cadastro/.test(pp.textContent));
+  ex('cada pilar tem lista', [...pp.querySelectorAll('.pr-bloco')].every(b=>b.querySelector('.pr-lista')));
+  ex('produtos é a 1ª seção', d.querySelectorAll('section')[0].id==='produtos');
+  ex('produtos é o 1º item do menu', d.querySelector('.menu a').getAttribute('href')==='#produtos');
   ex('CTA leva ao plano certo', !!pp.querySelector('a[href="assinar.html?p=preparacao"]'));
   abas[2].dispatchEvent(new dom.window.Event('click'));
   ex('Especialista troca', /Agroneg/.test(pp.textContent));
   ex('agro com 26, não 31', /26/.test(pp.textContent));
+  ex('nomeia Funrural', /Funrural/.test(pp.textContent));
+  ex('nomeia Motor 360', /Motor 360/.test(pp.textContent));
+  ex('nomeia Sentinela do Teto', /Sentinela do Teto/.test(pp.textContent));
   ex('total 153, não 164', /153/.test(pp.textContent) && !/164/.test(pp.textContent));
   ex('CTA do especialista', !!pp.querySelector('a[href="assinar.html?p=especialista"]'));
   console.log('  -- botão flutuante --');
