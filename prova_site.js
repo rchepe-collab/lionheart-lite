@@ -31,6 +31,8 @@ setTimeout(()=>{
   ex('seção existe', !!d.getElementById('quemfaz'));
   ex('no menu', [...d.querySelectorAll('.menu a')].some(a=>a.getAttribute('href')==='#quemfaz'));
   ex('dois fundadores', d.querySelectorAll('#quemfaz .fundadores > div').length===2);
+  ex('não diz banca tributária', !/banca tribut/i.test(d.getElementById('quemfaz').textContent));
+  ex('não afirma número de consultores', !/mil consultores/i.test(d.body.textContent));
   ex('sem nome próprio', !/Ricardo|Chepe|Carlos/i.test(d.getElementById('quemfaz').textContent));
   ex('vem antes de Como começar', d.getElementById('quemfaz').compareDocumentPosition(d.getElementById('comecar'))===4);
   console.log('  -- como começar --');
