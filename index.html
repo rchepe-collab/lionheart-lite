@@ -397,7 +397,7 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
   text-transform:uppercase;text-decoration:none;padding:21px 40px;
   box-shadow:0 14px 44px rgba(0,0,0,.6);
   opacity:0;transform:translateY(14px);pointer-events:none;
-  transition:opacity .3s,transform .3s,filter .14s}
+  transition:opacity .22s,transform .22s,filter .14s}
 .flutua.vis{opacity:1;transform:none;pointer-events:auto}
 .flutua:hover{filter:brightness(1.1)}
 @media(max-width:620px){
@@ -1278,7 +1278,12 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
   'use strict';
   var b = document.getElementById('flutua');
   if(!b) return;
-  function ver(){ b.classList.toggle('vis', window.scrollY > window.innerHeight * 0.8); }
+  /* ★ era 0.8 da altura da tela — quase uma tela inteira de rolagem antes de
+     aparecer, e num celular alto isso é muita espera. 240px é pouco mais que
+     o título: a pessoa já saiu do topo, já entendeu onde está, e o botão
+     chega. Continua não aparecendo antes de rolar, que era o ponto: botão de
+     comprar em cima de quem ainda lê o título é anúncio. */
+  function ver(){ b.classList.toggle('vis', window.scrollY > 240); }
   window.addEventListener('scroll', ver, { passive:true });
   ver();
 })();
@@ -1382,6 +1387,13 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
 
   function limpo(t){ var d=document.createElement('div'); d.textContent = t==null?'':t; return d.innerHTML; }
 
+  /* navegador sem fetch não pode derrubar a seção: mostra o recado e segue */
+  if(typeof fetch !== 'function'){
+    grade.innerHTML = '<p class="mt-vazio">Seu navegador não consegue carregar a biblioteca. '
+      + 'Tente por outro navegador ou fale conosco em '
+      + '<a href="mailto:contato@lionheartintelligence.com.br">contato@lionheartintelligence.com.br</a>.</p>';
+    return;
+  }
   fetch(API + '?o=catalogo').then(function(r){ return r.json(); }).then(function(d){
     if(!d || !d.ok || !d.materiais || !d.materiais.length){
       grade.innerHTML = '<p class="mt-vazio">Os primeiros materiais estão a caminho.</p>';

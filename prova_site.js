@@ -75,6 +75,10 @@ setTimeout(()=>{
   ex('existe', !!fl);
   ex('leva a assinar', fl.getAttribute('href')==='assinar.html');
   ex('nasce escondido', !fl.classList.contains('vis'));
+  dom.window.scrollY=300; dom.window.dispatchEvent(new dom.window.Event('scroll'));
+  ex('aparece com 300px de rolagem', fl.classList.contains('vis'));
+  dom.window.scrollY=100; dom.window.dispatchEvent(new dom.window.Event('scroll'));
+  ex('some de volta no topo', !fl.classList.contains('vis'));
   console.log('  -- quem faz --');
   ex('seção existe', !!d.getElementById('quemfaz'));
   ex('no menu', [...d.querySelectorAll('.menu a')].some(a=>a.getAttribute('href')==='#quemfaz'));
