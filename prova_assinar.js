@@ -27,6 +27,10 @@ setTimeout(()=>{
   ex('três planos', ops.length===3);
   ex('ordem da escada', ops.map(o=>o.dataset.plano).join()==='preparacao,consultoria,especialista');
   ex('menor preço/mês do Adequação', ops[0].textContent.includes('199,00'));
+  ex('preço em elemento próprio', !!ops[0].querySelector('.valor .cifra'));
+  ex('diz "a partir de"', ops[0].textContent.includes('a partir de'));
+  ex('convite para escolher', ops[0].textContent.includes('Escolher este plano'));
+  ex('selo de preço de fundador', a.querySelector('.fundador').textContent.includes('31 de dezembro de 2026'));
   ex('escada cumulativa dita', a.querySelector('.linha-fina').textContent.includes('inclui tudo'));
   console.log('  -- propostas de valor --');
   ops.forEach((o,i)=>{

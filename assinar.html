@@ -67,40 +67,82 @@
 
   /* Planos e ciclos são LINHAS, não cartões gêmeos: entre eles o que se
      compara é preço, e preço se lê em coluna alinhada. */
+  /* Planos e ciclos são LINHAS, não cartões gêmeos: entre eles o que se
+     compara é preço, e preço se lê em coluna alinhada. O dinheiro é o
+     elemento mais alto da hierarquia porque é a decisão que sobra. */
   .opcao{
     display:block; width:100%; text-align:left; font:inherit; cursor:pointer;
-    background:var(--breu-alto); color:inherit;
-    border:1px solid rgba(255,255,255,.09); border-left:2px solid transparent;
-    padding:20px 22px; margin-bottom:11px;
-    transition:border-color .14s, background-color .14s;
+    background:linear-gradient(160deg,#0e0e0f 0%,#0a0a0a 100%); color:inherit;
+    border:1px solid rgba(201,162,39,.16); border-left:3px solid rgba(201,162,39,.28);
+    padding:26px 26px 22px; margin-bottom:14px;
+    transition:border-color .16s, background .16s, box-shadow .16s;
   }
-  .opcao:hover{ background:var(--carvao); border-color:rgba(201,162,39,.34) }
+  .opcao:hover{
+    border-color:rgba(201,162,39,.42); border-left-color:var(--ouro);
+    box-shadow:0 0 0 1px rgba(201,162,39,.08), 0 14px 40px rgba(0,0,0,.5);
+  }
   .opcao[aria-pressed="true"]{
-    background:var(--carvao); border-color:rgba(201,162,39,.4); border-left-color:var(--ouro);
+    border-color:rgba(201,162,39,.55); border-left-color:var(--ouro-claro);
+    background:linear-gradient(160deg,#16140d 0%,#0c0b08 100%);
+    box-shadow:0 0 0 1px rgba(201,162,39,.14), 0 14px 44px rgba(0,0,0,.55);
   }
-  .opcao .topo{ display:flex; align-items:baseline; gap:16px }
+  .opcao .topo{ display:flex; align-items:flex-start; gap:20px; flex-wrap:wrap }
   .opcao .nome{
     font-family:'Cormorant Garamond',Georgia,serif; font-weight:600;
-    font-size:1.5rem; line-height:1.2; color:var(--creme); flex:1;
+    font-size:2.35rem; line-height:1.05; color:var(--ouro-claro); flex:1;
+    letter-spacing:-.01em; min-width:9ch;
   }
-  .opcao[aria-pressed="true"] .nome{ color:var(--ouro-claro) }
-  .opcao .valor{ font-weight:400; font-size:1.05rem; color:var(--creme); white-space:nowrap }
-  .opcao .mes{ font-size:.74rem; color:var(--pedra-funda) }
-  .opcao .sub{ margin:4px 0 0; font-size:.83rem; color:var(--pedra); line-height:1.5 }
-  .opcao ul{ margin:13px 0 0; padding:0; list-style:none }
+  .opcao .preco{ text-align:right; white-space:nowrap }
+  .opcao .antes{
+    display:block; font-size:.66rem; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--ouro-fosco); margin-bottom:2px;
+  }
+  .opcao .valor{
+    font-family:'Cormorant Garamond',Georgia,serif; font-weight:700;
+    font-size:2.9rem; line-height:1; color:var(--ouro);
+  }
+  .opcao[aria-pressed="true"] .valor{ color:var(--ouro-claro) }
+  .opcao .cifra{ font-size:1.25rem; vertical-align:.5rem; margin-right:2px }
+  .opcao .mes{
+    display:block; font-family:'Sora',sans-serif; font-size:.68rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--pedra-funda); margin-top:3px;
+  }
+  .opcao .sub{
+    margin:14px 0 0; font-size:.92rem; color:var(--linho); line-height:1.5;
+    font-family:'Cormorant Garamond',Georgia,serif; font-size:1.16rem; font-style:italic;
+    color:var(--ouro-claro); opacity:.9;
+  }
+  .opcao ul{ margin:16px 0 0; padding:0; list-style:none }
   .opcao li{
-    font-size:.83rem; color:var(--linho); line-height:1.5;
-    padding:3px 0 3px 17px; position:relative;
+    font-size:.86rem; color:var(--linho); line-height:1.55;
+    padding:5px 0 5px 20px; position:relative;
   }
   .opcao li::before{
-    content:''; position:absolute; left:2px; top:12px;
-    width:5px; height:1px; background:var(--ouro-fosco);
+    content:''; position:absolute; left:0; top:14px;
+    width:9px; height:1px; background:var(--ouro);
+  }
+  .opcao .rodape-opcao{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    margin-top:18px; padding-top:14px; border-top:1px solid rgba(201,162,39,.16);
+    flex-wrap:wrap;
   }
   .opcao .conta{
-    display:inline-block; margin-top:12px; font-size:.75rem;
-    letter-spacing:.1em; text-transform:uppercase; color:var(--ouro-fosco);
+    font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--ouro-fosco);
+  }
+  .opcao .escolher{
+    font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--ouro-claro);
   }
   .economia{ color:var(--ouro-claro) }
+
+  .fundador{
+    margin:0 0 26px; padding:14px 18px;
+    border:1px solid rgba(201,162,39,.3); background:rgba(201,162,39,.05);
+    font-size:.86rem; color:var(--linho); line-height:1.55;
+  }
+  .fundador b{
+    font-family:'Cormorant Garamond',Georgia,serif; font-size:1.2rem;
+    font-weight:600; color:var(--ouro-claro); display:block; margin-bottom:2px;
+  }
 
   .trocar{
     background:none; border:0; color:var(--ouro); font:inherit; font-size:.83rem;
@@ -175,6 +217,11 @@
     <h1>Escolha por onde<br>você quer <em>começar</em>.</h1>
     <p class="linha-fina">Cada plano inclui tudo dos anteriores. Sem fidelidade, sem multa,
       e o valor de hoje fica travado enquanto a assinatura durar.</p>
+    <p class="fundador">
+      <b>Preço de fundador</b>
+      Quem assinar até 31 de dezembro de 2026 mantém o valor de hoje enquanto a
+      assinatura seguir ativa, mesmo quando a tabela subir.
+    </p>
     <div id="planos"></div>
   </section>
 
@@ -269,6 +316,9 @@
   var estado = { plano:null, ciclo:null, catalogo:null, veioPronto:false };
 
   function $(id){ return document.getElementById(id); }
+  function soNumero(v){
+    return Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+  }
   function reais(v){
     return 'R$ ' + Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
   }
@@ -294,11 +344,18 @@
       b.innerHTML =
         '<span class="topo">' +
           '<span class="nome">' + limpo(p.rotulo) + '</span>' +
-          '<span class="valor">' + reais(menorMes(p.ciclos)) + ' <span class="mes">/mês</span></span>' +
+          '<span class="preco">' +
+            '<span class="antes">a partir de</span>' +
+            '<span class="valor"><span class="cifra">R$</span>' + soNumero(menorMes(p.ciclos)) + '</span>' +
+            '<span class="mes">por mês</span>' +
+          '</span>' +
         '</span>' +
         '<p class="sub">' + limpo(v.chamada) + '</p>' +
         '<ul>' + v.itens.map(function(i){ return '<li>' + limpo(i) + '</li>'; }).join('') + '</ul>' +
-        (v.conta ? '<span class="conta">' + limpo(v.conta) + '</span>' : '');
+        '<span class="rodape-opcao">' +
+          '<span class="conta">' + limpo(v.conta) + '</span>' +
+          '<span class="escolher">Escolher este plano</span>' +
+        '</span>';
       b.onclick = function(){ irParaCompra(p); };
       caixa.appendChild(b);
     });
@@ -341,7 +398,10 @@
       b.innerHTML =
         '<span class="topo">' +
           '<span class="nome">' + (c.ciclo === 'anual' ? 'Anual' : 'Mensal') + '</span>' +
-          '<span class="valor">' + reais(c.preco_mes) + ' <span class="mes">/mês</span></span>' +
+          '<span class="preco">' +
+            '<span class="valor"><span class="cifra">R$</span>' + soNumero(c.preco_mes) + '</span>' +
+            '<span class="mes">por mês</span>' +
+          '</span>' +
         '</span><p class="sub">' + sub + '</p>';
       b.onclick = function(){ escolherCiclo(c.ciclo); };
       caixa.appendChild(b);
