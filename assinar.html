@@ -136,15 +136,17 @@
   /* caixa dourada visível ANTES do mouse chegar — a mesma forma do
      "ver os outros planos" e do botão de pagamento. Um convite que só
      aparece no hover não existe para quem está no celular. */
+  /* ★ dourado PREENCHIDO desde o primeiro olhar, não no hover. Hover não
+     existe no celular, e é no celular que o contador abre o link do
+     WhatsApp — um convite que só acende com o mouse não existe para ele. */
   .opcao .escolher{
     display:block; text-align:center;
-    border:1px solid rgba(201,162,39,.55); color:var(--ouro-claro);
-    font-family:'Sora',sans-serif; font-size:.74rem; font-weight:500;
-    letter-spacing:.16em; text-transform:uppercase; padding:13px 20px;
-    transition:background-color .14s, color .14s;
+    background:linear-gradient(135deg,#d9b53a,#c9a227); border:1px solid var(--ouro);
+    color:var(--breu); font-family:'Sora',sans-serif; font-size:.76rem; font-weight:600;
+    letter-spacing:.16em; text-transform:uppercase; padding:14px 20px;
+    transition:filter .14s;
   }
-  .opcao:hover .escolher,
-  .opcao[aria-pressed="true"] .escolher{ background:var(--ouro); color:var(--breu) }
+  .opcao:hover .escolher{ filter:brightness(1.1) }
 
   .economia{ color:var(--ouro-claro) }
 
@@ -185,14 +187,13 @@
   /* ★ era um link sublinhado e some no preto. Quem chega no passo 2 sem
      ter certeza precisa achar a saída de primeira, senão fecha a aba. */
   .trocar{
-    display:inline-block; background:transparent; cursor:pointer;
-    border:1px solid rgba(201,162,39,.5); color:var(--ouro-claro);
-    font-family:'Sora',sans-serif; font-size:.72rem; font-weight:500;
+    display:inline-block; cursor:pointer;
+    background:linear-gradient(135deg,#d9b53a,#c9a227); border:1px solid var(--ouro);
+    color:var(--breu); font-family:'Sora',sans-serif; font-size:.72rem; font-weight:600;
     letter-spacing:.16em; text-transform:uppercase;
-    padding:12px 22px; margin-bottom:28px;
-    transition:background-color .14s, color .14s, border-color .14s;
+    padding:12px 22px; margin-bottom:28px; transition:filter .14s;
   }
-  .trocar:hover{ background:var(--ouro); border-color:var(--ouro); color:var(--breu) }
+  .trocar:hover{ filter:brightness(1.1) }
 
   fieldset{ border:0; margin:0 0 28px; padding:0 }
   legend, .campo{
@@ -212,15 +213,22 @@
   .aceite{ display:flex; gap:11px; align-items:flex-start; margin:26px 0 18px; cursor:pointer; font-size:.88rem; color:var(--linho) }
   .aceite input{ width:17px; height:17px; margin-top:3px; accent-color:var(--ouro); cursor:pointer; flex-shrink:0 }
 
+  /* Se os dois convites acima ficam preenchidos, o botão de pagar não pode
+     ser o único vazado — a hierarquia se inverteria e o secundário pareceria
+     o principal. Ele fica preenchido também, e maior, para seguir sendo o
+     mais forte da tela. */
   button.seguir{
     width:100%; border:1px solid var(--ouro); border-radius:0;
-    padding:17px; font-family:'Sora',sans-serif; font-weight:500;
-    font-size:.82rem; letter-spacing:.16em; text-transform:uppercase;
-    cursor:pointer; transition:background-color .14s, color .14s;
-    background:transparent; color:var(--ouro-claro);
+    padding:21px; font-family:'Sora',sans-serif; font-weight:600;
+    font-size:.88rem; letter-spacing:.18em; text-transform:uppercase;
+    cursor:pointer; transition:filter .14s;
+    background:linear-gradient(135deg,#e6c766,#c9a227); color:var(--breu);
   }
-  button.seguir:hover:not(:disabled){ background:var(--ouro); color:var(--breu) }
-  button.seguir:disabled{ border-color:rgba(255,255,255,.12); color:var(--pedra-funda); cursor:not-allowed }
+  button.seguir:hover:not(:disabled){ filter:brightness(1.08) }
+  button.seguir:disabled{
+    background:transparent; border-color:rgba(255,255,255,.12);
+    color:var(--pedra-funda); cursor:not-allowed;
+  }
 
   .recado{ margin:15px 0 0; font-size:.85rem; min-height:1.2em; color:var(--pedra) }
   .recado.erro{ color:var(--alerta) }
