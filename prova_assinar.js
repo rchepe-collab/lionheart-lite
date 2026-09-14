@@ -44,6 +44,9 @@ setTimeout(()=>{
   ex('Consultoria fala de honorário', ops[1].textContent.includes('honorário'));
   ex('Especialista fala de agro 31 telas', ops[2].textContent.includes('31 telas próprias'));
   ex('sem HTML cru escapando', !a.getElementById('planos').innerHTML.includes('&lt;li&gt;'));
+  ex('bloco grátis existe no passo 1', !!a.querySelector('.gratis'));
+  ex('grátis vem DEPOIS dos planos', a.querySelector('.gratis').compareDocumentPosition(a.getElementById('planos'))===2);
+  ex('grátis está dentro do passo 1', a.getElementById('passo-plano').contains(a.querySelector('.gratis')));
   ops[1].dispatchEvent(new A.dom.window.Event('click'));
   setTimeout(()=>{
    try{
@@ -54,6 +57,7 @@ setTimeout(()=>{
     ex('pulou a escolha', b.getElementById('passo-plano').hidden===true);
     ex('plano certo', b.getElementById('rotulo-plano').textContent==='Especialista');
     ex('sem botão trocar', b.getElementById('trocar').hidden===true);
+    ex('quem veio por link NÃO vê o grátis', b.getElementById('passo-plano').hidden===true);
     ex('economia 799×12−5988', b.getElementById('ciclos').textContent.includes('3.600,00'));
     b.getElementById('email').value='cliente@escritorio.com.br';
     b.getElementById('email').dispatchEvent(new B.dom.window.Event('input'));
