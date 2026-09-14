@@ -127,8 +127,10 @@
     flex-wrap:wrap;
   }
   .opcao .conta{
-    font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--ouro-fosco);
+    font-family:'Cormorant Garamond',Georgia,serif; font-size:1.05rem;
+    font-style:italic; color:var(--ouro-fosco); line-height:1.4; flex:1; min-width:16ch;
   }
+  .opcao .conta strong{ color:var(--ouro-claro); font-weight:600; font-style:normal }
   .opcao .escolher{
     font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--ouro-claro);
   }
@@ -144,11 +146,17 @@
     font-weight:600; color:var(--ouro-claro); display:block; margin-bottom:2px;
   }
 
+  /* ★ era um link sublinhado e some no preto. Quem chega no passo 2 sem
+     ter certeza precisa achar a saída de primeira, senão fecha a aba. */
   .trocar{
-    background:none; border:0; color:var(--ouro); font:inherit; font-size:.83rem;
-    padding:0; cursor:pointer; margin-bottom:26px;
-    border-bottom:1px solid rgba(201,162,39,.4);
+    display:inline-block; background:transparent; cursor:pointer;
+    border:1px solid rgba(201,162,39,.5); color:var(--ouro-claro);
+    font-family:'Sora',sans-serif; font-size:.72rem; font-weight:500;
+    letter-spacing:.16em; text-transform:uppercase;
+    padding:12px 22px; margin-bottom:28px;
+    transition:background-color .14s, color .14s, border-color .14s;
   }
+  .trocar:hover{ background:var(--ouro); border-color:var(--ouro); color:var(--breu) }
 
   fieldset{ border:0; margin:0 0 28px; padding:0 }
   legend, .campo{
@@ -288,7 +296,7 @@
         'Cadastro auditado em massa: cClassTrib item a item, não no olho',
         'Custo de não se adequar, e o de regularizar antes da fiscalização'
       ],
-      conta: '31 telas'
+      conta: 'Os itens acima s\u00e3o um recorte — o plano abre <strong>31 telas</strong>.'
     },
     consultoria: {
       chamada: 'Onde nasce o honorário.',
@@ -299,7 +307,7 @@
         'Contencioso: multa e juros, prescrição, transação, compensação',
         'A proposta comercial sai da própria análise, pronta para enviar'
       ],
-      conta: 'mais 66 telas'
+      conta: 'Tudo do Adequa\u00e7\u00e3o e <strong>mais 66 telas</strong> — o recorte acima \u00e9 o come\u00e7o.'
     },
     especialista: {
       chamada: 'O escritório inteiro, por setor.',
@@ -309,7 +317,7 @@
         'Painel do escritório: carteira, LTV por cliente, Motor 360',
         'Relatório com a sua marca, pronto para entregar ao cliente'
       ],
-      conta: 'mais 67 telas'
+      conta: 'Tudo dos anteriores e <strong>mais 67 telas</strong> — <strong>164 no total</strong>.'
     }
   };
 
@@ -353,7 +361,7 @@
         '<p class="sub">' + limpo(v.chamada) + '</p>' +
         '<ul>' + v.itens.map(function(i){ return '<li>' + limpo(i) + '</li>'; }).join('') + '</ul>' +
         '<span class="rodape-opcao">' +
-          '<span class="conta">' + limpo(v.conta) + '</span>' +
+          '<span class="conta">' + v.conta + '</span>' +   /* texto nosso, com <strong>: não vem do banco */
           '<span class="escolher">Escolher este plano</span>' +
         '</span>';
       b.onclick = function(){ irParaCompra(p); };
