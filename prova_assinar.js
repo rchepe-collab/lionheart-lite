@@ -32,6 +32,7 @@ setTimeout(()=>{
   ex('convite para escolher', ops[0].textContent.includes('Escolher este plano'));
   ex('selo de preço de fundador', a.querySelector('.fundador').textContent.includes('31 de dezembro de 2026'));
   ex('tem botão de voltar ao site', !!a.querySelector('.voltar[href="./"]'));
+  ex('o botão de voltar TEM estilo', /\.voltar\{/.test(fs.readFileSync('/home/claude/lite/assinar.html','utf8')));
   ex('logo também volta', !!a.querySelector('.faixa a[href="./"]'));
   ex('escada cumulativa dita', a.querySelector('.linha-fina').textContent.includes('inclui tudo'));
   console.log('  -- propostas de valor --');
@@ -44,7 +45,7 @@ setTimeout(()=>{
   });
   ex('Adequação fala de split payment', ops[0].textContent.includes('Split payment'));
   ex('Consultoria fala de honorário', ops[1].textContent.includes('honorário'));
-  ex('Especialista fala de agro 31 soluções', ops[2].textContent.includes('31 soluções próprias'));
+  ex('Especialista fala de agro 26 soluções', ops[2].textContent.includes('26 soluções próprias'));
   ex('sem HTML cru escapando', !a.getElementById('planos').innerHTML.includes('&lt;li&gt;'));
   ex('bloco grátis existe no passo 1', !!a.querySelector('.gratis'));
   ex('grátis vem DEPOIS dos planos', a.querySelector('.gratis').compareDocumentPosition(a.getElementById('planos'))===2);

@@ -49,6 +49,27 @@
   .faixa{ padding:26px 20px 6px; text-align:center }
   .faixa img{ width:100%; max-width:430px; height:auto; display:block; margin:0 auto }
 
+
+  /* ★ a página era um beco: entrava e não saía. Quem quer reler o que o plano
+     faz antes de decidir precisa do caminho de volta — sem ele, fecha a aba.
+     Dourado preenchido, mesma gramática dos outros convites. Mas de propósito
+     NÃO maior que 'Ir para o pagamento': voltar precisa ser achado, não
+     disputado com a ação principal. */
+  .voltar{
+    display:inline-flex; align-items:center; gap:10px; text-decoration:none;
+    background:linear-gradient(135deg,#d9b53a,#c9a227); border:1px solid var(--ouro);
+    color:var(--breu);
+    font-family:'Sora',sans-serif; font-size:.95rem; font-weight:700;
+    letter-spacing:.13em; text-transform:uppercase; padding:17px 30px;
+    margin-bottom:32px; box-shadow:0 8px 26px rgba(0,0,0,.45);
+    transition:filter .14s;
+  }
+  .voltar:hover{ filter:brightness(1.1) }
+  .voltar .seta{ font-size:1.15em; line-height:1 }
+  @media(max-width:480px){
+    .voltar{ width:100%; justify-content:center; font-size:.86rem; padding:16px 20px }
+  }
+
   main{ max-width:620px; margin:0 auto; padding:26px 24px 80px }
 
   .rotulo{
@@ -263,7 +284,7 @@
 </div>
 
 <main>
-  <a class="voltar" href="./">Voltar ao site</a>
+  <a class="voltar" href="./"><span class="seta" aria-hidden="true">←</span> Voltar ao site</a>
   <div id="carregando" class="carregando">Carregando os planos…</div>
 
   <!-- PASSO 1 · escolher -->
