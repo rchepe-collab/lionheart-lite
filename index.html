@@ -334,6 +334,74 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
   color:var(--marfim);max-width:52ch}
 .sobre-fecho em{font-style:italic;color:var(--ouro-cl)}
 
+
+/* ═══ PRODUTOS ═════════════════════════════════════════════════════════════
+   Faltava o óbvio: o site contava a história inteira e nunca mostrava o que
+   se compra. Três abas, uma por plano, com o inventário real de cada um.
+   Os números vêm do banco COM APELIDOS REMOVIDOS — fator-r e fatorR são a
+   mesma solução, e contar duas vezes é inflar catálogo para contador, que é
+   exatamente quem confere. */
+.pr-abas{display:flex;gap:0;border-bottom:1px solid var(--linha);margin:44px 0 0;
+  overflow-x:auto;scrollbar-width:none}
+.pr-abas::-webkit-scrollbar{display:none}
+.pr-aba{flex:1;min-width:150px;background:none;border:0;cursor:pointer;text-align:left;
+  padding:16px 18px 18px;position:relative;transition:background-color .16s}
+.pr-aba:hover{background:rgba(201,162,39,.05)}
+.pr-aba::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;
+  background:var(--ouro);transform:scaleX(0);transform-origin:left;transition:transform .22s}
+.pr-aba[aria-selected="true"]::after{transform:scaleX(1)}
+.pr-aba .t{display:block;font-family:'Cormorant Garamond',serif;font-size:1.72rem;
+  line-height:1.1;color:var(--cinza2);transition:color .16s}
+.pr-aba[aria-selected="true"] .t{color:var(--ouro-cl)}
+.pr-aba .p{display:block;font-family:'Sora',sans-serif;font-size:.68rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--cinza2);margin-top:5px}
+.pr-aba[aria-selected="true"] .p{color:var(--ouro-es)}
+
+.pr-palco{padding:34px 0 0}
+.pr-cab{display:flex;align-items:flex-start;gap:26px;flex-wrap:wrap;margin-bottom:8px}
+.pr-frase{font-family:'Cormorant Garamond',serif;font-size:2rem;line-height:1.16;
+  color:var(--marfim);margin:0;flex:1;min-width:16ch}
+.pr-frase em{font-style:italic;color:var(--ouro-cl)}
+.pr-preco{text-align:right;white-space:nowrap}
+.pr-preco .de{display:block;font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ouro-es)}
+.pr-preco .v{font-family:'Cormorant Garamond',serif;font-size:2.5rem;line-height:1;color:var(--ouro)}
+.pr-preco .v span{font-size:1.05rem;vertical-align:.45rem}
+.pr-preco .m{display:block;font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--cinza2);margin-top:2px}
+.pr-d{margin:0 0 26px;color:var(--cinza);max-width:62ch}
+.pr-blocos{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;
+  background:var(--linha);border:1px solid var(--linha)}
+.pr-bloco{background:var(--onyx2);padding:20px}
+.pr-bloco .n{font-family:'Cormorant Garamond',serif;font-size:2.1rem;line-height:1;
+  color:var(--ouro);display:block}
+.pr-bloco .n small{font-family:'Sora',sans-serif;font-size:.6rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--cinza2);margin-left:5px}
+.pr-bloco .c{display:block;font-size:.9rem;color:var(--marfim);margin:7px 0 5px;font-weight:400}
+.pr-bloco .e{display:block;font-size:.8rem;color:var(--cinza);line-height:1.5}
+.pr-rodape{display:flex;align-items:center;justify-content:space-between;gap:18px;
+  flex-wrap:wrap;margin-top:26px}
+.pr-total{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-style:italic;
+  color:var(--cinza)}
+.pr-total b{color:var(--ouro-cl);font-style:normal;font-weight:600}
+
+/* ═══ BOTÃO FLUTUANTE ══════════════════════════════════════════════════════
+   Só aparece depois que a pessoa desceu da primeira dobra: botão de comprar
+   em cima de quem ainda está lendo o título é anúncio, não convite. */
+.flutua{position:fixed;right:22px;bottom:22px;z-index:95;
+  background:linear-gradient(135deg,#d9b53a,#c9a227);color:var(--onyx);
+  font-family:'Sora',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;text-decoration:none;padding:15px 24px;
+  box-shadow:0 10px 34px rgba(0,0,0,.55);
+  opacity:0;transform:translateY(14px);pointer-events:none;
+  transition:opacity .3s,transform .3s,filter .14s}
+.flutua.vis{opacity:1;transform:none;pointer-events:auto}
+.flutua:hover{filter:brightness(1.1)}
+@media(max-width:620px){
+  .flutua{left:16px;right:16px;bottom:16px;text-align:center;padding:16px}
+}
+@media(prefers-reduced-motion:reduce){.flutua{transition:none}}
+
 </style>
 </head>
 <body id="topo" data-perfil="contador" class="nojs">
@@ -351,6 +419,7 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
       <a href="#solucoes">O que resolve</a>
       <a href="#setores">Setores</a>
       <a href="#escritorio">Monetizar</a>
+      <a href="#produtos">Produtos</a>
       <a href="#quemfaz">Quem faz</a>
       <a href="#comecar">Como começar</a>
       <a class="menu-cta" href="assinar.html">Assinar</a>
@@ -594,6 +663,26 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
 
 
 
+
+<section id="produtos">
+  <div class="wrap">
+    <h2 class="revela">O que você leva,<br>plano por <em>plano</em>.</h2>
+    <p class="revela" style="color:var(--cinza);max-width:58ch;margin-top:16px">
+      Cada plano inclui tudo dos anteriores. Os números abaixo são o inventário real da
+      plataforma — contado solução por solução, sem repetir nome.
+    </p>
+
+    <div class="pr-abas" role="tablist" aria-label="Planos">
+      <button class="pr-aba" role="tab" aria-selected="false" data-pl="preparacao">
+        <span class="t">Adequação</span><span class="p">o que tem data marcada</span></button>
+      <button class="pr-aba" role="tab" aria-selected="false" data-pl="consultoria">
+        <span class="t">Consultoria</span><span class="p">onde nasce o honorário</span></button>
+      <button class="pr-aba" role="tab" aria-selected="false" data-pl="especialista">
+        <span class="t">Especialista</span><span class="p">o escritório por setor</span></button>
+    </div>
+    <div class="pr-palco" id="pr-palco" role="tabpanel" aria-live="polite"></div>
+  </div>
+</section>
 <section id="quemfaz">
   <div class="wrap">
     <h2 class="revela">Não nasceu numa fábrica de software.<br>Nasceu numa <em>mesa de cliente</em>.</h2>
@@ -889,6 +978,122 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
     });
   }, { rootMargin: '0px 0px -8% 0px' });
   [].slice.call(document.querySelectorAll('.revela')).forEach(function(n){ rev.observe(n); });
+})();
+</script>
+
+<a class="flutua" id="flutua" href="assinar.html">Ver planos</a>
+
+<script>
+/* ═══ PRODUTOS · o inventário real, aba por aba ════════════════════════════
+   Os números vêm do banco com APELIDOS REMOVIDOS. fator-r e fatorR são a
+   mesma solução, agroSuper2 e agrosuper2 também — contar duas vezes é inflar
+   catálogo na frente de contador, que é exatamente quem confere. O bruto
+   dava 164; o real é 153.
+   Preços não estão escritos aqui: vêm da mesma função que a página de compra
+   usa, senão um dia o site anuncia um valor e o checkout cobra outro. */
+(function(){
+  'use strict';
+  var API = 'https://dilrjxsbcejcgprajayo.supabase.co/functions/v1/assinar';
+  var PL = {
+    preparacao: {
+      frase: 'O que a lei <em>obriga</em>, com data no calendário.',
+      d: 'É o plano de quem precisa responder ao cliente o que muda, quanto custa e o que fazer antes de 2027. Cadastro, preço, caixa e conformidade.',
+      blocos: [
+        [17,'Reforma Tributária','Split payment, cash gap, imposto seletivo, alíquota efetiva por setor e por mix, CAPEX, Raio-X do produto.'],
+        [10,'Cadastro & Preço','Auditor de cClassTrib, classificação em massa, formação de preço 2027-33, simulador de notas, análise de contratos.'],
+        [4,'Compliance & Regularização','Custo do descumprimento, denúncia espontânea contra autuação, central de riscos.']
+      ],
+      total: 31, totaltxt: '<b>31 soluções</b> no plano'
+    },
+    consultoria: {
+      frase: 'Onde a conversa vira <em>honorário</em>.',
+      d: 'Tudo do Adequação, mais as análises que sustentam uma proposta de consultoria: regime, sócio, crédito, patrimônio e litígio.',
+      blocos: [
+        [15,'Crédito Tributário','Monofásico, ICMS-ST, INSS, ISS, crédito presumido, duplicidade, retenções. Quinze teses de recuperação.'],
+        [11,'Regime & PJ','Regime ótimo, fator R, sublimite, Lucro Real contra Presumido, PF contra PJ, artigo 127.'],
+        [11,'Patrimonial','Holding, sucessório, aluguel PF × PJ, valuation, offshore, reorganização.'],
+        [7,'Contencioso','Multa e juros, prescrição, transação, compensação, REFIS, decisor de autuação.'],
+        [6,'Comércio Exterior','Importação, exportação, drawback, DIFAL, portos.'],
+        [4,'Imobiliário','RET, obra, reforma, incorporação.'],
+        [4,'Remuneração do Sócio','Pró-labore contra distribuição, stock options.'],
+        [3,'Comercial','Proposta gerada da própria análise, estimativa e histórico.']
+      ],
+      total: 61, totaltxt: 'mais <b>61 soluções</b> — <b>92 no total</b>'
+    },
+    especialista: {
+      frase: 'O escritório inteiro, <em>setor por setor</em>.',
+      d: 'Tudo dos anteriores, mais as verticais e o painel de gestão da sua carteira. É o plano de quem atende segmento específico e quer entregar com a própria marca.',
+      blocos: [
+        [26,'Agronegócio','A maior vertical da plataforma: funrural, cooperativas, crédito presumido rural, frete, insumos, defensivos.'],
+        [14,'Serviços · Comércio · Turismo','Hotelaria, bares e restaurantes, saúde, transporte de passageiros, combustível, telecom, apostas, financeiro.'],
+        [12,'Indústria','Doze análises específicas de industrialização, crédito de insumo e cadeia.'],
+        [6,'Painel do Escritório','Carteira de clientes, LTV, Motor 360, cenários, relatório em PDF com a sua marca.'],
+        [2,'Comercial','Jornada do cliente e acompanhamento.'],
+        [1,'Gestão BPO','Controle da operação de BPO.']
+      ],
+      total: 61, totaltxt: 'mais <b>61 soluções</b> — <b>153 no total</b>'
+    }
+  };
+
+  var palco = document.getElementById('pr-palco');
+  var abas = [].slice.call(document.querySelectorAll('.pr-aba'));
+  if(!palco || !abas.length) return;
+  var precos = null;
+
+  function reais(v){ return Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+  function pintar(pl){
+    var p = PL[pl]; if(!p) return;
+    abas.forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.pl === pl)); });
+    var menor = precos && precos[pl];
+    palco.innerHTML =
+      '<div class="pr-cab">' +
+        '<p class="pr-frase">' + p.frase + '</p>' +
+        (menor ? '<div class="pr-preco"><span class="de">a partir de</span>' +
+                 '<span class="v"><span>R$</span>' + reais(menor) + '</span>' +
+                 '<span class="m">por mês</span></div>' : '') +
+      '</div>' +
+      '<p class="pr-d">' + p.d + '</p>' +
+      '<div class="pr-blocos">' +
+        p.blocos.map(function(b){
+          return '<div class="pr-bloco"><span class="n">' + b[0] + '<small>soluções</small></span>' +
+                 '<span class="c">' + b[1] + '</span><span class="e">' + b[2] + '</span></div>';
+        }).join('') +
+      '</div>' +
+      '<div class="pr-rodape">' +
+        '<span class="pr-total">' + p.totaltxt + '</span>' +
+        '<a class="btn btn-p" href="assinar.html?p=' + pl + '">Assinar este plano</a>' +
+      '</div>';
+  }
+
+  abas.forEach(function(b){ b.addEventListener('click', function(){ pintar(b.dataset.pl); }); });
+  pintar('preparacao');
+
+  /* preço do banco, nunca escrito na página: se o site anunciar um valor e o
+     checkout cobrar outro, a venda morre ali mesmo */
+  /* navegador sem fetch não pode derrubar as abas: elas já funcionam sem preço */
+  if(typeof fetch !== 'function') return;
+  fetch(API + '?o=planos').then(function(r){ return r.json(); }).then(function(d){
+    if(!d || !d.ok || !d.planos) return;
+    precos = {};
+    d.planos.forEach(function(p){
+      precos[p.plano] = p.ciclos.reduce(function(a,c){ return Math.min(a, Number(c.preco_mes)); }, Infinity);
+    });
+    var atual = abas.filter(function(b){ return b.getAttribute('aria-selected') === 'true'; })[0];
+    pintar(atual ? atual.dataset.pl : 'preparacao');
+  }).catch(function(){});
+})();
+
+/* ═══ BOTÃO FLUTUANTE ══════════════════════════════════════════════════════
+   Aparece depois da primeira dobra. Botão de comprar em cima de quem ainda
+   está lendo o título é anúncio; depois que desceu, é atalho. */
+(function(){
+  'use strict';
+  var b = document.getElementById('flutua');
+  if(!b) return;
+  function ver(){ b.classList.toggle('vis', window.scrollY > window.innerHeight * 0.8); }
+  window.addEventListener('scroll', ver, { passive:true });
+  ver();
 })();
 </script>
 
