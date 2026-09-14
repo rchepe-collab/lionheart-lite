@@ -8,59 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root{ --onyx:#080808; --onyx2:#0e0e0f; --ouro:#c9a227; --ouro-cl:#e6c766;
-         --ouro-es:#8f7015; --marfim:#f2ede3; --cinza:#8e8a82; --cinza2:#5d5a55;
-         --linha:rgba(201,162,39,.18); }
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{margin:0;background:var(--onyx);color:var(--marfim);
-    font-family:'Sora',system-ui,sans-serif;font-weight:300;line-height:1.7;
-    -webkit-font-smoothing:antialiased}
-  .faixa{padding:26px 20px;text-align:center;border-bottom:1px solid var(--linha)}
-  .faixa img{width:100%;max-width:360px;height:auto;display:block;margin:0 auto}
-  main{max-width:720px;margin:0 auto;padding:44px 24px 90px}
-  .rot{font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ouro-es);margin:0 0 14px}
-  h1{font-family:'Cormorant Garamond',Georgia,serif;font-weight:300;font-size:3rem;
-    line-height:1.08;margin:0 0 16px;color:var(--marfim)}
-  h1 em{font-style:italic;color:var(--ouro-cl)}
-  .abre{font-size:1.05rem;color:var(--cinza);margin:0 0 10px}
-  h2{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:2.2rem;
-    line-height:1.14;margin:52px 0 6px;color:var(--ouro-cl)}
-  h2 .ano{display:block;font-family:'Sora',sans-serif;font-size:.7rem;letter-spacing:.24em;
-    text-transform:uppercase;color:var(--ouro-es);margin-bottom:7px}
-  h3{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:1.6rem;
-    margin:36px 0 8px;color:var(--marfim)}
-  p{margin:0 0 14px}
-  ul{margin:0 0 16px;padding:0;list-style:none}
-  li{padding:6px 0 6px 20px;position:relative;color:var(--marfim)}
-  li::before{content:'';position:absolute;left:0;top:17px;width:9px;height:1px;background:var(--ouro)}
-  li b{font-weight:500;color:var(--ouro-cl)}
-  .pega{border-left:2px solid var(--ouro);background:rgba(201,162,39,.05);
-    padding:16px 20px;margin:18px 0 0}
-  .pega b{display:block;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;
-    color:var(--ouro-es);font-weight:500;margin-bottom:5px}
-  .pega p{margin:0;font-size:.93rem;color:var(--marfim)}
-  hr{border:0;border-top:1px solid var(--linha);margin:0}
-  .aviso{margin-top:56px;padding-top:26px;border-top:1px solid var(--linha);
-    font-size:.86rem;color:var(--cinza2);line-height:1.65}
-  .fim{margin-top:44px;padding:28px;border:1px solid var(--linha);background:var(--onyx2)}
-  .fim h3{margin-top:0;color:var(--ouro-cl)}
-  .fim p{font-size:.93rem;color:var(--cinza)}
-  .fim a{display:inline-block;margin-top:10px;text-decoration:none;
-    background:linear-gradient(135deg,#d9b53a,#c9a227);color:var(--onyx);
-    font-family:'Sora',sans-serif;font-size:.78rem;font-weight:600;letter-spacing:.15em;
-    text-transform:uppercase;padding:15px 28px}
-  .sumario{margin:34px 0 0;padding:20px 24px;border:1px solid var(--linha)}
-  .sumario b{display:block;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;
-    color:var(--ouro-es);font-weight:500;margin-bottom:10px}
-  .sumario a{display:inline-block;margin:0 16px 6px 0;color:var(--marfim);
-    text-decoration:none;border-bottom:1px solid var(--linha);font-size:.92rem}
-  .sumario a:hover{color:var(--ouro-cl)}
-  @media print{ body{background:#fff;color:#111} h1,h2,h3,li b{color:#8a6d0f}
-    .faixa,.sumario,.fim{display:none} }
-  @media(max-width:520px){ h1{font-size:2.2rem} h2{font-size:1.75rem} main{padding:32px 18px 60px} }
-</style>
+<link rel="stylesheet" href="estilo.css">
 </head>
 <body>
 

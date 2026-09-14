@@ -1,6 +1,9 @@
 const fs=require('fs'), {JSDOM}=require('jsdom');
-const CAT={ok:true,materiais:[{slug:'calendario-transicao',titulo:'Calendário da Transição',
-  subtitulo:'2026 a 2033, ano a ano',resumo:'O que muda em cada ano.',tipo:'ebook',paginas:'leitura de 8 min'}]};
+const CAT={ok:true,materiais:[
+ {slug:'calendario-transicao',titulo:'Calendário da Transição',subtitulo:'2026 a 2033',resumo:'x',tipo:'ebook',paginas:'8 min'},
+ {slug:'teses-recuperacao-credito',titulo:'15 Frentes de Crédito',subtitulo:'uma a uma',resumo:'x',tipo:'ebook',paginas:'10 min'},
+ {slug:'checklist-cadastro-2026',titulo:'Checklist de Cadastro',subtitulo:'2026',resumo:'x',tipo:'checklist',paginas:'6 min'},
+ {slug:'split-payment-caixa',titulo:'Split Payment e Caixa',subtitulo:'quando',resumo:'x',tipo:'ebook',paginas:'7 min'}]};
 let enviado=null, aberto=null;
 const dom=new JSDOM(fs.readFileSync('/home/claude/lite/index.html','utf8'),
  {runScripts:'dangerously',url:'https://lionheartintelligence.com.br/',pretendToBeVisual:true,
@@ -21,8 +24,8 @@ setTimeout(()=>{
  ex('seção existe', !!d.getElementById('materiais'));
  ex('no menu', [...d.querySelectorAll('.menu a')].some(a=>a.getAttribute('href')==='#materiais'));
  const cards=[...d.querySelectorAll('.mt-card')];
- ex('um material na grade', cards.length===1);
- ex('capa desenhada em SVG', !!cards[0].querySelector('svg.mt-capa'));
+ ex('quatro materiais na grade', cards.length===4);
+ ex('toda capa é SVG', cards.every(c=>!!c.querySelector('svg.mt-capa')));
  ex('endereço do arquivo NÃO está no HTML', !d.body.innerHTML.includes('calendario-transicao.html'));
  cards[0].dispatchEvent(new dom.window.Event('click'));
  const fu=d.getElementById('mt-fundo');
