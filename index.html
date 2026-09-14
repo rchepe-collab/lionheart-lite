@@ -405,6 +405,37 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
 }
 @media(prefers-reduced-motion:reduce){.flutua{transition:none}}
 
+
+/* ═══ MENU SUSPENSO DE PRODUTOS ════════════════════════════════════════════
+   As abas lado a lado continuam sendo o lugar de comparar — é para isso que
+   elas servem. O suspenso é atalho: quem já sabe que quer Especialista não
+   precisa rolar até a seção e depois clicar na terceira aba.
+   Abre no clique, não no hover: em celular não existe hover, e menu que só
+   abre com mouse é menu que metade das pessoas nunca vê. */
+.menu-drop{position:relative}
+.menu-drop > button{background:none;border:0;cursor:pointer;font:inherit;
+  font-size:.72rem;letter-spacing:.11em;text-transform:uppercase;color:var(--cinza);
+  padding:7px 11px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;
+  border-bottom:1px solid transparent;transition:color .15s,border-color .15s}
+.menu-drop > button:hover{color:var(--ouro-cl)}
+.menu-drop > button.aqui{color:var(--ouro-cl);border-bottom-color:var(--ouro)}
+.menu-drop > button .seta{font-size:.6em;transition:transform .18s;display:inline-block}
+.menu-drop[data-aberto="1"] > button .seta{transform:rotate(180deg)}
+.drop{position:absolute;top:calc(100% + 9px);left:0;min-width:236px;z-index:120;
+  background:var(--onyx2);border:1px solid rgba(201,162,39,.3);
+  box-shadow:0 16px 44px rgba(0,0,0,.6);padding:6px;display:none}
+.menu-drop[data-aberto="1"] .drop{display:block}
+.drop button{display:block;width:100%;text-align:left;background:none;border:0;
+  cursor:pointer;font:inherit;padding:11px 13px;transition:background-color .14s}
+.drop button:hover{background:rgba(201,162,39,.09)}
+.drop .dt{display:block;font-family:'Cormorant Garamond',serif;font-size:1.28rem;
+  line-height:1.15;color:var(--ouro-cl)}
+.drop .dd{display:block;font-family:'Sora',sans-serif;font-size:.7rem;letter-spacing:.04em;
+  color:var(--cinza);margin-top:3px;text-transform:none}
+@media(max-width:900px){
+  .drop{position:fixed;left:12px;right:12px;top:auto;min-width:0}
+}
+
 </style>
 </head>
 <body id="topo" data-perfil="contador" class="nojs">
@@ -418,7 +449,17 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
     </div>
   </div>
     <nav class="menu" aria-label="Seções">
-      <a href="#produtos">Produtos</a>
+      <span class="menu-drop" id="drop-produtos">
+        <button type="button" aria-expanded="false" aria-haspopup="true">Produtos <span class="seta">▾</span></button>
+        <span class="drop" role="menu">
+          <button type="button" role="menuitem" data-pl="preparacao">
+            <span class="dt">Adequação</span><span class="dd">o que tem data marcada</span></button>
+          <button type="button" role="menuitem" data-pl="consultoria">
+            <span class="dt">Consultoria</span><span class="dd">onde nasce o honorário</span></button>
+          <button type="button" role="menuitem" data-pl="especialista">
+            <span class="dt">Especialista</span><span class="dd">o escritório por setor</span></button>
+        </span>
+      </span>
       <a href="#reforma">A reforma</a>
       <a href="#solucoes">O que resolve</a>
       <a href="#setores">Setores</a>
@@ -1077,6 +1118,13 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
 
   abas.forEach(function(b){ b.addEventListener('click', function(){ pintar(b.dataset.pl); }); });
   pintar('preparacao');
+  /* o menu suspenso escolhe a aba sem duplicar a lógica de desenho */
+  window.LH_VER_PRODUTO = function(pl){
+    pintar(pl);
+    var sec = document.getElementById('produtos');
+    /* navegador antigo sem scrollIntoView não pode quebrar a troca de aba */
+    if(sec && sec.scrollIntoView) sec.scrollIntoView({ behavior:'smooth', block:'start' });
+  };
 
   /* preço do banco, nunca escrito na página: se o site anunciar um valor e o
      checkout cobrar outro, a venda morre ali mesmo */
@@ -1103,6 +1151,52 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
   function ver(){ b.classList.toggle('vis', window.scrollY > window.innerHeight * 0.8); }
   window.addEventListener('scroll', ver, { passive:true });
   ver();
+})();
+</script>
+
+
+<script>
+/* ═══ MENU SUSPENSO DE PRODUTOS ════════════════════════════════════════════
+   Abre no clique e não no hover: celular não tem hover, e é lá que o link do
+   WhatsApp abre. Fecha ao escolher, ao clicar fora e no Esc — as três saídas,
+   porque menu que só fecha de um jeito prende quem errou o caminho. */
+(function(){
+  'use strict';
+  var caixa = document.getElementById('drop-produtos');
+  if(!caixa) return;
+  var gatilho = caixa.querySelector('button');
+
+  function fechar(){
+    caixa.setAttribute('data-aberto','0');
+    gatilho.setAttribute('aria-expanded','false');
+  }
+  function abrir(){
+    caixa.setAttribute('data-aberto','1');
+    gatilho.setAttribute('aria-expanded','true');
+  }
+  gatilho.addEventListener('click', function(e){
+    e.stopPropagation();
+    caixa.getAttribute('data-aberto') === '1' ? fechar() : abrir();
+  });
+  caixa.querySelectorAll('.drop button').forEach(function(b){
+    b.addEventListener('click', function(e){
+      e.stopPropagation();
+      fechar();
+      /* se o bloco de produtos não carregou, o link ainda leva à seção */
+      if(typeof window.LH_VER_PRODUTO === 'function') window.LH_VER_PRODUTO(b.dataset.pl);
+      else location.hash = '#produtos';
+    });
+  });
+  document.addEventListener('click', fechar);
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') fechar(); });
+
+  /* o scroll-spy marca <a>, e aqui o gatilho é <button> — sublinha na mão */
+  var sec = document.getElementById('produtos');
+  if(sec && 'IntersectionObserver' in window){
+    new IntersectionObserver(function(ent){
+      ent.forEach(function(e){ gatilho.classList.toggle('aqui', e.isIntersecting); });
+    }, { rootMargin: '-45% 0px -50% 0px' }).observe(sec);
+  }
 })();
 </script>
 
