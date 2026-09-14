@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v807";</script>
+<body><script>window.LH_VERSAO="v809";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4980,6 +4980,15 @@ Troque a URL em LH_LOGIN_URL pela URL do seu Apps Script publicado.
       <input id="lh-cad-empresa" type="text" autocomplete="organization" placeholder="Nome do escritório" oninput="lhLimparAviso()" style="width:100%;box-sizing:border-box;background:#0a1628;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 13px;color:#e8edf5;font-size:0.92em;margin-bottom:14px;outline:none;">
     </div>
     <div id="lh-cad-campos" style="display:none">
+      <!-- ★ v808 · ACEITE DOS TERMOS. A cláusula 13.2 promete registrar data, versão e
+           endereço de rede de cada aceite — e promessa escrita em contrato precisa de
+           prova no banco. A caixa aqui é a conveniência; a recusa de verdade mora em
+           fn_criar_conta, porque caixa de formulário qualquer um contorna pelo console.
+           Nasce DESMARCADA de propósito: aceite pré-marcado não é aceite. -->
+      <label id="lh-cad-aceite-caixa" style="display:flex;gap:9px;align-items:flex-start;margin-bottom:12px;cursor:pointer;font-size:0.78em;color:#c8d7eb;line-height:1.5">
+        <input type="checkbox" id="lh-cad-aceite" onchange="lhLimparAviso()" style="margin-top:2px;width:16px;height:16px;accent-color:#c9a227;cursor:pointer;flex-shrink:0">
+        <span>Li e aceito os <a href="#" onclick="lhVerTermos(event)" style="color:#c9a227;text-decoration:underline">Termos de Uso</a>.</span>
+      </label>
       <button id="lh-cad-btn" onclick="lhCriarConta()" style="width:100%;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;padding:12px;font-weight:800;font-size:0.95em;cursor:pointer;font-family:Inter,sans-serif;">Criar minha conta grátis</button>
       <div style="margin-top:10px;text-align:center;font-size:0.72em;color:#9fb0c8;line-height:1.5">Senha: 8 caracteres, com letras e números.<br>Plano <b style="color:#c9a227">Livre</b>, sem cartão · o Diagnóstico já vem liberado.</div>
     </div>
@@ -5116,6 +5125,21 @@ function lhLimparAviso(){
   try{ var m=document.getElementById('lh-login-msg'); if(m) m.textContent=''; }catch(e){}
 }
 
+/* ★ v808 · o link dos Termos na porta de entrada. Quem ainda não entrou não pode
+   navegar pelo menu, então abre em aba nova apontando para a âncora da página de
+   Termos — sem perder o que já digitou no formulário, que é o erro clássico:
+   a pessoa lê o termo, volta, e o cadastro está vazio. */
+function lhVerTermos(ev){
+  try{ if(ev) ev.preventDefault(); }catch(e){}
+  try{ window.open(location.pathname + '#page-termos', '_blank', 'noopener'); }catch(e){}
+}
+
+/* A VERSÃO NÃO É EXIBIDA NA TELA DE PROPÓSITO. Ela é carimbada no servidor,
+   lendo tv_termo_vigente no mesmo instante em que a conta nasce. Se a tela
+   anunciasse um número e o banco gravasse outro, o registro do aceite viraria
+   prova contra nós — e a cláusula 13.2 promete exatamente o contrário. Quem
+   quiser ver a versão abre o Termo: ela está no rodapé dele. */
+
 function lhAlternarCadastro(){
   _lhModoCadastro = !_lhModoCadastro;
   var topo = document.getElementById('lh-cad-topo');
@@ -5171,12 +5195,19 @@ function lhCriarConta(){
   if(senha.length < 8) return dizer('A senha precisa de pelo menos 8 caracteres.');
   if(!/[A-Za-zÀ-ÿ]/.test(senha) || !/[0-9]/.test(senha))
     return dizer('A senha precisa misturar letras e números.');
+  /* ★ v808 · sem aceite não passa daqui. O servidor recusa de novo — esta é só a
+     recusa educada, que diz o que fazer em vez de devolver erro depois da espera. */
+  var _cx = document.getElementById('lh-cad-aceite');
+  if(!_cx || !_cx.checked){
+    try{ var _lb=document.getElementById('lh-cad-aceite-caixa'); if(_lb) _lb.style.color='#ff6b6b'; }catch(e){}
+    return dizer('É preciso ler e aceitar os Termos de Uso para criar a conta.');
+  }
 
   if(btn){ btn.disabled = true; btn.textContent = 'Criando...'; }
   dizer('', '#9fb0c8');
 
   fetch(LH_CAD_URL, { method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ nome: nome, email: email, senha: senha, empresa: empresa }) })
+    body: JSON.stringify({ nome: nome, email: email, senha: senha, empresa: empresa, aceite: true }) })
   .then(function(r){ return r.json(); })
   .then(function(res){
     if(btn){ btn.disabled = false; btn.textContent = 'Criar minha conta grátis'; }
@@ -18275,67 +18306,100 @@ function ctcCalc(){
 </div>
 
 <div class="page" id="page-termos">
-    <div class="calc-page-header">
-      <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.25),rgba(232,176,32,0.15));"></div>
-      <div>
-        <h2>Termo de Uso · Lionheart Calc Suite</h2>
-        <p>Limitações de responsabilidade · Versão 1.0.0 · 15/mai/2026</p>
-        </div>
-    </div>
-
-    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:24px;margin-bottom:18px;line-height:1.65;font-size:0.92em;color:rgba(232,237,245,0.88);">
-
-      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:0 0 12px;font-size:1.15em;">1. Natureza da ferramenta</h3>
-      <p>O Lionheart CORE é uma <strong>ferramenta de apoio à análise tributária</strong> que automatiza cálculos baseados em legislação vigente em <strong>maio/2026</strong>. Os resultados gerados são <strong>estimativas técnicas</strong> destinadas a auxiliar a tomada de decisão.</p>
-
-      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:18px 0 12px;font-size:1.15em;">2. Não é parecer jurídico nem aconselhamento profissional</h3>
-      <div style="background:rgba(239,68,68,0.08);border-left:4px solid #ef4444;padding:14px 18px;border-radius:6px;margin-bottom:12px;">
-        <strong style="color:#ef4444;">IMPORTANTE:</strong> Os resultados, recomendações, gráficos e relatórios gerados <strong>NÃO constituem</strong>:
-        <ul style="margin:8px 0 4px 22px;">
-          <li>Parecer jurídico ou opinião legal vinculante</li>
-          <li>Aconselhamento tributário definitivo</li>
-          <li>Substituição de análise contábil profissional</li>
-          <li>Garantia de resultados específicos junto à Receita Federal ou Fisco Estadual</li>
-        </ul>
-        <p style="margin-top:8px;margin-bottom:0;">Antes de qualquer decisão de impacto, recomenda-se <strong>análise por advogado tributarista, contador habilitado e consulta a LALUR/ECD/ECF atualizados</strong>.</p>
-      </div>
-
-      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:18px 0 12px;font-size:1.15em;">3. Limitações de responsabilidade</h3>
-      <p>A Lionheart Business Intelligence <strong>não se responsabiliza</strong> por:</p>
-      <ul style="margin-left:22px;">
-        <li>Alterações legislativas posteriores à versão da ferramenta</li>
-        <li>Alíquotas municipais (ISS) ou estaduais específicas não atualizadas</li>
-        <li>Regulamentação pendente do Comitê Gestor do IBS (alíquotas CBS/IBS definitivas)</li>
-        <li>Erros de input pelo usuário (faturamento, folha, regime errados)</li>
-        <li>Decisões empresariais ou tributárias tomadas com base apenas nos resultados</li>
-        <li>Multas, autuações ou passivos fiscais decorrentes do uso indevido</li>
-      </ul>
-
-      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:18px 0 12px;font-size:1.15em;">4. Uso B2B (BPO)</h3>
-      <p>Ao usar a ferramenta para análise de empresas terceiras (clientes do contador):</p>
-      <ul style="margin-left:22px;">
-        <li>O contador é o <strong>controlador</strong> dos dados, a Lionheart é a <strong>operadora</strong> (LGPD Art. 5º VI e VII)</li>
-        <li>O contador deve incluir <strong>cláusula de operação</strong> em seu contrato com o cliente final</li>
-        <li>É responsabilidade do contador obter consentimento do cliente final para processar dados na ferramenta</li>
-        <li>O contador deve apresentar este Termo e a Política de Privacidade ao cliente quando solicitado</li>
-      </ul>
-
-      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:18px 0 12px;font-size:1.15em;">5. Propriedade intelectual</h3>
-      <p>O código, layout, metodologia de cálculo e marca <strong>Lionheart Business Intelligence</strong> são protegidos. O usuário tem licença de uso pessoal/profissional para análises tributárias — não tem direito de redistribuir, descompilar ou comercializar partes do código.</p>
-
-      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:18px 0 12px;font-size:1.15em;">6. Atualizações</h3>
-      <p>A ferramenta é atualizada periodicamente. Versões mais recentes podem alterar cálculos, alíquotas e funcionalidades. <strong>Sempre confirme a versão usada</strong> no rodapé das páginas e nos relatórios PDF gerados.</p>
-
-      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:18px 0 12px;font-size:1.15em;">7. Foro</h3>
-      <p>Eventuais conflitos serão dirimidos no foro da comarca de <strong>Rio Grande/RS</strong>, com renúncia expressa a qualquer outro.</p>
-
-      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:18px 0 12px;font-size:1.15em;">8. Aceite tácito</h3>
-      <p>O uso continuado da ferramenta após a leitura deste Termo constitui <strong>aceite integral</strong> dos termos aqui dispostos. Caso não concorde, o usuário deve cessar imediatamente o uso e expurgar os dados.</p>
-
-      <div style="margin-top:24px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.08);font-size:0.85em;color:rgba(200,215,235,0.6);font-style:italic;">Lionheart Business Intelligence · Ricardo · Rio Grande, RS · Termo de Uso v1.0.0 · 15 mai 2026</div>
+  <div class="calc-page-header">
+    <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.25),rgba(232,176,32,0.15));"></div>
+    <div>
+      <h2>Termos de Uso · Contratação por Autosserviço</h2>
+      <p>Plataforma Lionheart · Versão 1.0 · vigência a partir de 14/09/2026</p>
     </div>
   </div>
-  <!-- /page-termos -->
+
+  <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:24px;margin-bottom:18px;line-height:1.65;font-size:0.92em;color:rgba(232,237,245,0.88);">
+      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:20px 0 10px;font-size:1.12em;">CLÁUSULA 1 — QUEM SOMOS E O QUE É ESTE DOCUMENTO</h3>
+      <p><b>1.1.</b> A Plataforma LIONHEART é operada por LIONHEART BUSINESS INTELLIGENCE — ECOSSISTEMA DE INTELIGÊNCIA EMPRESARIAL E TRIBUTÁRIA LTDA., CNPJ 68.364.765/0001-44, sede na Av. Santos Dumont, nº 575, casa 38, Rio Grande/RS ("LIONHEART").</p>
+      <p><b>1.2.</b> Estes Termos regem a contratação realizada diretamente pela Plataforma, sem instrumento contratual apartado. O aceite eletrônico no cadastro e a confirmação do pagamento formalizam a contratação, nos termos do art. 107 do Código Civil e da MP 2.200-2/2001.</p>
+      <p><b>1.3.</b> Contratações negociadas individualmente serão regidas por Contrato de Licenciamento específico, que prevalecerá sobre estes Termos.</p>
+      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:20px 0 10px;font-size:1.12em;">CLÁUSULA 2 — O QUE É A PLATAFORMA</h3>
+      <p><b>2.1.</b> A Plataforma é composta por ferramentas de apoio a atividades tributárias, contábeis, jurídicas, financeiras e consultivas, incluindo diagnósticos, simulações, projeções, comparação de cenários e relatórios relacionados à Reforma Tributária e ao período de transição.</p>
+      <p><b>2.2.</b> A licença é temporária, limitada, não exclusiva, intransferível e não sublicenciável, destinada ao apoio das atividades profissionais do Usuário, inclusive para sua carteira de clientes. Não importa cessão de propriedade, código-fonte, algoritmos, metodologias ou marcas (Lei nº 9.609/1998).</p>
+      <p><b>2.3.</b> A assinatura compreende, dentro do plano contratado: acesso às ferramentas do plano; atualizações funcionais e legislativas; geração de simulações e relatórios; e os recursos de salvamento previstos na arquitetura.</p>
+      <p><b>2.4.</b> Não integram o escopo, salvo contratação específica: consultorias personalizadas, pareceres profissionais, auditorias, mentorias, treinamentos, desenvolvimento de funcionalidades exclusivas, parametrizações individualizadas, integrações não previstas, implantação em sistemas de terceiros, revisão de obrigações acessórias ou representação perante autoridades, clientes ou terceiros.</p>
+      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:20px 0 10px;font-size:1.12em;">CLÁUSULA 3 — CONTA, ACESSO E USUÁRIOS</h3>
+      <p><b>3.1.</b> Cada conta dá direito a 1 (um) usuário. O acesso é pessoal e intransferível.</p>
+      <p><b>3.2.</b> O Usuário é responsável por manter suas credenciais em sigilo, adotar senha segura e comunicar imediatamente qualquer suspeita de comprometimento ou uso não autorizado.</p>
+      <p><b>3.3.</b> É vedado:</p>
+      <ul style="margin:6px 0 10px 22px;"><li>(a) compartilhar credenciais;</li><li>(b) sublicenciar, revender, alugar ou ceder o acesso;</li><li>(c) copiar ou reproduzir a Plataforma, ressalvados os atos indispensáveis ao uso regular;</li><li>(d) realizar engenharia reversa, descompilação, tentativa de acesso ao código-fonte, contorno de mecanismos de segurança ou exploração de vulnerabilidades;</li><li>(e) realizar extração automatizada, scraping ou replicação sistemática de conteúdo, bases, lógicas ou resultados para criação de produto concorrente; ou</li><li>(f) remover avisos de titularidade, marcas ou mecanismos de proteção.</li></ul>
+      <p><b>3.4.</b> O Usuário poderá utilizar as análises e relatórios gerados na prestação de serviços aos seus próprios clientes, inclusive incorporando-os a entregas profissionais e com sua própria marca, desde que preserve sua responsabilidade técnica e não apresente a Plataforma, seus mecanismos ou conteúdo proprietário como produto próprio ou sublicenciado.</p>
+      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:20px 0 10px;font-size:1.12em;">CLÁUSULA 4 — PLANOS, PREÇOS E PAGAMENTO</h3>
+      <p><b>4.1.</b> Os planos, o conteúdo de cada um e os valores vigentes são os informados na Plataforma no momento da contratação. Na data desta versão:</p>
+      <table style="width:100%;border-collapse:collapse;margin:10px 0 14px;font-size:0.95em;">
+        <tr style="background:rgba(201,162,39,0.15);"><th style="text-align:left;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">Plano</th><th style="text-align:right;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">Mensal</th><th style="text-align:right;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">Anual (por mês)</th><th style="text-align:right;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">Anual (no ano)</th></tr>
+        <tr><td style="padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">Livre</td><td style="text-align:right;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">gratuito, sem prazo</td><td style="text-align:right;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">—</td><td style="text-align:right;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">—</td></tr>
+        <tr><td style="padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">Preparação</td><td style="text-align:right;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">R$ 299,00</td><td style="text-align:right;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">R$ 199,00</td><td style="text-align:right;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">R$ 2.388,00</td></tr>
+        <tr><td style="padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">Consultoria</td><td style="text-align:right;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">R$ 499,00</td><td style="text-align:right;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">R$ 299,00</td><td style="text-align:right;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">R$ 3.588,00</td></tr>
+        <tr><td style="padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">Especialista</td><td style="text-align:right;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">R$ 799,00</td><td style="text-align:right;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">R$ 499,00</td><td style="text-align:right;padding:7px 10px;border:1px solid rgba(255,255,255,0.10);">R$ 5.988,00</td></tr>
+      </table>
+      <p><b>4.2.</b> O plano Livre é gratuito e sem prazo de expiração, limitado às funcionalidades indicadas na Plataforma. A LIONHEART poderá alterar seu conteúdo mediante aviso prévio de 30 dias.</p>
+      <p><b>4.3.</b> O pagamento é antecipado, por PIX, boleto ou cartão, processado por instituição de pagamento contratada pela LIONHEART. A ativação do plano ocorre com a confirmação do pagamento.</p>
+      <p><b>4.4.</b> Quando utilizado meio que permita cobrança recorrente, o Usuário autoriza as cobranças sucessivas enquanto a assinatura estiver vigente, ficando estabelecido que a recorrência não constitui fidelidade nem obrigação de pagamento de períodos posteriores ao cancelamento.</p>
+      <p><b>4.5.</b> Não há fidelidade, permanência mínima ou multa por cancelamento.</p>
+      <p><b>4.6.</b> Decorridos 12 meses da ativação, o valor poderá ser reajustado pela variação acumulada do IPCA, ou índice que o substitua, com periodicidade mínima de 12 meses e aviso prévio de 30 dias.</p>
+      <p><b>4.7. Preço de fundador:</b> assinaturas contratadas até 31/12/2026 mantêm o valor então vigente enquanto a assinatura permanecer ativa e ininterrupta, ressalvado o reajuste anual da 4.6. Cancelada a assinatura, nova contratação observará a tabela vigente.</p>
+      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:20px 0 10px;font-size:1.12em;">CLÁUSULA 5 — INADIMPLEMENTO E SUSPENSÃO</h3>
+      <p><b>5.1.</b> Não confirmado o pagamento, o acesso às funcionalidades do plano será suspenso ao término do período já pago, com comunicação ao Usuário.</p>
+      <p><b>5.2.</b> A conta e os dados não são excluídos em razão da suspensão. O Usuário mantém acesso ao plano Livre e às funcionalidades gratuitas, e o plano é restabelecido com a regularização.</p>
+      <p><b>5.3.</b> Sobre valores vencidos e não pagos incidirão multa de 2%, juros de mora de 1% ao mês pro rata die e correção pelo IPCA.</p>
+      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:20px 0 10px;font-size:1.12em;">CLÁUSULA 6 — CANCELAMENTO</h3>
+      <p><b>6.1.</b> O Usuário poderá cancelar a qualquer tempo, sem justificativa, multa ou penalidade, pelos canais indicados na Plataforma ou por <a href="mailto:contato@lionheartintelligence.com.br" style="color:#c9a227">contato@lionheartintelligence.com.br</a>.</p>
+      <p><b>6.2.</b> O cancelamento produz efeitos ao término do período já pago, permanecendo o acesso disponível até essa data e impedindo a cobrança do período seguinte.</p>
+      <p><b>6.3.</b> A interrupção do acesso antes do término do período já pago não gera direito a restituição proporcional, uma vez que a licença correspondente ao período já foi disponibilizada.</p>
+      <p><b>6.4.</b> A LIONHEART poderá encerrar a prestação mediante aviso de 30 dias, restituindo proporcionalmente o valor do período pago e não disponibilizado.</p>
+      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:20px 0 10px;font-size:1.12em;">CLÁUSULA 7 — NATUREZA DE APOIO E RESPONSABILIDADE PROFISSIONAL</h3>
+      <div style="background:rgba(239,68,68,0.08);border-left:4px solid #ef4444;padding:13px 17px;border-radius:6px;margin:6px 0 12px;">
+      <p><b>7.1.</b> A Plataforma é ferramenta tecnológica de apoio à análise e à tomada de decisão e <b>não substitui parecer contábil, jurídico, tributário, financeiro, econômico ou de qualquer outra natureza profissional</b>. A LIONHEART não presta consultoria individualizada nem assume responsabilidade técnica pelos serviços prestados pelo Usuário.</p>
+      </div>
+      <p><b>7.2.</b> Resultados, projeções, memórias de cálculo e relatórios dependem dos dados informados, das premissas selecionadas, das regras parametrizadas e da legislação vigente ou incorporada ao sistema na data de utilização. Cabe ao Usuário conferir os dados inseridos, revisar premissas e resultados, interpretar os cenários, aprovar os relatórios antes da entrega ao cliente final e emitir, sob sua responsabilidade, as orientações e pareceres aplicáveis.</p>
+      <p><b>7.3.</b> A LIONHEART não garante economia tributária, redução de carga fiscal, aumento de receita, recuperação de créditos, aceitação por autoridade fiscal, êxito em procedimento administrativo ou judicial, nem qualquer resultado financeiro ou empresarial específico.</p>
+      <p><b>7.4.</b> O Usuário declara ser profissional habilitado e único responsável por avaliar se possui registros, autorizações e bases legais necessárias à prestação dos serviços que oferece.</p>
+      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:20px 0 10px;font-size:1.12em;">CLÁUSULA 8 — ONDE FICAM OS DADOS</h3>
+      <p><b>8.1.</b> Os dados operacionais inseridos pelo Usuário — inclusive nome, CNPJ e faturamento dos clientes dele — <b>permanecem armazenados localmente no navegador do próprio Usuário</b> ("Local Stage") e não são transmitidos nem acessados pela LIONHEART.</p>
+      <p><b>8.2.</b> Os cálculos são processados em servidor. Para isso, somente valores numéricos são transmitidos — nunca nome, CNPJ, razão social ou qualquer dado que identifique o cliente do Usuário. A Plataforma recusa o processamento quando identifica campo de identificação no envio.</p>
+      <p><b>8.3.</b> O salvamento automático tem natureza funcional e não substitui backup. O Usuário é responsável por exportar e preservar seus dados, especialmente antes de troca de equipamento, limpeza de navegador, reinstalação, formatação ou encerramento da assinatura.</p>
+      <p><b>8.4.</b> A LIONHEART não responde pela perda de dados armazenados exclusivamente no ambiente local quando decorrente de falha de equipamento, navegador, sistema operacional, ação do usuário, malware, limpeza de armazenamento ou ausência de backup.</p>
+      <p><b>8.5.</b> A LIONHEART armazena: dados de cadastro (nome, e-mail), dados de cobrança (processados pela instituição de pagamento) e registros de uso da Plataforma.</p>
+      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:20px 0 10px;font-size:1.12em;">CLÁUSULA 9 — PROTEÇÃO DE DADOS PESSOAIS</h3>
+      <p><b>9.1.</b> As Partes cumprirão a Lei nº 13.709/2018 (LGPD).</p>
+      <p><b>9.2.</b> Quanto aos dados cadastrais do Usuário, a LIONHEART atua como <b>controladora</b>, na medida necessária à execução do contrato, faturamento, prevenção a fraudes, segurança, suporte e cumprimento de obrigações legais.</p>
+      <p><b>9.3.</b> Quanto aos dados de clientes do Usuário mantidos no Local Stage, sem acesso da LIONHEART, o Usuário permanece integralmente responsável pelas decisões de tratamento, bases legais, transparência, direitos dos titulares e segurança. A mera disponibilização do software, sem acesso aos dados, não atribui à LIONHEART atuação operacional sobre esse conteúdo.</p>
+      <p><b>9.4.</b> Se o Usuário compartilhar dados pessoais com a LIONHEART para suporte específico, a LIONHEART atuará como <b>operadora</b> no limite dessa atividade. O Usuário deve compartilhar apenas o mínimo necessário e, quando possível, anonimizar as informações.</p>
+      <p><b>9.5.</b> Encerrada a finalidade, a LIONHEART poderá eliminar o conteúdo recebido, ressalvadas hipóteses de retenção legal.</p>
+      <p><b>9.6.</b> Solicitações de titulares e exercício de direitos: <a href="mailto:contato@lionheartintelligence.com.br" style="color:#c9a227">contato@lionheartintelligence.com.br</a>.</p>
+      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:20px 0 10px;font-size:1.12em;">CLÁUSULA 10 — PROPRIEDADE INTELECTUAL</h3>
+      <p><b>10.1.</b> Pertencem exclusivamente à LIONHEART todos os direitos sobre a Plataforma, incluindo código-fonte e código-objeto, arquitetura, algoritmos, modelos, lógicas de cálculo, bases paramétricas, fluxos, documentação, textos, design, interfaces, marcas, metodologias, relatórios-padrão e memórias de cálculo estruturais.</p>
+      <p><b>10.2.</b> Os dados operacionais inseridos permanecem de titularidade do Usuário ou de seus respectivos titulares. O Usuário poderá utilizar comercialmente os relatórios gerados, sem que isso transfira titularidade sobre mecanismos, modelos, templates ou lógica de geração.</p>
+      <p><b>10.3.</b> Sugestões e ideias de melhoria fornecidas voluntariamente poderão ser consideradas no desenvolvimento de produtos, sem obrigação de remuneração.</p>
+      <p><b>10.4.</b> Violação de propriedade intelectual autoriza suspensão imediata do acesso, sem prejuízo das medidas judiciais cabíveis.</p>
+      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:20px 0 10px;font-size:1.12em;">CLÁUSULA 11 — DISPONIBILIDADE E SEGURANÇA</h3>
+      <p><b>11.1.</b> A LIONHEART empregará esforços técnicos razoáveis para manter a Plataforma funcional e segura, sem assumir obrigação de disponibilidade ininterrupta.</p>
+      <p><b>11.2.</b> Não haverá responsabilidade por indisponibilidades decorrentes de manutenção, caso fortuito ou força maior, falhas de conexão, navegador, equipamento ou rede do Usuário, serviços de terceiros ou eventos fora de controle razoável.</p>
+      <p><b>11.3.</b> A LIONHEART poderá bloquear temporariamente conta, sessão ou funcionalidade diante de indício razoável de comprometimento de segurança, fraude, ataque ou uso capaz de afetar terceiros, restabelecendo o acesso tão logo cessado o risco.</p>
+      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:20px 0 10px;font-size:1.12em;">CLÁUSULA 12 — LIMITAÇÃO DE RESPONSABILIDADE</h3>
+      <p><b>12.1.</b> Nenhuma Parte responderá por danos indiretos, reflexos ou consequenciais, lucros cessantes meramente estimados, perda de oportunidade não comprovada ou perda de negócios decorrente de decisões profissionais da outra Parte.</p>
+      <p><b>12.2.</b> A responsabilidade agregada da LIONHEART fica limitada ao valor efetivamente pago pelo Usuário nos 12 meses anteriores ao fato gerador, ou ao total pago desde a ativação, se inferior.</p>
+      <p><b>12.3.</b> A limitação não se aplica a dolo, fraude, culpa grave, violação intencional de propriedade intelectual ou confidencialidade, nem às hipóteses em que a lei vede limitação.</p>
+      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:20px 0 10px;font-size:1.12em;">CLÁUSULA 13 — ALTERAÇÕES DESTES TERMOS</h3>
+      <p><b>13.1.</b> Alterações relevantes serão comunicadas por e-mail e na Plataforma com 30 dias de antecedência. O uso após a vigência representa aceite. Quem discordar poderá cancelar sem ônus.</p>
+      <p><b>13.2.</b> A LIONHEART registra a data, a versão aceita e o endereço de rede de cada aceite.</p>
+      <h3 style="color:#c9a227;font-family:'Syne',sans-serif;margin:20px 0 10px;font-size:1.12em;">CLÁUSULA 14 — DISPOSIÇÕES FINAIS</h3>
+      <p><b>14.1.</b> O Usuário declara contratar para uso profissional e empresarial, como insumo à sua atividade. Caso norma de proteção obrigatória seja reconhecida aplicável, prevalecerão suas disposições inderrogáveis no limite de sua incidência.</p>
+      <p><b>14.2.</b> A LIONHEART poderá licenciar a Plataforma a outros clientes, inclusive do mesmo segmento.</p>
+      <p><b>14.3.</b> A nulidade de uma disposição não afeta as demais.</p>
+      <p><b>14.4.</b> Regem-se estes Termos pelas leis brasileiras, especialmente o Código Civil, a Lei do Software (9.609/1998), a LGPD (13.709/2018) e a MP 2.200-2/2001.</p>
+      <p><b>14.5.</b> Fica eleito o foro da Comarca de Rio Grande/RS, ressalvadas competências legais inderrogáveis e regra obrigatória mais favorável ao consumidor, se reconhecida aplicável.</p>
+      <div style="margin-top:26px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.08);font-size:0.85em;color:rgba(200,215,235,0.6);font-style:italic;">LIONHEART BUSINESS INTELLIGENCE — Ecossistema de Inteligência Empresarial e Tributária Ltda. · CNPJ 68.364.765/0001-44 · Rio Grande/RS · Termos de Uso versão 1.0 · vigência a partir de 14/09/2026</div>
+  </div>
+</div>
+<!-- /page-termos -->
 
   <!-- ══════════════════════════════════════════════
        v29 ONDA 1.6.2 — CENTRAL DE AJUDA CONTEXTUAL
