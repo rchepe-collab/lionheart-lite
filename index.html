@@ -823,21 +823,23 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
 
 <div class="mt-fundo" id="mt-fundo" role="dialog" aria-modal="true" aria-labelledby="mt-titulo">
   <div class="mt-caixa">
-    <h3 id="mt-titulo">Para onde mandamos?</h3>
+    <h3 id="mt-titulo">Abrimos agora e mandamos uma cópia</h3>
     <p class="p" id="mt-qual"></p>
     <label class="mt-campo" for="mt-email">Seu e-mail</label>
     <input type="email" id="mt-email" placeholder="voce@seuescritorio.com.br"
            autocomplete="email" inputmode="email" spellcheck="false">
-    <label class="mt-campo" for="mt-tel">Telefone <span class="mt-opc">opcional</span></label>
+    <label class="mt-campo" for="mt-tel">Telefone <span class="mt-opc">opcional · só para contato</span></label>
     <input type="tel" id="mt-tel" placeholder="(53) 90000-0000" autocomplete="tel">
+    <p class="mt-nota" style="margin:-8px 0 16px">O material vai por e-mail. O telefone é só
+      se você quiser que a gente fale com você — não mandamos nada por mensagem.</p>
     <label class="mt-ok" for="mt-consent">
       <input type="checkbox" id="mt-consent">
-      <span>Concordo em receber este material e outros conteúdos da Lionheart por e-mail.
-        Posso pedir a remoção quando quiser.</span>
+      <span>Concordo em receber este material por e-mail, e outros conteúdos da Lionheart
+        de vez em quando. Posso pedir a remoção a qualquer momento.</span>
     </label>
     <div class="mt-acoes">
       <button type="button" class="mt-fechar" id="mt-cancelar">Agora não</button>
-      <button type="button" class="mt-abrir" id="mt-ok" disabled>Abrir material</button>
+      <button type="button" class="mt-abrir" id="mt-ok" disabled>Abrir e receber</button>
     </div>
     <p class="mt-erro" id="mt-erro"></p>
     <p class="mt-nota">Guardamos só e-mail e, se você quiser, telefone — para mandar material.
@@ -1346,7 +1348,7 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
   if(!grade || !fundo) return;
 
   var escolhido = null;
-  var TEXTO = 'Concordo em receber este material e outros conteúdos da Lionheart por e-mail.';
+  var TEXTO = 'Concordo em receber este material por e-mail, e outros conteúdos da Lionheart de vez em quando.';
 
   function lembrado(){
     try{ return localStorage.getItem('lh_lead_email') || ''; }catch(e){ return ''; }
@@ -1395,7 +1397,7 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
           '<span class="mt-t">' + limpo(m.titulo) + '</span>' +
           '<span class="mt-sub">' + limpo(m.subtitulo) + '</span>' +
           '<span class="mt-r">' + limpo(m.resumo) + '</span>' +
-          '<span class="mt-b">Abrir material</span>' +
+          '<span class="mt-b">Abrir e receber por e-mail</span>' +
         '</span>';
       b.onclick = function(){ pedir(m); };
       grade.appendChild(b);
@@ -1444,7 +1446,7 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
         material: escolhido.slug, consentiu: true, texto: TEXTO
       })
     }).then(function(r){ return r.json(); }).then(function(d){
-      bt.disabled = false; bt.textContent = 'Abrir material';
+      bt.disabled = false; bt.textContent = 'Abrir e receber';
       if(d && d.ok && d.arquivo){
         lembrar(em);
         fechar();
@@ -1454,7 +1456,7 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
         conferir();
       }
     }).catch(function(){
-      bt.disabled = false; bt.textContent = 'Abrir material';
+      bt.disabled = false; bt.textContent = 'Abrir e receber';
       document.getElementById('mt-erro').textContent = 'Sem conexão. Verifique a internet e tente de novo.';
       conferir();
     });
