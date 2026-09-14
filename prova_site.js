@@ -27,6 +27,12 @@ setTimeout(()=>{
   anos.find(b=>b.dataset.ano==='2029').dispatchEvent(new dom.window.Event('click'));
   ex('2029 fala de 90%', /90%/.test(p.textContent));
   ex('não promete alíquota fechada', !/IBS de \d+[,.]?\d*%/.test(d.body.textContent));
+  console.log('  -- quem faz --');
+  ex('seção existe', !!d.getElementById('quemfaz'));
+  ex('no menu', [...d.querySelectorAll('.menu a')].some(a=>a.getAttribute('href')==='#quemfaz'));
+  ex('dois fundadores', d.querySelectorAll('#quemfaz .fundadores > div').length===2);
+  ex('sem nome próprio', !/Ricardo|Chepe|Carlos/i.test(d.getElementById('quemfaz').textContent));
+  ex('vem antes de Como começar', d.getElementById('quemfaz').compareDocumentPosition(d.getElementById('comecar'))===4);
   console.log('  -- como começar --');
   ex('seção existe', !!d.getElementById('comecar'));
   ex('três passos', d.querySelectorAll('#comecar .passos li').length===3);

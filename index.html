@@ -307,6 +307,33 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
 .nojs .revela{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){.revela{opacity:1!important;transform:none!important;transition:none}}
 
+
+/* ═══ QUEM FAZ ═════════════════════════════════════════════════════════════
+   Vem DEPOIS do valor, nunca antes. Ninguém quer saber quem você é enquanto
+   ainda não sabe se a coisa serve — mas na hora de pagar R$ 499 por mês para
+   um nome que nunca ouviu falar, aí sim pergunta. */
+.sobre-linhas{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:30px;margin:44px 0 0}
+.sobre-linhas h3{font-size:1.46rem;margin:0 0 9px;color:var(--ouro-cl);line-height:1.2}
+.sobre-linhas p{margin:0;font-size:.9rem;color:var(--cinza);line-height:1.65}
+.fundadores{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));
+  gap:0;margin:48px 0 0;border-top:1px solid var(--linha)}
+.fundadores > div{padding:26px 26px 26px 0;border-right:1px solid var(--linha)}
+.fundadores > div:last-child{border-right:0;padding-left:26px}
+@media(max-width:620px){
+  .fundadores > div{border-right:0;border-bottom:1px solid var(--linha);padding:24px 0}
+  .fundadores > div:last-child{border-bottom:0;padding-left:0}
+}
+.fd-papel{font-family:'Sora',sans-serif;font-size:.68rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ouro-es);margin:0 0 10px}
+.fd-t{font-family:'Cormorant Garamond',serif;font-size:1.85rem;line-height:1.15;
+  color:var(--marfim);margin:0 0 10px}
+.fd-d{margin:0;font-size:.89rem;color:var(--cinza);line-height:1.65}
+.sobre-fecho{margin:48px 0 0;padding:26px 0 0;border-top:1px solid var(--linha);
+  font-family:'Cormorant Garamond',serif;font-size:1.5rem;line-height:1.4;
+  color:var(--marfim);max-width:52ch}
+.sobre-fecho em{font-style:italic;color:var(--ouro-cl)}
+
 </style>
 </head>
 <body id="topo" data-perfil="contador" class="nojs">
@@ -324,6 +351,7 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
       <a href="#solucoes">O que resolve</a>
       <a href="#setores">Setores</a>
       <a href="#escritorio">Monetizar</a>
+      <a href="#quemfaz">Quem faz</a>
       <a href="#comecar">Como começar</a>
       <a class="menu-cta" href="assinar.html">Assinar</a>
     </nav>
@@ -565,6 +593,59 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
 </section>
 
 
+
+<section id="quemfaz">
+  <div class="wrap">
+    <h2 class="revela">Não nasceu numa fábrica de software.<br>Nasceu numa <em>mesa de cliente</em>.</h2>
+    <p class="revela" style="color:var(--cinza);max-width:58ch;margin-top:16px">
+      A Lionheart veio de dentro de consultorias que já atendiam empresas —
+      não de uma equipe de tecnologia que foi consultar um contador depois de pronta.
+      Cada cálculo aqui existe porque a pergunta apareceu primeiro numa reunião real.
+    </p>
+
+    <div class="fundadores revela">
+      <div>
+        <p class="fd-papel">Fundação</p>
+        <p class="fd-t">Um economista,<br>20 anos de gestão</p>
+        <p class="fd-d">Duas décadas em gestão executiva e consultoria empresarial, com
+          pós-graduação em gestão estratégica de negócios. A parte que entende o que o
+          número faz com o caixa, o preço e o resultado do cliente.</p>
+      </div>
+      <div>
+        <p class="fd-papel">Fundação</p>
+        <p class="fd-t">Um advogado,<br>banca tributária</p>
+        <p class="fd-d">Anos de atuação tributária, com a prática de quem sustenta tese
+          diante de fisco e de juiz. A parte que garante que cada resultado sai com
+          fundamento legal citado e memória de cálculo que se defende.</p>
+      </div>
+    </div>
+
+    <div class="sobre-linhas revela">
+      <div>
+        <h3>Dois anos de estudo</h3>
+        <p>A plataforma é síntese de um trabalho longo sobre a LC 214/2025 e sobre o
+           que a transição faz com empresa real, setor por setor — não a leitura
+           apressada de uma lei recém-publicada.</p>
+      </div>
+      <div>
+        <h3>Pesquisa com quem vive disso</h3>
+        <p>Conversas com consultores, empresários e usuários para entender onde a
+           dúvida realmente aparece. Foi isso que definiu quais soluções existiriam —
+           e quais não valia a pena construir.</p>
+      </div>
+      <div>
+        <h3>Conhecimento somado</h3>
+        <p>Tributário, contábil, financeiro e jurídico na mesma ferramenta, porque na
+           mesa do cliente essas perguntas nunca chegam separadas.</p>
+      </div>
+    </div>
+
+    <p class="sobre-fecho revela">
+      Por isso a plataforma não devolve só o imposto. Devolve o que fazer com ele —
+      que é a diferença entre <em>entregar um número</em> e <em>cobrar por uma decisão</em>.
+    </p>
+  </div>
+</section>
 <section id="comecar" class="sec-alt">
   <div class="wrap">
     <h2 class="revela">Três passos, e o primeiro<br>é com um cliente <em>de verdade</em>.</h2>
