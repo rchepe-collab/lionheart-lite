@@ -442,17 +442,19 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
    decidiu não precisa de conversa; quem ficou com dúvida precisa de uma
    saída que não seja fechar a aba. Oferecer conversa cedo demais transforma
    venda que se resolvia sozinha em reunião para agendar. */
-.conversa{margin:52px 0 0;padding:30px;border:1px solid var(--linha);
-  background:linear-gradient(160deg,#0e0e0f,#0a0a0a);
-  display:flex;align-items:center;justify-content:space-between;gap:26px;flex-wrap:wrap}
-.conversa .txt{flex:1;min-width:250px}
-.conversa h3{font-family:'Cormorant Garamond',serif;font-size:1.72rem;line-height:1.2;
-  margin:0 0 7px;color:var(--ouro-cl)}
-.conversa p{margin:0;font-size:.89rem;color:var(--cinza);max-width:48ch;line-height:1.6}
+/* ★ virou linha discreta no fim da página: quem já decidiu não precisa de
+   conversa, e a caixa grande no meio do caminho competia com o botão de
+   assinar. Aqui ela pega só quem chegou ao fim sem decidir. */
+.conversa{margin:0;padding:22px 0 0;border-top:1px solid var(--linha);
+  display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center}
+.conversa .txt{flex:0 1 auto}
+.conversa h3{font-family:'Cormorant Garamond',serif;font-size:1.12rem;line-height:1.3;
+  margin:0;color:var(--cinza);font-weight:400;display:inline}
+.conversa p{display:none}
 .conversa a{display:inline-flex;align-items:center;gap:10px;text-decoration:none;
   border:1px solid rgba(201,162,39,.55);color:var(--ouro-cl);
-  font-family:'Sora',sans-serif;font-size:.8rem;font-weight:600;letter-spacing:.14em;
-  text-transform:uppercase;padding:16px 28px;white-space:nowrap;
+  font-family:'Sora',sans-serif;font-size:.66rem;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;padding:9px 16px;white-space:nowrap;
   transition:background-color .14s,color .14s}
 .conversa a:hover{background:var(--ouro);border-color:var(--ouro);color:var(--onyx)}
 @media(max-width:620px){.conversa{padding:24px}.conversa a{width:100%;justify-content:center}}
@@ -543,7 +545,6 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
       </span>
       <a href="#reforma">A reforma</a>
       <a href="#solucoes">O que resolve</a>
-      <a href="#setores">Setores</a>
       <a href="#escritorio">Monetizar</a>
       <a href="#materiais">Materiais</a>
       <a href="#quemfaz">Quem faz</a>
@@ -613,19 +614,6 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
     <p class="tl-nota">Calendário conforme a Lei Complementar 214/2025. As alíquotas de
       referência ainda dependem de definição — e é por isso que a plataforma calcula por
       faixa, não por número único.</p>
-  </div>
-</section>
-
-<section id="ferramenta">
-  <div class="wrap rev">
-    <div class="sec-eye">Antes de tudo</div>
-    <h2 class="sec-tit">Uma ferramenta de <em>negócio</em>,<br>não só de cálculo.</h2>
-    <p class="sec-lead"><span class="so-cont">Fortalece os três pilares que sustentam um escritório contábil — não apenas a parte técnica.</span><span class="so-adv">Fortalece os três pilares que sustentam uma banca tributária — não apenas a parte técnica.</span></p>
-    <div class="neg">
-      <div class="ng"><div class="ng-t">Precificação</div><p class="ng-d"><span class="so-cont">Sair do honorário-padrão e cobrar pelo <b>valor entregue</b>. A proposta sai com o número do impacto — o cliente vê por que paga, e você não trabalha de graça.</span><span class="so-adv">Sair do honorário tabelado e cobrar pelo <b>valor da tese</b>. A proposta sai com o número do crédito ou da economia — o cliente vê por que paga.</span></p></div>
-      <div class="ng"><div class="ng-t">Escalabilidade</div><p class="ng-d"><span class="so-cont">Atender <b>mais clientes sem inflar a equipe</b> na mesma proporção. Mesma estrutura, vários clientes — sem refazer cálculo do zero a cada conversa.</span><span class="so-adv">Atender <b>mais clientes e grupos econômicos</b> com a mesma estrutura — sem refazer cálculo e parecer do zero a cada caso.</span></p></div>
-      <div class="ng"><div class="ng-t">Recorrência &amp; LTV</div><p class="ng-d"><span class="so-cont">A relação contador–cliente dura anos. A ferramenta ajuda a <b>estender e fortalecer</b> essa relação com novos serviços recorrentes — o Lifetime Value contábil.</span><span class="so-adv">A relação com o cliente dura anos. A ferramenta ajuda a <b>estender e fortalecer</b> essa relação com novos serviços recorrentes — o Lifetime Value jurídico.</span></p></div>
-    </div>
   </div>
 </section>
 
@@ -701,24 +689,6 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
   </div>
 </section>
 
-<section id="arsenal">
-  <div class="wrap rev">
-    <div class="sec-eye">Aberto</div>
-    <h2 class="sec-tit">O arsenal completo,<br>análise por <em>análise</em>.</h2>
-    <p class="sec-lead">Cada frente não é um cálculo só — são <b>111 análises nomeadas</b>, prontas para usar cliente a cliente. Esta é a lista inteira, sem vitrine: o que existe é o que está aqui.</p>
-    <div class="arsenal"><div class="ars"><div class="ars-t">Reforma Tributária</div><ul><li>Split Payment · cash gap</li><li>Split Payment por operação</li><li>NCG ajustada ao Split</li><li>Créditos plenos CBS/IBS</li><li>Alíquota efetiva por setor</li><li>Alíquota efetiva por produto · mix</li><li>Alíquota de referência · o custo de errar</li><li>Imposto Seletivo</li><li>Simples → regime regular CBS/IBS</li><li>Risco de fornecedor do Simples</li><li>DIFAL interestadual</li><li>Reprecificação de contratos</li><li>Fundo de Compensação · incentivos de ICMS</li><li>Compliance da Reforma</li><li>Raio-X 360° do produto</li></ul></div><div class="ars"><div class="ars-t">Regime &amp; Enquadramento</div><ul><li>Regime ótimo · Simples / Presumido / Real</li><li>Fator R · Anexo III × V</li><li>Sublimite do Simples Nacional</li><li>PF × PJ · vale a pejotização</li><li>Reorganização societária · cisão e fusão</li><li>Valuation empresarial</li><li>Custo tributário de M&amp;A</li></ul></div><div class="ars"><div class="ars-t">Remuneração do Sócio</div><ul><li>Pró-labore ótimo · quanto retirar</li><li>Tributação de dividendos + IRPFM</li><li>JCP × dividendos · combinação ótima</li><li>Stock options · Tema 1.226 do STJ</li><li>Aluguel PF × PJ</li><li>Offshores e fundos · Lei 14.754</li></ul></div><div class="ars"><div class="ars-t">Recuperação de Crédito</div><ul><li>Tema 69 STF · PIS/COFINS sobre ICMS</li><li>ICMS-ST na base · Tema 1.125</li><li>ISS na base · Tema 118</li><li>Insumos PIS/COFINS · Tema 779 STJ</li><li>Selic do indébito · Tema 962 STF</li><li>PIS/COFINS sobre energia elétrica</li><li>Saldo credor PIS/COFINS</li><li>Recuperação previdenciária patronal</li><li>Monofásico · PIS/COFINS na revenda</li><li>Crédito presumido · agroindústria</li><li>Retenções na fonte não aproveitadas</li></ul></div><div class="ars"><div class="ars-t">Contencioso &amp; Débitos</div><ul><li>Prescrição e decadência</li><li>Multas e juros · o custo real do débito</li><li>Denúncia espontânea × esperar autuação</li><li>Transação tributária · edital PGFN</li><li>REFIS e parcelamento</li><li>Compensação · PER/DCOMP</li><li>Simulador de autuação</li><li>Decisor · discutir, transacionar ou pagar</li><li>Custo do descumprimento</li></ul></div><div class="ars"><div class="ars-t">Patrimonial &amp; Sucessão</div><ul><li>Holding patrimonial</li><li>ITCMD progressivo por Estado</li><li>Doação em vida × herança futura</li><li>Ganho de capital PF · DARF e isenções</li><li>Sucessório completo</li><li>Incorporação / RET · regime ótimo</li><li>Regime imobiliário da Reforma</li></ul></div><div class="ars"><div class="ars-t">Agronegócio</div><ul><li>Decisor do produtor · vale ser contribuinte</li><li>Mapa do diferimento · art. 138</li><li>LC 224 · o corte de 10% e a tese</li><li>Ciclo de caixa da safra</li><li>Momento ótimo do investimento</li><li>Declaração de destinação · o passivo que dorme</li><li>Monitor de crédito por fornecedor</li><li>Funrural · receita × folha</li><li>Crédito presumido do produtor</li><li>Barter · insumo × safra</li><li>Exportação de grão · o crédito que sangra</li><li>Agroindústria e subrogação</li><li>Cooperativa · ato × terceiro</li><li>Ativo biológico · AVJ e diferimento</li><li>Sucessão rural · o custo de esperar</li><li>Custeio · CPR × LCA × banco</li><li>Defensivos e fertilizantes</li><li>ITR e terra produtiva</li></ul></div><div class="ars"><div class="ars-t">Indústria</div><ul><li>Crédito de estoque na virada</li><li>CAPEX · crédito sobre bens de capital</li><li>Preço industrial · a virada do por fora</li><li>ICMS-ST · ressarcimento do Tema 201</li><li>Energia · as teses do eletrointensivo</li><li>Split e ciclo longo</li><li>IPI na transição e Zona Franca</li><li>Ex-tarifário · bem de capital</li><li>Subvenção · Lei 14.789</li><li>Lei do Bem · P&amp;D</li><li>Fundopem RS e Fundo ADCT</li><li>Tema 1.182 · a decisão de discutir</li></ul></div><div class="ars"><div class="ars-t">Comércio Exterior</div><ul><li>Importação e regimes aduaneiros</li><li>Exportação e saldo credor</li><li>Drawback e regimes aduaneiros</li><li>Portos e regimes aduaneiros</li><li>Logística e transporte de cargas</li></ul></div><div class="ars"><div class="ars-t">Setores Específicos</div><ul><li>Profissões regulamentadas · art. 127</li><li>Construção e empreitada</li><li>Hotelaria e parques</li><li>Hotel × eventos · vale segregar</li><li>Bares e restaurantes</li><li>Agências de viagem e turismo</li><li>Planos de saúde · operadoras</li><li>Medicamentos e dispositivos médicos</li><li>Combustíveis · monofásico</li><li>Telecom e energia</li><li>Serviços financeiros · spread</li><li>Transporte de passageiros</li><li>Apostas e SAF</li><li>Cooperativas · regime específico</li><li>Pagamentos antecipados</li><li>Insumos agro e produtor rural</li></ul></div><div class="ars"><div class="ars-t">Gestão do Escritório</div><ul><li>Precificação de honorários · BPO</li><li>Rentabilidade por cliente</li><li>LTV de carteira</li><li>Relatório profissional white-label</li><li>Proposta comercial</li></ul></div></div>
-  </div>
-</section>
-
-<section id="setores" class="sec-alt">
-  <div class="wrap rev">
-    <div class="sec-eye">Por setor</div>
-    <h2 class="sec-tit">Seus clientes são de todo tipo —<br>a plataforma calcula por <em>setor</em>.</h2>
-    <p class="sec-lead">Comércio, indústria, serviços, agro, turismo, construção, comex: cada um tem regra própria na Reforma. Você atende todos com o cálculo certo de cada um.</p>
-    <div class="setores"><div class="set"><div class="set-t">Comércio &amp; Varejo</div><p class="set-d">Crédito de estoque na virada, monofásicos, DIFAL — os clientes mais expostos no caixa.</p><ul class="set-l"><li>Mix de produtos e alíquota efetiva</li><li>Monofásicos e a segregação de receitas</li><li>Split payment e capital de giro</li></ul></div><div class="set"><div class="set-t">Serviços</div><p class="set-d">Fator R, alíquota por atividade e o regime das profissões reguladas — onde o enquadramento decide tudo.</p><ul class="set-l"><li>Fator R e escolha do anexo</li><li>Redução de 30% do art. 127</li><li>Sociedade uniprofissional</li></ul></div><div class="set"><div class="set-t">Indústria</div><p class="set-d">Créditos plenos, CAPEX e formação de preço — que muda com o fim do tributo por dentro.</p><ul class="set-l"><li>Crédito de estoque na extinção</li><li>CAPEX com crédito imediato</li><li>Energia e ICMS-ST</li></ul></div><div class="set"><div class="set-t">Agronegócio</div><p class="set-d">Produtor PF × PJ, crédito presumido, diferimento e exportação da cadeia.</p><ul class="set-l"><li>Decisão de ser contribuinte</li><li>Mapa de diferimento</li><li>LC 224 e ciclo de safra</li></ul></div><div class="set"><div class="set-t">Comércio exterior</div><p class="set-d">Importação tributada, exportação imune — e regimes que suspendem mediante compromisso.</p><ul class="set-l"><li>Reintegra e o resíduo</li><li>Drawback e destinação</li><li>Saldo credor do exportador</li></ul></div><div class="set"><div class="set-t">Portos &amp; alfandegados</div><p class="set-d">Operação com regime próprio, movimentação de carga e serviços acessórios.</p><ul class="set-l"><li>Regime aduaneiro e suspensão</li><li>Armazenagem e movimentação</li><li>Investimento em terminal</li></ul></div><div class="set"><div class="set-t">Turismo &amp; Alimentação</div><p class="set-d">Regime específico de −40% para bares, restaurantes, hotéis e agências.</p><ul class="set-l"><li>Regime de redução setorial</li><li>Margem e repasse de preço</li></ul></div><div class="set"><div class="set-t">Construção &amp; Imobiliário</div><p class="set-d">Incorporação, RET, empreita e locação com regime próprio na Reforma.</p><ul class="set-l"><li>Empreita global × administração</li><li>Redutor de ajuste</li><li>Contrato longo e revisão</li></ul></div></div>
-  </div>
-</section>
-
 <section id="venda">
   <div class="wrap rev">
     <div class="sec-eye">Em sequência</div>
@@ -772,19 +742,6 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
     <h2 class="sec-tit"><span class="so-cont">Gere o seu escritório —<br>não só o imposto do <em>cliente</em>.</span><span class="so-adv">Gere a sua banca —<br>não só o caso do <em>cliente</em>.</span></h2>
     <p class="sec-lead"><span class="so-cont">A camada que separa a plataforma de uma planilha: ela cuida da saúde do seu negócio.</span><span class="so-adv">A camada que separa a plataforma de uma planilha: ela cuida da saúde da sua operação.</span></p>
     <div class="gest"><div class="gs"><div class="gs-t">Precificação de honorários</div><div class="gs-d">Cobra pelo valor entregue, com o número do impacto na mão — não pela hora.</div></div><div class="gs"><div class="gs-t">Rentabilidade por cliente</div><div class="gs-d">Mostra qual cliente dá lucro e qual está consumindo a sua margem.</div></div><div class="gs"><div class="gs-t">Saúde mensal do cliente</div><div class="gs-d">Acompanha mês a mês — e antecipa a próxima conversa de receita.</div></div><div class="gs"><div class="gs-t">Reprecificação de contratos</div><div class="gs-d">Reajusta o contrato antes que a Reforma o transforme em prejuízo.</div></div><div class="gs"><div class="gs-t">LTV de carteira</div><div class="gs-d">Projeta o valor da relação com cada cliente ao longo do tempo.</div></div><div class="gs"><div class="gs-t">Exposição fiscal</div><div class="gs-d">Dimensiona o risco tributário aberto antes que ele vire autuação.</div></div></div>
-  </div>
-</section>
-
-<section id="crescer">
-  <div class="wrap rev">
-    <div class="sec-eye">O que você ganha</div>
-    <h2 class="sec-tit">Não é sobre tecnologia.<br>É sobre <em>crescer</em>.</h2>
-    <div class="neg" style="margin-top:34px">
-      <div class="ng"><div class="ng-t">Aumenta a base</div><p class="ng-d">Você entra na conversa com <b>argumento técnico e número</b> que o profissional comum não tem. Vira quem o prospect quer ouvir.</p></div>
-      <div class="ng"><div class="ng-t">Fortalece a carteira atual</div><p class="ng-d"><span class="so-cont">Os clientes de hoje passam a ver você como <b>o contador que entende de Reforma</b> — e renovam com mais confiança.</span><span class="so-adv">Os clientes de hoje passam a ver você como <b>quem domina a Reforma</b> — e voltam antes de procurar outro.</span></p></div>
-      <div class="ng"><div class="ng-t">Novos serviços para vender</div><p class="ng-d">Diagnóstico tributário, planejamento de transição, otimização de regime, holding. <b>Receita nova com a mesma carteira.</b></p></div>
-      <div class="ng"><div class="ng-t">Posição de consultor</div><p class="ng-d"><span class="so-cont">Sai do lugar de quem entrega guia e vira <b>quem orienta a estratégia</b> do cliente. É outro patamar de relação — e de honorário.</span><span class="so-adv">Sai do lugar de quem responde consulta e vira <b>quem conduz a estratégia</b> do cliente. É outro patamar de relação — e de honorário.</span></p></div>
-    </div>
   </div>
 </section>
 
@@ -933,19 +890,8 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
     <p class="revela" style="margin-top:40px">
       <a class="btn btn-p" href="assinar.html">Ver planos e assinar</a>
     </p>
-
-    <div class="conversa revela">
-      <div class="txt">
-        <h3>Prefere conversar antes?</h3>
-        <p>Se ficou uma dúvida que o site não respondeu, ou se você quer ver a ferramenta
-           rodando com um caso da sua carteira, é só chamar. Agendamos uma demonstração.</p>
-      </div>
-      <a href="https://wa.me/5553999823848?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Lionheart%20e%20gostaria%20de%20agendar%20uma%20demonstra%C3%A7%C3%A3o." target="_blank" rel="noopener">Agendar demonstração</a>
-    </div>
-
-  </div>
 </section>
-<section id="comecar" class="cta">
+<section id="fechamento" class="cta">
   <div class="wrap">
     <h2><span class="so-cont">Comece pelo cliente que você<br>já sabe que tem <span class="ouro">problema</span>.</span><span class="so-adv">Comece pelo caso que está<br>na sua mesa <span class="ouro">agora</span>.</span></h2>
     <p><span class="so-cont">Em uma reunião você sai com o diagnóstico e a proposta.</span><span class="so-adv">Em uma reunião você sai com o valor da causa e a tese que o sustenta.</span></p>
@@ -953,6 +899,11 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
       <a class="btn btn-p" href="assinar.html">Ver planos e assinar</a>
       <a class="btn btn-g" href="#comecar">Como começar</a>
     </div>
+    <div class="conversa revela">
+      <div class="txt"><h3>Ficou com dúvida?</h3></div>
+      <a href="https://wa.me/5553999823848?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Lionheart%20e%20gostaria%20de%20agendar%20uma%20demonstra%C3%A7%C3%A3o." target="_blank" rel="noopener">Agendar demonstração</a>
+    </div>
+
   </div>
 </section>
 

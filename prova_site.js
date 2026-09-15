@@ -68,8 +68,12 @@ setTimeout(()=>{
   ex('número certo', /wa\.me\/5553999823848/.test(wz.getAttribute('href')));
   ex('abre em aba nova com noopener', wz.target==='_blank' && /noopener/.test(wz.rel));
   ex('mensagem já preenchida', /text=/.test(wz.getAttribute('href')));
-  ex('vem DEPOIS do botão de assinar', d.querySelector('#comecar a[href="assinar.html"]')
+  ex('é o último elemento da página', d.querySelector('#comecar a[href="assinar.html"]')
       .compareDocumentPosition(wz)===4);
+  ex('id comecar não está duplicado',
+      [...d.querySelectorAll('section[id="comecar"]')].length===1);
+  ex('toda âncora do menu existe',
+      [...d.querySelectorAll('.menu a[href^="#"]')].every(a=>!!d.querySelector(a.getAttribute('href'))));
   console.log('  -- botão flutuante --');
   const fl=d.getElementById('flutua');
   ex('existe', !!fl);
