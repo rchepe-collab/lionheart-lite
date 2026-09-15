@@ -76,9 +76,13 @@ setTimeout(()=>{
       [...d.querySelectorAll('.menu a[href^="#"]')].every(a=>!!d.querySelector(a.getAttribute('href'))));
   console.log('  -- botão flutuante --');
   const fl=d.getElementById('flutua');
-  ex('existe', !!fl);
-  ex('leva a assinar', fl.getAttribute('href')==='assinar.html');
-  ex('nasce escondido', !fl.classList.contains('vis'));
+  ex('caixa flutuante existe', !!fl);
+  ex('tem os dois botoes', fl.querySelectorAll('a').length===2);
+  ex('primeiro leva a assinar', fl.querySelector('.flutua').getAttribute('href')==='assinar.html');
+  ex('segundo e a demonstracao', /wa\.me\/5553999823848/.test(fl.querySelector('.flutua-2').getAttribute('href')));
+  ex('nasce escondida', !fl.classList.contains('vis'));
+  ex('tres convites no site', d.querySelectorAll('a[href*="wa.me/5553999823848"]').length===3);
+  ex('um convite apos as dores', !!d.querySelector('#solucoes a[href*="wa.me"]'));
   dom.window.scrollY=300; dom.window.dispatchEvent(new dom.window.Event('scroll'));
   ex('aparece com 300px de rolagem', fl.classList.contains('vis'));
   dom.window.scrollY=100; dom.window.dispatchEvent(new dom.window.Event('scroll'));

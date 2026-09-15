@@ -391,19 +391,37 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
 /* ═══ BOTÃO FLUTUANTE ══════════════════════════════════════════════════════
    Só aparece depois que a pessoa desceu da primeira dobra: botão de comprar
    em cima de quem ainda está lendo o título é anúncio, não convite. */
-.flutua{position:fixed;right:46px;bottom:42px;z-index:95;
+/* ★ DUPLA FLUTUANTE. A venda neste estágio é consultiva: o lead que não
+   entendeu o valor não desce até o fim da página para achar o convite — ele
+   fecha a aba. Então a demonstração acompanha a rolagem junto com os planos,
+   o site inteiro.
+   A hierarquia é mantida pela FORMA, não pela ausência: planos preenchido e
+   grande, demonstração vazado e menor. Quem decidiu clica em cima; quem ficou
+   com dúvida acha a saída sem procurar. */
+.flutua-caixa{position:fixed;right:46px;bottom:42px;z-index:95;
+  display:flex;flex-direction:column;align-items:stretch;gap:9px;max-width:330px;
+  opacity:0;transform:translateY(14px);pointer-events:none;
+  transition:opacity .22s,transform .22s}
+.flutua-caixa.vis{opacity:1;transform:none;pointer-events:auto}
+.flutua{display:block;text-align:center;text-decoration:none;
   background:linear-gradient(135deg,#d9b53a,#c9a227);color:var(--onyx);
   font-family:'Sora',sans-serif;font-size:.92rem;font-weight:700;letter-spacing:.15em;
-  text-transform:uppercase;text-decoration:none;padding:21px 40px;
-  box-shadow:0 14px 44px rgba(0,0,0,.6);
-  opacity:0;transform:translateY(14px);pointer-events:none;
-  transition:opacity .22s,transform .22s,filter .14s}
-.flutua.vis{opacity:1;transform:none;pointer-events:auto}
+  text-transform:uppercase;padding:21px 40px;
+  box-shadow:0 14px 44px rgba(0,0,0,.6);transition:filter .14s}
 .flutua:hover{filter:brightness(1.1)}
+.flutua-2{display:block;text-align:center;text-decoration:none;
+  background:rgba(8,8,8,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  border:1px solid rgba(201,162,39,.55);color:var(--ouro-cl);
+  font-family:'Sora',sans-serif;font-size:.7rem;font-weight:500;letter-spacing:.13em;
+  text-transform:uppercase;padding:13px 18px;line-height:1.35;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);transition:background-color .14s,color .14s}
+.flutua-2:hover{background:var(--ouro);border-color:var(--ouro);color:var(--onyx)}
 @media(max-width:620px){
-  .flutua{left:20px;right:20px;bottom:20px;text-align:center;padding:19px;font-size:.86rem}
+  .flutua-caixa{left:14px;right:14px;bottom:14px;gap:7px;max-width:none}
+  .flutua{padding:17px;font-size:.84rem}
+  .flutua-2{padding:12px;font-size:.66rem}
 }
-@media(prefers-reduced-motion:reduce){.flutua{transition:none}}
+@media(prefers-reduced-motion:reduce){.flutua-caixa{transition:none}}
 
 
 /* ═══ MENU SUSPENSO DE PRODUTOS ════════════════════════════════════════════
@@ -686,6 +704,16 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
       <div class="fr-tags"><span class="tag">CAPEX</span><span class="tag">Reintegra</span><span class="tag">ICMS-ST</span><span class="tag">Energia</span><span class="tag">Drawback</span></div>
       <div class="ganho">&rarr; <span class="so-cont">Uma análise de investimento que o cliente não recebe de mais ninguém.</span><span class="so-adv">O risco de destinação dimensionado antes de virar cobrança retroativa.</span></div>
     </div></div>
+    <p class="revela" style="margin:38px 0 0;padding-top:22px;border-top:1px solid var(--linha);
+       font-size:.92rem;color:var(--cinza);display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <span style="flex:1;min-width:230px">Reconheceu a dor do seu cliente aqui? Em 20 minutos a
+        gente mostra a conta rodando com um caso da sua carteira.</span>
+      <a href="https://wa.me/5553999823848?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Lionheart%20e%20gostaria%20de%20agendar%20uma%20demonstra%C3%A7%C3%A3o." target="_blank" rel="noopener"
+         style="text-decoration:none;border:1px solid rgba(201,162,39,.5);color:var(--ouro-cl);
+         font-family:'Sora',sans-serif;font-size:.68rem;font-weight:500;letter-spacing:.14em;
+         text-transform:uppercase;padding:11px 18px;white-space:nowrap">Agendar demonstração</a>
+    </p>
+
   </div>
 </section>
 
@@ -1106,7 +1134,10 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
 })();
 </script>
 
-<a class="flutua" id="flutua" href="assinar.html">Ver planos</a>
+<div class="flutua-caixa" id="flutua">
+  <a class="flutua" href="assinar.html">Ver planos</a>
+  <a class="flutua-2" href="https://wa.me/5553999823848?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Lionheart%20e%20gostaria%20de%20agendar%20uma%20demonstra%C3%A7%C3%A3o." target="_blank" rel="noopener">Na dúvida? Agende uma demonstração</a>
+</div>
 
 <script>
 /* ═══ PRODUTOS · o inventário real, aba por aba ════════════════════════════
