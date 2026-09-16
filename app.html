@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v812";</script>
+<body><script>window.LH_VERSAO="v813";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -24058,7 +24058,12 @@ function c05CalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor 
     }; } })();
 
 function c05Render(r, ent, motivo){
-  var _box=document.getElementById('res-c05'); if(!_box) return;
+  /* ★ v813 · alvo corrigido: era 'res-c05', a CAIXA INTEIRA. O cartão de espera/erro
+     apagava tudo dentro dela — KPIs, gráfico e o acordeão 'Análise de Resultados' com o
+     recs-c05. Uma guarda reconstruía KPI e gráfico; o acordeão nunca voltava. Bastava um
+     erro (sessão vencida, rede) para a Análise sumir até recarregar. As outras 115 telas
+     escrevem no kpi-, que é um filho — aqui passa a ser igual. Nada muda no cálculo. */
+  var _box=document.getElementById('kpi-c05'); if(!_box) return;
   if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
   if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
   
@@ -30574,7 +30579,12 @@ function c08LerEntradas(){
 }
 function c08CalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
 function c08Render(r, ent, motivo){
-  var _box=document.getElementById('res-c08'); if(!_box) return;
+  /* ★ v813 · alvo corrigido: era 'res-c08', a CAIXA INTEIRA. O cartão de espera/erro
+     apagava tudo dentro dela — KPIs, gráfico e o acordeão 'Análise de Resultados' com o
+     recs-c08. Uma guarda reconstruía KPI e gráfico; o acordeão nunca voltava. Bastava um
+     erro (sessão vencida, rede) para a Análise sumir até recarregar. As outras 115 telas
+     escrevem no kpi-, que é um filho — aqui passa a ser igual. Nada muda no cálculo. */
+  var _box=document.getElementById('kpi-c08'); if(!_box) return;
   if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
   if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
   var renda=ent.renda_mensal, regime=ent.regime, lucro=ent.lucro_empresa, ratGrau=ent.rat, despPes=ent._despPes, idade=ent._idade;
