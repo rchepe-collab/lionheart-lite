@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v815";</script>
+<body><script>window.LH_VERSAO="v816";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -67297,6 +67297,49 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
   });
 })();
 </script>
+
+<!-- ★ v816 · BOTÃO DE DÚVIDA, sempre à vista.
+     A tela de Perguntas só serve para quem está travado — e quem está travado
+     não procura no menu, porque o menu é justamente o que ele não entendeu.
+     Então o caminho vai até ele.
+     Posição: 152px do rodapé, acima dos dois redondos que já existem (24 e 88).
+     Pílula com TEXTO de propósito: mais um ícone redondo sem nome seria só
+     mais uma coisa para adivinhar. -->
+<button type="button" id="lh-fab-perg" onclick="abrirPagina('perguntas',null)"
+  aria-label="Abrir as perguntas que a ferramenta responde"
+  style="position:fixed;bottom:152px;right:24px;z-index:9200;display:flex;align-items:center;gap:9px;
+         background:linear-gradient(135deg,#d9b53a,#c9a227);color:#0c1628;border:0;border-radius:26px;
+         padding:13px 20px;cursor:pointer;font-family:'Sora',system-ui,sans-serif;font-size:.78rem;
+         font-weight:700;letter-spacing:.06em;box-shadow:0 8px 26px rgba(0,0,0,.5);transition:filter .14s">
+  <span aria-hidden="true" style="font-size:1.05em;line-height:1">&#9737;</span>
+  <span id="lh-fab-perg-txt">Qual é a sua dúvida?</span>
+</button>
+<script>
+(function(){
+  'use strict';
+  var b=document.getElementById('lh-fab-perg');
+  if(!b) return;
+  b.addEventListener('mouseover',function(){ b.style.filter='brightness(1.1)'; });
+  b.addEventListener('mouseout', function(){ b.style.filter=''; });
+  /* some na própria tela de perguntas: botão que leva para onde você já está
+     é ruído e ocupa espaço de leitura */
+  function ajustar(){
+    var pg=document.getElementById('page-perguntas');
+    b.style.display=(pg && pg.classList.contains('active'))?'none':'flex';
+  }
+  document.addEventListener('click', function(){ setTimeout(ajustar,60); });
+  setTimeout(ajustar,800);
+  /* no celular o canto já é disputado pelos redondos: encolhe para só o símbolo */
+  function estreito(){
+    var pouco=window.innerWidth<720, t=document.getElementById('lh-fab-perg-txt');
+    if(t) t.style.display=pouco?'none':'';
+    b.style.padding=pouco?'13px 14px':'13px 20px';
+    b.style.bottom =pouco?'96px':'152px';
+  }
+  window.addEventListener('resize', estreito); estreito();
+})();
+</script>
+
 </body>
 
 </html>
