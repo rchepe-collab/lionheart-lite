@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v813";</script>
+<body><script>window.LH_VERSAO="v814";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -8953,6 +8953,29 @@ function lhTrocarSenha(){
         <p>Compare Simples, Lucro Presumido e Lucro Real já com CBS/IBS, LC 224/2025 e o IRPFM da Lei 15.270/2025, e veja em qual regime o cliente paga menos imposto em cada ano da transição.</p><div class="calc-page-links"><span class="links-intro">Quer dominar esta ferramenta? </span><a onclick="window.LH_formacao_home()">Formação Lionheart</a><span class="sep">·</span><a onclick="abrirPagina('basetecnica',null)">Glossário de termos</a></div>
         </div>
     </div>
+    <!-- ★ v814 · TESTE · vídeo da própria tela, ao lado do minicurso escrito.
+         preload="none": a ferramenta tem 9 MB e não pode ganhar mais 6 na
+         abertura. O navegador baixa só a capa, e o vídeo só quando alguém
+         abrir o acordeão E apertar play. Quem nunca abrir não paga nada.
+         Arquivo servido do mesmo domínio (/video/), sem YouTube: nenhum
+         canal de terceiro aparece e nenhum cookie externo entra. -->
+    <details class="lh-curso" style="border-left:3px solid #c9a227">
+      <summary>▶ Ver em vídeo: Regime Ótimo em 3 minutos</summary>
+      <div class="lh-curso-body">
+        <video controls preload="none" playsinline
+               poster="video/regime-otimo-capa.jpg"
+               style="width:100%;max-width:980px;height:auto;display:block;border-radius:10px;background:#000"
+               aria-label="Regime Ótimo: análise completa dos quatro regimes">
+          <source src="video/regime-otimo.mp4" type="video/mp4">
+          Seu navegador não reproduz vídeo.
+          <a href="video/regime-otimo.mp4">Baixe o arquivo</a>.
+        </video>
+        <p style="margin:10px 0 0;font-size:.86rem;color:#9fb0c8;line-height:1.55">
+          Caso de comércio atacadista com R$ 3,5 milhões de faturamento, do preenchimento
+          ao ponto de virada. O mesmo caminho está descrito campo a campo no guia acima.
+        </p>
+      </div>
+    </details>
     <details class="lh-curso"><summary>Como usar: Regime Ótimo (guia campo a campo)</summary><div class="lh-curso-body">
 <h4>O que esta calculadora responde</h4>
 <p>Dado o perfil da empresa, <b>qual dos três regimes paga menos</b>: Simples, Presumido ou Real. Abaixo, o que preencher em <b>cada campo</b> da tela.</p>
