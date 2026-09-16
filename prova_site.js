@@ -33,13 +33,15 @@ setTimeout(()=>{
   const vds=[...d.querySelectorAll('#produtos .vid video')];
   ex('dois videos em Produtos', vds.length===2);
   ex('nenhum carrega antes do play', vds.every(v=>v.getAttribute('preload')==='none'));
-  ex('os dois tem capa', vds.every(v=>/video\/0[12]-capa\.jpg/.test(v.getAttribute('poster')||'')));
+  ex('os dois tem capa', vds.every(v=>/video\/[a-z-]+-capa\.jpg/.test(v.getAttribute('poster')||'')));
   ex('os dois tem controles', vds.every(v=>v.hasAttribute('controls')));
-  ex('ordem: preenchimento antes da analise',
-      /01-preenchimento/.test(vds[0].innerHTML) && /02-analise/.test(vds[1].innerHTML));
+  ex('split antes do regime (ordem dos planos)',
+      /split-payment/.test(vds[0].innerHTML) && /regime-otimo/.test(vds[1].innerHTML));
   ex('sem youtube nem iframe externo', !/youtube|iframe/i.test(d.body.innerHTML));
-  ex('legenda da analise traz os numeros',
+  ex('legenda do regime traz os numeros',
       /824\.600/.test([...d.querySelectorAll('.vid figcaption')][1].textContent));
+  ex('legenda do split fala de caixa',
+      /caixa/i.test([...d.querySelectorAll('.vid figcaption')][0].textContent));
   const abas=[...d.querySelectorAll('.pr-aba')];
   ex('três abas', abas.length===3);
   ex('abre em Adequação', abas[0].getAttribute('aria-selected')==='true');
