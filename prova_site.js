@@ -30,6 +30,13 @@ setTimeout(()=>{
   console.log('  -- produtos --');
   ex('seção existe', !!d.getElementById('produtos'));
   ex('no menu (via suspenso)', !!d.getElementById('drop-produtos'));
+  const vd=d.querySelector('.vid video');
+  ex('video na secao Produtos', !!vd && !!d.querySelector('#produtos .vid'));
+  ex('nao carrega antes do play', vd.getAttribute('preload')==='none');
+  ex('tem capa', /regime-otimo-capa/.test(vd.getAttribute('poster')||''));
+  ex('tem controles', vd.hasAttribute('controls'));
+  ex('sem youtube nem iframe externo', !/youtube|iframe/i.test(d.body.innerHTML));
+  ex('legenda traz os numeros', /824\.600/.test(d.querySelector('.vid figcaption').textContent));
   const abas=[...d.querySelectorAll('.pr-aba')];
   ex('três abas', abas.length===3);
   ex('abre em Adequação', abas[0].getAttribute('aria-selected')==='true');

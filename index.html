@@ -537,6 +537,20 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
 .dp .nome{display:block;font-size:.92rem;color:var(--ouro-cl);font-weight:500}
 .dp .papel{display:block;font-size:.78rem;color:var(--cinza);margin-top:3px}
 
+
+/* ═══ VÍDEO DA FERRAMENTA ══════════════════════════════════════════════════
+   Hospedado aqui mesmo, 1,3 MB, e com preload="none": o navegador baixa a
+   capa e nada mais até alguém apertar play. Quem não clica não paga banda.
+   Sem YouTube por enquanto — logo, sem cookie de terceiro num site que
+   promete cuidado com dado. */
+.vid{margin:44px 0 0;border:1px solid var(--linha);background:var(--onyx2)}
+.vid video{display:block;width:100%;height:auto;background:#000}
+.vid figcaption{padding:14px 18px;border-top:1px solid var(--linha);
+  font-size:.84rem;color:var(--cinza);line-height:1.6}
+.vid figcaption b{color:var(--ouro-cl);font-weight:500}
+.vid-rot{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ouro-es);padding:12px 18px 0;display:block}
+
 </style>
 </head>
 <body id="topo" data-perfil="contador" class="nojs">
@@ -594,6 +608,20 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
       Cada plano inclui tudo dos anteriores. Os números abaixo são o inventário real da
       plataforma — contado solução por solução, sem repetir nome.
     </p>
+
+
+    <figure class="vid revela" style="margin:0 0 6px">
+      <span class="vid-rot">A ferramenta rodando · 50 segundos, com som</span>
+      <video controls preload="none" playsinline
+             poster="video/regime-otimo-capa.jpg"
+             aria-label="Regime Ótimo calculando os quatro regimes">
+        <source src="video/regime-otimo.mp4" type="video/mp4">
+        Seu navegador não reproduz vídeo. <a href="video/regime-otimo.mp4">Baixe o arquivo</a>.
+      </video>
+      <figcaption>Regime Ótimo, caso real de comércio atacadista com R$ 3,5 milhões de
+        faturamento: o Simples fica em <b>R$ 419.800/ano</b> contra <b>R$ 1.244.400</b> no
+        Lucro Real — <b>R$ 824.600 de diferença</b>, no mesmo ano e na mesma empresa.</figcaption>
+    </figure>
 
     <div class="pr-abas" role="tablist" aria-label="Planos">
       <button class="pr-aba" role="tab" aria-selected="false" data-pl="preparacao">
