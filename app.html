@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v823";</script>
+<body><script>window.LH_VERSAO="v824";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -48059,7 +48059,10 @@ function calcularICMSST1125(){
   window.LH_FLAGS_LIST = function(){ return Array.from(load()); };
   window.LH_toggleFlag = function(id){ var s=load(); if(s.has(id)) s.delete(id); else s.add(id); save(s); if(window.LH_RADAR && window.LH_RADAR.renderizar) window.LH_RADAR.renderizar(); };
   var TODAS = ['c01','c02','c04','c05','c06','c07','c08','c11','n04','n15','n16','n17','n29','n30','n33','cr01','cr02','cr03','cr04','cr05','iss118','icmsst1125','monofasico','credpresumido','difal','fatorR','sublimite','calc03','imob_ret','imobref','hotel','logcarga','drawback','cr06','cp01','cp02','cp03'];
-  function nome(id){ return (window.TOPBAR_INFO && window.TOPBAR_INFO[id]) ? window.TOPBAR_INFO[id].title : id; }
+  function nome(id){
+    return (window.TOPBAR_INFO && window.TOPBAR_INFO[id] && window.TOPBAR_INFO[id].title)
+      ? window.TOPBAR_INFO[id].title : id;
+  }
   function jaRec(missao, id){ missao=missao||{}; var ja={}; (missao.pendentes||[]).forEach(function(c){ja[c.id]=1;}); (missao.feitas||[]).forEach(function(c){ja[c.id]=1;}); (missao.filtradasPorEscopo||[]).forEach(function(c){ja[c]=1;}); return !!ja[id]; }
   /* Cards das INCLUÍDAS manualmente — sobem pro topo, logo abaixo da Missão Guiada */
   window.LH_flaggedCards_html = function(missao){
@@ -48209,8 +48212,34 @@ function calcularICMSST1125(){
 "agviagem": {"oQ": "Calcula a carga da agência de viagem sobre a base correta: a comissão/markup, não o pacote bruto repassado a hotéis e companhias.", "quando": "Agências de viagem, operadoras de turismo, OTAs.", "dados": "Receita bruta e repasses a fornecedores.", "comoRodar": "Informe receita e repasses; a ferramenta tributa só a margem de agenciamento.", "legal": "LC 214/2025 (regime de turismo, redução de 40%).", "venda": "Tributar os 2M em vez da comissão seria confisco. Mas contratos e notas precisam SEGREGAR repasse de comissão — sem papel, o fisco tributa o bruto."},
 "apostas": {"oQ": "Calcula a carga das casas de aposta (base GGR: receita menos prêmios) e das SAF, com o Imposto Seletivo dos prognósticos e o regime próprio do setor.", "quando": "Casas de aposta de quota fixa (bets) e Sociedades Anônimas do Futebol.", "dados": "Receita de apostas, prêmios pagos (para o GGR).", "comoRodar": "Informe as receitas; a ferramenta calcula sobre o GGR + IS.", "legal": "LC 214/2025 (IS de prognósticos); Lei 14.790/2023 (bets); Lei 14.193/2021 (SAF).", "venda": "Setor novo, regulação em movimento. Quem calcula certo o GGR + IS assina os contratos certos num mercado que está se formando."}
 };
-  var P = [{"nome": "Compliance & Comex", "cor": "#22d3ee", "ids": ["cp03", "cp01", "cp02", "drawback", "cr06"]}, {"nome": "Setores & Regimes Específicos", "cor": "#f59e0b", "ids": ["hotel", "logcarga", "agroins", "bares", "coop", "export", "import", "agviagem", "psaude", "apostas", "telecom", "financeiro", "combustivel", "medicamento", "transpax", "seletivo", "classif", "raiox360", "mixcredito"]}, {"nome": "Reforma Tributária", "cor": "#ef4444", "ids": ["c04", "c01", "c02", "n04", "calc03", "n33", "c11", "difal", "imob_ret", "imobref"]}, {"nome": "Recuperação de Crédito", "cor": "#22c55e", "ids": ["cr01", "cr02", "cr03", "cr05", "iss118", "icmsst1125", "monofasico", "credpresumido", "cr04"]}, {"nome": "Planejamento PJ", "cor": "#3490eb", "ids": ["c05", "c06", "c07", "n29", "fatorR", "sublimite", "c08", "c09", "c10", "importsped"]}, {"nome": "Patrimonial", "cor": "#a855f7", "ids": ["n16", "n15", "n17", "n30"]}, {"nome": "Indicadores de BPO", "cor": "#06b6d4", "ids": ["c08", "c09", "c10"]}];
-  function nome(id){ return (window.TOPBAR_INFO && window.TOPBAR_INFO[id]) ? window.TOPBAR_INFO[id].title : id; }
+  var P = [{"nome":"Compliance & Comex","cor":"#22d3ee","ids":["cp03","cp01","cp02","drawback","cr06"]},{"nome":"Setores & Regimes Específicos","cor":"#f59e0b","ids":["hotel","logcarga","agroins","bares","coop","export","import","agviagem","psaude","apostas","telecom","financeiro","combustivel","medicamento","transpax","seletivo","classif","raiox360","mixcredito"]},{"nome":"Reforma Tributária","cor":"#ef4444","ids":["c04","c01","c02","n04","calc03","n33","c11","difal","imob_ret","imobref"]},{"nome":"Recuperação de Crédito","cor":"#22c55e","ids":["cr01","cr02","cr03","cr05","iss118","icmsst1125","monofasico","credpresumido","cr04"]},{"nome":"Planejamento PJ","cor":"#3490eb","ids":["c05","c06","c07","n29","fatorR","sublimite","c08","c09","c10","importsped"]},{"nome":"Patrimonial","cor":"#a855f7","ids":["n16","n15","n17","n30"]},{"nome":"Indicadores de BPO","cor":"#06b6d4","ids":["c08","c09","c10"]},{"nome":"Clientes & Grupos","cor":"#94a3b8","ids":["empresas","perguntas"]},{"nome":"Central de Documentos","cor":"#94a3b8","ids":["consultacnpj"]},{"nome":"Comercial","cor":"#c9a227","ids":["radar","jornada","proposta","historico_propostas","historico_diagnosticos"]},{"nome":"Reforma Tributária","cor":"#c9a227","ids":["antecip","aliqref","capex","central-c1"]},{"nome":"Serviços · Comércio · Turismo","cor":"#c9a227","ids":["capex","hotelev"]},{"nome":"Regime & PJ","cor":"#c9a227","ids":["dxh","art127","central-c3"]},{"nome":"Remuneração do Sócio","cor":"#c9a227","ids":["stockoptions"]},{"nome":"Crédito Tributário","cor":"#c9a227","ids":["ret","dup","ins","s962","central-c5"]},{"nome":"Patrimonial","cor":"#c9a227","ids":["aluguelpfpj","sucessorio","offshore","valuation","ma","n18","central-c6"]},{"nome":"Imobiliário","cor":"#eab308","ids":["obra"]},{"nome":"Compliance & Regularização","cor":"#c9a227","ids":["central-c8"]},{"nome":"Painel do Escritório","cor":"#a78bfa","ids":["dashcli","motor360","carteira","ltv_carteira","pdf","cenarios"]},{"nome":"CADASTRO & PREÇO","cor":"#38bdf8","ids":["matrizdoc","formpreco","contrato","simnotas","auditorcad","classmassa"]},{"nome":"CONTENCIOSO","cor":"#f43f5e","ids":["transacao","prescricao","multajuros","autuacao","refis","compensacao","decisor"]},{"nome":"Comércio Exterior & Aduaneiro","cor":"#c9a227","ids":["portos","central-c9"]},{"nome":"AGRONEGÓCIO","cor":"#22c55e","ids":["agro01","agro03","agro04","agro08","agro02","agro09","agro11","agro12","agroSuper1","agro14sent","agro21frete","agro22zero","agroSuper2","agroSuper3","agroSuper4","agroSuper5","agroSuper6","agroSuper7","agro05","agro06","agro07","agro10"]},{"nome":"INDÚSTRIA","cor":"#f97316","ids":["ind01","ind02","ind09","ind12","ind03","ind05","ind07","ind10","ind04","ind06","ind08","ind11"]}];
+  /* ★ v824 · caía para o CÓDIGO INTERNO quando TOPBAR_INFO não tinha o verbete —
+     a Central mostrava "cp03", "drawback", "logcarga" ao assinante, e o
+     TOPBAR_INFO só cobre 67 dos 153. Agora consulta o próprio menu antes de
+     desistir: ele tem os 153 rótulos reais e está sempre certo, porque é o que
+     a pessoa vê na tela. Lido uma vez e guardado. */
+  var _rotMenu = null;
+  function rotulosDoMenu(){
+    if(_rotMenu) return _rotMenu;
+    _rotMenu = {};
+    try{
+      var itens = document.querySelectorAll('.nav-item[onclick]');
+      for(var i=0;i<itens.length;i++){
+        var m = (itens[i].getAttribute('onclick')||'').match(/abrirPagina\('([\w-]+)'/);
+        var lab = itens[i].querySelector('.ni-label');
+        if(m && lab){ var t=(lab.textContent||'').trim(); if(t) _rotMenu[m[1]]=t; }
+      }
+    }catch(e){}
+    return _rotMenu;
+  }
+  function nome(id){
+    if(window.TOPBAR_INFO && window.TOPBAR_INFO[id] && window.TOPBAR_INFO[id].title)
+      return window.TOPBAR_INFO[id].title;
+    var r = rotulosDoMenu()[id];
+    if(r) return r;
+    /* último recurso: nunca devolver código cru na cara do assinante */
+    return id.replace(/[-_]+/g,' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+  }
   function fechar(){ var o=document.getElementById('lh-form-ov'); if(o) o.remove(); }
   window.LH_formacao_home = function(){
     fechar();
@@ -48226,11 +48255,25 @@ function calcularICMSST1125(){
       h+='<div style="margin-bottom:20px;"><div style="font-weight:800;color:'+pil.cor+';font-size:1.02em;margin-bottom:10px;border-left:3px solid '+pil.cor+';padding-left:10px;">'+pil.nome+'</div>';
       h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:9px;">';
       pil.ids.forEach(function(id){
-        if(!F[id]) return;
+        /* ★ v824 · antes: 'if(!F[id]) return;' — a análise sem minicurso escrito
+           sumia da Central, em silêncio. Eram 93 de 153 invisíveis, incluindo o
+           Agronegócio inteiro. Agora TODAS aparecem: as que têm minicurso levam a
+           ele; as que não têm abrem a própria análise e dizem isso.
+           Some é pior que incompleto — o assinante concluía que não existia. */
+        var temCurso = !!F[id];
         var tag=window.lhTipoTag?window.lhTipoTag(id):'';
-        h+='<div onclick="window.LH_formacao_abrir(\''+id+'\')" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:12px 14px;cursor:pointer;transition:.15s;" onmouseover="this.style.borderColor=\''+pil.cor+'\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.09)\'">';
+        h+='<div onclick="' + (temCurso
+          ? 'window.LH_formacao_abrir(\''+id+'\')'
+          : 'abrirPagina(\''+id+'\',null)')
+          + '" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);'
+          + 'border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .14s;'
+          + (temCurso ? '' : 'opacity:.78;') + '">';
         h+='<div style="font-weight:700;font-size:0.92em;color:#e8e6e3;margin-bottom:3px;">'+nome(id)+'</div>';
-        h+='<div style="font-size:0.80em;color:#cdd6e4;">'+tag+'<span style="color:#c9a227;font-weight:700;">Ver formação &rarr;</span></div></div>';
+        h+='<div style="font-size:0.80em;color:#cdd6e4;">'+tag+'<span style="color:'
+          + (temCurso ? '#c9a227' : '#8e8a82')
+          + ';font-weight:700;">'
+          + (temCurso ? 'Ver formação &rarr;' : 'Abrir a análise &rarr;')
+          + '</span></div></div>';
       });
       h+='</div></div>';
     });
