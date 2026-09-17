@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v820";</script>
+<body><script>window.LH_VERSAO="v821";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -19032,10 +19032,11 @@ function ctcCalc(){
     </div>
 
     <!-- Vídeos: estrutura preservada · slots prontos pra inserir os Looms depois -->
+        <!-- ★ v821 · a trilha cresce por cartão. Slot vago diz "Vídeo em breve" e
+         NÃO promete quantidade — foi o erro das etiquetas removidas na v820. -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:18px;">
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
         <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
-          <!-- SLOT VÍDEO 1: cole aqui o iframe do vídeo (Loom/YouTube/etc.) preenchendo 100% deste espaço -->
           <video controls preload="none" playsinline poster="video/menu-capa.jpg"
             style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000"
             aria-label="Como a ferramenta se organiza">
@@ -19049,10 +19050,8 @@ function ctcCalc(){
           <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Os pilares, a escada dos planos, e o botão que acha a solução pela dúvida do cliente.</div>
         </div>
       </div>
-
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
         <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
-          <!-- SLOT VÍDEO 2: cole aqui o iframe do vídeo (Loom/YouTube/etc.) preenchendo 100% deste espaço -->
           <video controls preload="none" playsinline poster="video/cadastro-capa.jpg"
             style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000"
             aria-label="Cadastro de cliente e grupo econômico">
@@ -19066,37 +19065,75 @@ function ctcCalc(){
           <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Cliente solo e grupo econômico: matriz, filiais, holding, sócios PF e coligadas.</div>
         </div>
       </div>
-
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
         <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
-          <!-- SLOT VÍDEO 3: cole aqui o iframe do vídeo (Loom/YouTube/etc.) preenchendo 100% deste espaço -->
-          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
-            <div style="font-size:1.9em;opacity:.45;">🎬</div>
-            <div style="font-size:0.76em;color:rgba(200,215,235,0.5);margin-top:4px;letter-spacing:.04em;">Vídeo em breve</div>
-          </div>
+          <video controls preload="none" playsinline poster="video/proposta-capa.jpg"
+            style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000"
+            aria-label="Montagem da proposta comercial">
+            <source src="video/proposta.mp4" type="video/mp4">
+            <a href="video/proposta.mp4">Baixe o arquivo</a>.
+          </video>
         </div>
         <div style="padding:14px 16px;">
-          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 3 · ~5 MIN</div>
-          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Resultados e Visão Consolidada</div>
-          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Calculadora na prática, Motor 360°, ROI real e Score.</div>
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 3 · 4 MIN 25</div>
+          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Proposta Comercial</div>
+          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Dos serviços apontados pela análise ao cronograma mês a mês, com o acumulado e a sua marca.</div>
         </div>
       </div>
-
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
         <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
-          <!-- SLOT VÍDEO 4: cole aqui o iframe do vídeo (Loom/YouTube/etc.) preenchendo 100% deste espaço -->
           <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
-            <div style="font-size:1.9em;opacity:.45;">🎬</div>
+            <div style="font-size:1.9em;opacity:.45;">&#127916;</div>
             <div style="font-size:0.76em;color:rgba(200,215,235,0.5);margin-top:4px;letter-spacing:.04em;">Vídeo em breve</div>
           </div>
         </div>
         <div style="padding:14px 16px;">
-          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">EXTRA · PARTICULARIDADES</div>
-          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Particularidades do Sistema</div>
-          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Detalhes e recursos extras da ferramenta.</div>
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 4 · em breve</div>
+          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Diagnóstico</div>
+          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">As trinta perguntas e a leitura do resultado que monta a agenda do cliente.</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
+        <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+            <div style="font-size:1.9em;opacity:.45;">&#127916;</div>
+            <div style="font-size:0.76em;color:rgba(200,215,235,0.5);margin-top:4px;letter-spacing:.04em;">Vídeo em breve</div>
+          </div>
+        </div>
+        <div style="padding:14px 16px;">
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 5 · em breve</div>
+          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Importar documentos</div>
+          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">SPED, XML e PGDAS: para onde vai cada informação depois da importação.</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
+        <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+            <div style="font-size:1.9em;opacity:.45;">&#127916;</div>
+            <div style="font-size:0.76em;color:rgba(200,215,235,0.5);margin-top:4px;letter-spacing:.04em;">Vídeo em breve</div>
+          </div>
+        </div>
+        <div style="padding:14px 16px;">
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 6 · em breve</div>
+          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Classificador em Massa</div>
+          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Mil itens classificados de uma vez, e o que fazer com os de baixa confiança.</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
+        <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+            <div style="font-size:1.9em;opacity:.45;">&#127916;</div>
+            <div style="font-size:0.76em;color:rgba(200,215,235,0.5);margin-top:4px;letter-spacing:.04em;">Vídeo em breve</div>
+          </div>
+        </div>
+        <div style="padding:14px 16px;">
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 7 · em breve</div>
+          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Ler uma calculadora</div>
+          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">KPI, Análise, Memória de cálculo e Base legal — a ordem vale para as 153.</div>
         </div>
       </div>
     </div>
+
     </div>
 
     <div style="margin-top:20px;text-align:center;font-size:0.82em;color:rgba(200,215,235,0.55);line-height:1.55;">Todo o conteúdo também está em texto no <strong style="color:var(--gold);">Glossário Tributário</strong> e no <strong style="color:var(--gold);">Guia do Consultor</strong>.</div>
