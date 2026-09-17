@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v819";</script>
+<body><script>window.LH_VERSAO="v820";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -19016,16 +19016,18 @@ function ctcCalc(){
        v25 — VÍDEOS TUTORIAIS (placeholder em breve)
        ══════════════════════════════════════════════ -->
   <div class="page" id="page-videos">
-    <div style="background:linear-gradient(135deg,rgba(220,38,38,0.18),rgba(201,162,39,0.10));border:1.5px solid rgba(201,162,39,0.3);border-radius:14px;padding:24px 28px;margin-bottom:20px;">
-      <div style="font-size:0.78em;letter-spacing:.14em;color:#c9a227;font-weight:700;margin-bottom:4px;">METODOLOGIA LIONHEART</div>
-      <div style="font-size:1.7em;font-weight:800;color:var(--gold);font-family:'Syne',sans-serif;margin-bottom:6px;">Trilha de Formação — Consultor Tributário</div>
-      <div style="font-size:0.92em;color:var(--text2);max-width:760px;line-height:1.6;">Do cadastro do cliente à entrega. Assista na ordem — cada um assume o anterior — dominando a ferramenta e a metodologia comercial.</div>
-      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
-        <span style="background:rgba(220,38,38,0.18);border:1px solid rgba(220,38,38,0.35);padding:5px 12px;border-radius:18px;font-size:0.76em;color:#ef4444;font-weight:600;">Boas-vindas (3)</span>
-        <span style="background:rgba(220,38,38,0.18);border:1px solid rgba(220,38,38,0.35);padding:5px 12px;border-radius:18px;font-size:0.76em;color:#ef4444;font-weight:600;">Comercial (4)</span>
-        <span style="background:rgba(220,38,38,0.18);border:1px solid rgba(220,38,38,0.35);padding:5px 12px;border-radius:18px;font-size:0.76em;color:#ef4444;font-weight:600;">Coleta de Dados (5)</span>
-        <span style="background:rgba(220,38,38,0.18);border:1px solid rgba(220,38,38,0.35);padding:5px 12px;border-radius:18px;font-size:0.76em;color:#ef4444;font-weight:600;">Análise (5)</span>
-        <span style="background:rgba(220,38,38,0.18);border:1px solid rgba(220,38,38,0.35);padding:5px 12px;border-radius:18px;font-size:0.76em;color:#ef4444;font-weight:600;">Entrega (3)</span>
+    <!-- ★ v820 · o cabeçalho era um bloco grande com cinco etiquetas vermelhas
+         prometendo 20 vídeos por categoria — Boas-vindas 3, Comercial 4, Coleta 5,
+         Análise 5, Entrega 3 — quando existem 2. Promessa numerada o assinante
+         confere, e confere logo. Fora as etiquetas, fora o bloco: sobra um título
+         no mesmo padrão das outras telas, e a contagem passa a ser a real, tirada
+         de quantos vídeos existem de fato na página. -->
+    <div class="calc-page-header">
+      <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.25),rgba(232,176,32,0.12));"></div>
+      <div>
+        <h2>Trilha de Formação</h2>
+        <p>Do cadastro do cliente à entrega. Assista na ordem — cada um assume o anterior.
+           <span id="lh-videos-conta" style="color:#c9a227"></span></p>
       </div>
     </div>
 
@@ -67344,6 +67346,23 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
 })();
 </script>
 
+
+<script>
+/* ★ v820 · a contagem vem do DOM, não de um número digitado. Assim ela não
+   pode mentir: se um vídeo entrar ou sair, o texto acompanha sozinho. */
+(function(){
+  'use strict';
+  function pintar(){
+    var pg=document.getElementById('page-videos'), el=document.getElementById('lh-videos-conta');
+    if(!pg||!el) return;
+    var n=pg.querySelectorAll('video').length;
+    var faltam=pg.querySelectorAll('.lh-slot-vago').length;
+    el.textContent = n===0 ? '' : (n===1 ? '1 vídeo disponível' : n+' vídeos disponíveis');
+  }
+  if(document.readyState!=='loading') setTimeout(pintar,300);
+  else document.addEventListener('DOMContentLoaded',function(){ setTimeout(pintar,300); });
+})();
+</script>
 </body>
 
 </html>
