@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v816";</script>
+<body><script>window.LH_VERSAO="v817";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -6760,6 +6760,27 @@ function lhTrocarSenha(){
     <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;text-align:left;color:rgba(240,232,208,0.82);font-size:0.92em;line-height:1.6;">
       Antes de começar, <b style="color:var(--text);">recomendamos fortemente a Imersão</b> — ela mostra como extrair o máximo da ferramenta em menos de 10 minutos, na ordem certa.
     </div>
+    <!-- ★ v817 · o vídeo de orientação vem ANTES dos três atalhos, porque quem
+         chega aqui ainda não sabe o suficiente para escolher entre eles. Dois
+         minutos e meio, e a pessoa passa a saber o que está olhando.
+         preload="none": a ferramenta tem 9 MB e a tela de entrada não pode
+         ganhar mais 3 antes de qualquer clique. -->
+    <figure style="margin:0 0 18px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card)">
+      <span style="display:block;padding:11px 16px 0;font-size:.66rem;letter-spacing:.18em;
+                   text-transform:uppercase;color:var(--gold2);text-align:left">
+        Comece por aqui &middot; 2 min 30, com som</span>
+      <video controls preload="none" playsinline poster="video/menu-capa.jpg"
+             style="width:100%;height:auto;display:block;margin-top:9px;background:#000"
+             aria-label="Como a ferramenta se organiza">
+        <source src="video/menu.mp4" type="video/mp4">
+        Seu navegador não reproduz vídeo. <a href="video/menu.mp4">Baixe o arquivo</a>.
+      </video>
+      <figcaption style="padding:12px 16px;font-size:.84em;color:rgba(240,232,208,.6);
+                         text-align:left;line-height:1.55">
+        Como a ferramenta se organiza: os pilares, a escada dos planos, e o botão que
+        encontra a solução pela dúvida do seu cliente.
+      </figcaption>
+    </figure>
     <div onclick="abrirPagina('videos')" style="display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-top:12px;cursor:pointer;transition:border-color .2s;" onmouseover="this.style.borderColor='rgba(201,162,39,0.5)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:1.6em;"></div><div style="flex:1;text-align:left;"><div style="font-weight:700;color:var(--text);font-size:0.98em;margin-bottom:2px;">1. Vídeos Tutoriais</div><div style="font-size:0.84em;color:rgba(240,232,208,0.62);line-height:1.45;">4 vídeos de ~5min — do cadastro à entrega. Comece aqui.</div></div><div style="color:var(--gold);font-size:1.1em;">→</div></div>
     <div onclick="abrirPagina('tour')" style="display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-top:12px;cursor:pointer;transition:border-color .2s;" onmouseover="this.style.borderColor='rgba(201,162,39,0.5)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:1.6em;"></div><div style="flex:1;text-align:left;"><div style="font-weight:700;color:var(--text);font-size:0.98em;margin-bottom:2px;">2. Comece Aqui — 5 passos</div><div style="font-size:0.84em;color:rgba(240,232,208,0.62);line-height:1.45;">Cadastre um cliente real e rode a primeira calc em 10 minutos.</div></div><div style="color:var(--gold);font-size:1.1em;">→</div></div>
     <div onclick="abrirPagina('guiasistema')" style="display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-top:12px;cursor:pointer;transition:border-color .2s;" onmouseover="this.style.borderColor='rgba(201,162,39,0.5)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:1.6em;"></div><div style="flex:1;text-align:left;"><div style="font-weight:700;color:var(--text);font-size:0.98em;margin-bottom:2px;">3. Guia do Sistema</div><div style="font-size:0.84em;color:rgba(240,232,208,0.62);line-height:1.45;">Referência de cada calculadora. Consulte quando tiver dúvidas específicas.</div></div><div style="color:var(--gold);font-size:1.1em;">→</div></div>
@@ -67307,7 +67328,7 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
      mais uma coisa para adivinhar. -->
 <button type="button" id="lh-fab-perg" onclick="abrirPagina('perguntas',null)"
   aria-label="Abrir as perguntas que a ferramenta responde"
-  style="position:fixed;bottom:152px;right:24px;z-index:9200;display:flex;align-items:center;gap:9px;
+  style="position:fixed;bottom:152px;right:96px;z-index:9600;display:flex;align-items:center;gap:9px;
          background:linear-gradient(135deg,#d9b53a,#c9a227);color:#0c1628;border:0;border-radius:26px;
          padding:13px 20px;cursor:pointer;font-family:'Sora',system-ui,sans-serif;font-size:.78rem;
          font-weight:700;letter-spacing:.06em;box-shadow:0 8px 26px rgba(0,0,0,.5);transition:filter .14s">
