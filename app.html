@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v818";</script>
+<body><script>window.LH_VERSAO="v819";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -6760,27 +6760,6 @@ function lhTrocarSenha(){
     <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;text-align:left;color:rgba(240,232,208,0.82);font-size:0.92em;line-height:1.6;">
       Antes de começar, <b style="color:var(--text);">recomendamos fortemente a Imersão</b> — ela mostra como extrair o máximo da ferramenta em menos de 10 minutos, na ordem certa.
     </div>
-    <!-- ★ v817 · o vídeo de orientação vem ANTES dos três atalhos, porque quem
-         chega aqui ainda não sabe o suficiente para escolher entre eles. Dois
-         minutos e meio, e a pessoa passa a saber o que está olhando.
-         preload="none": a ferramenta tem 9 MB e a tela de entrada não pode
-         ganhar mais 3 antes de qualquer clique. -->
-    <figure style="margin:0 0 18px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card)">
-      <span style="display:block;padding:11px 16px 0;font-size:.66rem;letter-spacing:.18em;
-                   text-transform:uppercase;color:var(--gold2);text-align:left">
-        Comece por aqui &middot; 2 min 30, com som</span>
-      <video controls preload="none" playsinline poster="video/menu-capa.jpg"
-             style="width:100%;height:auto;display:block;margin-top:9px;background:#000"
-             aria-label="Como a ferramenta se organiza">
-        <source src="video/menu.mp4" type="video/mp4">
-        Seu navegador não reproduz vídeo. <a href="video/menu.mp4">Baixe o arquivo</a>.
-      </video>
-      <figcaption style="padding:12px 16px;font-size:.84em;color:rgba(240,232,208,.6);
-                         text-align:left;line-height:1.55">
-        Como a ferramenta se organiza: os pilares, a escada dos planos, e o botão que
-        encontra a solução pela dúvida do seu cliente.
-      </figcaption>
-    </figure>
     <div onclick="abrirPagina('videos')" style="display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-top:12px;cursor:pointer;transition:border-color .2s;" onmouseover="this.style.borderColor='rgba(201,162,39,0.5)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:1.6em;"></div><div style="flex:1;text-align:left;"><div style="font-weight:700;color:var(--text);font-size:0.98em;margin-bottom:2px;">1. Vídeos Tutoriais</div><div style="font-size:0.84em;color:rgba(240,232,208,0.62);line-height:1.45;">4 vídeos de ~5min — do cadastro à entrega. Comece aqui.</div></div><div style="color:var(--gold);font-size:1.1em;">→</div></div>
     <div onclick="abrirPagina('tour')" style="display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-top:12px;cursor:pointer;transition:border-color .2s;" onmouseover="this.style.borderColor='rgba(201,162,39,0.5)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:1.6em;"></div><div style="flex:1;text-align:left;"><div style="font-weight:700;color:var(--text);font-size:0.98em;margin-bottom:2px;">2. Comece Aqui — 5 passos</div><div style="font-size:0.84em;color:rgba(240,232,208,0.62);line-height:1.45;">Cadastre um cliente real e rode a primeira calc em 10 minutos.</div></div><div style="color:var(--gold);font-size:1.1em;">→</div></div>
     <div onclick="abrirPagina('guiasistema')" style="display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-top:12px;cursor:pointer;transition:border-color .2s;" onmouseover="this.style.borderColor='rgba(201,162,39,0.5)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:1.6em;"></div><div style="flex:1;text-align:left;"><div style="font-weight:700;color:var(--text);font-size:0.98em;margin-bottom:2px;">3. Guia do Sistema</div><div style="font-size:0.84em;color:rgba(240,232,208,0.62);line-height:1.45;">Referência de cada calculadora. Consulte quando tiver dúvidas específicas.</div></div><div style="color:var(--gold);font-size:1.1em;">→</div></div>
@@ -19040,7 +19019,7 @@ function ctcCalc(){
     <div style="background:linear-gradient(135deg,rgba(220,38,38,0.18),rgba(201,162,39,0.10));border:1.5px solid rgba(201,162,39,0.3);border-radius:14px;padding:24px 28px;margin-bottom:20px;">
       <div style="font-size:0.78em;letter-spacing:.14em;color:#c9a227;font-weight:700;margin-bottom:4px;">METODOLOGIA LIONHEART</div>
       <div style="font-size:1.7em;font-weight:800;color:var(--gold);font-family:'Syne',sans-serif;margin-bottom:6px;">Trilha de Formação — Consultor Tributário</div>
-      <div style="font-size:0.92em;color:var(--text2);max-width:760px;line-height:1.6;">4 vídeos do beta · ~5 min cada · do cadastro do cliente à entrega — dominando a ferramenta e a metodologia comercial.</div>
+      <div style="font-size:0.92em;color:var(--text2);max-width:760px;line-height:1.6;">Do cadastro do cliente à entrega. Assista na ordem — cada um assume o anterior — dominando a ferramenta e a metodologia comercial.</div>
       <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
         <span style="background:rgba(220,38,38,0.18);border:1px solid rgba(220,38,38,0.35);padding:5px 12px;border-radius:18px;font-size:0.76em;color:#ef4444;font-weight:600;">Boas-vindas (3)</span>
         <span style="background:rgba(220,38,38,0.18);border:1px solid rgba(220,38,38,0.35);padding:5px 12px;border-radius:18px;font-size:0.76em;color:#ef4444;font-weight:600;">Comercial (4)</span>
@@ -19055,30 +19034,34 @@ function ctcCalc(){
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
         <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
           <!-- SLOT VÍDEO 1: cole aqui o iframe do vídeo (Loom/YouTube/etc.) preenchendo 100% deste espaço -->
-          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
-            <div style="font-size:1.9em;opacity:.45;">🎬</div>
-            <div style="font-size:0.76em;color:rgba(200,215,235,0.5);margin-top:4px;letter-spacing:.04em;">Vídeo em breve</div>
-          </div>
+          <video controls preload="none" playsinline poster="video/menu-capa.jpg"
+            style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000"
+            aria-label="Como a ferramenta se organiza">
+            <source src="video/menu.mp4" type="video/mp4">
+            <a href="video/menu.mp4">Baixe o arquivo</a>.
+          </video>
         </div>
         <div style="padding:14px 16px;">
-          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 1 · ~5 MIN</div>
-          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">O Cliente e o Diagnóstico</div>
-          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Cadastro, inputs e o diagnóstico que monta o plano de calculadoras.</div>
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 1 · 2 MIN 30</div>
+          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Como a ferramenta se organiza</div>
+          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Os pilares, a escada dos planos, e o botão que acha a solução pela dúvida do cliente.</div>
         </div>
       </div>
 
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
         <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
           <!-- SLOT VÍDEO 2: cole aqui o iframe do vídeo (Loom/YouTube/etc.) preenchendo 100% deste espaço -->
-          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
-            <div style="font-size:1.9em;opacity:.45;">🎬</div>
-            <div style="font-size:0.76em;color:rgba(200,215,235,0.5);margin-top:4px;letter-spacing:.04em;">Vídeo em breve</div>
-          </div>
+          <video controls preload="none" playsinline poster="video/cadastro-capa.jpg"
+            style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000"
+            aria-label="Cadastro de cliente e grupo econômico">
+            <source src="video/cadastro.mp4" type="video/mp4">
+            <a href="video/cadastro.mp4">Baixe o arquivo</a>.
+          </video>
         </div>
         <div style="padding:14px 16px;">
-          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 2 · ~5 MIN</div>
-          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">A Proposta Comercial</div>
-          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Potencial estimado, produtos do diagnóstico, ROI e LTV.</div>
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 2 · 2 MIN 40</div>
+          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Cadastro de cliente e grupo</div>
+          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Cliente solo e grupo econômico: matriz, filiais, holding, sócios PF e coligadas.</div>
         </div>
       </div>
 
@@ -19140,28 +19123,6 @@ function ctcCalc(){
       <div style="font-size:1.7em;font-weight:800;color:#c9a227;font-family:'Syne',sans-serif;margin-bottom:6px;">Gestão de Carteira</div>
       <div style="font-size:0.92em;color:var(--text2);max-width:760px;line-height:1.6;">Cadastre empresas e grupos econômicos com matriz, filiais, sócios PF e coligadas.</div>
     </div>
-
-    <!-- ★ v818 · o vídeo entra DEPOIS do cabeçalho e ANTES dos indicadores.
-         Motivo: quem já tem carteira quer ver os números primeiro e não
-         precisa do vídeo; quem não tem vê KPI zerado, que não ensina nada.
-         Num acordeão fechado, os dois ficam servidos — e o vídeo só baixa
-         para quem abrir. -->
-    <details class="lh-curso" style="margin-bottom:16px;border-left:3px solid #c9a227">
-      <summary>&#9654; Ver em vídeo: cadastrar cliente e grupo econômico (2min30)</summary>
-      <div class="lh-curso-body">
-        <video controls preload="none" playsinline poster="video/cadastro-capa.jpg"
-               style="width:100%;max-width:980px;height:auto;display:block;border-radius:10px;background:#000"
-               aria-label="Cadastro de cliente solo e de grupo econômico">
-          <source src="video/cadastro.mp4" type="video/mp4">
-          Seu navegador não reproduz vídeo. <a href="video/cadastro.mp4">Baixe o arquivo</a>.
-        </video>
-        <p style="margin:10px 0 0;font-size:.86rem;color:var(--text2);line-height:1.55">
-          Os dois caminhos: <b>Cliente Solo</b>, para empresa única, e <b>Grupo Econômico</b>,
-          com matriz, filiais, holding, sócios PF e coligadas. Cadastre uma vez — todas as
-          calculadoras passam a receber os dados.
-        </p>
-      </div>
-    </details>
 
     <!-- KPIs -->
     <div id="lh-carteira-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;"></div>
