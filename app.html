@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v829";</script>
+<body><script>window.LH_VERSAO="v830";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4791,8 +4791,11 @@ window.LH_TOUR = (function(){
 /* ═══════════════════════════════════════════════════════════════════════════
    ★ v799 · ROTEIROS DOS TOURS
    O caso é o mesmo nos três: prestadora de serviços de TI, R$ 1,2 milhão ao ano,
-   três sócios. Escolhido porque dá o empate técnico de 0,24% entre Simples e
-   Lucro Real — resultado que mostra a ferramenta pensando, não só somando.
+   três sócios. Escolhido porque a folha passa dos 28% da receita e o Fator R
+    muda o Anexo — resultado que mostra a ferramenta pensando, não só somando.
+    (★ v830: o texto antigo prometia 'empate técnico de 0,24%'; esse recurso não
+    existe mais na tela e o número dependia de uma versão antiga da função.
+    Roteiro não pode prometer resultado numérico: a conta muda, o roteiro não.)
 
    O texto aqui é DADO. Mudar a explicação não mexe no motor.
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -4835,7 +4838,7 @@ LH_TOUR.registrar('regime', {
   nome: 'Regime Ótimo · Simples, Presumido ou Real',
   exige: 'c05',
   proximo: 'jornada',
-  fecho: 'Rode com um cliente seu. E preste atenção no aviso do Fator R: ele já evitou enquadramento errado em escritório que fazia a conta na mão.',
+  fecho: 'Rode com um cliente seu. E olhe sempre o cartão do Fator R: ele já evitou enquadramento errado em escritório que fazia a conta na mão — e no tour você viu por quê.',
   passos: [
     { abrir:'c05', titulo:'Regime Ótimo',
       texto:'A mesma empresa do tour anterior. Agora a pergunta é outra: <b>ela está no regime certo?</b> A ferramenta compara Simples, Híbrido, Presumido e Real com os mesmos dados.' },
@@ -4861,8 +4864,8 @@ LH_TOUR.registrar('regime', {
     { alvo:'button[onclick*="calcularC05"]', clicar:true, espera:2000, titulo:'Calcular',
       texto:'Quatro regimes calculados de uma vez, com a curva do ano escolhido.' },
 
-    { alvo:'#kpi-c05', titulo:'O regime recomendado',
-      texto:'Repare no que a ferramenta fez: Simples e Lucro Real ficaram separados por <b>0,24%</b>. Abaixo de 2%, ela avisa que é <i>empate técnico</i> — e que quem decide são os critérios qualitativos, não a planilha.' },
+    { alvo:'#kpi-c05', titulo:'O regime recomendado e o Fator R',
+      texto:'Olhe dois cartões. O <b>regime recomendado</b>, com a carga dos quatro lado a lado. E o <b>Fator R</b>: com três sócios a R$ 15 mil, a folha passa de 28% da receita e a empresa <b>migra do Anexo V para o III</b> — a ferramenta avisa quando isso acontece, porque é o erro que mais custa quando a conta é feita na mão.<br><br>Quando a diferença entre os dois primeiros for pequena, é sinal de que <b>quem decide é o critério</b>, não o número: crédito da cadeia, perfil de cliente, sucessão. A ferramenta mostra a conta; o parecer é seu.' },
 
     { alvo:'#res-c05', titulo:'A decisão é sua',
       texto:'A ferramenta mostra a conta e o aviso; quem conhece o cliente e assina o parecer é você. Essa é a diferença entre uma calculadora e um consultor com calculadora.' }
