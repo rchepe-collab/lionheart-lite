@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v828";</script>
+<body><script>window.LH_VERSAO="v829";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -18475,168 +18475,102 @@ function ctcCalc(){
     </div>
   </div>
 
-    <div style="background:linear-gradient(135deg,rgba(8,145,178,0.20),rgba(6,182,212,0.10));border:1.5px solid rgba(6,182,212,0.3);border-radius:14px;padding:24px 28px;margin-bottom:20px;">
-      <div style="font-size:1.7em;font-weight:800;color:var(--gold);font-family:'Syne',sans-serif;margin-bottom:6px;">Onboarding em 10 minutos</div>
-      <div style="font-size:0.92em;color:var(--text2);max-width:760px;line-height:1.6;">5 passos guiados para extrair valor real da ferramenta no primeiro uso. Não pula passos — cada um desbloqueia o próximo.</div>
-    </div>
+    <div style="margin-top:34px">
+    <!-- ★ v829 · o onboarding descrevia uma ferramenta que não existe mais: '23 calcs',
+         'Inputs do Cliente' (tela extinta), '28 perguntas', 'Vídeos (em breve)',
+         'Imersão Lionheart'. Reescrito na sequência real de hoje, com cada passo
+         abrindo a tela certa. Sem promessa de percentual nem de tempo total. -->
+    <div style="font-family:'Syne',sans-serif;font-size:1.25em;font-weight:800;color:#f4cc4a;margin-bottom:6px">
+      Os seus primeiros dez minutos</div>
+    <p style="margin:0 0 6px;font-size:.92em;color:var(--text2);line-height:1.6;max-width:66ch">
+      Cinco passos na ordem em que o trabalho acontece de verdade. Faça com um cliente <b style="color:#e8edf5">real</b> —
+      dado inventado não ensina nada, porque o resultado não significa nada para você.</p>
 
-    <!-- Progress bar global -->
-    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px 20px;margin-bottom:20px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <span style="font-weight:700;color:#e8edf5;font-size:0.95em;">Seu progresso</span>
-        <span id="onb-pct" style="font-weight:800;color:var(--gold);font-size:1.1em;">0%</span>
-      </div>
-      <div style="height:10px;background:rgba(255,255,255,0.06);border-radius:5px;overflow:hidden;">
-        <div id="onb-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#06b6d4,#0891b2);transition:width 0.4s ease;"></div>
-      </div>
-      <div id="onb-status" style="margin-top:8px;font-size:0.8em;color:rgba(200,215,235,0.6);">Comece pelo passo 1 abaixo</div>
-    </div>
-
-    <!-- 5 passos -->
-    <div style="display:flex;flex-direction:column;gap:14px;">
-      <!-- Passo 1: Cadastrar Cliente · Solo ou Grupo -->
-      <div class="onb-step" data-step="1" style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(201,162,39,0.25);border-radius:12px;padding:18px 22px;display:flex;gap:18px;align-items:flex-start;">
-        <div style="font-size:1.8em;width:46px;height:46px;background:linear-gradient(135deg,#c9a227,#e8b020);color:#0c1628;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">1</div>
-        <div style="flex:1;">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
-            <h3 style="margin:0;color:#c9a227;font-family:'Syne',sans-serif;font-size:1.15em;">Cadastrar Cliente · Solo ou Grupo Econômico</h3>
-            <span style="font-size:0.7em;color:rgba(200,215,235,0.5);">~3 min</span>
-            <span class="onb-check" data-check="1" style="display:none;font-size:0.78em;color:#10b981;font-weight:700;">✓ FEITO</span>
-          </div>
-          <p style="margin:0 0 10px;font-size:0.88em;color:rgba(200,215,235,0.75);line-height:1.55;">Clique em <strong style="color:#c9a227;">Cadastrar Cliente · Grupo Econômico</strong> no menu. Pergunta se é <strong>Solo</strong> (CNPJ único · MEI/ME/EPP) ou <strong>Grupo</strong> (matriz + filiais + sócios). O wizard guia o cadastro completo da estrutura.</p>
-          <button onclick="if(window.LH_GRUPO_UI)LH_GRUPO_UI.perguntarTipoCadastro();window.ONBOARDING.marcar(1);" style="padding:8px 18px;background:rgba(201,162,39,0.15);color:#c9a227;border:1px solid rgba(201,162,39,0.4);border-radius:8px;font-weight:600;cursor:pointer;font-size:0.88em;">+ Cadastrar agora</button>
+    <div style="display:flex;gap:16px;padding:18px 0;border-top:1px solid rgba(201,162,39,.16)">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:2.2em;line-height:1;color:#8f7015;min-width:38px">1</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <span style="font-family:'Syne',sans-serif;font-weight:800;color:#e8edf5">Cadastre um cliente</span>
+          <span style="font-size:.7em;color:#8f7015;letter-spacing:.12em">~3 min</span>
         </div>
-      </div>
-      <!-- Passo 2: Inputs do Cliente (universais gi_*) -->
-      <div class="onb-step" data-step="2" style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(8,145,178,0.25);border-radius:12px;padding:18px 22px;display:flex;gap:18px;align-items:flex-start;">
-        <div style="font-size:1.8em;width:46px;height:46px;background:linear-gradient(135deg,#06b6d4,#0891b2);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">2</div>
-        <div style="flex:1;">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
-            <h3 style="margin:0;color:var(--gold);font-family:'Syne',sans-serif;font-size:1.15em;">Preencher Inputs do Cliente (universais)</h3>
-            <span style="font-size:0.7em;color:rgba(200,215,235,0.5);">~5 min</span>
-            <span class="onb-check" data-check="2" style="display:none;font-size:0.78em;color:#10b981;font-weight:700;">✓ FEITO</span>
-          </div>
-          <p style="margin:0 0 10px;font-size:0.88em;color:rgba(200,215,235,0.75);line-height:1.55;">40 campos universais (faturamento, folha, margem, regime, segmento, sócios, patrimônio...). <strong style="color:var(--gold);">Preenche UMA vez e propaga automaticamente</strong> pras 23 calcs — economiza ~63% do trabalho.<br><span style="font-size:0.85em;color:rgba(201,162,39,0.80);">Não tem os dados? Use <strong>Modo Consultor · Excel</strong>: manda planilha pro cliente, ele preenche, você importa.</span></p>
-          <button onclick="onbExecutar('inputs')" style="padding:8px 18px;background:rgba(255,255,255,0.05);color:#06b6d4;border:1px solid rgba(201,162,39,0.30);border-radius:8px;font-weight:600;cursor:pointer;font-size:0.88em;">Ir para Inputs</button>
-        </div>
-      </div>
-      <!-- Passo 3: Diagnóstico (Radar) — define a missão de calcs -->
-      <div class="onb-step" data-step="3" style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(201,162,39,0.22);border-radius:12px;padding:18px 22px;display:flex;gap:18px;align-items:flex-start;">
-        <div style="font-size:1.8em;width:46px;height:46px;background:linear-gradient(135deg,#c9a227,#ef4444);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">3</div>
-        <div style="flex:1;">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
-            <h3 style="margin:0;color:#c9a227;font-family:'Syne',sans-serif;font-size:1.15em;">Diagnóstico (Radar) · define a missão</h3>
-            <span style="font-size:0.7em;color:rgba(200,215,235,0.5);">~10 min</span>
-            <span class="onb-check" data-check="3" style="display:none;font-size:0.78em;color:#10b981;font-weight:700;">✓ FEITO</span>
-          </div>
-          <p style="margin:0 0 10px;font-size:0.88em;color:rgba(200,215,235,0.75);line-height:1.55;">Responda <strong>28 perguntas estruturadas</strong> em 6 pilares (Reforma, PJ, Patrimonial, Sócio, Apurar/Pagar, Recuperação). O sistema gera <strong style="color:#c9a227;">score de exposição fiscal</strong> + <strong>missão de calcs priorizadas</strong> pra esse cliente. É o ponto de partida da consultoria.</p>
-          <button onclick="abrirPagina('radar',null);window.ONBOARDING.marcar(3);" style="padding:8px 18px;background:rgba(201,162,39,0.10);color:#c9a227;border:1px solid rgba(201,162,39,0.30);border-radius:8px;font-weight:600;cursor:pointer;font-size:0.88em;">Abrir Diagnóstico</button>
-        </div>
-      </div>
-      <!-- Passo 4: Executar Fluxo Completo (1 click) -->
-      <div class="onb-step" data-step="4" style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(16,185,129,0.25);border-radius:12px;padding:18px 22px;display:flex;gap:18px;align-items:flex-start;">
-        <div style="font-size:1.8em;width:46px;height:46px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">4</div>
-        <div style="flex:1;">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
-            <h3 style="margin:0;color:#10b981;font-family:'Syne',sans-serif;font-size:1.15em;">Executar Fluxo Completo · 1 click</h3>
-            <span style="font-size:0.7em;color:rgba(200,215,235,0.5);">~30 seg</span>
-            <span class="onb-check" data-check="4" style="display:none;font-size:0.78em;color:#10b981;font-weight:700;">✓ FEITO</span>
-          </div>
-          <p style="margin:0 0 10px;font-size:0.88em;color:rgba(200,215,235,0.75);line-height:1.55;">No final do Diagnóstico, clique em <strong style="color:#c9a227;">Executar Diagnóstico Completo</strong>. O sistema roda em cascata: propaga inputs → calcula <strong>todas as calcs da missão</strong> → consolida no Motor 360° → gera Proposta + Roadmap LTV. <strong style="color:#10b981;">Tudo automático.</strong></p>
-          <button onclick="abrirPagina('radar',null);window.ONBOARDING.marcar(4);" style="padding:8px 18px;background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.4);border-radius:8px;font-weight:600;cursor:pointer;font-size:0.88em;">Ir pro Diagnóstico</button>
-        </div>
-      </div>
-      <!-- Passo 5: Proposta + Roadmap LTV automáticos -->
-      <div class="onb-step" data-step="5" style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(220,38,38,0.25);border-radius:12px;padding:18px 22px;display:flex;gap:18px;align-items:flex-start;">
-        <div style="font-size:1.8em;width:46px;height:46px;background:linear-gradient(135deg,#dc2626,#c9a227);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">5</div>
-        <div style="flex:1;">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
-            <h3 style="margin:0;color:#ef4444;font-family:'Syne',sans-serif;font-size:1.15em;">Proposta + Roadmap LTV · automáticos</h3>
-            <span style="font-size:0.7em;color:rgba(200,215,235,0.5);">~3 min</span>
-            <span class="onb-check" data-check="5" style="display:none;font-size:0.78em;color:#10b981;font-weight:700;">✓ FEITO</span>
-          </div>
-          <p style="margin:0 0 10px;font-size:0.88em;color:rgba(200,215,235,0.75);line-height:1.55;">Após o fluxo completo, a Proposta Comercial chega <strong>pré-preenchida</strong> (nome, CNPJ, porte) com <strong style="color:#ef4444;">ROI projetado + Roadmap LTV 6/12/18/24 meses</strong>. Ajusta honorário, exporta PDF white-label e manda pro cliente. Vendeu.</p>
-          <button onclick="abrirPagina('proposta',null);window.ONBOARDING.marcar(5);" style="padding:8px 18px;background:rgba(220,38,38,0.15);color:#ef4444;border:1px solid rgba(220,38,38,0.4);border-radius:8px;font-weight:600;cursor:pointer;font-size:0.88em;">Abrir Proposta</button>
-        </div>
-      </div>
-      <!-- B5.4 · Passo 6 BÔNUS: Escopo de Análise (Grupo Consolidado) -->
-      <div class="onb-step" data-step="6" style="background:linear-gradient(135deg,rgba(201,162,39,0.10),rgba(201,162,39,0.04));border:1.5px solid rgba(201,162,39,0.30);border-radius:12px;padding:18px 22px;display:flex;gap:18px;align-items:flex-start;">
-        <div style="font-size:1.8em;width:46px;height:46px;background:linear-gradient(135deg,#c9a227,#c9a227);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;"></div>
-        <div style="flex:1;">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
-            <h3 style="margin:0;color:#c9a227;font-family:'Syne',sans-serif;font-size:1.15em;">BÔNUS · Escopo de Análise · Grupo Consolidado</h3>
-            <span style="background:linear-gradient(90deg,#c9a227,#c9a227);color:#fff;padding:1px 9px;border-radius:10px;font-size:0.65em;font-weight:800;letter-spacing:.04em;">NOVIDADE</span>
-          </div>
-          <p style="margin:0 0 10px;font-size:0.88em;color:rgba(200,215,235,0.75);line-height:1.55;">Cliente com matriz + filiais? <strong style="color:#c9a227;">Clique no picker de cliente</strong> (topo ou sidebar) e selecione <strong>GRUPO CONSOLIDADO</strong>. O CORE consolida automaticamente: faturamento SOMA, margem MÉDIA PONDERADA, etc. Calcs como <strong>Regime Ótimo (C05)</strong> e <strong>LTV (C09)</strong> só fazem sentido nesse escopo.</p>
-          <button onclick="if(window.LH_ESCOPO_UI){LH_ESCOPO_UI.abrirDropdown(document.body);}" style="padding:8px 18px;background:rgba(201,162,39,0.14);color:#c9a227;border:1px solid rgba(201,162,39,0.30);border-radius:8px;font-weight:600;cursor:pointer;font-size:0.88em;">Abrir Picker de Escopo</button>
-        </div>
+        <p style="margin:6px 0 10px;font-size:.9em;color:var(--text2);line-height:1.6;max-width:66ch">Empresa única ou grupo econômico com matriz, filiais e sócios. É de onde todas as análises tiram os dados — cadastre uma vez e nunca mais digite o básico.</p>
+        <button type="button" onclick="abrirPagina('empresas',null)"
+          style="background:none;border:1px solid rgba(201,162,39,.5);color:#f4cc4a;border-radius:8px;padding:7px 14px;
+                 font-size:.78em;font-weight:600;cursor:pointer">Cadastrar agora</button>
       </div>
     </div>
-
-    <div style="background:rgba(201,162,39,0.06);border:1px solid rgba(201,162,39,0.25);border-radius:10px;padding:14px 18px;margin-top:18px;font-size:0.85em;color:rgba(200,215,235,0.75);line-height:1.55;">
-      <strong style="color:#c9a227;">Dica do consultor:</strong> os 5 passos cobrem o que 80% dos contadores BPO precisam fazer no primeiro dia. Depois disso, explore as 23 calculadoras conforme a necessidade do cliente.
-    </div>
-
-    <!-- v29 ONDA 1.7.4 — Aviso destacado sobre outras abas de Imersão -->
-    <div style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(201,162,39,0.25);border-radius:12px;padding:16px 20px;margin-top:14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
-      <div style="font-size:2em;flex-shrink:0;"></div>
-      <div style="flex:1;min-width:240px;">
-        <div style="font-family:'Inter','DM Sans',sans-serif;font-size:1em;font-weight:800;color:var(--gold);margin-bottom:3px;">Você acabou de fazer o Tour — mas a Imersão Lionheart tem 4 abas a mais!</div>
-        <div style="font-size:0.82em;color:rgba(200,215,235,0.75);line-height:1.55;">
-          <strong>Glossário Tributário</strong> · <strong>Guia do Consultor</strong> (vendas) · <strong>Guia do Sistema</strong> · <strong>Vídeos</strong> (em breve).<br>
-          Acesse pelos cards abaixo OU clique em <strong style="color:#c9a227;">Dúvida</strong> em qualquer calc — leva direto pra Central de Ajuda contextual.
+    <div style="display:flex;gap:16px;padding:18px 0;border-top:1px solid rgba(201,162,39,.16)">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:2.2em;line-height:1;color:#8f7015;min-width:38px">2</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <span style="font-family:'Syne',sans-serif;font-weight:800;color:#e8edf5">Importe o que você já tem</span>
+          <span style="font-size:.7em;color:#8f7015;letter-spacing:.12em">~3 min</span>
         </div>
-      </div>
-      <button onclick="abrirPagina('ajuda',null)" style="padding:10px 20px;background:linear-gradient(135deg,#c9a227,#e8b020);color:#0c1628;border:none;border-radius:8px;font-weight:800;font-size:0.85em;cursor:pointer;font-family:'Syne',sans-serif;letter-spacing:.03em;flex-shrink:0;transition:all .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 5px 16px rgba(201,162,39,0.40)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">Abrir Central de Ajuda</button>
-    </div>
-
-    <!-- v29 ONDA 1.5.3 — Bônus: aprofunde-se (4 abas de Imersão) -->
-    <div style="margin-top:28px;padding-top:24px;border-top:1px dashed rgba(255,255,255,0.10);">
-      <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px;">
-        <div style="background:linear-gradient(90deg,#c9a227,#e8b020);color:#0c1628;padding:4px 12px;border-radius:14px;font-size:0.72em;font-weight:800;letter-spacing:.06em;">BÔNUS</div>
-        <h3 style="margin:0;font-family:'Syne',sans-serif;font-size:1.2em;color:var(--text);">Aprofunde-se — recursos opcionais</h3>
-      </div>
-      <p style="font-size:0.85em;color:rgba(200,215,235,0.65);line-height:1.55;margin-bottom:18px;">Depois dos 5 passos essenciais acima, a Lionheart oferece 4 áreas complementares para você vender melhor a consultoria tributária ao seu cliente:</p>
-
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
-        <!-- Guia do Consultor (DESTAQUE — argumentos de venda) -->
-        <div onclick="abrirPagina('conhecimento',null)" style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(201,162,39,0.30);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s;position:relative;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 20px rgba(201,162,39,0.22)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
-          <div style="position:absolute;top:8px;right:8px;background:linear-gradient(90deg,#c9a227,#e8b020);color:#fff;font-size:0.6em;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.05em;">RECOMENDADO</div>
-          <div style="font-size:1.8em;margin-bottom:6px;"></div>
-          <div style="font-family:'Inter','DM Sans',sans-serif;font-weight:800;color:#f0e8d0;font-size:1em;margin-bottom:4px;">Guia do Consultor</div>
-          <div style="font-size:0.78em;color:rgba(200,215,235,0.7);line-height:1.5;">6 fases da venda consultiva: do diagnóstico ao fechamento. Argumentos prontos, frases pro cliente, objeções comuns. <strong style="color:var(--gold);">O diferencial comercial.</strong></div>
-        </div>
-
-        <!-- Glossário Tributário -->
-        <div onclick="abrirPagina('basetecnica',null)" style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(201,162,39,0.25);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 20px rgba(16,185,129,0.18)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
-          <div style="font-size:1.8em;margin-bottom:6px;"></div>
-          <div style="font-family:'Inter','DM Sans',sans-serif;font-weight:800;color:var(--text);font-size:1em;margin-bottom:4px;">Glossário Tributário</div>
-          <div style="font-size:0.78em;color:rgba(200,215,235,0.7);line-height:1.5;">CBS, IBS, Split Payment, IRPFM, ITCMD, Anexo III, Fator R... todos os termos da Reforma com fórmulas e bases legais. Consulta rápida durante calcs.</div>
-        </div>
-
-        <!-- Guia do Sistema -->
-        <div onclick="abrirPagina('guiasistema',null)" style="background:rgba(16,185,129,0.08);border:1.5px solid rgba(201,162,39,0.25);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 20px rgba(16,185,129,0.20)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
-          <div style="font-size:1.8em;margin-bottom:6px;"></div>
-          <div style="font-family:'Inter','DM Sans',sans-serif;font-weight:800;color:var(--text);font-size:1em;margin-bottom:4px;">Guia do Sistema</div>
-          <div style="font-size:0.78em;color:rgba(200,215,235,0.7);line-height:1.5;">Mapa completo das 9 categorias e 20 calculadoras. Quais inputs cada uma usa, quais resultados entrega. Referência técnica completa.</div>
-        </div>
-
-        <!-- Vídeos Tutoriais -->
-        <div onclick="abrirPagina('videos',null)" style="background:rgba(220,38,38,0.06);border:1.5px solid rgba(220,38,38,0.25);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s;opacity:0.85;" onmouseover="this.style.transform='translateY(-3px)';this.style.opacity='1'" onmouseout="this.style.transform='none';this.style.opacity='0.85'">
-          <div style="position:absolute;margin-top:-6px;margin-left:148px;background:linear-gradient(90deg,#dc2626,#c9a227);color:#fff;font-size:0.55em;font-weight:800;padding:2px 7px;border-radius:8px;">EM BREVE</div>
-          <div style="font-size:1.8em;margin-bottom:6px;"></div>
-          <div style="font-family:'Inter','DM Sans',sans-serif;font-weight:800;color:var(--text);font-size:1em;margin-bottom:4px;">Vídeos Tutoriais</div>
-          <div style="font-size:0.78em;color:rgba(200,215,235,0.7);line-height:1.5;">Demonstrações práticas das 23 calcs em vídeo. Casos reais explicados passo-a-passo. Em produção — conteúdo escrito disponível.</div>
-        </div>
+        <p style="margin:6px 0 10px;font-size:.9em;color:var(--text2);line-height:1.6;max-width:66ch">SPED, XML de nota e PGDAS preenchem sozinhos o que é fiscal. Depois confira na Matriz de Inputs para onde cada informação foi. O que o documento não traz, você completa no cadastro.</p>
+        <button type="button" onclick="abrirPagina('importsped',null)"
+          style="background:none;border:1px solid rgba(201,162,39,.5);color:#f4cc4a;border-radius:8px;padding:7px 14px;
+                 font-size:.78em;font-weight:600;cursor:pointer">Importar documentos</button>
       </div>
     </div>
+    <div style="display:flex;gap:16px;padding:18px 0;border-top:1px solid rgba(201,162,39,.16)">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:2.2em;line-height:1;color:#8f7015;min-width:38px">3</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <span style="font-family:'Syne',sans-serif;font-weight:800;color:#e8edf5">Rode o Diagnóstico</span>
+          <span style="font-size:.7em;color:#8f7015;letter-spacing:.12em">~5 min</span>
+        </div>
+        <p style="margin:6px 0 10px;font-size:.9em;color:var(--text2);line-height:1.6;max-width:66ch">Trinta perguntas sobre o negócio, não sobre imposto. No fim, a lista de riscos e oportunidades em ordem de urgência — cada item abre a análise que resolve.</p>
+        <button type="button" onclick="abrirPagina('radar',null)"
+          style="background:none;border:1px solid rgba(201,162,39,.5);color:#f4cc4a;border-radius:8px;padding:7px 14px;
+                 font-size:.78em;font-weight:600;cursor:pointer">Abrir o Diagnóstico</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:16px;padding:18px 0;border-top:1px solid rgba(201,162,39,.16)">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:2.2em;line-height:1;color:#8f7015;min-width:38px">4</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <span style="font-family:'Syne',sans-serif;font-weight:800;color:#e8edf5">Analise o que o Diagnóstico apontou</span>
+          <span style="font-size:.7em;color:#8f7015;letter-spacing:.12em">~5 min</span>
+        </div>
+        <p style="margin:6px 0 10px;font-size:.9em;color:var(--text2);line-height:1.6;max-width:66ch">Abra a análise indicada. Leia na ordem: os números grandes, depois a Análise de Resultados, depois a memória de cálculo. O Motor 360° consolida tudo quando houver mais de uma.</p>
+        <button type="button" onclick="abrirPagina('motor360',null)"
+          style="background:none;border:1px solid rgba(201,162,39,.5);color:#f4cc4a;border-radius:8px;padding:7px 14px;
+                 font-size:.78em;font-weight:600;cursor:pointer">Ver o Motor 360°</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:16px;padding:18px 0;border-top:1px solid rgba(201,162,39,.16)">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:2.2em;line-height:1;color:#8f7015;min-width:38px">5</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <span style="font-family:'Syne',sans-serif;font-weight:800;color:#e8edf5">Gere a proposta</span>
+          <span style="font-size:.7em;color:#8f7015;letter-spacing:.12em">~3 min</span>
+        </div>
+        <p style="margin:6px 0 10px;font-size:.9em;color:var(--text2);line-height:1.6;max-width:66ch">Ela já vem com os serviços que a análise encontrou e o valor de cada um. Ajuste o preço — ele é seu — e exporte o relatório com a marca do seu escritório.</p>
+        <button type="button" onclick="abrirPagina('proposta',null)"
+          style="background:none;border:1px solid rgba(201,162,39,.5);color:#f4cc4a;border-radius:8px;padding:7px 14px;
+                 font-size:.78em;font-weight:600;cursor:pointer">Abrir a Proposta</button>
+      </div>
+    </div>
+    <div style="margin-top:22px;padding:16px 18px;border:1px solid rgba(201,162,39,.25);border-radius:12px;background:rgba(201,162,39,.04)">
+      <div style="font-size:.68em;letter-spacing:.18em;text-transform:uppercase;color:#8f7015;margin-bottom:6px">Bateu dúvida no caminho?</div>
+      <p style="margin:0 0 10px;font-size:.88em;color:var(--text2);line-height:1.6">
+        O botão dourado no canto da tela abre as perguntas que o seu cliente faz — digite a dúvida e ele leva à solução.
+        E cada análise tem um minicurso em <b style="color:#e8edf5">Central de Análises</b>: o que é, quando usar, como preencher.</p>
+      <button type="button" onclick="abrirPagina('perguntas',null)"
+        style="background:linear-gradient(135deg,#d9b53a,#c9a227);border:0;color:#0c1628;border-radius:8px;padding:9px 16px;
+               font-size:.78em;font-weight:700;cursor:pointer">Qual é a sua dúvida?</button>
+    </div>
+
+    <p style="margin:22px 0 0;font-size:.84em;color:var(--text2);line-height:1.65;max-width:70ch">
+      Depois desses cinco, o resto de <b style="color:#e8edf5">Aprendizado e Imersão</b> está aqui ao lado:
+      os <b>Vídeos Tutoriais</b> mostram o mesmo caminho gravado; o <b>Guia do Consultor</b> traz a metodologia
+      inteira em nove fases; o <b>Guia do Sistema</b> é o espelho do menu; e o <b>Glossário</b> explica cada termo.
+    </p>
+  </div>
   </div>
   <!-- /page-tour -->
 
-  <!-- ══════════════════════════════════════════════
-       v25 — VÍDEOS TUTORIAIS (placeholder em breve)
-       ══════════════════════════════════════════════ -->
-  <div class="page" id="page-videos">
+<div class="page" id="page-videos">
     <!-- ★ v820 · o cabeçalho era um bloco grande com cinco etiquetas vermelhas
          prometendo 20 vídeos por categoria — Boas-vindas 3, Comercial 4, Coleta 5,
          Análise 5, Entrega 3 — quando existem 2. Promessa numerada o assinante
