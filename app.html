@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v827";</script>
+<body><script>window.LH_VERSAO="v828";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -17549,406 +17549,51 @@ function ctcCalc(){
        Playbook de 6 fases para consultoria tributária
        ══════════════════════════════════════════════ -->
   <div class="page" id="page-conhecimento">
-    <!-- Hero -->
-    <div style="background:linear-gradient(135deg,rgba(201,162,39,0.18),rgba(239,68,68,0.10));border:1.5px solid rgba(201,162,39,0.25);border-radius:14px;padding:24px 28px;margin-bottom:20px;position:relative;overflow:hidden;">
-      <div style="font-size:1.7em;font-weight:800;color:var(--gold);font-family:'Syne',sans-serif;margin-bottom:6px;">Guia do Consultor</div>
-      <div style="font-size:0.92em;color:var(--text2);max-width:760px;line-height:1.6;">Metodologia completa em 6 fases — do primeiro contato com o cliente até acompanhamento e upsell. <strong>Scripts prontos</strong>, <strong>objeções respondidas</strong> e <strong>checklists por fase</strong> baseados em casos reais de consultoria tributária 2026.</div>
-      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
-        <span style="background:rgba(201,162,39,0.12);border:1px solid rgba(201,162,39,0.30);padding:5px 12px;border-radius:18px;font-size:0.76em;color:#ef4444;font-weight:600;">6 Fases</span>
-        <span style="background:rgba(201,162,39,0.12);border:1px solid rgba(201,162,39,0.30);padding:5px 12px;border-radius:18px;font-size:0.76em;color:#ef4444;font-weight:600;">Scripts prontos</span>
-        <span style="background:rgba(201,162,39,0.12);border:1px solid rgba(201,162,39,0.30);padding:5px 12px;border-radius:18px;font-size:0.76em;color:#ef4444;font-weight:600;">Contornar objeções</span>
-        <span style="background:rgba(201,162,39,0.12);border:1px solid rgba(201,162,39,0.30);padding:5px 12px;border-radius:18px;font-size:0.76em;color:#ef4444;font-weight:600;">Checklists</span>
-      </div>
-    </div>
-
-    <!-- Mapa das 6 Fases -->
-    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px;margin-bottom:18px;">
-      <h4 style="font-family:'Syne',sans-serif;font-size:0.95em;color:#c9a227;margin:0 0 14px;letter-spacing:.04em;">As 6 Fases da Consultoria Tributária</h4>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;">
-        <a href="#fase-0" onclick="scrollFase('fase-0');return false;" style="background:rgba(255,255,255,0.04);border:1px solid rgba(201,162,39,0.25);border-radius:10px;padding:14px 10px;text-align:center;text-decoration:none;display:block;transition:transform .15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-          <div style="font-size:1.6em"></div>
-          <div style="font-weight:700;color:var(--gold);font-size:0.78em;margin-top:6px;letter-spacing:.06em;">FASE 0</div>
-          <div style="font-size:0.7em;color:var(--text2);margin-top:3px;line-height:1.3">Prospecção &amp; Diagnóstico</div>
-        </a>
-        <a href="#fase-1" onclick="scrollFase('fase-1');return false;" style="background:rgba(255,255,255,0.04);border:1px solid rgba(201,162,39,0.25);border-radius:10px;padding:14px 10px;text-align:center;text-decoration:none;display:block;transition:transform .15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-          <div style="font-size:1.6em"></div>
-          <div style="font-weight:700;color:var(--gold);font-size:0.78em;margin-top:6px;letter-spacing:.06em;">FASE 1</div>
-          <div style="font-size:0.7em;color:var(--text2);margin-top:3px;line-height:1.3">Proposta &amp; Fechamento</div>
-        </a>
-        <a href="#fase-2" onclick="scrollFase('fase-2');return false;" style="background:rgba(255,255,255,0.04);border:1px solid rgba(201,162,39,0.25);border-radius:10px;padding:14px 10px;text-align:center;text-decoration:none;display:block;transition:transform .15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-          <div style="font-size:1.6em"></div>
-          <div style="font-weight:700;color:var(--gold);font-size:0.78em;margin-top:6px;letter-spacing:.06em;">FASE 2</div>
-          <div style="font-size:0.7em;color:var(--text2);margin-top:3px;line-height:1.3">Kickoff &amp; Alinhamento</div>
-        </a>
-        <a href="#fase-3" onclick="scrollFase('fase-3');return false;" style="background:rgba(255,255,255,0.04);border:1px solid rgba(201,162,39,0.25);border-radius:10px;padding:14px 10px;text-align:center;text-decoration:none;display:block;transition:transform .15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-          <div style="font-size:1.6em"></div>
-          <div style="font-weight:700;color:var(--gold);font-size:0.78em;margin-top:6px;letter-spacing:.06em;">FASE 3</div>
-          <div style="font-size:0.7em;color:var(--text2);margin-top:3px;line-height:1.3">Diagnóstico &amp; Análise</div>
-        </a>
-        <a href="#fase-4" onclick="scrollFase('fase-4');return false;" style="background:rgba(255,255,255,0.04);border:1px solid rgba(201,162,39,0.25);border-radius:10px;padding:14px 10px;text-align:center;text-decoration:none;display:block;transition:transform .15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-          <div style="font-size:1.6em"></div>
-          <div style="font-weight:700;color:var(--gold);font-size:0.78em;margin-top:6px;letter-spacing:.06em;">FASE 4</div>
-          <div style="font-size:0.7em;color:var(--text2);margin-top:3px;line-height:1.3">Entrega &amp; Apresentação</div>
-        </a>
-        <a href="#fase-5" onclick="scrollFase('fase-5');return false;" style="background:rgba(255,255,255,0.04);border:1px solid rgba(201,162,39,0.25);border-radius:10px;padding:14px 10px;text-align:center;text-decoration:none;display:block;transition:transform .15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-          <div style="font-size:1.6em"></div>
-          <div style="font-weight:700;color:var(--gold);font-size:0.78em;margin-top:6px;letter-spacing:.06em;">FASE 5</div>
-          <div style="font-size:0.7em;color:var(--text2);margin-top:3px;line-height:1.3">Acompanhar &amp; Upsell</div>
-        </a>
-      </div>
-    </div>
-
-    <!-- ════════ FASE 0 — PROSPECÇÃO ════════ -->
-    <div id="fase-0" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;margin-bottom:14px;">
-      <div style="background:linear-gradient(135deg,rgba(52,140,235,0.20),rgba(52,140,235,0.08));padding:14px 22px;border-bottom:1px solid rgba(52,140,235,0.3);">
-        <div style="font-family:'Inter','DM Sans',sans-serif;font-weight:800;font-size:1.05em;color:var(--text);">FASE 0 — Prospecção e Diagnóstico Inicial</div>
-        <div style="font-size:0.78em;color:var(--text2);margin-top:3px">Objetivo: despertar interesse mostrando que você enxerga a dor antes de qualquer proposta</div>
-      </div>
-      <div style="padding:20px 22px;">
-        <!-- O que fazer / o que evitar -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
-          <div style="background:rgba(255,255,255,0.03);border-left:3px solid #10b981;padding:12px 14px;border-radius:6px;">
-            <div style="font-weight:700;color:#10b981;font-size:0.85em;margin-bottom:6px;">O QUE FAZER</div>
-            <ul style="font-size:0.78em;color:var(--text2);line-height:1.6;margin:0;padding-left:18px;">
-              <li>Pesquise o CNPJ no Google + redes sociais antes da ligação</li>
-              <li>Identifique o REGIME atual (Simples/LP/LR) e setor pelo CNAE</li>
-              <li>Mencione 1 dor específica do setor logo nos primeiros 30s</li>
-              <li>Use a Calc <strong>Alíquota Efetiva CNAE</strong> pra mostrar o impacto da Reforma</li>
-            </ul>
-          </div>
-          <div style="background:rgba(239,68,68,0.06);border-left:3px solid #ef4444;padding:12px 14px;border-radius:6px;">
-            <div style="font-weight:700;color:#ef4444;font-size:0.85em;margin-bottom:6px;">O QUE EVITAR</div>
-            <ul style="font-size:0.78em;color:var(--text2);line-height:1.6;margin:0;padding-left:18px;">
-              <li>Vender serviço antes de entender a dor</li>
-              <li>Falar genérico ("vou te ajudar a economizar imposto")</li>
-              <li>Mandar proposta sem fazer descoberta</li>
-              <li>Apavorar com "vai quebrar com a Reforma" — pra educar, não amedrontar</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Script de Abordagem -->
-        <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(201,162,39,0.18);border-radius:8px;padding:14px 16px;margin-bottom:14px;">
-          <div style="font-weight:700;color:var(--gold);font-size:0.85em;margin-bottom:8px;">SCRIPT DE ABORDAGEM (cold call/WhatsApp)</div>
-          <div style="font-size:0.8em;color:var(--text);line-height:1.65;font-style:italic;background:rgba(255,255,255,0.03);padding:12px;border-left:3px solid #c9a227;border-radius:0 6px 6px 0;">
-            "Boa tarde, [NOME]. Aqui é [SEU NOME], sou contador/consultor tributário. Estou ligando porque vi que sua empresa atua em [SETOR]. <strong>A Reforma Tributária da LC 214/2025 já entrou em vigor</strong> e empresas do seu setor estão tendo um impacto direto na carga — algumas pagando até 15% a mais sem perceber.<br><br>
-            Tenho uma ferramenta que mostra <strong>em 5 minutos</strong> qual o impacto real no seu caso. Posso te enviar um diagnóstico rápido por e-mail/WhatsApp <strong>sem custo</strong>? Se fizer sentido, conversamos sobre o que dá pra otimizar."
-          </div>
-        </div>
-
-        <!-- Perguntas-chave de descoberta -->
-        <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(201,162,39,0.2);border-radius:8px;padding:14px 16px;margin-bottom:14px;">
-          <div style="font-weight:700;color:#c9a227;font-size:0.85em;margin-bottom:8px;">7 PERGUNTAS-CHAVE DE DESCOBERTA</div>
-          <ol style="font-size:0.8em;color:var(--text2);line-height:1.7;margin:0;padding-left:22px;">
-            <li>Qual o <strong>faturamento médio mensal</strong> da empresa?</li>
-            <li>Em qual <strong>regime tributário</strong> está hoje? (Simples/LP/LR)</li>
-            <li>Quantos <strong>sócios</strong> e qual o <strong>pró-labore</strong> de cada um?</li>
-            <li>Tem <strong>filiais</strong>? Em quais UFs?</li>
-            <li>Distribui <strong>dividendos</strong>? Quanto/mês por sócio?</li>
-            <li>Já analisou o impacto da <strong>Reforma Tributária 2027-2033</strong>?</li>
-            <li>Pretende abrir <strong>holding patrimonial</strong> ou já tem?</li>
-          </ol>
-        </div>
-
-        <!-- Checklist -->
-        <div style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.25);border-radius:8px;padding:14px 16px;">
-          <div style="font-weight:700;color:var(--gold);font-size:0.85em;margin-bottom:8px;letter-spacing:.04em;">CHECKLIST DA FASE 0</div>
-          <div style="font-size:0.8em;color:var(--text2);line-height:1.8;">
-            ☐ Pesquisei CNPJ e perfil da empresa<br>
-            ☐ Identifiquei regime e CNAE<br>
-            ☐ Tive a primeira conversa (cold ou indicação)<br>
-            ☐ Apliquei as 7 perguntas-chave<br>
-            ☐ Anotei dados no <strong>Inputs do Cliente</strong> do CORE<br>
-            ☐ Rodei a calc <strong>Regime Ótimo</strong> ou <strong>Alíq. Efetiva CNAE</strong> pra mostrar uma "amostra"<br>
-            ☐ Agendei reunião pra apresentar proposta
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════════ FASE 1 — PROPOSTA ════════ -->
-    <div id="fase-1" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;margin-bottom:14px;">
-      <div style="background:linear-gradient(135deg,rgba(201,162,39,0.18),rgba(201,162,39,0.08));padding:14px 22px;border-bottom:1px solid rgba(201,162,39,0.3);">
-        <div style="font-family:'Inter','DM Sans',sans-serif;font-weight:800;font-size:1.05em;color:var(--text);">FASE 1 — Proposta e Fechamento</div>
-        <div style="font-size:0.78em;color:var(--text2);margin-top:3px">Transformar interesse em contrato assinado</div>
-      </div>
-      <div style="padding:20px 22px;">
-        <!-- Como usar a aba Proposta Comercial -->
-        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:14px 16px;margin-bottom:14px;">
-          <div style="font-weight:700;color:#10b981;font-size:0.85em;margin-bottom:8px;">USE A ABA "PROPOSTA COMERCIAL"</div>
-          <div style="font-size:0.8em;color:var(--text2);line-height:1.65;">
-            1. Preencha os <strong>dados do prospect</strong> (nome, CNPJ, porte)<br>
-            2. Selecione um <strong>bundle</strong> (Reforma, PJ, Patrimonial ou Suite Completa) → desconto automático<br>
-            3. Ou escolha <strong>calcs individuais</strong> com modalidade Pontual + Recorrente<br>
-            4. Adicione <strong>itens livres</strong> (DAS mensal, IRPF anual, etc.)<br>
-            5. Clique em <strong>Gerar PDF</strong> → manda no WhatsApp/e-mail<br>
-            6. <strong>Não envie só o PDF</strong> — agende reunião pra apresentar
-          </div>
-        </div>
-
-        <!-- Objeções clássicas -->
-        <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(239,68,68,0.25);border-radius:8px;padding:14px 16px;margin-bottom:14px;">
-          <div style="font-weight:700;color:#ef4444;font-size:0.85em;margin-bottom:10px;">CONTORNANDO OBJEÇÕES CLÁSSICAS</div>
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:10px 12px;">
-              <div style="font-size:0.78em;font-weight:600;color:#ef4444;margin-bottom:4px;">"Tá caro"</div>
-              <div style="font-size:0.78em;color:var(--text2);line-height:1.55;font-style:italic;">"Entendo. Deixa eu te mostrar o ROI: o cliente médio dessa análise economiza R$ X/ano com a Reforma. O investimento de R$ Y se paga em [N] meses, e depois é só economia líquida. Se preferir, posso fracionar em 3x ou começarmos pelo serviço mais urgente."</div>
-            </div>
-            <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:10px 12px;">
-              <div style="font-size:0.78em;font-weight:600;color:#ef4444;margin-bottom:4px;">"Meu contador atual já faz isso"</div>
-              <div style="font-size:0.78em;color:var(--text2);line-height:1.55;font-style:italic;">"Que ótimo! Eu não estou aqui pra substituir o BPO contábil. Sou um consultor TRIBUTÁRIO especializado em otimização — trabalho EM PARCERIA com o contador do dia-a-dia. Posso entregar a análise pra ele implementar."</div>
-            </div>
-            <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:10px 12px;">
-              <div style="font-size:0.78em;font-weight:600;color:#ef4444;margin-bottom:4px;">"Vou pensar"</div>
-              <div style="font-size:0.78em;color:var(--text2);line-height:1.55;font-style:italic;">"Claro, é uma decisão importante. Posso te perguntar: o que especificamente você quer pensar? Preço? Escopo? Timing? Se for timing, lembra que a Reforma já começou em jan/2026 — cada mês de atraso é R$ X que não volta."</div>
-            </div>
-            <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:10px 12px;">
-              <div style="font-size:0.78em;font-weight:600;color:#ef4444;margin-bottom:4px;">"Não tenho certeza se preciso"</div>
-              <div style="font-size:0.78em;color:var(--text2);line-height:1.55;font-style:italic;">"Tá bom. Vamos fazer o seguinte: te entrego SOMENTE o Regime Ótimo por R$ [valor reduzido]. Se as economias compensarem, contratamos o resto. Se não, você fica só com essa análise. Combinado?"</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Checklist -->
-        <div style="background:rgba(201,162,39,0.05);border:1px solid rgba(201,162,39,0.20);border-radius:8px;padding:14px 16px;">
-          <div style="font-weight:700;color:var(--gold);font-size:0.85em;margin-bottom:8px;letter-spacing:.04em;">CHECKLIST DA FASE 1</div>
-          <div style="font-size:0.8em;color:var(--text2);line-height:1.8;">
-            ☐ Gerei a proposta na aba <strong>Proposta Comercial</strong><br>
-            ☐ Enviei PDF + agendei reunião de apresentação<br>
-            ☐ Preparei resposta pra objeções (preço, contador atual, etc.)<br>
-            ☐ Defini condições (parcelas, vigência, validade)<br>
-            ☐ Recebi <strong>assinatura</strong> ou aceite por e-mail/WhatsApp<br>
-            ☐ Defini data de kickoff
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════════ FASE 2 — KICKOFF ════════ -->
-    <div id="fase-2" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;margin-bottom:14px;">
-      <div style="background:linear-gradient(135deg,rgba(201,162,39,0.18),rgba(201,162,39,0.08));padding:14px 22px;border-bottom:1px solid rgba(201,162,39,0.25);">
-        <div style="font-family:'Inter','DM Sans',sans-serif;font-weight:800;font-size:1.05em;color:var(--text);">FASE 2 — Kickoff e Alinhamento</div>
-        <div style="font-size:0.78em;color:var(--text2);margin-top:3px">Coletar dados, alinhar expectativas, definir cronograma</div>
-      </div>
-      <div style="padding:20px 22px;">
-        <!-- Documentos a solicitar -->
-        <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(201,162,39,0.18);border-radius:8px;padding:14px 16px;margin-bottom:14px;">
-          <div style="font-weight:700;color:var(--gold);font-size:0.85em;margin-bottom:8px;">DOCUMENTOS A SOLICITAR</div>
-          <div style="font-size:0.8em;color:var(--text2);line-height:1.65;">
-            <strong>Sempre:</strong><br>
-            • CNPJ + cartão CNPJ atualizado<br>
-            • DEFIS (SN) ou ECD/ECF (LP/LR) dos últimos 12 meses<br>
-            • Apurações mensais (DAS, DARFs)<br>
-            • Folha de pagamento + pró-labores<br>
-            <br>
-            <strong>Se Holding/Patrimonial:</strong><br>
-            • Relação de bens (imóveis, veículos, investimentos)<br>
-            • Contratos de aluguel ativos<br>
-            • Estrutura societária atual<br>
-            <br>
-            <strong>Se Reforma Tributária:</strong><br>
-            • Maiores contratos de receita (3-5)<br>
-            • Maiores fornecedores LP/LR (% das compras)
-          </div>
-        </div>
-
-        <!-- Cronograma típico -->
-        <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(201,162,39,0.2);border-radius:8px;padding:14px 16px;margin-bottom:14px;">
-          <div style="font-weight:700;color:#c9a227;font-size:0.85em;margin-bottom:8px;">CRONOGRAMA TÍPICO (Análise Pontual)</div>
-          <div style="font-size:0.78em;color:var(--text2);line-height:1.7;">
-            <strong>Semana 1:</strong> Coleta de documentos + entrevista inicial<br>
-            <strong>Semana 2:</strong> Diagnóstico no CORE (rodada de todas as calcs)<br>
-            <strong>Semana 3:</strong> Cenários (com/sem holding, mudança de regime, etc.) + Motor 360°<br>
-            <strong>Semana 4:</strong> Reunião de apresentação + entrega do relatório PDF
-          </div>
-        </div>
-
-        <!-- Checklist -->
-        <div style="background:rgba(201,162,39,0.05);border:1px solid rgba(201,162,39,0.20);border-radius:8px;padding:14px 16px;">
-          <div style="font-weight:700;color:var(--gold);font-size:0.85em;margin-bottom:8px;letter-spacing:.04em;">CHECKLIST DA FASE 2</div>
-          <div style="font-size:0.8em;color:var(--text2);line-height:1.8;">
-            ☐ Reunião de kickoff agendada e realizada<br>
-            ☐ Lista de documentos enviada e recebida<br>
-            ☐ Cronograma alinhado e formalizado<br>
-            ☐ Pessoa de contato no cliente definida<br>
-            ☐ Cliente cadastrado no <strong>Inputs do Cliente</strong> do CORE
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════════ FASE 3 — DIAGNÓSTICO ════════ -->
-    <div id="fase-3" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;margin-bottom:14px;">
-      <div style="background:linear-gradient(135deg,rgba(16,185,129,0.20),rgba(16,185,129,0.08));padding:14px 22px;border-bottom:1px solid rgba(16,185,129,0.3);">
-        <div style="font-family:'Inter','DM Sans',sans-serif;font-weight:800;font-size:1.05em;color:var(--text);">FASE 3 — Diagnóstico e Análise</div>
-        <div style="font-size:0.78em;color:var(--text2);margin-top:3px">Rodar as calcs, criar cenários, identificar oportunidades</div>
-      </div>
-      <div style="padding:20px 22px;">
-        <!-- Sequência de execução -->
-        <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:14px 16px;margin-bottom:14px;">
-          <div style="font-weight:700;color:#10b981;font-size:0.85em;margin-bottom:8px;">ORDEM RECOMENDADA DAS CALCS</div>
-          <div style="font-size:0.8em;color:var(--text2);line-height:1.7;">
-            <strong>1º — Inputs do Cliente</strong> · preenche tudo e propaga<br>
-            <strong>2º — Regime Ótimo</strong> · base de tudo (define se vai migrar de regime)<br>
-            <strong>3º — Pró-labore Ótimo</strong> · otimização do sócio + Fator R<br>
-            <strong>4º — Tributação Dividendos</strong> · estratégia de saída<br>
-            <strong>5º — JCP vs Dividendos</strong> · alternativa em 2027<br>
-            <strong>6º — Split Payment</strong> · gap de caixa Reforma<br>
-            <strong>7º — Reprecificação</strong> · ajustar contratos<br>
-            <strong>8º — Alíq Efetiva CNAE</strong> · contexto setorial<br>
-            <strong>9º — Holding Patrimonial</strong> · só se houver patrimônio relevante<br>
-            <strong>10º — ITCMD</strong> + <strong>Ganho Capital</strong> · planejamento sucessório<br>
-            <strong>11º — PF vs PJ</strong> · só se houver dúvida sobre constituir PJ<br>
-            <strong>FECHAR — Motor 360°</strong> · consolida tudo, gera o ranking
-          </div>
-        </div>
-
-        <!-- Cenários a criar -->
-        <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(201,162,39,0.18);border-radius:8px;padding:14px 16px;margin-bottom:14px;">
-          <div style="font-weight:700;color:var(--gold);font-size:0.85em;margin-bottom:8px;">CENÁRIOS A SALVAR (use a aba Cenários Salvos)</div>
-          <div style="font-size:0.8em;color:var(--text2);line-height:1.7;">
-            • <strong>Cenário Atual</strong> · estado como está hoje<br>
-            • <strong>Cenário Otimizado</strong> · com mudança de regime + ajustes<br>
-            • <strong>Cenário com Holding</strong> · simulando abertura<br>
-            • <strong>Cenário Conservador</strong> · só otimizações sem reestruturação<br>
-            • <strong>Cenário Agressivo</strong> · com Fator R + pejotização (se aplicável)
-          </div>
-        </div>
-
-        <!-- Checklist -->
-        <div style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.25);border-radius:8px;padding:14px 16px;">
-          <div style="font-weight:700;color:var(--gold);font-size:0.85em;margin-bottom:8px;letter-spacing:.04em;">CHECKLIST DA FASE 3</div>
-          <div style="font-size:0.8em;color:var(--text2);line-height:1.8;">
-            ☐ Todas as calcs do escopo rodadas<br>
-            ☐ Pelo menos 3 cenários salvos<br>
-            ☐ Motor 360° executado em cada cenário<br>
-            ☐ Validação cruzada com legislação confirmada<br>
-            ☐ Premissas documentadas (taxas, alíquotas, segmentos)<br>
-            ☐ Sem números absurdos (cap de sanidade não disparou)
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════════ FASE 4 — ENTREGA ════════ -->
-    <div id="fase-4" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;margin-bottom:14px;">
-      <div style="background:linear-gradient(135deg,rgba(232,176,32,0.20),rgba(232,176,32,0.08));padding:14px 22px;border-bottom:1px solid rgba(232,176,32,0.3);">
-        <div style="font-family:'Inter','DM Sans',sans-serif;font-weight:800;font-size:1.05em;color:var(--text);">FASE 4 — Entrega e Apresentação</div>
-        <div style="font-size:0.78em;color:var(--text2);margin-top:3px">Apresentar resultados, gerar relatório, fechar o gap</div>
-      </div>
-      <div style="padding:20px 22px;">
-        <!-- Estrutura da apresentação -->
-        <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(232,176,32,0.2);border-radius:8px;padding:14px 16px;margin-bottom:14px;">
-          <div style="font-weight:700;color:#e8b020;font-size:0.85em;margin-bottom:8px;">ESTRUTURA DA REUNIÃO DE ENTREGA (60-90 min)</div>
-          <div style="font-size:0.8em;color:var(--text2);line-height:1.7;">
-            <strong>1) Recapitular (10min):</strong> Lembrar dores levantadas na descoberta<br>
-            <strong>2) Diagnóstico atual (15min):</strong> Mostrar o quanto a empresa paga hoje<br>
-            <strong>3) Oportunidades (25min):</strong> Apresentar cenários ranqueados pelo Motor 360°<br>
-            <strong>4) Recomendação (15min):</strong> Qual cenário priorizar + plano de implantação<br>
-            <strong>5) Próximos passos (10min):</strong> Quem faz o quê, em quando, com quais prazos<br>
-            <strong>6) Q&A (15min):</strong> Tirar dúvidas técnicas e operacionais
-          </div>
-        </div>
-
-        <!-- Use o PDF -->
-        <div style="background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.25);border-radius:8px;padding:14px 16px;margin-bottom:14px;">
-          <div style="font-weight:700;color:#ef4444;font-size:0.85em;margin-bottom:6px;">RELATÓRIO PDF — Como usar</div>
-          <div style="font-size:0.78em;color:var(--text2);line-height:1.55;">
-            Use a aba <strong>Relatório PDF</strong> pra gerar o entregável white-label. <strong>Sempre</strong> envie em PDF (não em planilha ou print) — eleva a percepção de valor profissional.
-          </div>
-        </div>
-
-        <!-- Checklist -->
-        <div style="background:rgba(232,176,32,0.05);border:1px solid rgba(232,176,32,0.25);border-radius:8px;padding:14px 16px;">
-          <div style="font-weight:700;color:var(--gold);font-size:0.85em;margin-bottom:8px;letter-spacing:.04em;">CHECKLIST DA FASE 4</div>
-          <div style="font-size:0.8em;color:var(--text2);line-height:1.8;">
-            ☐ Reunião de apresentação agendada<br>
-            ☐ Relatório PDF gerado e revisado<br>
-            ☐ Slides/roteiro da apresentação preparados<br>
-            ☐ Reunião realizada presencial ou videoconferência<br>
-            ☐ PDF + cenários enviados ao cliente após reunião<br>
-            ☐ Plano de implantação definido com prazos
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════════ FASE 5 — ACOMPANHAMENTO ════════ -->
-    <div id="fase-5" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;margin-bottom:14px;">
-      <div style="background:linear-gradient(135deg,rgba(220,38,38,0.20),rgba(220,38,38,0.08));padding:14px 22px;border-bottom:1px solid rgba(220,38,38,0.3);">
-        <div style="font-family:'Inter','DM Sans',sans-serif;font-weight:800;font-size:1.05em;color:var(--text);">FASE 5 — Acompanhamento e Upsell</div>
-        <div style="font-size:0.78em;color:var(--text2);margin-top:3px">Manter cliente engajado, garantir resultados, gerar novas receitas</div>
-      </div>
-      <div style="padding:20px 22px;">
-        <!-- Ritmo de acompanhamento -->
-        <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(220,38,38,0.2);border-radius:8px;padding:14px 16px;margin-bottom:14px;">
-          <div style="font-weight:700;color:#ef4444;font-size:0.85em;margin-bottom:8px;">RITMO DE ACOMPANHAMENTO</div>
-          <div style="font-size:0.8em;color:var(--text2);line-height:1.7;">
-            <strong>Mensal:</strong> Reunião de 30min com cliente recorrente · revisar números<br>
-            <strong>Trimestral:</strong> Refazer Motor 360° · verificar se cenário continua válido<br>
-            <strong>Semestral:</strong> Janela de mudança de regime SN/LP · avaliar troca<br>
-            <strong>Anual:</strong> Análise completa renovada · DRE consolidado<br>
-            <strong>Sempre:</strong> Alertar sobre mudanças de lei (LC 224, IRPFM, Reforma)
-          </div>
-        </div>
-
-        <!-- Gatilhos de Upsell -->
-        <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:14px 16px;margin-bottom:14px;">
-          <div style="font-weight:700;color:#10b981;font-size:0.85em;margin-bottom:8px;">GATILHOS DE UPSELL</div>
-          <div style="font-size:0.8em;color:var(--text2);line-height:1.7;">
-            • Cliente cresceu de porte → revisar regime (mais oportunidades)<br>
-            • Cliente vai vender imóvel/quotas → <strong>Ganho de Capital</strong><br>
-            • Sócio faleceu/separou → <strong>ITCMD</strong> + <strong>Holding</strong><br>
-            • Empresa abriu filial → reconfigurar inputs por estabelecimento<br>
-            • Cliente quer reduzir folha → <strong>PF vs PJ</strong> (pejotização ética)<br>
-            • Sócio quer aposentar → estratégia de saída + sucessão
-          </div>
-        </div>
-
-        <!-- Indicações -->
-        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(201,162,39,0.20);border-radius:8px;padding:14px 16px;margin-bottom:14px;">
-          <div style="font-weight:700;color:#c9a227;font-size:0.85em;margin-bottom:6px;">INDICAÇÕES — Seu Maior Canal</div>
-          <div style="font-size:0.78em;color:var(--text2);line-height:1.55;">
-            Cliente satisfeito é o melhor vendedor. Sempre que entregar bons resultados, peça <strong>2-3 indicações</strong> de empresários do mesmo setor. Ofereça <strong>5-10% de desconto na próxima renovação</strong> a cada indicação que fechar.
-          </div>
-        </div>
-
-        <!-- Checklist -->
-        <div style="background:rgba(220,38,38,0.05);border:1px solid rgba(220,38,38,0.25);border-radius:8px;padding:14px 16px;">
-          <div style="font-weight:700;color:var(--gold);font-size:0.85em;margin-bottom:8px;letter-spacing:.04em;">CHECKLIST DA FASE 5</div>
-          <div style="font-size:0.8em;color:var(--text2);line-height:1.8;">
-            ☐ Cliente em ritmo de acompanhamento (mensal/trim/semestral)<br>
-            ☐ Reuniões realizadas e atas registradas<br>
-            ☐ Resultados mensurados (economia real x prevista)<br>
-            ☐ Oportunidades de upsell identificadas<br>
-            ☐ Indicações solicitadas e recebidas<br>
-            ☐ Renovação anual confirmada
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- KPIs do escritório -->
-    <div style="background:linear-gradient(135deg,rgba(201,162,39,0.10),rgba(201,162,39,0.06));border:1.5px solid rgba(201,162,39,0.3);border-radius:12px;padding:18px;margin-bottom:14px;">
-      <h4 style="font-family:'Syne',sans-serif;font-size:0.95em;color:#c9a227;margin:0 0 10px;letter-spacing:.04em;">KPIs DO SEU ESCRITÓRIO</h4>
-      <div style="font-size:0.8em;color:var(--text2);line-height:1.7;">
-        Use as calcs <strong>Precificação de Honorários (C10)</strong> e <strong>Rentabilidade por Cliente (C09)</strong> pra acompanhar a saúde do seu próprio escritório de BPO/Consultoria. Métricas-chave:
-        <br><br>
-        • <strong>Ticket médio</strong> por cliente · meta crescente trimestre a trimestre<br>
-        • <strong>Margem por cliente</strong> · clientes com margem &lt;25% precisam reprecificar<br>
-        • <strong>Churn mensal</strong> · &lt;3% é saudável<br>
-        • <strong>Taxa de fechamento</strong> · propostas enviadas vs assinadas<br>
-        • <strong>NPS</strong> · pergunte trimestralmente: "0 a 10, quanto você indicaria?"
-      </div>
+  <div class="calc-page-header">
+    <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.25),rgba(232,176,32,0.12));"></div>
+    <div>
+      <h2>Guia do Consultor</h2>
+      <p>A metodologia inteira, da inteligência prévia à renovação. Nove fases, cada uma com o
+         entregável, os passos, a ferramenta que resolve — clicável — e o erro que mais custa.</p>
     </div>
   </div>
-  <!-- /page-conhecimento -->
+  <div style="max-width:940px">
+    <p style="font-size:.9em;color:var(--text2);line-height:1.65;margin:0 0 8px;max-width:72ch">
+      Consultoria de alto nível não é saber mais imposto. É <b style="color:#f4cc4a">chegar sabendo</b>,
+      <b style="color:#f4cc4a">transformar análise em decisão</b> e <b style="color:#f4cc4a">medir o que
+      prometeu</b>. As fases abaixo são a sequência que faz isso acontecer — e cada nome de ferramenta
+      abre a tela correspondente.
+    </p>
+    <p style="font-size:.8em;color:#8f7015;margin:0 0 24px">Nas análises marcadas "em validação", diga isso ao cliente. Transparência sobre o limite vale mais que a certeza que não existe.</p>
+<details class="lh-acc" style="margin-bottom:10px"><summary style="font-family:'Syne',sans-serif;font-weight:800;letter-spacing:.04em;color:#f4cc4a"><span style="font-family:'Cormorant Garamond',serif;font-size:1.35em;color:#8f7015;margin-right:8px">0</span>Inteligência prévia</summary><div class="lh-acc-body"><p style="margin:0 0 6px;font-size:.95em;color:#e8edf5;line-height:1.55">Antes de qualquer contato. O consultor de alto nível nunca chega perguntando o que o cliente faz.</p><p style="margin:0 0 20px;font-size:.82em;color:#c9a227"><b>Entregável:</b> Um dossiê de uma página sobre a empresa, com a hipótese de dor já formulada.</p><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Levante o básico sem pedir nada</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">CNPJ, CNAE, porte, regime provável, sócios e histórico societário. Use <a href="javascript:void(0)" onclick="abrirPagina('consultacnpj',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Consulta CNPJ</a> e o que a Receita já mostra. Cadastre em <a href="javascript:void(0)" onclick="abrirPagina('empresas',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Gestão de Carteira</a> desde já — com a hipótese, não com a certeza.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Formule a hipótese de dor</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Pelo setor e pelo regime, a Reforma pega de um jeito previsível. Abra <a href="javascript:void(0)" onclick="abrirPagina('perguntas',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Perguntas que a ferramenta responde</a> e escolha as três perguntas que esse cliente faria. Essa é a sua pauta.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Rode a primeira conta sem o cliente</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Com faturamento estimado, <a href="javascript:void(0)" onclick="abrirPagina('c04',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Alíquota Efetiva por Setor / Atividade</a> já dá a alíquota efetiva do setor ano a ano. Você chega com um número, não com uma promessa.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Escolha a porta de entrada</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Qual é a dor mais urgente e mais fácil de provar? Em geral, <a href="javascript:void(0)" onclick="abrirPagina('c01',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Split Payment Cash Gap</a> para quem vive de giro, <a href="javascript:void(0)" onclick="abrirPagina('c05',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Regime Ótimo (Simples/LP/LR)</a> para quem cresce, <a href="javascript:void(0)" onclick="abrirPagina('classmassa',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Classificador em Massa CBS/IBS</a> para quem tem cadastro grande.</div></div><div style="margin:18px 0 0;padding:14px 16px;border:1px solid rgba(201,162,39,.2);border-radius:10px"><div style="font-size:.66em;letter-spacing:.18em;text-transform:uppercase;color:#8f7015;margin-bottom:8px">Checklist da fase</div><ul style="list-style:none;margin:0;padding:0"><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Dossiê de uma página pronto</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Três perguntas do cliente escolhidas</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Uma calculadora rodada com estimativa</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Cliente cadastrado com a hipótese</li></ul></div><div style="margin:14px 0 0;padding:12px 16px;border-left:3px solid #e07a7a;background:rgba(224,122,122,.06);font-size:.86em;color:var(--text2);line-height:1.55"><b style="color:#e07a7a">O erro mais comum:</b> Chegar perguntando &#x27;qual é o seu regime?&#x27;. Isso o consultor médio faz. O de alto nível já sabe e chega dizendo o que isso implica.</div></div></details>
+    <details class="lh-acc" style="margin-bottom:10px"><summary style="font-family:'Syne',sans-serif;font-weight:800;letter-spacing:.04em;color:#f4cc4a"><span style="font-family:'Cormorant Garamond',serif;font-size:1.35em;color:#8f7015;margin-right:8px">1</span>Abordagem e qualificação</summary><div class="lh-acc-body"><p style="margin:0 0 6px;font-size:.95em;color:#e8edf5;line-height:1.55">O primeiro contato decide se haverá segundo. Não é venda — é diagnóstico de encaixe.</p><p style="margin:0 0 20px;font-size:.82em;color:#c9a227"><b>Entregável:</b> Um cliente qualificado ou desqualificado com clareza, em uma conversa.</p><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Abra com a hipótese, não com a apresentação</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">'Empresa do seu setor, no seu regime, costuma sentir X em 2027. Isso bate com o que você vê?' A pergunta convida a corrigir — e corrigindo, o cliente entrega o diagnóstico.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Mostre um número em cinco minutos</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Compartilhe a tela. <a href="javascript:void(0)" onclick="abrirPagina('c04',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Alíquota Efetiva por Setor / Atividade</a> ou <a href="javascript:void(0)" onclick="abrirPagina('c01',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Split Payment Cash Gap</a> com os dados que ele confirmar. Número na tela do cliente vale mais que qualquer credencial.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Qualifique com quatro perguntas</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Quem decide? Qual o prazo real? Já existe contador e o que ele faz? Quanto custa o problema hoje, em reais ou em risco? Sem resposta a essas, não há proposta — há orçamento.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Desqualifique cedo, com elegância</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Cliente sem urgência, sem decisor ou sem dinheiro para a solução consome a hora que faltará para o cliente certo. Ofereça o material gratuito e o plano Livre. Ele volta quando doer.</div></div><div style="margin:18px 0 0;padding:14px 16px;border:1px solid rgba(201,162,39,.2);border-radius:10px"><div style="font-size:.66em;letter-spacing:.18em;text-transform:uppercase;color:#8f7015;margin-bottom:8px">Checklist da fase</div><ul style="list-style:none;margin:0;padding:0"><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Hipótese confirmada ou corrigida pelo cliente</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Decisor identificado</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Prazo e orçamento conhecidos</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Próximo passo marcado com data</li></ul></div><div style="margin:14px 0 0;padding:12px 16px;border-left:3px solid #e07a7a;background:rgba(224,122,122,.06);font-size:.86em;color:var(--text2);line-height:1.55"><b style="color:#e07a7a">O erro mais comum:</b> Apresentar a ferramenta inteira. Cliente não compra 153 soluções — compra a que resolve a dor dele. O resto ele descobre depois.</div></div></details>
+    <details class="lh-acc" style="margin-bottom:10px"><summary style="font-family:'Syne',sans-serif;font-weight:800;letter-spacing:.04em;color:#f4cc4a"><span style="font-family:'Cormorant Garamond',serif;font-size:1.35em;color:#8f7015;margin-right:8px">2</span>Diagnóstico</summary><div class="lh-acc-body"><p style="margin:0 0 6px;font-size:.95em;color:#e8edf5;line-height:1.55">Trinta perguntas que transformam a conversa em agenda. É o fim da fase de venda e o começo da consultoria.</p><p style="margin:0 0 20px;font-size:.82em;color:#c9a227"><b>Entregável:</b> A agenda de oportunidades e riscos do cliente, priorizada, com a análise que resolve cada item.</p><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Rode o Diagnóstico com o cliente na frente</div><div style="font-size:.9em;color:var(--text2);line-height:1.6"><a href="javascript:void(0)" onclick="abrirPagina('radar',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Diagnóstico</a> foi feito para a reunião. As perguntas são sobre o negócio, não sobre imposto — o cliente responde e, respondendo, se reconhece.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Leia o resultado em voz alta, na ordem</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Risco antes de oportunidade. O que tem data antes do que não tem. Cada item abre a análise correspondente — mostre uma, não todas.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Registre o que foi dito</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">O Diagnóstico grava em <a href="javascript:void(0)" onclick="abrirPagina('historico_diagnosticos',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Histórico de Diagnóstico</a>. Daqui a um ano, é com ele que você mostra o que mudou — e renova.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Feche com o compromisso, não com a proposta</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">'Dessas cinco frentes, quais duas resolvemos primeiro?' O cliente escolhe. A proposta que vem depois é dele, não sua.</div></div><div style="margin:18px 0 0;padding:14px 16px;border:1px solid rgba(201,162,39,.2);border-radius:10px"><div style="font-size:.66em;letter-spacing:.18em;text-transform:uppercase;color:#8f7015;margin-bottom:8px">Checklist da fase</div><ul style="list-style:none;margin:0;padding:0"><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Diagnóstico concluído e salvo</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Risco e oportunidade lidos com o cliente</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Duas frentes escolhidas por ele</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Data da proposta combinada</li></ul></div><div style="margin:14px 0 0;padding:12px 16px;border-left:3px solid #e07a7a;background:rgba(224,122,122,.06);font-size:.86em;color:var(--text2);line-height:1.55"><b style="color:#e07a7a">O erro mais comum:</b> Diagnóstico enviado por e-mail para o cliente responder sozinho. Ele não responde, ou responde errado. Diagnóstico é reunião.</div></div></details>
+    <details class="lh-acc" style="margin-bottom:10px"><summary style="font-family:'Syne',sans-serif;font-weight:800;letter-spacing:.04em;color:#f4cc4a"><span style="font-family:'Cormorant Garamond',serif;font-size:1.35em;color:#8f7015;margin-right:8px">3</span>Proposta e contratação</summary><div class="lh-acc-body"><p style="margin:0 0 6px;font-size:.95em;color:#e8edf5;line-height:1.55">Escopo, preço e contrato. O momento em que o valor descoberto vira honorário.</p><p style="margin:0 0 20px;font-size:.82em;color:#c9a227"><b>Entregável:</b> Proposta aceita, escopo fechado, contrato assinado — com o número da análise dentro.</p><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Monte a proposta do que a análise achou</div><div style="font-size:.9em;color:var(--text2);line-height:1.6"><a href="javascript:void(0)" onclick="abrirPagina('proposta',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Proposta Comercial</a> puxa os itens do Diagnóstico com o valor estimado. Ajuste: o preço é seu. Nunca proponha genérico quando há número específico.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Precifique pelo valor, com piso de custo</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Use <a href="javascript:void(0)" onclick="abrirPagina('c10',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Precificação de Honorários</a> para saber quanto a rotina custa e <a href="javascript:void(0)" onclick="abrirPagina('c09',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Rentabilidade por Cliente</a> para saber se o cliente compensa. O honorário fica entre o piso e o valor recuperado — nunca abaixo do piso.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Separe pontual de recorrente</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Recuperação de crédito é projeto; adequação à transição é acompanhamento até 2033. <a href="javascript:void(0)" onclick="abrirPagina('jornada',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Jornada do Cliente</a> mostra ao cliente que o trabalho é plurianual. Venda os dois, com preços diferentes.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Documente o escopo com precisão</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">O que entra, o que não entra, e o que depende do cliente. Guarde em <a href="javascript:void(0)" onclick="abrirPagina('historico_propostas',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Histórico de Propostas</a>. Proposta recusada é a melhor lista de reprospecção daqui a seis meses.</div></div><div style="margin:18px 0 0;padding:14px 16px;border:1px solid rgba(201,162,39,.2);border-radius:10px"><div style="font-size:.66em;letter-spacing:.18em;text-transform:uppercase;color:#8f7015;margin-bottom:8px">Checklist da fase</div><ul style="list-style:none;margin:0;padding:0"><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Proposta gerada da análise, não de modelo</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Piso de custo conferido</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Pontual e recorrente separados</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Contrato assinado com escopo escrito</li></ul></div><div style="margin:14px 0 0;padding:12px 16px;border-left:3px solid #e07a7a;background:rgba(224,122,122,.06);font-size:.86em;color:var(--text2);line-height:1.55"><b style="color:#e07a7a">O erro mais comum:</b> Dar desconto no primeiro pedido. Desconto sem contrapartida ensina o cliente que o preço era falso. Troque escopo, não preço.</div></div></details>
+    <details class="lh-acc" style="margin-bottom:10px"><summary style="font-family:'Syne',sans-serif;font-weight:800;letter-spacing:.04em;color:#f4cc4a"><span style="font-family:'Cormorant Garamond',serif;font-size:1.35em;color:#8f7015;margin-right:8px">4</span>Início e coleta de dados</summary><div class="lh-acc-body"><p style="margin:0 0 6px;font-size:.95em;color:#e8edf5;line-height:1.55">Kickoff e levantamento. A qualidade de tudo que vem depois é decidida aqui.</p><p style="margin:0 0 20px;font-size:.82em;color:#c9a227"><b>Entregável:</b> Cadastro completo, documentos importados, premissas documentadas e prazos combinados.</p><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Faça o kickoff em trinta minutos</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Quem faz o quê, até quando, e o que acontece se o documento não chegar. Combine o canal de comunicação e a frequência de retorno. Cliente sem prazo não manda documento.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Importe antes de digitar</div><div style="font-size:.9em;color:var(--text2);line-height:1.6"><a href="javascript:void(0)" onclick="abrirPagina('importsped',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Importar &amp; auto-preencher (SPED + XML/NFe)</a> recebe SPED, XML e PGDAS e preenche o que é fiscal. <a href="javascript:void(0)" onclick="abrirPagina('matrizdoc',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Matriz de Inputs Automáticos</a> mostra para onde cada informação foi — confira antes de calcular.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Complete o que documento não traz</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Custos, margem, número de sócios, decisões. É o Excel do cliente e a conversa com o gestor. Cada análise diz o que precisa em 'Como preencher os campos'.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Documente cada premissa</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Toda estimativa — margem, crescimento, taxa — fica escrita com a fonte. Na entrega, é o que separa parecer defensável de opinião. <a href="javascript:void(0)" onclick="abrirPagina('aliqref',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Alíquota de Referência · risco</a> existe para testar a sensibilidade das premissas.</div></div><div style="margin:18px 0 0;padding:14px 16px;border:1px solid rgba(201,162,39,.2);border-radius:10px"><div style="font-size:.66em;letter-spacing:.18em;text-transform:uppercase;color:#8f7015;margin-bottom:8px">Checklist da fase</div><ul style="list-style:none;margin:0;padding:0"><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Kickoff realizado com papéis e prazos</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Documentos importados e conferidos na matriz</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Cadastro sem campo essencial vazio</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Premissas escritas com origem</li></ul></div><div style="margin:14px 0 0;padding:12px 16px;border-left:3px solid #e07a7a;background:rgba(224,122,122,.06);font-size:.86em;color:var(--text2);line-height:1.55"><b style="color:#e07a7a">O erro mais comum:</b> Começar a calcular com cadastro pela metade. O resultado sai, parece certo, e está errado — e o erro aparece na frente do cliente.</div></div></details>
+    <details class="lh-acc" style="margin-bottom:10px"><summary style="font-family:'Syne',sans-serif;font-weight:800;letter-spacing:.04em;color:#f4cc4a"><span style="font-family:'Cormorant Garamond',serif;font-size:1.35em;color:#8f7015;margin-right:8px">5</span>Análise e cenários</summary><div class="lh-acc-body"><p style="margin:0 0 6px;font-size:.95em;color:#e8edf5;line-height:1.55">Rodar, comparar, validar. Onde a ferramenta faz o trabalho pesado e o consultor faz o julgamento.</p><p style="margin:0 0 20px;font-size:.82em;color:#c9a227"><b>Entregável:</b> Um cenário base validado, dois ou três alternativos, e a recomendação com memória de cálculo.</p><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Siga a ordem que a Central sugere</div><div style="font-size:.9em;color:var(--text2);line-height:1.6"><a href="javascript:void(0)" onclick="abrirPagina('central-c1',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Central da Reforma</a> para adequação, <a href="javascript:void(0)" onclick="abrirPagina('central-c3',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Central de Oportunidades</a> para regime, <a href="javascript:void(0)" onclick="abrirPagina('central-c5',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Central de Recuperação</a> para crédito, <a href="javascript:void(0)" onclick="abrirPagina('central-c6',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Central Patrimonial &amp; Imóveis</a> para patrimônio. Cada Central ordena o que se aplica ao cliente.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Monte o cenário base e depois os alternativos</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Base é como está hoje. Alternativos são as decisões em discussão: mudar de regime, abrir holding, trocar fornecedor. Salve cada um em <a href="javascript:void(0)" onclick="abrirPagina('cenarios',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Cenários Salvos</a> com nome e data.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Valide antes de acreditar</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Memória de cálculo aberta em toda análise. Base legal conferida. Sanidade: se o número parecer bom demais, está errado. Nas análises marcadas 'em validação', diga isso ao cliente.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Consolide</div><div style="font-size:.9em;color:var(--text2);line-height:1.6"><a href="javascript:void(0)" onclick="abrirPagina('motor360',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Motor 360°</a> percorre tudo e ordena por potencial. É o que separa a lista de análises da recomendação: o que fazer primeiro, e por quê.</div></div><div style="margin:18px 0 0;padding:14px 16px;border:1px solid rgba(201,162,39,.2);border-radius:10px"><div style="font-size:.66em;letter-spacing:.18em;text-transform:uppercase;color:#8f7015;margin-bottom:8px">Checklist da fase</div><ul style="list-style:none;margin:0;padding:0"><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Cenário base validado e salvo</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Alternativos com nome e data</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Memória de cálculo revisada em cada análise</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Ranking consolidado no Motor 360</li></ul></div><div style="margin:14px 0 0;padding:12px 16px;border-left:3px solid #e07a7a;background:rgba(224,122,122,.06);font-size:.86em;color:var(--text2);line-height:1.55"><b style="color:#e07a7a">O erro mais comum:</b> Apresentar dez análises soltas. O cliente não decide com dez números — decide com uma recomendação e as duas alternativas que perdeu.</div></div></details>
+    <details class="lh-acc" style="margin-bottom:10px"><summary style="font-family:'Syne',sans-serif;font-weight:800;letter-spacing:.04em;color:#f4cc4a"><span style="font-family:'Cormorant Garamond',serif;font-size:1.35em;color:#8f7015;margin-right:8px">6</span>Parecer e entrega</summary><div class="lh-acc-body"><p style="margin:0 0 6px;font-size:.95em;color:#e8edf5;line-height:1.55">O relatório com a sua marca e a reunião de decisão. O cliente não compra análise; compra decisão tomada com segurança.</p><p style="margin:0 0 20px;font-size:.82em;color:#c9a227"><b>Entregável:</b> Parecer assinado, apresentado, e uma decisão do cliente registrada.</p><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Escreva o parecer, não o relatório</div><div style="font-size:.9em;color:var(--text2);line-height:1.6"><a href="javascript:void(0)" onclick="abrirPagina('pdf',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Relatório PDF</a> gera o documento com memória e base legal. O parecer é a parte que você escreve: recomendação, alternativas, riscos e o que depende de decisão dele. Duas páginas. O resto é anexo.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Apresente em ordem de decisão</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Primeiro o número que muda o resultado. Depois o que precisa ser decidido hoje. Depois o que pode esperar. Detalhe técnico só se perguntarem — e a memória está lá para isso.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Registre a decisão</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">'Vamos pelo cenário B' é a frase que encerra a fase. Anote data, decisão e quem decidiu. Sem isso, seis meses depois a responsabilidade pela escolha é sua.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Entregue o que ele leva para o banco, para o sócio e para o advogado</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Um documento que sobreviva à leitura de terceiros. É por isso que existe base legal citada e memória aberta: quem for conferir, confere.</div></div><div style="margin:18px 0 0;padding:14px 16px;border:1px solid rgba(201,162,39,.2);border-radius:10px"><div style="font-size:.66em;letter-spacing:.18em;text-transform:uppercase;color:#8f7015;margin-bottom:8px">Checklist da fase</div><ul style="list-style:none;margin:0;padding:0"><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Parecer de duas páginas escrito por você</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Relatório com a marca do escritório gerado</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Decisão do cliente registrada com data</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Próxima etapa combinada</li></ul></div><div style="margin:14px 0 0;padding:12px 16px;border-left:3px solid #e07a7a;background:rgba(224,122,122,.06);font-size:.86em;color:var(--text2);line-height:1.55"><b style="color:#e07a7a">O erro mais comum:</b> Entregar o PDF por e-mail e esperar. Parecer se apresenta. Sem reunião, o cliente lê o número, não a recomendação — e adia.</div></div></details>
+    <details class="lh-acc" style="margin-bottom:10px"><summary style="font-family:'Syne',sans-serif;font-weight:800;letter-spacing:.04em;color:#f4cc4a"><span style="font-family:'Cormorant Garamond',serif;font-size:1.35em;color:#8f7015;margin-right:8px">7</span>Implementação e acompanhamento</summary><div class="lh-acc-body"><p style="margin:0 0 6px;font-size:.95em;color:#e8edf5;line-height:1.55">A decisão vira ação, e a ação vira resultado medido. Aqui o consultor prova que não era só análise.</p><p style="margin:0 0 20px;font-size:.82em;color:#c9a227"><b>Entregável:</b> Plano de implementação executado, resultado medido e comparado com o previsto.</p><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Transforme a decisão em calendário</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Mudança de regime tem janela. Adequação de cadastro tem prazo. Crédito tem prescrição. <a href="javascript:void(0)" onclick="abrirPagina('cp03',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Compliance da Reforma 2026</a> e <a href="javascript:void(0)" onclick="abrirPagina('prescricao',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Prescrição &amp; Decadência</a> dão as datas. O plano é uma lista com responsável e mês.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Acompanhe o que tem data</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Vencimentos, entregas do cliente, marcos da transição. <a href="javascript:void(0)" onclick="abrirPagina('agro14sent',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Sentinela do Teto — R$ 3,6 mi</a> é o modelo: acompanhamento contínuo justifica honorário mensal, não pontual.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Meça contra o previsto</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Rode a mesma análise com o dado real depois de implementar. A diferença entre previsto e realizado é a sua credibilidade — e a sua próxima venda.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Comunique sem ser perguntado</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Um retorno mensal de dez linhas: o que foi feito, o que vem, o que precisa dele. Cliente que não ouve do consultor conclui que nada está acontecendo.</div></div><div style="margin:18px 0 0;padding:14px 16px;border:1px solid rgba(201,162,39,.2);border-radius:10px"><div style="font-size:.66em;letter-spacing:.18em;text-transform:uppercase;color:#8f7015;margin-bottom:8px">Checklist da fase</div><ul style="list-style:none;margin:0;padding:0"><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Plano com responsável e mês</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Datas críticas no calendário</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Realizado comparado ao previsto</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Retorno mensal enviado</li></ul></div><div style="margin:14px 0 0;padding:12px 16px;border-left:3px solid #e07a7a;background:rgba(224,122,122,.06);font-size:.86em;color:var(--text2);line-height:1.55"><b style="color:#e07a7a">O erro mais comum:</b> Considerar entregue no dia do parecer. A consultoria que não acompanha a implementação entrega diagnóstico, não resultado — e o cliente lembra do resultado.</div></div></details>
+    <details class="lh-acc" style="margin-bottom:10px"><summary style="font-family:'Syne',sans-serif;font-weight:800;letter-spacing:.04em;color:#f4cc4a"><span style="font-family:'Cormorant Garamond',serif;font-size:1.35em;color:#8f7015;margin-right:8px">8</span>Revisão e expansão</summary><div class="lh-acc-body"><p style="margin:0 0 6px;font-size:.95em;color:#e8edf5;line-height:1.55">O ciclo se fecha e reabre. Cliente atendido é a fonte mais barata do próximo trabalho.</p><p style="margin:0 0 20px;font-size:.82em;color:#c9a227"><b>Entregável:</b> Contrato renovado ou ampliado, e um novo Diagnóstico com o que mudou.</p><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Refaça o Diagnóstico a cada ano</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">A empresa mudou, a lei mudou, a transição avançou. <a href="javascript:void(0)" onclick="abrirPagina('historico_diagnosticos',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Histórico de Diagnóstico</a> mostra a evolução — é a prova de valor mais forte que existe.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Olhe a carteira, não só o cliente</div><div style="font-size:.9em;color:var(--text2);line-height:1.6"><a href="javascript:void(0)" onclick="abrirPagina('carteira',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Monitor de Carteira</a> e <a href="javascript:void(0)" onclick="abrirPagina('ltv_carteira',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">LTV de Carteira</a> mostram quem rende, quem custa e onde está a concentração. O Motor 360 sobre a carteira inteira é a sua agenda comercial do mês.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Amplie pela dor seguinte, não pela ferramenta seguinte</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Quem resolveu regime pergunta de sócio. Quem resolveu caixa pergunta de preço. A <a href="javascript:void(0)" onclick="abrirPagina('jornada',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Jornada do Cliente</a> já diz qual é a próxima frente de cada perfil. Proponha antes de ele perguntar.</div></div><div style="margin:0 0 14px;padding-left:16px;border-left:2px solid rgba(201,162,39,.25)"><div style="font-weight:600;color:#e8edf5;margin-bottom:3px">Peça a indicação no momento certo</div><div style="font-size:.9em;color:var(--text2);line-height:1.6">Depois do resultado medido, não depois do parecer. Um cliente satisfeito indica três; um cliente que só recebeu relatório não indica ninguém.</div></div><div style="margin:18px 0 0;padding:14px 16px;border:1px solid rgba(201,162,39,.2);border-radius:10px"><div style="font-size:.66em;letter-spacing:.18em;text-transform:uppercase;color:#8f7015;margin-bottom:8px">Checklist da fase</div><ul style="list-style:none;margin:0;padding:0"><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Diagnóstico anual refeito</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Carteira revisada por rentabilidade</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Próxima frente proposta a cada cliente ativo</li><li style="padding:4px 0 4px 22px;position:relative;font-size:.86em;color:var(--text2)"><span style="position:absolute;left:0;top:5px;color:#8f7015">&#9744;</span>Indicação pedida após resultado</li></ul></div><div style="margin:14px 0 0;padding:12px 16px;border-left:3px solid #e07a7a;background:rgba(224,122,122,.06);font-size:.86em;color:var(--text2);line-height:1.55"><b style="color:#e07a7a">O erro mais comum:</b> Esperar o cliente pedir. Ele não pede — ele muda de contador quando outro oferece o que você já sabia que ele precisava.</div></div></details>
 
-  <!-- ══════════════════════════════════════════════
-       v24 — BASE DE CONHECIMENTO TÉCNICA
-       Glossário tributário + interpretação + onde buscar dados
-       ══════════════════════════════════════════════ -->
-  <div class="page" id="page-basetecnica">
+    <div style="margin:34px 0 0;padding:20px 22px;border:1px solid rgba(201,162,39,.25);border-radius:12px;background:rgba(201,162,39,.04)">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;color:#f4cc4a;margin-bottom:8px">Os números do seu escritório</div>
+      <p style="margin:0 0 12px;font-size:.88em;color:var(--text2);line-height:1.6">
+        A metodologia acima é por cliente. O escritório se mede por conjunto — e a ferramenta tem as telas para isso:
+      </p>
+      <ul style="list-style:none;margin:0;padding:0;font-size:.86em;color:var(--text2);line-height:1.7">
+        <li><b style="color:#e8edf5">Quanto cada cliente rende</b> · <a href="javascript:void(0)" onclick="abrirPagina('c09',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Rentabilidade por Cliente</a> e <a href="javascript:void(0)" onclick="abrirPagina('ltv_carteira',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">LTV de Carteira</a></li>
+        <li><b style="color:#e8edf5">Quanto cobrar pela rotina</b> · <a href="javascript:void(0)" onclick="abrirPagina('c10',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Precificação de Honorários</a></li>
+        <li><b style="color:#e8edf5">Onde está a oportunidade parada</b> · <a href="javascript:void(0)" onclick="abrirPagina('motor360',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Motor 360°</a></li>
+        <li><b style="color:#e8edf5">Como a carteira está composta</b> · <a href="javascript:void(0)" onclick="abrirPagina('carteira',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Monitor de Carteira</a></li>
+        <li><b style="color:#e8edf5">O que vem até 2033</b> · <a href="javascript:void(0)" onclick="abrirPagina('jornada',null)" style="color:#f4cc4a;text-decoration:none;border-bottom:1px solid rgba(201,162,39,.45)">Jornada do Cliente</a> no modo carteira</li>
+      </ul>
+      <p style="margin:12px 0 0;font-size:.82em;color:#8f7015">Quatro indicadores bastam: tíquete médio, margem por cliente, taxa de fechamento das propostas, e cancelamento mensal. Se um deles piorar dois meses seguidos, é onde a próxima fase de trabalho começa.</p>
+    </div>
+  </div>
+</div>
+<!-- /page-conhecimento -->
+
+<div class="page" id="page-basetecnica">
 <div style="padding:4px 0 10px;"><h3 style="color:var(--gold2,#c9a227);margin-top:18px;">🏨 Hotelaria & Parques — regime específico</h3><p>LC 214/2025, arts. 277-283: redução de 40% na alíquota <strong>com manutenção do crédito</strong> sobre insumos (energia, enxoval, lavanderia, manutenção). Difere do regime de bares/restaurantes, que é cumulativo. A estratégia central é maximizar o % de compras creditáveis via fornecedores do regime regular. Carga atual de comparação: PIS + COFINS + ISS (serviço de hospedagem).</p><h3 style="color:var(--gold2,#c9a227);margin-top:18px;">🚚 Logística & Cargas — regime regular</h3><p>Transporte de CARGAS não tem redução setorial (o −40% é exclusivo de passageiros — art. 286). Fica no regime regular de 26,5% com <strong>crédito integral</strong> de diesel, pedágio, manutenção e pneus. Transportadora com cadeia formalizada tende a reduzir a carga efetiva; a informalidade de subcontratados (MEI/PF) vira custo direto por crédito perdido. Carga atual de comparação: PIS + COFINS + ICMS-frete.</p></div>
     <!-- Hero -->
     <div style="background:linear-gradient(135deg,rgba(30,64,175,0.20),rgba(16,185,129,0.10));border:1.5px solid rgba(59,130,246,0.3);border-radius:14px;padding:24px 28px;margin-bottom:20px;position:relative;overflow:hidden;">
