@@ -1,11 +1,16 @@
 const fs=require('fs'), {JSDOM}=require('jsdom');
+/* Os arquivos são procurados AO LADO desta prova, nunca num caminho absoluto:
+   a versão anterior trazia o caminho da máquina onde nasceu escrito dentro e
+   só rodava lá — em qualquer outra, quebrava antes da primeira verificação.
+   Prova que não roda não prova nada. */
+const daqui = (n) => require('path').join(__dirname, n);
 const CAT={ok:true,materiais:[
  {slug:'calendario-transicao',titulo:'Calendário da Transição',subtitulo:'2026 a 2033',resumo:'x',tipo:'ebook',paginas:'8 min'},
  {slug:'teses-recuperacao-credito',titulo:'15 Frentes de Crédito',subtitulo:'uma a uma',resumo:'x',tipo:'ebook',paginas:'10 min'},
  {slug:'checklist-cadastro-2026',titulo:'Checklist de Cadastro',subtitulo:'2026',resumo:'x',tipo:'checklist',paginas:'6 min'},
  {slug:'split-payment-caixa',titulo:'Split Payment e Caixa',subtitulo:'quando',resumo:'x',tipo:'ebook',paginas:'7 min'}]};
 let enviado=null, aberto=null;
-const dom=new JSDOM(fs.readFileSync('/home/claude/lite/index.html','utf8'),
+const dom=new JSDOM(fs.readFileSync(daqui('index.html'),'utf8'),
  {runScripts:'dangerously',url:'https://lionheartintelligence.com.br/',pretendToBeVisual:true,
   beforeParse(w){
     w.fetch=(u,o)=>{ u=String(u);

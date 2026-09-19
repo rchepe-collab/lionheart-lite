@@ -1,5 +1,10 @@
 const fs=require('fs'), {JSDOM}=require('jsdom');
-const dom=new JSDOM(fs.readFileSync('/home/claude/lite/index.html','utf8'),
+/* Os arquivos são procurados AO LADO desta prova, nunca num caminho absoluto:
+   a versão anterior trazia o caminho da máquina onde nasceu escrito dentro e
+   só rodava lá — em qualquer outra, quebrava antes da primeira verificação.
+   Prova que não roda não prova nada. */
+const daqui = (n) => require('path').join(__dirname, n);
+const dom=new JSDOM(fs.readFileSync(daqui('index.html'),'utf8'),
   {runScripts:'dangerously',url:'https://lionheartintelligence.com.br/',pretendToBeVisual:true});
 setTimeout(()=>{
   const d=dom.window.document; let mau=false;

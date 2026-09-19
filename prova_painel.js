@@ -22,13 +22,18 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 const fs = require('fs');
 const { JSDOM } = require('jsdom');
+/* Os arquivos são procurados AO LADO desta prova, nunca num caminho absoluto:
+   a versão anterior trazia o caminho da máquina onde nasceu escrito dentro e
+   só rodava lá — em qualquer outra, quebrava antes da primeira verificação.
+   Prova que não roda não prova nada. */
+const daqui = (n) => require('path').join(__dirname, n);
 
 let falhou = 0;
 const ex = (nome, ok, detalhe) => {
   console.log('  ' + nome.padEnd(54, '.') + ' ' + (ok ? 'true' : 'FALHOU' + (detalhe ? ' · ' + detalhe : '')));
   if (!ok) falhou++;
 };
-const html = fs.readFileSync('painel.html', 'utf8');
+const html = fs.readFileSync(daqui('painel.html'), 'utf8');
 /* o código sem comentário nenhum: a página fala de CDN e de biblioteca
    justamente para dizer que não usa — e a primeira versão desta prova
    reprovou por causa disso, igual à do farol. */

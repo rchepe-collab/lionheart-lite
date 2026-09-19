@@ -20,6 +20,11 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 const fs = require('fs');
 const { JSDOM } = require('jsdom');
+/* Os arquivos são procurados AO LADO desta prova, nunca num caminho absoluto:
+   a versão anterior trazia o caminho da máquina onde nasceu escrito dentro e
+   só rodava lá — em qualquer outra, quebrava antes da primeira verificação.
+   Prova que não roda não prova nada. */
+const daqui = (n) => require('path').join(__dirname, n);
 
 /* a lista branca como está na fn_sinal (v838). Se mudar lá, muda aqui — e é
    esta cópia que faz a divergência aparecer em vez de sumir. */
@@ -38,9 +43,9 @@ const ex = (nome, ok, detalhe) => {
   if (!ok) falhou++;
 };
 
-const farol   = fs.readFileSync('sinal.js', 'utf8');
-const index   = fs.readFileSync('index.html', 'utf8');
-const assinar = fs.readFileSync('assinar.html', 'utf8');
+const farol   = fs.readFileSync(daqui('sinal.js'), 'utf8');
+const index   = fs.readFileSync(daqui('index.html'), 'utf8');
+const assinar = fs.readFileSync(daqui('assinar.html'), 'utf8');
 
 /* ── navegador de mentira ───────────────────────────────────────────────────
    Roda o farol de verdade e guarda tudo que ele tentou mandar, por qual
@@ -236,7 +241,7 @@ ex('assinar.html manda a campanha no aceite', /campanha:\s*window\.LH_CAMPANHA\s
 ex('a página de materiais manda a campanha', /campanha:\s*window\.LH_CAMPANHA\s*\|\|\s*null/.test(index));
 
 console.log('\n-- o site continua de pé --');
-ex('index tem o arquivo do farol ao lado', fs.existsSync('sinal.js'));
+ex('index tem o arquivo do farol ao lado', fs.existsSync(daqui('sinal.js')));
 ex('nenhuma página ficou com script sem fechar',
    (index.match(/<script/g) || []).length === (index.match(/<\/script>/g) || []).length &&
    (assinar.match(/<script/g) || []).length === (assinar.match(/<\/script>/g) || []).length);

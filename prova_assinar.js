@@ -1,4 +1,9 @@
 const fs=require('fs'), {JSDOM}=require('jsdom');
+/* Os arquivos são procurados AO LADO desta prova, nunca num caminho absoluto:
+   a versão anterior trazia o caminho da máquina onde nasceu escrito dentro e
+   só rodava lá — em qualquer outra, quebrava antes da primeira verificação.
+   Prova que não roda não prova nada. */
+const daqui = (n) => require('path').join(__dirname, n);
 const PLANOS={ok:true,termo_versao:'1.0',planos:[
  {plano:'preparacao',rotulo:'Adequação',promessa:'Reforma 2026, cadastro, preço e compliance.',ordem:1,
   ciclos:[{ciclo:'anual',preco_mes:'199.00',preco_cobrado:'2388.00'},{ciclo:'mensal',preco_mes:'299.00',preco_cobrado:'299.00'}]},
@@ -7,7 +12,7 @@ const PLANOS={ok:true,termo_versao:'1.0',planos:[
  {plano:'especialista',rotulo:'Especialista',promessa:'Setores: serviços, agro, indústria.',ordem:3,
   ciclos:[{ciclo:'anual',preco_mes:'499.00',preco_cobrado:'5988.00'},{ciclo:'mensal',preco_mes:'799.00',preco_cobrado:'799.00'}]}]};
 function montar(url){ let env=null;
-  const dom=new JSDOM(fs.readFileSync('/home/claude/lite/assinar.html','utf8'),
+  const dom=new JSDOM(fs.readFileSync(daqui('assinar.html'),'utf8'),
    {runScripts:'dangerously',url,beforeParse(w){
      w.fetch=(u,o)=>{ if(String(u).includes('o=planos')) return Promise.resolve({json:()=>Promise.resolve(PLANOS)});
        env=JSON.parse(o.body); return Promise.resolve({json:()=>Promise.resolve({ok:true,link:'https://www.asaas.com/c/X'})}); };
@@ -32,7 +37,7 @@ setTimeout(()=>{
   ex('convite para escolher', ops[0].textContent.includes('Escolher este plano'));
   ex('selo de preço de fundador', a.querySelector('.fundador').textContent.includes('31 de dezembro de 2026'));
   ex('tem botão de voltar ao site', !!a.querySelector('.voltar[href="./"]'));
-  ex('o botão de voltar TEM estilo', /\.voltar\{/.test(fs.readFileSync('/home/claude/lite/assinar.html','utf8')));
+  ex('o botão de voltar TEM estilo', /\.voltar\{/.test(fs.readFileSync(daqui('assinar.html'),'utf8')));
   ex('logo também volta', !!a.querySelector('.faixa a[href="./"]'));
   ex('escada cumulativa dita', a.querySelector('.linha-fina').textContent.includes('inclui tudo'));
   console.log('  -- propostas de valor --');
