@@ -94,6 +94,28 @@
   .selo.av{ background:rgba(232,176,32,.14); color:var(--ambar) }
   .rolar{ overflow-x:auto }
 
+  /* gráfico de visitas — SVG escrito à mão, sem biblioteca nenhuma */
+  .graf{ width:100%; height:auto; display:block; background:var(--carvao);
+         border:1px solid rgba(255,255,255,.06); border-radius:12px }
+  .graf .eixo{ stroke:rgba(255,255,255,.08); stroke-width:1 }
+  .graf .rot{ fill:var(--pedra-funda); font-size:10px; font-family:'Sora',sans-serif }
+  .graf .linha{ fill:none; stroke:var(--ouro); stroke-width:2; stroke-linejoin:round; stroke-linecap:round }
+  .graf .ponto{ fill:var(--ouro-claro) }
+
+  /* cabeçalho de seção com algo à direita (total, botão) */
+  .cab{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap }
+  .cab .total{ font-size:.78rem; color:var(--pedra) }
+  .csv{ background:none; border:1px solid rgba(201,162,39,.35); color:var(--ouro); border-radius:7px;
+        padding:5px 11px; font:inherit; font-size:.74rem; letter-spacing:.04em; cursor:pointer }
+  .csv:hover{ border-color:var(--ouro) }
+
+  /* selo da base: o que pode e o que não pode ser feito com aquela lista.
+     Grande e colorido de propósito — é a única coisa que separa uma base
+     consentida de uma base que não autorizou nada. */
+  .selo.base{ font-size:.73rem; padding:6px 12px; border-radius:8px; margin:0 0 10px; letter-spacing:.02em }
+  .selo.base.pode{ background:rgba(16,185,129,.12); color:var(--verde); border:1px solid rgba(16,185,129,.30) }
+  .selo.base.nao-pode{ background:rgba(232,176,32,.12); color:var(--ambar); border:1px solid rgba(232,176,32,.32) }
+
   /* login */
   .porta{ max-width:380px; margin:12vh auto 0; background:var(--carvao); border:1px solid rgba(201,162,39,.25);
           border-radius:14px; padding:28px 26px }
@@ -156,22 +178,62 @@
       <div class="cartao"><div class="rotulo">Cálculos no período</div><div class="valor" id="k-calc">—</div><div class="sub" id="k-calc-sub"></div></div>
     </div>
 
+    <section id="s-dinheiro">
+      <h2>Dinheiro que entrou</h2>
+      <p class="nota">Receita mensal recorrente é o que os planos ativos prometem por mês. Recebido é o dinheiro que entrou no período. Os dois números vão divergir — é assim mesmo, e olhar um no lugar do outro é o jeito mais fácil de se enganar sozinho.</p>
+      <div class="grade">
+        <div class="cartao"><div class="rotulo">Recebido no período</div><div class="valor ouro" id="k-recebido">—</div><div class="sub">pagamentos confirmados</div></div>
+        <div class="cartao"><div class="rotulo">Pagamentos</div><div class="valor" id="k-pagamentos">—</div><div class="sub">cobranças pagas no período</div></div>
+        <div class="cartao"><div class="rotulo">Ticket médio</div><div class="valor" id="k-ticket">—</div><div class="sub">recebido dividido por pagamento</div></div>
+      </div>
+      <div class="rolar"><table><thead><tr><th>Plano</th><th>Ciclo</th><th>Pagamentos</th><th>Valor</th></tr></thead><tbody id="t-planos"></tbody></table></div>
+    </section>
+
     <section id="s-atencao">
       <h2>O que pede decisão hoje</h2>
       <p class="nota">A mesma lista que chega por e-mail às 9h. Vazia é o normal.</p>
       <div class="rolar"><table><thead><tr><th>Conta</th><th>Plano</th><th>Validade</th><th>Situação</th></tr></thead><tbody id="t-atencao"></tbody></table></div>
     </section>
 
-    <section>
-      <h2>Funil do período</h2>
-      <p class="nota">Cada etapa conta pessoas distintas. As quatro primeiras vêm do farol do site (visitantes anônimos); as outras vêm de quem se identificou. As barras são proporcionais à primeira etapa que tiver número.</p>
-      <div class="funil" id="funil"></div>
+    <section id="s-serie">
+      <div class="cab"><h2>Visitas por dia</h2><div class="total" id="g-total"></div></div>
+      <p class="nota">Dia fechado no fuso de Rio Grande. O eixo começa em zero: gráfico que começa no meio faz qualquer subida parecer foguete.</p>
+      <div id="grafico"></div>
+    </section>
+
+    <section id="s-origens">
+      <h2>De onde veio</h2>
+      <p class="nota">A origem é a do primeiro toque: se a pessoa veio do LinkedIn e voltou direto dias depois para assinar, o crédito continua do LinkedIn. <b>(direto)</b> é quem chegou sem marca na URL — não é erro, é a maior parte do mundo.</p>
+      <div class="rolar"><table><thead><tr><th>Origem</th><th>Visitas</th><th>Ver planos</th><th>Demonstração</th><th>Abriu compra</th><th>Escolheu</th></tr></thead><tbody id="t-origens"></tbody></table></div>
     </section>
 
     <section>
-      <h2>Pegou o link do Asaas e não pagou</h2>
-      <p class="nota">Aceitou os Termos, recebeu o link do pagamento e parou ali. É a lista de quem está a um passo — vale um contato.</p>
-      <div class="rolar"><table><thead><tr><th>E-mail</th><th>Plano</th><th>Ciclo</th><th>Último clique</th><th>Vezes</th><th>Conta</th></tr></thead><tbody id="t-abandonou"></tbody></table></div>
+      <h2>Funil do período</h2>
+      <p class="nota">Cada etapa conta pessoas distintas. As primeiras vêm do farol do site (visitantes anônimos); as outras vêm de quem se identificou. As barras são proporcionais à primeira etapa que tiver número. <b>O percentual só aparece quando a etapa anterior tem 20 pessoas ou mais</b> — com 2 pessoas numa etapa e 1 na seguinte, &ldquo;50%&rdquo; parece taxa de conversão e é duas pessoas. Hoje quase nenhuma etapa chega lá, então o normal é não ver percentual nenhum.</p>
+      <div class="funil" id="funil"></div>
+    </section>
+
+    <!-- ═══ AS DUAS BASES ═══════════════════════════════════════════════════
+         Duas tabelas, nunca uma só. Não é capricho de layout: a cláusula 9.2
+         dos Termos v1.0 lista as finalidades de tratamento (execução
+         contratual, faturamento, prevenção a fraudes, cumprimento legal) e
+         comunicação comercial NÃO está entre elas. Quem baixou material
+         consentiu explicitamente e o texto aceito está guardado; quem
+         abandonou a compra, não consentiu nada. Numa tabela só, um dia alguém
+         exporta tudo e dispara campanha — a separação visual é o controle.
+         O selo de cada uma vem de pode_campanha, do servidor. -->
+    <section id="s-material">
+      <div class="cab"><h2>Baixaram material</h2><button type="button" class="csv" id="csv-material">Exportar CSV</button></div>
+      <p class="nota">Quem pediu um material e deixou o e-mail. O texto que a pessoa aceitou está guardado no banco, com data e hora.</p>
+      <div class="selo base" id="selo-material"></div>
+      <div class="rolar"><table><thead><tr><th>E-mail</th><th>Telefone</th><th>Nome</th><th>Material</th><th>Origem</th><th>Quando</th><th>Conta</th></tr></thead><tbody id="t-material"></tbody></table></div>
+    </section>
+
+    <section id="s-abandonou">
+      <div class="cab"><h2>Abandonaram a compra</h2><button type="button" class="csv" id="csv-abandonou">Exportar CSV</button></div>
+      <p class="nota">Aceitou os Termos, recebeu o link do pagamento e parou ali. É a lista de quem está a um passo — e a retomada é da própria compra dessa pessoa, não campanha.</p>
+      <div class="selo base" id="selo-abandonou"></div>
+      <div class="rolar"><table><thead><tr><th>E-mail</th><th>Plano</th><th>Ciclo</th><th>Origem</th><th>Último clique</th><th>Vezes</th><th>Conta</th></tr></thead><tbody id="t-abandonou"></tbody></table></div>
     </section>
 
     <section>
@@ -195,6 +257,10 @@
   function reais(v){ v = Number(v)||0; return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0}); }
   function data(d){ if(!d) return '—'; var p=String(d).slice(0,10).split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
   function dataHora(d){ if(!d) return '—'; var x=new Date(d); return isNaN(x)?String(d):x.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+  function reaisC(v){ v = Number(v)||0; return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function diaCurto(d){ var p=String(d||'').slice(0,10).split('-'); return p.length===3 ? p[2]+'/'+p[1] : String(d||''); }
+  function numero(n){ return (Number(n)||0).toLocaleString('pt-BR'); }
+
   function token(){ try{ return localStorage.getItem(CHAVE)||''; }catch(e){ return ''; } }
   function guardar(t){ try{ localStorage.setItem(CHAVE, t); }catch(e){} }
   function esquecer(){ try{ localStorage.removeItem(CHAVE); }catch(e){} }
@@ -205,6 +271,111 @@
       headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + token() },
       body: JSON.stringify({ calc: calc, entradas: entradas || {} })
     }).then(function(r){ return r.json(); });
+  }
+
+  /* ── amostra pequena ──────────────────────────────────────────────────
+     Abaixo deste número, percentual não é taxa de conversão: é anedota com
+     cara de estatística. Com 2 pessoas numa etapa e 1 na seguinte a página
+     estampa "50%", e quem lê decide como se fosse metade do mercado. Painel
+     que mente com confiança é pior que painel vazio. */
+  var AMOSTRA_MIN = 20;
+
+  /* ── o selo das bases ─────────────────────────────────────────────────
+     O texto sai de pode_campanha, que vem do SERVIDOR. Não está escrito no
+     HTML de propósito: se a regra jurídica mudar, muda num lugar só e a
+     página obedece sem ninguém precisar lembrar dela. Na dúvida (campo
+     ausente), a resposta é não — base sem autorização explícita não entra
+     em campanha. */
+  var SELO = {
+    pode: 'consentimento registrado · pode entrar em campanha',
+    nao:  'sem autorização de marketing · só retomada da própria compra'
+  };
+  function selar(el, podeCampanha){
+    if(!el) return;
+    var pode = podeCampanha === true;
+    el.className = 'selo base ' + (pode ? 'pode' : 'nao-pode');
+    el.textContent = pode ? SELO.pode : SELO.nao;
+  }
+
+  /* ── gráfico: SVG escrito à mão ───────────────────────────────────────
+     Sem CDN. Uma biblioteca de gráfico pesa mais que esta página inteira e
+     um dia some do ar levando o painel junto. */
+  function tetoY(max){
+    if(!(max > 0)) return 1;
+    var p = Math.pow(10, Math.floor(Math.log(max)/Math.LN10));
+    var op = [1,2,5,10];
+    for(var i=0;i<op.length;i++){ if(max <= op[i]*p) return op[i]*p; }
+    return 10*p;
+  }
+
+  function grafico(serie){
+    var s = (serie||[]).filter(function(p){ return p && p.dia; });
+    if(!s.length) return '<p class="vazio">Nenhuma visita registrada no período.</p>';
+
+    var W=720, H=190, ml=42, mr=14, mt=14, mb=28;
+    var iw=W-ml-mr, ih=H-mt-mb;
+    var max=0; s.forEach(function(p){ var v=Number(p.visitas)||0; if(v>max) max=v; });
+    var teto = tetoY(max);
+    var px = function(i){ return s.length>1 ? ml + iw*i/(s.length-1) : ml + iw/2; };
+    var py = function(v){ return mt + ih - (Math.max(0, Number(v)||0)/teto)*ih; };
+
+    var g = '<svg class="graf" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Visitas por dia no período">';
+
+    /* o eixo Y começa em zero, sempre: cortar a base faz qualquer oscilação
+       virar tendência, e é a mentira mais comum em painel de dono */
+    var marcas = teto <= 2 ? [0, teto] : [0, teto/2, teto];
+    marcas.forEach(function(v){
+      var y = py(v);
+      g += '<line class="eixo" x1="'+ml+'" y1="'+y.toFixed(1)+'" x2="'+(ml+iw)+'" y2="'+y.toFixed(1)+'"/>'
+         + '<text class="rot" x="'+(ml-8)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="end">'+Math.round(v)+'</text>';
+    });
+
+    var pts = s.map(function(p,i){ return px(i).toFixed(1)+','+py(p.visitas).toFixed(1); });
+
+    /* UM PONTO SÓ É UM PONTO. Ligar um dado a nada com uma reta desenha uma
+       tendência que não existe — com um dia de dados não há tendência. */
+    if(s.length > 1){
+      g += '<polygon fill="rgba(201,162,39,.10)" points="'+ml+','+(mt+ih)+' '+pts.join(' ')+' '+(ml+iw).toFixed(1)+','+(mt+ih)+'"/>';
+      g += '<polyline class="linha" points="'+pts.join(' ')+'"/>';
+    }
+    if(s.length <= 62){
+      s.forEach(function(p,i){
+        g += '<circle class="ponto" cx="'+px(i).toFixed(1)+'" cy="'+py(p.visitas).toFixed(1)+'" r="'+(s.length>1 ? 2.6 : 4.5)+'"/>';
+      });
+    }
+
+    var passo = Math.max(1, Math.ceil(s.length/7));
+    s.forEach(function(p,i){
+      if(i % passo !== 0 && i !== s.length-1) return;
+      g += '<text class="rot" x="'+px(i).toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle">'+esc(diaCurto(p.dia))+'</text>';
+    });
+    return g + '</svg>';
+  }
+
+  /* ── exportar CSV ─────────────────────────────────────────────────────
+     Feito no próprio navegador: a base não passa por servidor nenhum para
+     virar arquivo. Ponto-e-vírgula e BOM porque é no Excel em português que
+     estes arquivos vão ser abertos. */
+  function csv(linhas){
+    return linhas.map(function(l){
+      return l.map(function(c){ return '"' + String(c==null?'':c).replace(/"/g,'""') + '"'; }).join(';');
+    }).join('\r\n');
+  }
+  function baixar(nome, texto){
+    try{
+      var b = new Blob(['\uFEFF' + texto], { type:'text/csv;charset=utf-8' });
+      var u = URL.createObjectURL(b);
+      var a = document.createElement('a');
+      a.href = u; a.download = nome;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ try{ URL.revokeObjectURL(u); }catch(e){} }, 400);
+    }catch(e){}
+  }
+  /* o selo viaja junto com o arquivo, na primeira linha: é fora da tela que
+     a regra costuma ser esquecida, e um CSV solto não tem cor nenhuma */
+  function exportar(nome, podeCampanha, cabecalho, linhas){
+    var aviso = '# ' + (podeCampanha === true ? SELO.pode : SELO.nao).toUpperCase();
+    baixar(nome, aviso + '\r\n' + csv([cabecalho].concat(linhas)));
   }
 
   /* ── porta ───────────────────────────────────────────────────────────── */
@@ -247,6 +418,29 @@
     });
   });
 
+  /* a última resposta do servidor: o CSV sai exatamente do que está na tela,
+     nunca de uma segunda chamada que pode vir diferente */
+  var ultimo = null;
+
+  $('csv-material').addEventListener('click', function(){
+    var lm = (ultimo && ultimo.leads_material) || {};
+    exportar('lionheart-baixaram-material.csv', lm.pode_campanha,
+      ['E-mail','Telefone','Nome','Material','Origem','Quando','Consentiu','Virou conta'],
+      (lm.lista||[]).map(function(x){
+        return [x.email, x.telefone||'', x.nome||'', x.material, x.origem||'(direto)',
+                x.quando||'', x.consentiu ? 'sim' : 'não', x.virou_conta ? 'sim' : 'não'];
+      }));
+  });
+  $('csv-abandonou').addEventListener('click', function(){
+    var ab = (ultimo && ultimo.abandonou) || {};
+    exportar('lionheart-abandonaram-compra.csv', ab.pode_campanha,
+      ['E-mail','Plano','Ciclo','Origem','Último clique','Vezes','Tem conta'],
+      (ab.lista||[]).map(function(x){
+        return [x.email, x.plano, x.ciclo, x.origem||'(direto)', x.quando||'',
+                x.tentativas||1, x.tem_conta ? 'sim' : 'não'];
+      }));
+  });
+
   function carregar(){
     $('conteudo').hidden = true; $('carregando').hidden = false; $('carregando').textContent = 'Buscando os números…';
     chamar('painel', { dias: dias }).then(function(res){
@@ -263,6 +457,7 @@
   }
 
   function desenhar(r){
+    ultimo = r;
     var ass = r.assinantes || {};
     var pagantes = (ass.preparacao||0) + (ass.consultoria||0) + (ass.especialista||0);
     $('k-pagantes').textContent = pagantes;
@@ -273,6 +468,32 @@
     var uso = r.uso || {};
     $('k-calc').textContent = (uso.calculos||0).toLocaleString('pt-BR');
     $('k-calc-sub').textContent = (uso.pessoas||0) + ' pessoa(s) usando';
+
+    /* dinheiro: o que entrou de fato no período, separado do que os planos
+       ativos prometem por mês (o MRR do cartão lá em cima) */
+    var din = r.dinheiro || {};
+    $('k-recebido').textContent   = reaisC(din.recebido);
+    $('k-pagamentos').textContent = numero(din.pagamentos);
+    $('k-ticket').textContent     = reaisC(din.ticket_medio);
+    var pp = din.por_plano || [], tp = $('t-planos'); tp.innerHTML = '';
+    if(!pp.length){ tp.innerHTML = '<tr><td colspan="4" class="vazio">Nenhum pagamento confirmado no período.</td></tr>'; }
+    pp.forEach(function(x){
+      tp.insertAdjacentHTML('beforeend', '<tr><td class="d">' + esc(x.plano) + '</td><td>' + esc(x.ciclo) + '</td><td>' + numero(x.pagamentos) + '</td><td>' + reaisC(x.valor) + '</td></tr>');
+    });
+
+    /* visitas por dia */
+    var serie = r.serie || [], soma = 0;
+    serie.forEach(function(x){ soma += Number(x.visitas)||0; });
+    $('g-total').textContent = numero(soma) + ' visita(s) no período';
+    $('grafico').innerHTML = grafico(serie);
+
+    /* de onde veio — ordenado por visitas */
+    var og = (r.origens || []).slice().sort(function(a,b){ return (b.visitas||0) - (a.visitas||0); });
+    var to = $('t-origens'); to.innerHTML = '';
+    if(!og.length){ to.innerHTML = '<tr><td colspan="6" class="vazio">Nenhuma visita no período.</td></tr>'; }
+    og.forEach(function(x){
+      to.insertAdjacentHTML('beforeend', '<tr><td class="d">' + esc(x.origem || '(direto)') + '</td><td>' + numero(x.visitas) + '</td><td>' + numero(x.ver_planos) + '</td><td>' + numero(x.demonstracao) + '</td><td>' + numero(x.abriu_compra) + '</td><td>' + numero(x.escolheu) + '</td></tr>');
+    });
 
     /* atenção */
     var at = r.atencao || [], tb = $('t-atencao'); tb.innerHTML = '';
@@ -286,18 +507,33 @@
     var base = 0; for(var i=0;i<f.length;i++){ if((f[i].qtd||0) > 0){ base = f[i].qtd; break; } }
     f.forEach(function(e, i){
       var q = e.qtd || 0, pct = base ? Math.round(q / base * 100) : 0;
-      var ant = i > 0 ? (f[i-1].qtd || 0) : 0, conv = (i > 0 && ant) ? Math.round(q / ant * 100) + '% da anterior' : '';
+      /* o percentual só aparece com amostra que o sustente — ver AMOSTRA_MIN */
+      var ant = i > 0 ? (f[i-1].qtd || 0) : 0;
+      var conv = (i > 0 && ant >= AMOSTRA_MIN) ? Math.round(q / ant * 100) + '% da anterior' : '';
       fx.insertAdjacentHTML('beforeend',
         '<div class="etapa"><div class="n">' + e.n + '</div>' +
         '<div class="barra"><i style="width:' + Math.max(pct, q ? 2 : 0) + '%"></i><b>' + esc(e.etapa) + '</b></div>' +
         '<div><div class="qtd">' + q + '</div><div class="pct">' + conv + '</div></div></div>');
     });
 
-    /* abandonou */
-    var ab = r.abandonou || [], ta = $('t-abandonou'); ta.innerHTML = '';
-    if(!ab.length){ ta.innerHTML = '<tr><td colspan="6" class="vazio">Ninguém parou no meio do caminho neste período.</td></tr>'; }
-    ab.forEach(function(x){
-      ta.insertAdjacentHTML('beforeend', '<tr><td class="d">' + esc(x.email) + '</td><td>' + esc(x.plano) + '</td><td>' + esc(x.ciclo) + '</td><td>' + dataHora(x.quando) + '</td><td>' + (x.tentativas||1) + '</td><td>' + (x.tem_conta ? '<span class="selo ok">tem conta</span>' : '<span class="selo nao">sem conta</span>') + '</td></tr>');
+    /* ── as duas bases, nunca uma só ─────────────────────────────────────
+       O selo de cada tabela vem do servidor (pode_campanha). Quem baixou
+       material consentiu e o texto está guardado; quem abandonou a compra
+       não autorizou comunicação nenhuma — só a retomada da própria compra. */
+    var lm = r.leads_material || {}, lml = lm.lista || [];
+    selar($('selo-material'), lm.pode_campanha);
+    var tm = $('t-material'); tm.innerHTML = '';
+    if(!lml.length){ tm.innerHTML = '<tr><td colspan="7" class="vazio">Ninguém baixou material neste período.</td></tr>'; }
+    lml.forEach(function(x){
+      tm.insertAdjacentHTML('beforeend', '<tr><td class="d">' + esc(x.email) + '</td><td>' + esc(x.telefone || '—') + '</td><td>' + esc(x.nome || '—') + '</td><td>' + esc(x.material) + '</td><td>' + esc(x.origem || '(direto)') + '</td><td>' + dataHora(x.quando) + '</td><td>' + (x.virou_conta ? '<span class="selo ok">virou conta</span>' : '<span class="selo nao">ainda não</span>') + '</td></tr>');
+    });
+
+    var ab = r.abandonou || {}, abl = ab.lista || [];
+    selar($('selo-abandonou'), ab.pode_campanha);
+    var ta = $('t-abandonou'); ta.innerHTML = '';
+    if(!abl.length){ ta.innerHTML = '<tr><td colspan="7" class="vazio">Ninguém parou no meio do caminho neste período.</td></tr>'; }
+    abl.forEach(function(x){
+      ta.insertAdjacentHTML('beforeend', '<tr><td class="d">' + esc(x.email) + '</td><td>' + esc(x.plano) + '</td><td>' + esc(x.ciclo) + '</td><td>' + esc(x.origem || '(direto)') + '</td><td>' + dataHora(x.quando) + '</td><td>' + (x.tentativas||1) + '</td><td>' + (x.tem_conta ? '<span class="selo ok">tem conta</span>' : '<span class="selo nao">sem conta</span>') + '</td></tr>');
     });
 
     /* uso */

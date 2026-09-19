@@ -575,7 +575,11 @@
       method:'POST', headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({
         email: $('email').value.trim().toLowerCase(),
-        plano: estado.plano, ciclo: estado.ciclo, aceite: true
+        plano: estado.plano, ciclo: estado.ciclo, aceite: true,
+        /* de onde a pessoa veio, do PRIMEIRO toque (o farol guarda no
+           navegador). Se o farol não carregou, vai nulo e a compra segue:
+           medir nunca pode impedir uma venda. */
+        campanha: window.LH_CAMPANHA || null
       })
     })
     .then(function(r){ return r.json(); })

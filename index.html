@@ -746,7 +746,7 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
        font-size:.92rem;color:var(--cinza);display:flex;align-items:center;gap:16px;flex-wrap:wrap">
       <span style="flex:1;min-width:230px">Reconheceu a dor do seu cliente aqui? Em 20 minutos a
         gente mostra a conta rodando com um caso da sua carteira.</span>
-      <a href="https://wa.me/5553999823848?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Lionheart%20e%20gostaria%20de%20agendar%20uma%20demonstra%C3%A7%C3%A3o." target="_blank" rel="noopener"
+      <a data-lh="demo" href="https://wa.me/5553999823848?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Lionheart%20e%20gostaria%20de%20agendar%20uma%20demonstra%C3%A7%C3%A3o." target="_blank" rel="noopener"
          style="text-decoration:none;border:1px solid rgba(201,162,39,.5);color:var(--ouro-cl);
          font-family:'Sora',sans-serif;font-size:.68rem;font-weight:500;letter-spacing:.14em;
          text-transform:uppercase;padding:11px 18px;white-space:nowrap">Agendar demonstração</a>
@@ -967,7 +967,7 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
     </div>
     <div class="conversa revela">
       <div class="txt"><h3>Ficou com dúvida?</h3></div>
-      <a href="https://wa.me/5553999823848?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Lionheart%20e%20gostaria%20de%20agendar%20uma%20demonstra%C3%A7%C3%A3o." target="_blank" rel="noopener">Agendar demonstração</a>
+      <a data-lh="demo" href="https://wa.me/5553999823848?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Lionheart%20e%20gostaria%20de%20agendar%20uma%20demonstra%C3%A7%C3%A3o." target="_blank" rel="noopener">Agendar demonstração</a>
     </div>
 
   </div>
@@ -1174,7 +1174,7 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
 
 <div class="flutua-caixa" id="flutua">
   <a class="flutua" href="assinar.html">Ver planos</a>
-  <a class="flutua-2" href="https://wa.me/5553999823848?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Lionheart%20e%20gostaria%20de%20agendar%20uma%20demonstra%C3%A7%C3%A3o." target="_blank" rel="noopener">Na dúvida? Agende uma demonstração</a>
+  <a class="flutua-2" data-lh="demo" href="https://wa.me/5553999823848?text=Ol%C3%A1%21%20Vim%20pelo%20site%20da%20Lionheart%20e%20gostaria%20de%20agendar%20uma%20demonstra%C3%A7%C3%A3o." target="_blank" rel="noopener">Na dúvida? Agende uma demonstração</a>
 </div>
 
 <script>
@@ -1475,7 +1475,11 @@ body[data-perfil="contador"] li.so-cont,body[data-perfil="advogado"] li.so-adv{d
       body: JSON.stringify({
         email: em,
         telefone: document.getElementById('mt-tel').value.trim() || null,
-        material: escolhido.slug, consentiu: true, texto: TEXTO
+        material: escolhido.slug, consentiu: true, texto: TEXTO,
+        /* de onde a pessoa veio, do PRIMEIRO toque (o farol guarda no
+           navegador). Se o farol não carregou, vai nulo e o cadastro segue:
+           medir nunca pode impedir um cadastro. */
+        campanha: window.LH_CAMPANHA || null
       })
     }).then(function(r){ return r.json(); }).then(function(d){
       bt.disabled = false; bt.textContent = 'Abrir e receber';

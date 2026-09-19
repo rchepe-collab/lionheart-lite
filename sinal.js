@@ -1,7 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   ★ LIONHEART · FAROL DO FUNIL · 19/09/2026
-   Medir a jornada do visitante: quem chegou, quem quis ver os planos, quem
-   abriu a compra, quem escolheu um plano e quem desistiu antes de aceitar.
+   ★ LIONHEART · FAROL DO FUNIL · 19/09/2026 (v2)
+   Medir a jornada do visitante: quem chegou, de onde veio, quem quis ver os
+   planos, quem pediu demonstração, quem abriu a compra, quem escolheu um plano
+   e quem desistiu antes de aceitar.
 
    PRIVACIDADE POR DESENHO (LGPD):
    · o visitante é um número ALEATÓRIO gerado no próprio navegador e guardado
@@ -25,6 +26,7 @@
 
   var URL_SINAL = 'https://dilrjxsbcejcgprajayo.supabase.co/functions/v1/sinal';
   var CHAVE = 'lh_v';
+  var CHAVE_CAMP = 'lh_camp';
 
   /* id aleatório do navegador — 16 caracteres, sem relação com a pessoa */
   function visitante() {
@@ -45,15 +47,74 @@
     }
   }
 
-  /* de onde veio o clique — utm_source, ou o parâmetro curto ?de= */
-  function campanha() {
+  /* ── de onde veio: PRIMEIRO TOQUE, guardado no navegador ────────────────
+     A pessoa chega em /?de=linkedin, navega para /assinar.html (que não tem
+     parâmetro nenhum) e compra ali. Se a origem fosse lida da URL atual, o
+     crédito se perderia exatamente no momento que importa — a venda.
+     Por isso: grava na primeira visita e NUNCA sobrescreve. É a mesma regra
+     que o banco aplica do outro lado, primeiro toque vence; se as duas pontas
+     não usarem a mesma regra, o funil mede uma coisa e o dinheiro outra. */
+  function daUrl() {
     try {
       var p = new w.URLSearchParams(w.location.search);
-      return p.get('utm_source') || p.get('de') || null;
+      var k = p.get('utm_source') || p.get('de');
+      return k ? String(k).slice(0, 60) : null;
     } catch (e) { return null; }
   }
 
+  function campanha() {
+    var nova = daUrl();
+    try {
+      var guardada = w.localStorage.getItem(CHAVE_CAMP);
+      if (guardada) return guardada;                 /* primeiro toque vence */
+      if (nova) { w.localStorage.setItem(CHAVE_CAMP, nova); return nova; }
+      return null;
+    } catch (e) {
+      /* sem localStorage: degrada para a URL atual, que é melhor que nada */
+      return nova;
+    }
+  }
+
   var VIS = null;
+  var CAMP = null;
+  try { CAMP = campanha(); } catch (e) { CAMP = null; }
+  /* as páginas leem daqui para mandar a origem junto do cadastro e da compra */
+  w.LH_CAMPANHA = CAMP;
+
+  /* ── o envio ────────────────────────────────────────────────────────────
+     fetch com keepalive é o CAMINHO PRINCIPAL; sendBeacon é a reserva.
+
+     A ordem aqui é uma correção, não gosto: sendBeacon devolve true quando o
+     navegador ENFILEIRA o pedido, não quando o servidor recebe. Como ele
+     sempre enfileira, o 'if (ok) return' fazia o fetch de reserva ser código
+     morto — justamente na situação para a qual foi escrito. Foi assim que a
+     falha de CORS de 19/09 produziu silêncio absoluto em vez de cair no plano
+     B. keepalive sobrevive à troca de página igual ao beacon, e ao contrário
+     dele deixa o erro aparecer. NÃO INVERTER ESTA ORDEM. */
+  var TEM_KEEPALIVE = (function () {
+    try { return !!w.Request && 'keepalive' in new w.Request('/'); } catch (e) { return false; }
+  })();
+
+  function porFetch(txt) {
+    w.fetch(URL_SINAL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: txt,
+      keepalive: true
+    })['catch'](function () {});
+  }
+
+  function enviar(txt) {
+    try {
+      if (w.fetch && TEM_KEEPALIVE) { porFetch(txt); return; }
+      /* reserva: navegador sem keepalive */
+      if (w.navigator && w.navigator.sendBeacon) {
+        w.navigator.sendBeacon(URL_SINAL, new Blob([txt], { type: 'application/json' }));
+        return;
+      }
+      if (w.fetch) porFetch(txt);
+    } catch (e) { /* silêncio: é um farol, não uma API */ }
+  }
 
   /* LH_SINAL(evento, extras) — extras: {m: e-mail, pl: plano, c: ciclo} */
   function sinal(evento, extras) {
@@ -63,29 +124,14 @@
         v: VIS,
         e: evento,
         p: (d.location.pathname || '/').slice(0, 120),
-        k: campanha()
+        k: CAMP
       };
       if (extras) {
         if (extras.m) corpo.m = extras.m;
         if (extras.pl) corpo.pl = extras.pl;
         if (extras.c) corpo.c = extras.c;
       }
-      var txt = JSON.stringify(corpo);
-
-      /* sendBeacon sobrevive ao clique que troca de página; o fetch é o reserva */
-      if (w.navigator && w.navigator.sendBeacon) {
-        var ok = w.navigator.sendBeacon(URL_SINAL,
-          new Blob([txt], { type: 'application/json' }));
-        if (ok) return;
-      }
-      if (w.fetch) {
-        w.fetch(URL_SINAL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: txt,
-          keepalive: true
-        })['catch'](function () {});
-      }
+      enviar(JSON.stringify(corpo));
     } catch (e) { /* silêncio: é um farol, não uma API */ }
   }
 
@@ -101,7 +147,14 @@
     /* cliques que valem: só os que dizem intenção */
     d.addEventListener('click', function (ev) {
       try {
-        var a = ev.target && ev.target.closest ? ev.target.closest('a') : null;
+        var alvo = ev.target;
+        if (!alvo || !alvo.closest) return;
+        /* o botão de demonstração é achado por ATRIBUTO, não por href: todo
+           link de zap da página tem o mesmo endereço, e contar os dois como
+           'site:whatsapp' mistura "quero uma demo" com "tenho uma dúvida" —
+           apaga justamente a intenção que vale dinheiro. */
+        if (alvo.closest('[data-lh="demo"]')) { sinal('site:demonstracao'); return; }
+        var a = alvo.closest('a');
         if (!a) return;
         var href = a.getAttribute('href') || '';
         if (href.indexOf('wa.me') >= 0) sinal('site:whatsapp');
@@ -109,5 +162,27 @@
         else if (href.indexOf('materiais/') >= 0) sinal('site:material');
       } catch (e) {}
     }, true);
+
+    /* ★ e-mail digitado na página de compra.
+       UMA VEZ POR PÁGINA e no blur, nunca a cada tecla: farol que escuta
+       tecla é registrador de teclas, que é exatamente o que este arquivo
+       promete não ser. E só com o campo válido — meio e-mail não é intenção.
+       A pessoa digitou por vontade própria num campo rotulado "e-mail de
+       acesso", então é coleta consentida pelo contexto. */
+    if (naCompra) {
+      var campo = d.getElementById('email');
+      if (campo) {
+        var jaContou = false;
+        campo.addEventListener('blur', function () {
+          try {
+            if (jaContou) return;
+            var em = (campo.value || '').trim();
+            if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return;
+            jaContou = true;
+            sinal('assinar:digitou_email', { m: em.toLowerCase() });
+          } catch (e) {}
+        });
+      }
+    }
   } catch (e) {}
 })(window, document);
