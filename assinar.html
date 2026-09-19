@@ -503,6 +503,9 @@
     Array.prototype.forEach.call($('ciclos').querySelectorAll('.opcao'), function(b){
       b.setAttribute('aria-pressed', String(b.dataset.ciclo === ciclo));
     });
+    /* ★ farol: escolheu plano e periodicidade. Ainda não aceitou, ainda não pagou —
+       é a etapa que estava invisível entre "abriu a página" e "pediu o link". */
+    try{ if(window.LH_SINAL) window.LH_SINAL('assinar:escolheu', { pl: estado.plano, c: ciclo }); }catch(e){}
     conferir();
   }
 
@@ -542,6 +545,27 @@
   $('email').addEventListener('input', function(){ dizer(''); conferir(); });
   $('aceite').addEventListener('change', function(){ dizer(''); conferir(); });
 
+  /* ★ farol: saiu da página com plano escolhido e sem pedir o link.
+     Este é o buraco que hoje é invisível — quem chegou perto e desistiu antes
+     do aceite não deixa rastro nenhum. Quem aceita já cai no tv_termo_aceite.
+     visibilitychange em vez de unload: é o único que o celular dispara ao
+     trocar de aplicativo, que é justamente como a maioria abandona. */
+  (function(){
+    var avisado = false;
+    document.addEventListener('visibilitychange', function(){
+      try{
+        if(document.visibilityState !== 'hidden' || avisado) return;
+        if(!estado.ciclo) return;                      /* nem escolheu: não é desistência */
+        if($('seguir') && $('seguir').textContent !== 'Registrando…'
+           && !$('aceite').checked){
+          avisado = true;
+          if(window.LH_SINAL) window.LH_SINAL('assinar:recusou_termos',
+            { pl: estado.plano, c: estado.ciclo });
+        }
+      }catch(e){}
+    });
+  })();
+
   $('seguir').addEventListener('click', function(){
     var btn = $('seguir');
     if(btn.disabled) return;
@@ -573,5 +597,8 @@
   });
 })();
 </script>
+
+<!-- ★ farol do funil · carregado por último e com defer: medir nunca atrasa a página -->
+<script src="sinal.js" defer></script>
 </body>
 </html>
