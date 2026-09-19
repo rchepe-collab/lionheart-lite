@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Painel · Lionheart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Sora:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════════════════════════════════
+     ★ PAINEL DO DONO · 19/09/2026
+     A ferramenta é de uso; esta página é de gestão. Vive fora do CORE de
+     propósito: quem usa a ferramenta não tropeça nela, e quem dirige o negócio
+     não precisa entrar na ferramenta para ver o negócio.
+
+     O QUE ELA NÃO TEM, E POR QUÊ:
+     · nenhuma chave secreta — o login é o mesmo do CORE, e o servidor só
+       responde para quem tem admin_papel = 'dono' (fn_painel confere);
+     · nenhum número escrito aqui — tudo vem do banco, senão um dia o painel
+       mostra um total e a base tem outro;
+     · nenhuma biblioteca externa — carrega em qualquer 4G, e não quebra
+       quando um CDN some.
+     ═══════════════════════════════════════════════════════════════════════ */
+  :root{
+    --breu:#080808; --breu-alto:#0e0e0f; --carvao:#141415;
+    --ouro:#c9a227; --ouro-claro:#e6c766; --ouro-fosco:#8f7015;
+    --creme:#f2ede3; --pedra:#8e8a82; --pedra-funda:#5d5a55; --linho:#cfc7b8;
+    --verde:#10b981; --alerta:#e07a7a; --ambar:#e8b020;
+  }
+  *{ box-sizing:border-box }
+  html,body{ margin:0; padding:0 }
+  body{
+    background:var(--breu); color:var(--creme);
+    font-family:'Sora',system-ui,-apple-system,sans-serif;
+    font-size:15px; font-weight:300; line-height:1.6;
+    -webkit-font-smoothing:antialiased; min-height:100vh;
+  }
+  a{ color:var(--ouro) }
+  .miolo{ max-width:1100px; margin:0 auto; padding:22px 16px 60px }
+
+  /* cabeçalho */
+  .topo{ display:flex; align-items:baseline; justify-content:space-between; gap:14px; flex-wrap:wrap;
+         border-bottom:1px solid rgba(201,162,39,.22); padding-bottom:14px; margin-bottom:22px }
+  .topo h1{ font-family:'Cormorant Garamond',serif; font-weight:600; font-size:2rem; margin:0; color:var(--creme); letter-spacing:.01em }
+  .topo h1 span{ color:var(--ouro) }
+  .topo .quem{ font-size:.82rem; color:var(--pedra) }
+  .topo .quem b{ color:var(--linho); font-weight:500 }
+  .topo button{ background:none; border:1px solid rgba(201,162,39,.4); color:var(--ouro); border-radius:8px;
+                padding:6px 12px; font:inherit; font-size:.78rem; cursor:pointer }
+
+  /* período */
+  .periodo{ display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap; align-items:center }
+  .periodo span{ font-size:.74rem; color:var(--pedra); letter-spacing:.08em; text-transform:uppercase; margin-right:6px }
+  .periodo button{ background:var(--carvao); border:1px solid rgba(255,255,255,.08); color:var(--linho);
+                   border-radius:7px; padding:6px 12px; font:inherit; font-size:.8rem; cursor:pointer }
+  .periodo button[aria-pressed="true"]{ background:linear-gradient(135deg,#d9b53a,#c9a227); color:#0c1628; border-color:var(--ouro); font-weight:600 }
+
+  /* cartões */
+  .grade{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin-bottom:22px }
+  .cartao{ background:var(--carvao); border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:16px 18px }
+  .cartao .rotulo{ font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; color:var(--pedra); margin-bottom:6px }
+  .cartao .valor{ font-family:'Cormorant Garamond',serif; font-size:2.3rem; font-weight:600; line-height:1; color:var(--creme) }
+  .cartao .valor.ouro{ color:var(--ouro-claro) }
+  .cartao .sub{ font-size:.78rem; color:var(--pedra); margin-top:6px }
+
+  /* seções */
+  section{ margin-bottom:28px }
+  h2{ font-family:'Cormorant Garamond',serif; font-weight:600; font-size:1.45rem; margin:0 0 4px; color:var(--creme) }
+  .nota{ font-size:.82rem; color:var(--pedra); margin:0 0 12px; max-width:70ch }
+
+  /* funil */
+  .funil{ display:flex; flex-direction:column; gap:7px }
+  .etapa{ display:grid; grid-template-columns:28px 1fr auto; gap:12px; align-items:center;
+          background:var(--carvao); border-radius:9px; padding:9px 14px; border:1px solid rgba(255,255,255,.05) }
+  .etapa .n{ font-family:'Cormorant Garamond',serif; font-size:1.3rem; color:var(--ouro-fosco); text-align:center }
+  .etapa .barra{ position:relative; height:24px; background:rgba(255,255,255,.04); border-radius:5px; overflow:hidden }
+  .etapa .barra i{ position:absolute; inset:0 auto 0 0; background:linear-gradient(90deg,rgba(201,162,39,.55),rgba(201,162,39,.25)); border-radius:5px }
+  .etapa .barra b{ position:relative; font-weight:400; font-size:.85rem; padding:0 10px; line-height:24px; color:var(--creme) }
+  .etapa .qtd{ font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:600; color:var(--ouro-claro); min-width:48px; text-align:right }
+  .etapa .pct{ font-size:.72rem; color:var(--pedra); text-align:right }
+
+  /* tabelas */
+  table{ width:100%; border-collapse:collapse; font-size:.86rem }
+  th{ text-align:left; font-weight:500; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--pedra);
+      padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.08) }
+  td{ padding:9px 10px; border-bottom:1px solid rgba(255,255,255,.04); color:var(--linho); vertical-align:top }
+  td.d{ color:var(--creme) }
+  .vazio{ color:var(--pedra-funda); font-style:italic; padding:14px 10px }
+  .selo{ display:inline-block; font-size:.68rem; padding:2px 8px; border-radius:20px; letter-spacing:.04em }
+  .selo.ok{ background:rgba(16,185,129,.14); color:var(--verde) }
+  .selo.nao{ background:rgba(224,122,122,.14); color:var(--alerta) }
+  .selo.av{ background:rgba(232,176,32,.14); color:var(--ambar) }
+  .rolar{ overflow-x:auto }
+
+  /* login */
+  .porta{ max-width:380px; margin:12vh auto 0; background:var(--carvao); border:1px solid rgba(201,162,39,.25);
+          border-radius:14px; padding:28px 26px }
+  .porta h1{ font-family:'Cormorant Garamond',serif; font-weight:600; font-size:1.8rem; margin:0 0 4px }
+  .porta p{ font-size:.84rem; color:var(--pedra); margin:0 0 18px }
+  .porta label{ display:block; font-size:.74rem; letter-spacing:.08em; text-transform:uppercase; color:var(--pedra); margin:12px 0 5px }
+  .porta input{ width:100%; background:var(--breu-alto); border:1px solid rgba(255,255,255,.1); border-radius:8px;
+                padding:10px 12px; color:var(--creme); font:inherit; font-size:.95rem }
+  .porta input:focus{ outline:none; border-color:var(--ouro) }
+  .porta button{ width:100%; margin-top:18px; background:linear-gradient(135deg,#d9b53a,#c9a227); border:0; border-radius:9px;
+                 padding:12px; color:#0c1628; font:inherit; font-weight:600; font-size:.95rem; cursor:pointer }
+  .porta button:disabled{ opacity:.55; cursor:default }
+  .aviso{ min-height:20px; font-size:.82rem; color:var(--alerta); margin-top:10px }
+
+  .carregando{ color:var(--pedra); font-size:.85rem; padding:30px 0; text-align:center }
+  [hidden]{ display:none !important }
+  @media (max-width:640px){
+    .etapa{ grid-template-columns:22px 1fr auto; gap:8px; padding:8px 10px }
+    .cartao .valor{ font-size:1.9rem }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ PORTA ═══ -->
+<div id="porta" class="porta" hidden>
+  <h1>Painel <span style="color:var(--ouro)">Lionheart</span></h1>
+  <p>O mesmo e-mail e senha do CORE. Só a direção entra aqui.</p>
+  <label for="email">E-mail</label>
+  <input id="email" type="email" autocomplete="username" inputmode="email">
+  <label for="senha">Senha</label>
+  <input id="senha" type="password" autocomplete="current-password">
+  <button id="entrar" type="button">Entrar</button>
+  <div id="aviso-porta" class="aviso" aria-live="polite"></div>
+</div>
+
+<!-- ═══ PAINEL ═══ -->
+<div id="painel" class="miolo" hidden>
+  <div class="topo">
+    <h1>Painel <span>Lionheart</span></h1>
+    <div class="quem"><b id="quem"></b> · <button id="sair" type="button">Sair</button></div>
+  </div>
+
+  <div class="periodo" role="group" aria-label="Período">
+    <span>Período</span>
+    <button type="button" data-dias="7">7 dias</button>
+    <button type="button" data-dias="30" aria-pressed="true">30 dias</button>
+    <button type="button" data-dias="90">90 dias</button>
+    <button type="button" data-dias="365">1 ano</button>
+  </div>
+
+  <div id="carregando" class="carregando">Buscando os números…</div>
+
+  <div id="conteudo" hidden>
+    <div class="grade">
+      <div class="cartao"><div class="rotulo">Assinantes pagantes</div><div class="valor ouro" id="k-pagantes">—</div><div class="sub" id="k-pagantes-sub"></div></div>
+      <div class="cartao"><div class="rotulo">Receita mensal recorrente</div><div class="valor ouro" id="k-mrr">—</div><div class="sub">soma dos planos ativos, no preço mensal</div></div>
+      <div class="cartao"><div class="rotulo">Contas no Livre</div><div class="valor" id="k-livre">—</div><div class="sub">viram o Diagnóstico, ainda não compraram</div></div>
+      <div class="cartao"><div class="rotulo">Cortesias</div><div class="valor" id="k-cortesia">—</div><div class="sub">parceiros e conta interna</div></div>
+      <div class="cartao"><div class="rotulo">Cálculos no período</div><div class="valor" id="k-calc">—</div><div class="sub" id="k-calc-sub"></div></div>
+    </div>
+
+    <section id="s-atencao">
+      <h2>O que pede decisão hoje</h2>
+      <p class="nota">A mesma lista que chega por e-mail às 9h. Vazia é o normal.</p>
+      <div class="rolar"><table><thead><tr><th>Conta</th><th>Plano</th><th>Validade</th><th>Situação</th></tr></thead><tbody id="t-atencao"></tbody></table></div>
+    </section>
+
+    <section>
+      <h2>Funil do período</h2>
+      <p class="nota">Cada etapa conta pessoas distintas. As quatro primeiras vêm do farol do site (visitantes anônimos); as outras vêm de quem se identificou. As barras são proporcionais à primeira etapa que tiver número.</p>
+      <div class="funil" id="funil"></div>
+    </section>
+
+    <section>
+      <h2>Pegou o link do Asaas e não pagou</h2>
+      <p class="nota">Aceitou os Termos, recebeu o link do pagamento e parou ali. É a lista de quem está a um passo — vale um contato.</p>
+      <div class="rolar"><table><thead><tr><th>E-mail</th><th>Plano</th><th>Ciclo</th><th>Último clique</th><th>Vezes</th><th>Conta</th></tr></thead><tbody id="t-abandonou"></tbody></table></div>
+    </section>
+
+    <section>
+      <h2>O que mais rodou</h2>
+      <p class="nota">As dez telas mais usadas no período. Diz onde a ferramenta entrega valor de verdade — e o que ninguém abre.</p>
+      <div class="rolar"><table><thead><tr><th>Tela</th><th>Vezes</th></tr></thead><tbody id="t-uso"></tbody></table></div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var BASE  = 'https://dilrjxsbcejcgprajayo.supabase.co/functions/v1';
+  var CHAVE = 'lh_token';           /* a mesma do CORE: entrou num, entrou no outro */
+  var $ = function(id){ return document.getElementById(id); };
+  var dias = 30;
+
+  /* ── ferramentas ─────────────────────────────────────────────────────── */
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function reais(v){ v = Number(v)||0; return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0}); }
+  function data(d){ if(!d) return '—'; var p=String(d).slice(0,10).split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+  function dataHora(d){ if(!d) return '—'; var x=new Date(d); return isNaN(x)?String(d):x.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+  function token(){ try{ return localStorage.getItem(CHAVE)||''; }catch(e){ return ''; } }
+  function guardar(t){ try{ localStorage.setItem(CHAVE, t); }catch(e){} }
+  function esquecer(){ try{ localStorage.removeItem(CHAVE); }catch(e){} }
+
+  function chamar(calc, entradas){
+    return fetch(BASE + '/calcular', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + token() },
+      body: JSON.stringify({ calc: calc, entradas: entradas || {} })
+    }).then(function(r){ return r.json(); });
+  }
+
+  /* ── porta ───────────────────────────────────────────────────────────── */
+  function mostrarPorta(msg){
+    $('painel').hidden = true; $('porta').hidden = false;
+    $('aviso-porta').textContent = msg || '';
+    $('entrar').disabled = false; $('entrar').textContent = 'Entrar';
+  }
+  function entrar(){
+    var email = ($('email').value||'').trim().toLowerCase(), senha = $('senha').value||'';
+    if(!email || !senha){ $('aviso-porta').textContent = 'Preencha e-mail e senha.'; return; }
+    $('entrar').disabled = true; $('entrar').textContent = 'Entrando…'; $('aviso-porta').textContent = '';
+    fetch(BASE + '/login', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email: email, senha: senha }) })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d || !d.ok || !d.token){ mostrarPorta((d && d.motivo) || 'Não foi possível entrar.'); return; }
+      if(d.admin !== 'dono'){ mostrarPorta('Esta página é só da direção.'); return; }
+      guardar(d.token); $('senha').value = '';
+      abrir(d.nome || email);
+    })
+    .catch(function(){ mostrarPorta('Sem conexão com o servidor.'); });
+  }
+  $('entrar').addEventListener('click', entrar);
+  $('senha').addEventListener('keydown', function(e){ if(e.key === 'Enter') entrar(); });
+  $('sair').addEventListener('click', function(){ esquecer(); mostrarPorta(''); });
+
+  /* ── painel ──────────────────────────────────────────────────────────── */
+  function abrir(nome){
+    $('porta').hidden = true; $('painel').hidden = false;
+    $('quem').textContent = nome || '';
+    carregar();
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.periodo button'), function(b){
+    b.addEventListener('click', function(){
+      dias = parseInt(b.getAttribute('data-dias'), 10) || 30;
+      Array.prototype.forEach.call(document.querySelectorAll('.periodo button'), function(x){ x.setAttribute('aria-pressed', String(x===b)); });
+      carregar();
+    });
+  });
+
+  function carregar(){
+    $('conteudo').hidden = true; $('carregando').hidden = false; $('carregando').textContent = 'Buscando os números…';
+    chamar('painel', { dias: dias }).then(function(res){
+      if(!res || !res.ok){
+        var m = (res && (res.motivo || (res.resultado && res.resultado.motivo))) || 'Sem resposta.';
+        if(res && (res.recusa === 'identidade')){ esquecer(); mostrarPorta('Sessão expirada. Entre de novo.'); return; }
+        $('carregando').textContent = m; return;
+      }
+      var r = res.resultado || {};
+      if(r.ok === false){ esquecer(); mostrarPorta(r.motivo || 'Esta página é só da direção.'); return; }
+      desenhar(r);
+      $('carregando').hidden = true; $('conteudo').hidden = false;
+    }).catch(function(){ $('carregando').textContent = 'Sem conexão com o servidor.'; });
+  }
+
+  function desenhar(r){
+    var ass = r.assinantes || {};
+    var pagantes = (ass.preparacao||0) + (ass.consultoria||0) + (ass.especialista||0);
+    $('k-pagantes').textContent = pagantes;
+    $('k-pagantes-sub').textContent = 'Adequação ' + (ass.preparacao||0) + ' · Consultoria ' + (ass.consultoria||0) + ' · Especialista ' + (ass.especialista||0);
+    $('k-mrr').textContent = reais(r.receita_mensal);
+    $('k-livre').textContent = ass.livre || 0;
+    $('k-cortesia').textContent = (ass.parceiro||0) + (ass.core||0);
+    var uso = r.uso || {};
+    $('k-calc').textContent = (uso.calculos||0).toLocaleString('pt-BR');
+    $('k-calc-sub').textContent = (uso.pessoas||0) + ' pessoa(s) usando';
+
+    /* atenção */
+    var at = r.atencao || [], tb = $('t-atencao'); tb.innerHTML = '';
+    if(!at.length){ tb.innerHTML = '<tr><td colspan="4" class="vazio">Nada pendente. Bom sinal.</td></tr>'; }
+    at.forEach(function(a){
+      tb.insertAdjacentHTML('beforeend', '<tr><td class="d">' + esc(a.empresa) + '</td><td>' + esc(a.plano||'—') + '</td><td>' + data(a.valido_ate) + '</td><td><span class="selo av">' + esc(a.aviso) + '</span></td></tr>');
+    });
+
+    /* funil */
+    var f = r.funil || [], fx = $('funil'); fx.innerHTML = '';
+    var base = 0; for(var i=0;i<f.length;i++){ if((f[i].qtd||0) > 0){ base = f[i].qtd; break; } }
+    f.forEach(function(e, i){
+      var q = e.qtd || 0, pct = base ? Math.round(q / base * 100) : 0;
+      var ant = i > 0 ? (f[i-1].qtd || 0) : 0, conv = (i > 0 && ant) ? Math.round(q / ant * 100) + '% da anterior' : '';
+      fx.insertAdjacentHTML('beforeend',
+        '<div class="etapa"><div class="n">' + e.n + '</div>' +
+        '<div class="barra"><i style="width:' + Math.max(pct, q ? 2 : 0) + '%"></i><b>' + esc(e.etapa) + '</b></div>' +
+        '<div><div class="qtd">' + q + '</div><div class="pct">' + conv + '</div></div></div>');
+    });
+
+    /* abandonou */
+    var ab = r.abandonou || [], ta = $('t-abandonou'); ta.innerHTML = '';
+    if(!ab.length){ ta.innerHTML = '<tr><td colspan="6" class="vazio">Ninguém parou no meio do caminho neste período.</td></tr>'; }
+    ab.forEach(function(x){
+      ta.insertAdjacentHTML('beforeend', '<tr><td class="d">' + esc(x.email) + '</td><td>' + esc(x.plano) + '</td><td>' + esc(x.ciclo) + '</td><td>' + dataHora(x.quando) + '</td><td>' + (x.tentativas||1) + '</td><td>' + (x.tem_conta ? '<span class="selo ok">tem conta</span>' : '<span class="selo nao">sem conta</span>') + '</td></tr>');
+    });
+
+    /* uso */
+    var top = (uso.top || []), tu = $('t-uso'); tu.innerHTML = '';
+    if(!top.length){ tu.innerHTML = '<tr><td colspan="2" class="vazio">Nenhum cálculo no período.</td></tr>'; }
+    top.forEach(function(t){ tu.insertAdjacentHTML('beforeend', '<tr><td class="d">' + esc(t.calc) + '</td><td>' + t.vezes + '</td></tr>'); });
+  }
+
+  /* ── começo: já tem sessão? ──────────────────────────────────────────── */
+  if(token()){
+    fetch(BASE + '/login', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'verificar', token: token() }) })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d && d.ok && d.admin === 'dono') abrir(d.nome);
+      else { esquecer(); mostrarPorta(d && d.ok ? 'Esta página é só da direção.' : ''); }
+    }).catch(function(){ mostrarPorta(''); });
+  } else {
+    mostrarPorta('');
+  }
+})();
+</script>
+</body>
+</html>
