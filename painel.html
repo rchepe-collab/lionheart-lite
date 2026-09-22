@@ -129,6 +129,16 @@
                  padding:12px; color:#0c1628; font:inherit; font-weight:600; font-size:.95rem; cursor:pointer }
   .porta button:disabled{ opacity:.55; cursor:default }
   .aviso{ min-height:20px; font-size:.82rem; color:var(--alerta); margin-top:10px }
+  .aviso.ok{ color:var(--verde) }
+  /* esqueci minha senha: os links são botões sem cara de botão */
+  .porta button.elo{ width:auto; margin:10px 0 0; padding:0; background:none; border:0; border-radius:0;
+                     color:var(--pedra); font-weight:300; font-size:.8rem; text-decoration:underline }
+  .porta button.elo.ouro{ color:var(--ouro); text-decoration:none; font-weight:500 }
+  .porta .centro{ text-align:center }
+  .porta h2{ font-family:'Cormorant Garamond',serif; font-weight:600; font-size:1.35rem; margin:0 0 4px }
+  .porta .info{ font-size:.82rem; color:var(--linho); background:rgba(16,185,129,.07); border:1px solid rgba(16,185,129,.28);
+                border-radius:8px; padding:10px 12px; margin:0 0 6px }
+  #rec-codigo{ letter-spacing:.3em; font-size:1.05rem }
 
   .carregando{ color:var(--pedra); font-size:.85rem; padding:30px 0; text-align:center }
   [hidden]{ display:none !important }
@@ -143,13 +153,41 @@
 <!-- ═══ PORTA ═══ -->
 <div id="porta" class="porta" hidden>
   <h1>Painel <span style="color:var(--ouro)">Lionheart</span></h1>
-  <p>O mesmo e-mail e senha do CORE. Só a direção entra aqui.</p>
-  <label for="email">E-mail</label>
-  <input id="email" type="email" autocomplete="username" inputmode="email">
-  <label for="senha">Senha</label>
-  <input id="senha" type="password" autocomplete="current-password">
-  <button id="entrar" type="button">Entrar</button>
-  <div id="aviso-porta" class="aviso" aria-live="polite"></div>
+  <div id="porta-login">
+    <p>O mesmo e-mail e senha do CORE. Só a direção entra aqui.</p>
+    <label for="email">E-mail</label>
+    <input id="email" type="email" autocomplete="username" inputmode="email">
+    <label for="senha">Senha</label>
+    <input id="senha" type="password" autocomplete="current-password">
+    <button id="entrar" type="button">Entrar</button>
+    <div id="aviso-porta" class="aviso" aria-live="polite"></div>
+    <div class="centro"><button id="rec-link" type="button" class="elo">Esqueci minha senha</button></div>
+  </div>
+
+  <!-- ★ v848 · ESQUECI MINHA SENHA. O mesmo fluxo da porta do CORE, dois passos
+       na mesma página. A tela nunca diz se o e-mail existe. -->
+  <div id="porta-rec" hidden>
+    <h2>Esqueci minha senha</h2>
+    <div id="rec-p1">
+      <p>Informe o e-mail da sua conta. Enviamos um código de 6 dígitos para você criar uma senha nova.</p>
+      <label for="rec-email">E-mail</label>
+      <input id="rec-email" type="email" autocomplete="username" inputmode="email">
+      <button id="rec-enviar" type="button">Enviar código</button>
+    </div>
+    <div id="rec-p2" hidden>
+      <div id="rec-info" class="info" aria-live="polite"></div>
+      <label for="rec-codigo">Código (6 dígitos)</label>
+      <input id="rec-codigo" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code">
+      <label for="rec-nova">Nova senha (mín. 8 caracteres)</label>
+      <input id="rec-nova" type="password" autocomplete="new-password">
+      <label for="rec-conf">Confirmar nova senha</label>
+      <input id="rec-conf" type="password" autocomplete="new-password">
+      <button id="rec-salvar" type="button">Salvar nova senha</button>
+      <div class="centro"><button id="rec-reenviar" type="button" class="elo">Não recebi o código</button></div>
+    </div>
+    <div id="rec-msg" class="aviso" aria-live="polite"></div>
+    <div class="centro"><button id="rec-voltar" type="button" class="elo ouro">Voltar ao login</button></div>
+  </div>
 </div>
 
 <!-- ═══ PAINEL ═══ -->
@@ -381,11 +419,14 @@
   /* ── porta ───────────────────────────────────────────────────────────── */
   function mostrarPorta(msg){
     $('painel').hidden = true; $('porta').hidden = false;
+    $('porta-login').hidden = false; $('porta-rec').hidden = true;
+    $('aviso-porta').className = 'aviso';
     $('aviso-porta').textContent = msg || '';
     $('entrar').disabled = false; $('entrar').textContent = 'Entrar';
   }
   function entrar(){
     var email = ($('email').value||'').trim().toLowerCase(), senha = $('senha').value||'';
+    $('aviso-porta').className = 'aviso';
     if(!email || !senha){ $('aviso-porta').textContent = 'Preencha e-mail e senha.'; return; }
     $('entrar').disabled = true; $('entrar').textContent = 'Entrando…'; $('aviso-porta').textContent = '';
     fetch(BASE + '/login', { method:'POST', headers:{'Content-Type':'application/json'},
@@ -402,6 +443,89 @@
   $('entrar').addEventListener('click', entrar);
   $('senha').addEventListener('keydown', function(e){ if(e.key === 'Enter') entrar(); });
   $('sair').addEventListener('click', function(){ esquecer(); mostrarPorta(''); });
+
+  /* ── esqueci minha senha ───────────────────────────────────────────────
+     O servidor (login v9) faz o resto: teto de pedidos, código em hash,
+     15 minutos, 5 tentativas, uso único. Aqui, as mesmas regras da porta
+     do CORE:
+     · a resposta de `recuperar` não é lida — o servidor diz {ok:true}
+       sempre, e a tela nem olha, para nunca virar listador de clientes;
+     · a mensagem só aparece depois de um piso fixo de tempo, para a demora
+       de quem existe não vazar pelo relógio;
+     · o código não vai para a URL nem para o armazenamento do navegador;
+     · depois de redefinir, volta para a porta — sem entrar sozinho. */
+  var REC_NEUTRA  = 'Se existir uma conta com esse e-mail, o código chega em instantes. Ele vale 15 minutos.';
+  var REC_PISO_MS = 1200;
+  var recEmail = '';
+
+  function recAviso(t){ $('rec-msg').textContent = t || ''; }
+  function recLimpar(){ $('rec-codigo').value = ''; $('rec-nova').value = ''; $('rec-conf').value = ''; }
+  function recPasso(n){
+    $('rec-p1').hidden = n !== 1; $('rec-p2').hidden = n !== 2;
+    recAviso('');
+    if(n === 1){ recLimpar(); try{ $('rec-email').focus(); }catch(e){} }
+    else       { try{ $('rec-codigo').focus(); }catch(e){} }
+  }
+  function recAbrir(){
+    $('porta-login').hidden = true; $('porta-rec').hidden = false;
+    $('rec-email').value = ($('email').value || '').trim();
+    recPasso(1);
+  }
+  function recFechar(aviso){
+    recLimpar(); recAviso(''); $('rec-info').textContent = '';
+    $('porta-rec').hidden = true; $('porta-login').hidden = false;
+    var em = recEmail || ($('rec-email').value || '').trim();
+    if(em) $('email').value = em;
+    $('senha').value = '';
+    $('aviso-porta').className = aviso ? 'aviso ok' : 'aviso';
+    $('aviso-porta').textContent = aviso || '';
+    try{ (em ? $('senha') : $('email')).focus(); }catch(e){}
+  }
+  function recEnviar(){
+    var email = ($('rec-email').value || '').trim().toLowerCase(), btn = $('rec-enviar');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ recAviso('Informe um e-mail válido.'); return; }
+    recAviso(''); btn.disabled = true; btn.textContent = 'Enviando…';
+    var t0 = Date.now();
+    function seguir(semRede){
+      setTimeout(function(){
+        btn.disabled = false; btn.textContent = 'Enviar código';
+        if(semRede){ recAviso('Sem conexão com o servidor. Tente de novo.'); return; }
+        recEmail = email;
+        $('rec-info').textContent = REC_NEUTRA;
+        recPasso(2);
+      }, Math.max(0, REC_PISO_MS - (Date.now() - t0)));
+    }
+    fetch(BASE + '/login', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'recuperar', email: email }) })
+    .then(function(){ seguir(false); }, function(){ seguir(true); });
+  }
+  function recSalvar(){
+    var codigo = ($('rec-codigo').value || '').trim(), nova = $('rec-nova').value || '', conf = $('rec-conf').value || '';
+    var btn = $('rec-salvar');
+    if(!/^[0-9]{6}$/.test(codigo)){ recAviso('O código tem 6 dígitos, só números.'); return; }
+    if(nova.length < 8){ recAviso('A nova senha precisa de ao menos 8 caracteres.'); return; }
+    if(nova !== nova.trim()){ recAviso('A senha não pode começar nem terminar com espaço.'); return; }
+    if(nova !== conf){ recAviso('A confirmação não confere com a nova senha.'); return; }
+    recAviso(''); btn.disabled = true; btn.textContent = 'Salvando…';
+    fetch(BASE + '/login', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'redefinir', email: recEmail, codigo: codigo, novaSenha: nova }) })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      btn.disabled = false; btn.textContent = 'Salvar nova senha';
+      if(d && d.ok){ recFechar('Senha redefinida. Entre com a senha nova.'); return; }
+      /* o motivo aparece como o servidor escreveu */
+      recAviso((d && d.motivo) || 'Não foi possível redefinir a senha.');
+    })
+    .catch(function(){ btn.disabled = false; btn.textContent = 'Salvar nova senha'; recAviso('Sem conexão com o servidor. Tente de novo.'); });
+  }
+  $('rec-link').addEventListener('click', recAbrir);
+  $('rec-enviar').addEventListener('click', recEnviar);
+  $('rec-salvar').addEventListener('click', recSalvar);
+  $('rec-reenviar').addEventListener('click', function(){ recPasso(1); });
+  $('rec-voltar').addEventListener('click', function(){ recFechar(''); });
+  $('rec-email').addEventListener('keydown', function(e){ if(e.key === 'Enter') recEnviar(); });
+  $('rec-conf').addEventListener('keydown', function(e){ if(e.key === 'Enter') recSalvar(); });
+  $('rec-codigo').addEventListener('input', function(){ this.value = this.value.replace(/\D/g, '').slice(0, 6); });
 
   /* ── painel ──────────────────────────────────────────────────────────── */
   function abrir(nome){

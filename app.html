@@ -5079,9 +5079,9 @@ Troque a URL em LH_LOGIN_URL pela URL do seu Apps Script publicado.
 ════════════════════════════════════════════════════════════════ -->
 <div id="lh-login-overlay" style="position:fixed;inset:0;z-index:999999;background:#0a1628;display:flex;align-items:center;justify-content:center;font-family:Inter,Arial,sans-serif;">
   <div style="width:340px;max-width:90vw;background:#11203a;border:1px solid rgba(201,162,39,0.3);border-radius:16px;padding:32px 28px;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-    <div style="text-align:center;font-size:1.6em;margin-bottom:4px;"></div>
-    <div style="text-align:center;color:#c9a227;font-weight:800;font-size:1.15em;letter-spacing:.04em;margin-bottom:2px;">LIONHEART</div>
-    <div style="text-align:center;color:#9fb0c8;font-size:0.8em;margin-bottom:22px;">CORE · Acesso</div>
+    <div data-lh-fica style="text-align:center;font-size:1.6em;margin-bottom:4px;"></div>
+    <div data-lh-fica style="text-align:center;color:#c9a227;font-weight:800;font-size:1.15em;letter-spacing:.04em;margin-bottom:2px;">LIONHEART</div>
+    <div data-lh-fica style="text-align:center;color:#9fb0c8;font-size:0.8em;margin-bottom:22px;">CORE · Acesso</div>
 
     <label style="display:block;color:#9fb0c8;font-size:0.74em;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">Email</label>
     <input id="lh-login-email" type="email" autocomplete="username" oninput="lhLimparAviso()" placeholder="seu@email.com"
@@ -5095,6 +5095,50 @@ Troque a URL em LH_LOGIN_URL pela URL do seu Apps Script publicado.
       style="width:100%;background:linear-gradient(135deg,#c9a227,#e0b94a);color:#0a1628;border:none;border-radius:8px;padding:12px;font-weight:800;font-size:0.95em;cursor:pointer;font-family:Inter,sans-serif;">Entrar</button>
 
     <div id="lh-login-msg" style="margin-top:14px;text-align:center;font-size:0.82em;color:#ff6b6b;min-height:18px;"></div>
+
+    <!-- ★ v848 · ESQUECI MINHA SENHA. A plataforma nunca teve recuperação: quem
+         esquecia ficava trancado para fora, e o e-mail `definir_senha` já mandava
+         usar "esqueci a senha" num botão que não existia. O servidor (login v9,
+         ações `recuperar` e `redefinir`) já estava pronto; aqui é só a tela.
+         Dois passos na mesma porta, sem modal. A regra que não se negocia: a tela
+         NUNCA diz se o e-mail existe — nem no texto, nem no tempo, nem no estado. -->
+    <div id="lh-rec-link-caixa" style="margin-top:6px;text-align:center;">
+      <a href="javascript:void(0)" id="lh-rec-link" onclick="lhRecAbrir()" style="color:#9fb0c8;font-size:0.78em;text-decoration:underline;">Esqueci minha senha</a>
+    </div>
+
+    <div id="lh-rec" style="display:none">
+      <div style="color:#e8edf5;font-weight:700;font-size:0.95em;margin-bottom:6px;">Esqueci minha senha</div>
+      <div id="lh-rec-p1">
+        <div style="color:#9fb0c8;font-size:0.78em;line-height:1.5;margin-bottom:14px;">Informe o e-mail da sua conta. Enviamos um código de 6 dígitos para você criar uma senha nova.</div>
+        <label for="lh-rec-email" style="display:block;color:#9fb0c8;font-size:0.74em;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">Email</label>
+        <input id="lh-rec-email" type="email" autocomplete="username" inputmode="email" placeholder="seu@email.com"
+          style="width:100%;box-sizing:border-box;background:#0a1628;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 13px;color:#e8edf5;font-size:0.92em;margin-bottom:18px;outline:none;">
+        <button id="lh-rec-enviar" type="button" onclick="lhRecEnviar()"
+          style="width:100%;background:linear-gradient(135deg,#c9a227,#e0b94a);color:#0a1628;border:none;border-radius:8px;padding:12px;font-weight:800;font-size:0.95em;cursor:pointer;font-family:Inter,sans-serif;">Enviar código</button>
+      </div>
+      <div id="lh-rec-p2" style="display:none">
+        <div id="lh-rec-info" style="color:#b8c4d4;font-size:0.8em;line-height:1.5;margin-bottom:14px;padding:10px 12px;border-radius:8px;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.28);"></div>
+        <label for="lh-rec-codigo" style="display:block;color:#9fb0c8;font-size:0.74em;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">Código (6 dígitos)</label>
+        <input id="lh-rec-codigo" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="000000"
+          oninput="this.value=this.value.replace(/\D/g,'').slice(0,6)"
+          style="width:100%;box-sizing:border-box;background:#0a1628;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 13px;color:#e8edf5;font-size:1.05em;letter-spacing:.3em;margin-bottom:14px;outline:none;">
+        <label for="lh-rec-nova" style="display:block;color:#9fb0c8;font-size:0.74em;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">Nova senha <span style="text-transform:none;opacity:.6">(mín. 8 caracteres)</span></label>
+        <input id="lh-rec-nova" type="password" autocomplete="new-password"
+          style="width:100%;box-sizing:border-box;background:#0a1628;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 13px;color:#e8edf5;font-size:0.92em;margin-bottom:14px;outline:none;">
+        <label for="lh-rec-conf" style="display:block;color:#9fb0c8;font-size:0.74em;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">Confirmar nova senha</label>
+        <input id="lh-rec-conf" type="password" autocomplete="new-password"
+          style="width:100%;box-sizing:border-box;background:#0a1628;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 13px;color:#e8edf5;font-size:0.92em;margin-bottom:18px;outline:none;">
+        <button id="lh-rec-salvar" type="button" onclick="lhRecSalvar()"
+          style="width:100%;background:linear-gradient(135deg,#c9a227,#e0b94a);color:#0a1628;border:none;border-radius:8px;padding:12px;font-weight:800;font-size:0.95em;cursor:pointer;font-family:Inter,sans-serif;">Salvar nova senha</button>
+        <div style="margin-top:10px;text-align:center;">
+          <a href="javascript:void(0)" id="lh-rec-reenviar" onclick="lhRecPasso(1)" style="color:#9fb0c8;font-size:0.78em;text-decoration:underline;">Não recebi o código</a>
+        </div>
+      </div>
+      <div id="lh-rec-msg" style="margin-top:14px;text-align:center;font-size:0.82em;color:#ff6b6b;min-height:18px;"></div>
+      <div style="margin-top:6px;text-align:center;">
+        <a href="javascript:void(0)" id="lh-rec-voltar" onclick="lhRecFechar()" style="color:#c9a227;font-size:0.8em;font-weight:700;text-decoration:none;">Voltar ao login</a>
+      </div>
+    </div>
 
     <!-- ★ v795 · PORTA DE CADASTRO. Até aqui só entrava quem o Chepe criasse na mão.
          O plano Livre com o Diagnóstico aberto é o que faz a ferramenta se vender: cada
@@ -5211,6 +5255,7 @@ function lhFazerLogin(){
   var senha = (document.getElementById('lh-login-senha').value || '').trim();
   var msg = document.getElementById('lh-login-msg');
   var btn = document.getElementById('lh-login-btn');
+  msg.style.color = '#ff6b6b';
   if(!email || !senha){ msg.textContent = 'Preencha email e senha.'; return; }
   btn.textContent = 'Verificando...'; btn.disabled = true; msg.textContent = '';
   /* v649 - POST. A senha ia na URL: ficava gravada em log de servidor,
@@ -5252,7 +5297,7 @@ var _lhModoCadastro = false;
    real: e-mail válido digitado, e o "Informe um e-mail válido" de um clique
    anterior ainda visível. */
 function lhLimparAviso(){
-  try{ var m=document.getElementById('lh-login-msg'); if(m) m.textContent=''; }catch(e){}
+  try{ var m=document.getElementById('lh-login-msg'); if(m){ m.textContent=''; m.style.color='#ff6b6b'; } }catch(e){}
 }
 
 /* ★ v808 · o link dos Termos na porta de entrada. Quem ainda não entrou não pode
@@ -5362,6 +5407,7 @@ function lhAlternarCadastro(){
   if(btnLogin) btnLogin.style.display = _lhModoCadastro ? 'none' : 'block';
   if(pergunta) pergunta.textContent   = _lhModoCadastro ? 'Já tem conta?' : 'Ainda não tem conta?';
   if(link)     link.textContent       = _lhModoCadastro ? 'Entrar' : 'Criar conta grátis';
+  try{ var _rl=document.getElementById('lh-rec-link-caixa'); if(_rl) _rl.style.display = _lhModoCadastro ? 'none' : 'block'; }catch(e){}
 
   /* a mensagem acompanha o botão que está em uso */
   try{
@@ -5424,6 +5470,130 @@ function lhCriarConta(){
     dizer('Sem conexão com o servidor. Tente de novo.');
   });
 }
+
+/* ★ v848 · ESQUECI MINHA SENHA — a tela. O servidor (login v9) faz o resto:
+   teto de 3 pedidos por hora, código de 6 dígitos guardado só em hash,
+   validade de 15 minutos, 5 tentativas, uso único.
+
+   O QUE ESTA TELA NÃO FAZ, E POR QUÊ:
+   · não lê a resposta de `recuperar`. O servidor responde {ok:true} sempre, e
+     a tela nem olha: se um dia ele mudar e passar a responder diferente para
+     conta que não existe, a porta continua sem virar listador de clientes;
+   · não responde mais rápido para um e-mail do que para outro. A mensagem só
+     aparece depois de um piso fixo de tempo, então a demora de enfileirar o
+     e-mail de quem existe não vaza pelo relógio;
+   · não põe o código na URL (histórico e log de servidor guardam) nem no
+     armazenamento do navegador — o código vive no campo e morre com ele;
+   · não entra sozinha depois de redefinir. Quem acabou de trocar a senha
+     digita uma vez — é o que fixa. */
+var LH_REC_NEUTRA  = 'Se existir uma conta com esse e-mail, o código chega em instantes. Ele vale 15 minutos.';
+var LH_REC_PISO_MS = 1200;
+var _lhRecEmail = '';
+
+function _lhRecEl(id){ return document.getElementById('lh-rec-' + id); }
+function _lhRecAviso(t){ var m = _lhRecEl('msg'); if(m){ m.style.color = '#ff6b6b'; m.textContent = t || ''; } }
+function _lhRecLimpar(){ ['codigo','nova','conf'].forEach(function(k){ var e = _lhRecEl(k); if(e) e.value = ''; }); }
+
+function lhRecPasso(n){
+  var p1 = _lhRecEl('p1'), p2 = _lhRecEl('p2');
+  if(p1) p1.style.display = n === 1 ? 'block' : 'none';
+  if(p2) p2.style.display = n === 2 ? 'block' : 'none';
+  _lhRecAviso('');
+  if(n === 1){ _lhRecLimpar(); try{ _lhRecEl('email').focus(); }catch(e){} }
+  else       { try{ _lhRecEl('codigo').focus(); }catch(e){} }
+}
+
+/* esconde o resto do cartão (login, cadastro, avisos) e guarda como estava,
+   para devolver exatamente igual na volta */
+function lhRecAbrir(){
+  var rec = document.getElementById('lh-rec');
+  if(!rec) return;
+  Array.prototype.forEach.call(rec.parentNode.children, function(el){
+    if(el === rec || el.hasAttribute('data-lh-fica')) return;
+    el.setAttribute('data-lh-rec-antes', el.style.display || '');
+    el.style.display = 'none';
+  });
+  rec.style.display = 'block';
+  var em = _lhRecEl('email'), lg = document.getElementById('lh-login-email');
+  if(em) em.value = ((lg && lg.value) || '').trim();
+  lhRecPasso(1);
+}
+
+function lhRecFechar(aviso){
+  var rec = document.getElementById('lh-rec');
+  if(!rec) return;
+  rec.style.display = 'none';
+  _lhRecLimpar(); _lhRecAviso('');
+  var info = _lhRecEl('info'); if(info) info.textContent = '';
+  Array.prototype.forEach.call(rec.parentNode.children, function(el){
+    if(!el.hasAttribute('data-lh-rec-antes')) return;
+    el.style.display = el.getAttribute('data-lh-rec-antes');
+    el.removeAttribute('data-lh-rec-antes');
+  });
+  var lg = document.getElementById('lh-login-email'), sn = document.getElementById('lh-login-senha');
+  var em = _lhRecEmail || ((_lhRecEl('email') || {}).value || '').trim();
+  if(lg && em) lg.value = em;
+  if(sn) sn.value = '';
+  var msg = document.getElementById('lh-login-msg');
+  if(msg){ msg.style.color = aviso ? '#10b981' : '#ff6b6b'; msg.textContent = aviso || ''; }
+  try{ (em ? sn : lg).focus(); }catch(e){}
+}
+
+function lhRecEnviar(){
+  var email = ((_lhRecEl('email') || {}).value || '').trim().toLowerCase();
+  var btn = _lhRecEl('enviar');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return _lhRecAviso('Informe um e-mail válido.');
+  _lhRecAviso('');
+  if(btn){ btn.disabled = true; btn.textContent = 'Enviando...'; }
+  var t0 = Date.now();
+  function seguir(semRede){
+    setTimeout(function(){
+      if(btn){ btn.disabled = false; btn.textContent = 'Enviar código'; }
+      if(semRede) return _lhRecAviso('Sem conexão com o servidor. Tente de novo.');
+      _lhRecEmail = email;
+      var info = _lhRecEl('info'); if(info) info.textContent = LH_REC_NEUTRA;
+      lhRecPasso(2);
+    }, Math.max(0, LH_REC_PISO_MS - (Date.now() - t0)));
+  }
+  fetch(LH_LOGIN_URL, { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'recuperar', email: email }) })
+  .then(function(){ seguir(false); }, function(){ seguir(true); });
+}
+
+function lhRecSalvar(){
+  var codigo = ((_lhRecEl('codigo') || {}).value || '').trim();
+  var nova   = (_lhRecEl('nova') || {}).value || '';
+  var conf   = (_lhRecEl('conf') || {}).value || '';
+  var btn = _lhRecEl('salvar');
+  /* confere aqui o que dá para conferir aqui: cada tentativa errada gasta uma
+     das 5 que o código tem no servidor */
+  if(!/^[0-9]{6}$/.test(codigo)) return _lhRecAviso('O código tem 6 dígitos, só números.');
+  if(nova.length < 8) return _lhRecAviso('A nova senha precisa de ao menos 8 caracteres.');
+  if(nova !== nova.trim()) return _lhRecAviso('A senha não pode começar nem terminar com espaço.');
+  if(nova !== conf) return _lhRecAviso('A confirmação não confere com a nova senha.');
+  _lhRecAviso('');
+  if(btn){ btn.disabled = true; btn.textContent = 'Salvando...'; }
+  fetch(LH_LOGIN_URL, { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'redefinir', email: _lhRecEmail, codigo: codigo, novaSenha: nova }) })
+  .then(function(r){ return r.json(); })
+  .then(function(res){
+    if(btn){ btn.disabled = false; btn.textContent = 'Salvar nova senha'; }
+    if(res && res.ok) return lhRecFechar('Senha redefinida. Entre com a senha nova.');
+    /* o motivo aparece como o servidor escreveu: ele já fala a língua do contador */
+    _lhRecAviso((res && res.motivo) || 'Não foi possível redefinir a senha.');
+  })
+  .catch(function(){
+    if(btn){ btn.disabled = false; btn.textContent = 'Salvar nova senha'; }
+    _lhRecAviso('Sem conexão com o servidor. Tente de novo.');
+  });
+}
+
+/* Enter envia, nos dois passos */
+(function(){
+  var em = _lhRecEl('email'), cf = _lhRecEl('conf');
+  if(em) em.addEventListener('keydown', function(e){ if(e.key === 'Enter') lhRecEnviar(); });
+  if(cf) cf.addEventListener('keydown', function(e){ if(e.key === 'Enter') lhRecSalvar(); });
+})();
 
 </script>
 
