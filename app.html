@@ -5602,7 +5602,7 @@ function lhRecSalvar(){
   <div style="background:#0f1d30;border:1px solid rgba(201,162,39,.25);border-radius:14px;padding:28px 26px;max-width:380px;width:100%;box-sizing:border-box;box-shadow:0 20px 60px rgba(0,0,0,.5);">
     <div style="text-align:center;color:#c9a227;font-weight:800;font-size:1.3em;letter-spacing:.08em;">LIONHEART</div>
     <div style="text-align:center;color:#8aa0b8;font-size:.8em;margin-bottom:18px;">Primeiro acesso &middot; defina sua nova senha</div>
-    <div style="color:#8aa0b8;font-size:.72em;margin-bottom:6px;letter-spacing:.05em;">NOVA SENHA (m&iacute;n. 6 caracteres)</div>
+    <div style="color:#8aa0b8;font-size:.72em;margin-bottom:6px;letter-spacing:.05em;">NOVA SENHA (m&iacute;n. 8 caracteres)</div>
     <input id="lh-troca-nova" type="password" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:11px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:#0a1522;color:#fff;margin-bottom:12px;">
     <div style="color:#8aa0b8;font-size:.72em;margin-bottom:6px;letter-spacing:.05em;">CONFIRMAR NOVA SENHA</div>
     <input id="lh-troca-conf" type="password" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:11px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:#0a1522;color:#fff;margin-bottom:16px;">
@@ -5644,13 +5644,23 @@ function lhTrocarSenha(){
   var conf=(document.getElementById('lh-troca-conf').value||'').trim();
   var msg=document.getElementById('lh-troca-msg');
   var btn=document.getElementById('lh-troca-btn');
-  if(nova.length<6){ msg.textContent='A nova senha precisa ter ao menos 6 caracteres.'; return; }
+  /* ★ v848 · 8, não 6: o servidor exige 8. A tela aceitava 6 e mandava a
+     pessoa para uma recusa que ela não entendia. */
+  if(nova.length<8){ msg.textContent='A nova senha precisa ter ao menos 8 caracteres.'; return; }
   if(nova!==conf){ msg.textContent='As senhas nao conferem.'; return; }
   if(nova===_lhTrocaSenha){ msg.textContent='A nova senha deve ser diferente da atual.'; return; }
   btn.textContent='Salvando...'; btn.disabled=true; msg.textContent='';
-  var url=LH_LOGIN_URL+'?action=trocarSenha&email='+encodeURIComponent(_lhTrocaEmail)+'&senha='+encodeURIComponent(_lhTrocaSenha)+'&novaSenha='+encodeURIComponent(nova)+'&produto='+LH_PROD;
-  fetch(url).then(function(r){return r.json();}).then(function(res){
-    if(res.ok){ lhEntrarOk(res); }
+  /* ★ v848 · POST com o corpo em JSON, igual ao login principal. Desde a v8
+     isto era um GET com as duas senhas na URL: vazava para histórico e log, e
+     a função login recusa tudo que não é POST (405) — a troca do primeiro
+     acesso nunca funcionou, e quem tinha precisa_trocar_senha ficava trancado
+     para fora. */
+  fetch(LH_LOGIN_URL, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'trocarSenha', email:_lhTrocaEmail, senha:_lhTrocaSenha, novaSenha:nova, produto:LH_PROD })
+  }).then(function(r){return r.json();}).then(function(res){
+    if(res.ok){ _lhTrocaSenha=''; lhEntrarOk(res); }
     else { msg.textContent=res.motivo||'Nao foi possivel trocar a senha.'; btn.textContent='Salvar nova senha'; btn.disabled=false; }
   }).catch(function(){ msg.textContent='Erro de conexao. Tente novamente.'; btn.textContent='Salvar nova senha'; btn.disabled=false; });
 }

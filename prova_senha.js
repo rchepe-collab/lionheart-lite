@@ -12,6 +12,12 @@
    ficar idêntica mesmo assim — ela não pode depender de o servidor ser
    discreto.
 
+   E a troca de senha do primeiro acesso (lhTrocarSenha), que desde a v8 ia
+   por GET com as duas senhas na URL. A função login recusa tudo que não é
+   POST (405), então a troca nunca funcionou e quem tinha
+   precisa_trocar_senha ficava trancado para fora. O servidor de mentira
+   responde 405 a qualquer coisa que não seja POST, igual ao de verdade.
+
    TESTE AO CONTRÁRIO: cada verificação roda também contra uma cópia sabotada
    da página (a defesa correspondente arrancada) e TEM de reprovar. Verificação
    que passa com a defesa arrancada não verifica nada.
@@ -44,6 +50,8 @@ const REVELA = /n[ãa]o\s+(foi\s+)?(encontrad|existe|cadastrad|localizad|registr
 const EXISTE = 'carlos@escritorio.com.br';
 const INVENTADO = 'ninguem.aqui@nada.com.br';
 const CODIGO = '430312';
+const NOVO = 'novo@escritorio.com.br';        /* conta com precisa_trocar_senha */
+const PROVISORIA = 'provisoria1';
 
 /* ── as duas portas ─────────────────────────────────────────────────────────
    O CORE tem 9 MB: a porta de login é recortada pelos marcadores que ela
@@ -94,7 +102,18 @@ const PAGINAS = [
       codigoNaUrl: [["if(!/^[0-9]{6}$/.test(codigo)) return _lhRecAviso('O código tem 6 dígitos, só números.');",
                      "if(!/^[0-9]{6}$/.test(codigo)) return _lhRecAviso('O código tem 6 dígitos, só números.'); try{ history.replaceState(null, '', '?codigo=' + codigo); }catch(e){}"]],
       senhaSemNova: [['<input id="lh-rec-nova" type="password" autocomplete="new-password"', '<input id="lh-rec-nova" type="password" autocomplete="current-password"']],
-      reenviarPreso: [['onclick="lhRecPasso(1)"', 'onclick="lhRecPasso(2)"']]
+      reenviarPreso: [['onclick="lhRecPasso(1)"', 'onclick="lhRecPasso(2)"']],
+      recuperarGet: [["fetch(LH_LOGIN_URL, { method:'POST', headers:{'Content-Type':'application/json'},\n    body: JSON.stringify({ action:'recuperar'",
+                      "fetch(LH_LOGIN_URL, { method:'GET', headers:{'Content-Type':'application/json'},\n    body: JSON.stringify({ action:'recuperar'"]],
+      redefinirGet: [["fetch(LH_LOGIN_URL, { method:'POST', headers:{'Content-Type':'application/json'},\n    body: JSON.stringify({ action:'redefinir'",
+                      "fetch(LH_LOGIN_URL, { method:'GET', headers:{'Content-Type':'application/json'},\n    body: JSON.stringify({ action:'redefinir'"]],
+      /* o código da troca como estava da v8 até a v847 */
+      trocaGet: [[
+        "  fetch(LH_LOGIN_URL, {\n    method:'POST',\n    headers:{'Content-Type':'application/json'},\n    body: JSON.stringify({ action:'trocarSenha', email:_lhTrocaEmail, senha:_lhTrocaSenha, novaSenha:nova, produto:LH_PROD })\n  }).then(",
+        "  var url=LH_LOGIN_URL+'?action=trocarSenha&email='+encodeURIComponent(_lhTrocaEmail)+'&senha='+encodeURIComponent(_lhTrocaSenha)+'&novaSenha='+encodeURIComponent(nova)+'&produto='+LH_PROD;\n  fetch(url).then("
+      ]],
+      troca6: [["if(nova.length<8){ msg.textContent='A nova senha precisa ter ao menos 8 caracteres.'; return; }",
+                "if(nova.length<6){ msg.textContent='A nova senha precisa ter ao menos 6 caracteres.'; return; }"]]
     }
   },
   {
@@ -132,7 +151,11 @@ const PAGINAS = [
       codigoNaUrl: [["recAviso('O código tem 6 dígitos, só números.'); return; }",
                      "recAviso('O código tem 6 dígitos, só números.'); return; } try{ history.replaceState(null, '', '?codigo=' + codigo); }catch(e){}"]],
       senhaSemNova: [['<input id="rec-nova" type="password" autocomplete="new-password">', '<input id="rec-nova" type="password" autocomplete="current-password">']],
-      reenviarPreso: [["addEventListener('click', function(){ recPasso(1); });", "addEventListener('click', function(){ recPasso(2); });"]]
+      reenviarPreso: [["addEventListener('click', function(){ recPasso(1); });", "addEventListener('click', function(){ recPasso(2); });"]],
+      recuperarGet: [["fetch(BASE + '/login', { method:'POST', headers:{'Content-Type':'application/json'},\n      body: JSON.stringify({ action:'recuperar'",
+                      "fetch(BASE + '/login', { method:'GET', headers:{'Content-Type':'application/json'},\n      body: JSON.stringify({ action:'recuperar'"]],
+      redefinirGet: [["fetch(BASE + '/login', { method:'POST', headers:{'Content-Type':'application/json'},\n      body: JSON.stringify({ action:'redefinir'",
+                      "fetch(BASE + '/login', { method:'GET', headers:{'Content-Type':'application/json'},\n      body: JSON.stringify({ action:'redefinir'"]]
     }
   }
 ];
@@ -152,9 +175,20 @@ function sabotada(pag, chave) {
    depender de ele não fazer. */
 function servidor(dom, op) {
   return (url, opts) => {
+    const metodo = String((opts && opts.method) || 'GET').toUpperCase();
     const corpo = JSON.parse((opts && opts.body) || '{}');
-    dom.chamadas.push({ url: String(url), corpo });
-    const responder = (o, ms) => new Promise((r) => setTimeout(() => r({ json: async () => o }), ms || 0));
+    dom.chamadas.push({ url: String(url), metodo, corpo });
+    const responder = (o, ms) => new Promise((r) => setTimeout(() => r({ status: o.__status || 200, json: async () => o }), ms || 0));
+    /* igual à função login de verdade: só POST entra */
+    if (metodo !== 'POST') return responder({ __status: 405, ok: false, motivo: 'Método não permitido' }, 1);
+    if (corpo.action === 'trocarSenha') {
+      return corpo.email === NOVO && corpo.senha === PROVISORIA && String(corpo.novaSenha || '').length >= 8
+        ? responder({ ok: true, token: 't-troca', nome: 'Novo' }, 5)
+        : responder({ ok: false, motivo: 'Não foi possível trocar a senha.' }, 5);
+    }
+    if (!corpo.action && corpo.email === NOVO) {
+      return responder(corpo.senha === PROVISORIA ? { ok: true, trocar: true } : { ok: false, motivo: 'Email ou senha incorretos.' }, 1);
+    }
     if (corpo.action === 'recuperar') {
       return corpo.email === EXISTE ? responder({ ok: true }, 5)
                                     : responder({ ok: false, motivo: 'E-mail não encontrado.' }, 400);
@@ -385,6 +419,73 @@ const VERIFICA = [
     }
   },
   {
+    nome: 'recuperar vai por POST, sem nada na URL',
+    sabotagem: 'recuperarGet',
+    async rodar(pag, src) {
+      const p = await pedirCodigo(pag, src, EXISTE);
+      const c = p.chamadasDe('recuperar');
+      const ok = p.chegou && c.length === 1 && c[0].metodo === 'POST' && c[0].corpo.email === EXISTE
+              && c[0].url.indexOf('?') < 0;
+      return [ok, 'chegou=' + p.chegou + ' ' + c.map((x) => x.metodo + ' ' + x.url).join(' | ')];
+    }
+  },
+  {
+    nome: 'redefinir vai por POST, sem nada na URL',
+    sabotagem: 'redefinirGet',
+    async rodar(pag, src) {
+      const p = await redefinir(pag, src, CODIGO, 'senhaboa123', 'senhaboa123', { redefinir: [{ ok: true }] });
+      await espera(60);
+      const c = p.chamadasDe('redefinir');
+      const ok = c.length === 1 && c[0].metodo === 'POST' && c[0].url.indexOf('?') < 0
+              && c[0].corpo.codigo === CODIGO && c[0].corpo.novaSenha === 'senhaboa123'
+              && p.visivel(p.el('loginBtn')) && !p.visivel(p.el('painel'));
+      return [ok, c.map((x) => x.metodo + ' ' + x.url).join(' | ') + ' msg=' + p.el('msg').textContent];
+    }
+  },
+  {
+    nome: 'troca do 1º acesso: POST, senha fora da URL, entra',
+    soCore: true,
+    sabotagem: 'trocaGet',
+    async rodar(pag, src) {
+      const p = abrir(pag, src); await espera(20);
+      const tr = p.d.getElementById('lh-troca-overlay');
+      p.digitar('loginEmail', NOVO); p.el('loginSenha').value = PROVISORIA;
+      p.clicar('loginBtn');
+      if (!await ate(() => tr.style.display === 'flex', 1000)) return [false, 'a tela de troca não abriu'];
+      p.d.getElementById('lh-troca-nova').value = 'senhaboa123';
+      p.d.getElementById('lh-troca-conf').value = 'senhaboa123';
+      p.d.getElementById('lh-troca-btn').click();
+      const msg = p.d.getElementById('lh-troca-msg');
+      await ate(() => p.w.localStorage.getItem('lh_token') || msg.textContent !== '', 1000);
+      const c = p.dom.chamadas.filter((x) => x.corpo.action === 'trocarSenha' || x.url.indexOf('trocarSenha') >= 0);
+      const post = c.length === 1 && c[0].metodo === 'POST' && c[0].corpo.email === NOVO
+                && c[0].corpo.senha === PROVISORIA && c[0].corpo.novaSenha === 'senhaboa123';
+      const urlLimpa = p.dom.chamadas.every((x) => x.url.indexOf('?') < 0 && x.url.indexOf(PROVISORIA) < 0 && x.url.indexOf('senhaboa123') < 0);
+      const entrou = p.w.localStorage.getItem('lh_token') === 't-troca' && tr.style.display === 'none';
+      return [post && urlLimpa && entrou,
+              'post=' + post + ' urlLimpa=' + urlLimpa + ' entrou=' + entrou + (msg.textContent ? ' msg=' + msg.textContent : '')];
+    }
+  },
+  {
+    nome: 'troca do 1º acesso: menos de 8 barrada antes do servidor',
+    soCore: true,
+    sabotagem: 'troca6',
+    async rodar(pag, src) {
+      const p = abrir(pag, src); await espera(20);
+      const tr = p.d.getElementById('lh-troca-overlay');
+      p.digitar('loginEmail', NOVO); p.el('loginSenha').value = PROVISORIA;
+      p.clicar('loginBtn');
+      if (!await ate(() => tr.style.display === 'flex', 1000)) return [false, 'a tela de troca não abriu'];
+      p.d.getElementById('lh-troca-nova').value = 'abc1234';
+      p.d.getElementById('lh-troca-conf').value = 'abc1234';
+      p.d.getElementById('lh-troca-btn').click();
+      await espera(40);
+      const n = p.dom.chamadas.filter((x) => x.corpo.action === 'trocarSenha' || x.url.indexOf('trocarSenha') >= 0).length;
+      const rotulo = /8 caracteres/.test(tr.textContent);
+      return [n === 0 && p.d.getElementById('lh-troca-msg').textContent !== '' && rotulo, 'chamadas=' + n + ' rótulo8=' + rotulo];
+    }
+  },
+  {
     nome: '"Não recebi o código" volta ao passo 1',
     sabotagem: 'reenviarPreso',
     async rodar(pag, src) {
@@ -424,13 +525,14 @@ async function rastroDoCodigo(pag, src, onde) {
   for (const pag of PAGINAS) {
     console.log('\n' + pag.nome);
     for (const v of VERIFICA) {
+      if (v.soCore && pag.nome !== 'CORE') continue;
       let r;
       try { r = await v.rodar(pag, pag.fonte); } catch (e) { r = [false, 'erro: ' + e.message]; }
       ex(v.nome, r[0], r[1]);
     }
     console.log('  — ao contrário: a defesa arrancada, a verificação tem de reprovar');
     for (const v of VERIFICA) {
-      if (!v.sabotagem) continue;
+      if (!v.sabotagem || (v.soCore && pag.nome !== 'CORE')) continue;
       let r;
       try { r = await v.rodar(pag, sabotada(pag, v.sabotagem)); }
       catch (e) { ex('sem ' + v.sabotagem, false, e.message); continue; }
