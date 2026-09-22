@@ -1,0 +1,81 @@
+ Extrato do Simples Nacional
+Gerado em 15/01/2027 09:12:44
+Apurado em 12/01/2026 10:31:02
+Apuração Original
+PGDAS-D 2018 Versão 2.2.27
+1) Informações do Contribuinte
+CNPJ Básico: 11.222.333 Nome Empresarial: NORTE SUL COMERCIO DE FERRAGENS LTDA
+Data de Abertura: 14/03/2019 Regime de Apuração: Competência Optante pelo Simples Nacional: Sim
+2) Informações da Apuração 11222333000181202601001
+Período de Apuração (PA): 01/2026
+2.1 Discriminativo de Receitas
+Total de Receitas Brutas (R$) Mercado Interno Mercado Externo Total
+Receita Bruta do PA (RPA) - Competência 142.207,10 0,00 142.207,10
+Receita bruta acumulada nos doze meses anteriores ao PA
+(RBT12)2.205.495,57 0,00 2.205.495,57
+Receita bruta acumulada nos doze meses anteriores ao PA
+proporcionalizada (RBT12p)
+Receita bruta acumulada no ano-calendário corrente (RBA) 142.207,10 0,00 142.207,10
+Receita bruta acumulada no ano-calendário anterior
+(RBAA)2.205.495,57 0,00 2.205.495,57
+Limite de receita bruta proporcionalizado 4.800.000,00 4.800.000,00
+.
+.
+2.2) Receitas Brutas Anteriores (R$)
+2.2.1) Mercado Interno
+01/2025 132.252,60 02/2025 149.980,41 03/2025 178.597,61 04/2025 197.151,82
+05/2025 211.310,23 06/2025 174.960,64 07/2025 160.670,39 08/2025 185.879,78
+09/2025 197.117,80 10/2025 218.238,97 11/2025 229.512,75 12/2025 169.822,57
+2.2.2) Mercado Externo
+01/2025 0,00 02/2025 0,00 03/2025 0,00 04/2025 0,00
+.
+.
+2.3) Folha de Salários Anteriores (R$)
+Nenhuma
+.
+.
+2.4) Fator r
+Fator r = Não se aplica
+.
+.
+2.5) Valores Fixos
+Não se aplica
+.
+.
+3) Informações dos Estabelecimentos - valores referentes às Receitas Informadas
+CNPJ Estabelecimento: 11.222.333/0001-81
+Município: RIO GRANDE UF: RS
+Sublimite de Receita Anual (R$): 3.600.000,00 Impedido de recolher ICMS/ISS no DAS: Não
+.
+.
+                                                                                      Página 1
+
+
+
+Valor do Débito por Tributo para a Atividade (R$):
+Revenda de mercadorias, exceto para o exterior - Sem substituição tributária/tributação
+monofásica/antecipação com encerramento de tributação (o substituto tributário do ICMS deve utilizar
+essa opção)
+Receita Bruta Informada: R$ 142.207,10
+IRPJ CSLL COFINS PIS/Pasep INSS/CPP ICMS IPI ISS Total
+808,87 514,73 1.873,63 405,90 6.176,79 4.926,72 0,00 0,00 14.706,64
+Parcela 1: R$ 142.207,10
+.
+.
+Informações por Estabelecimento
+Valor Informado: 142.207,10
+Total do Débito Declarado (exigível + suspenso)
+IRPJ CSLL COFINS PIS/Pasep INSS/CPP ICMS IPI ISS Total
+808,87 514,73 1.873,63 405,90 6.176,79 4.926,72 0,00 0,00 14.706,64
+Total do Débito com Exigibilidade Suspensa (R$)
+IRPJ CSLL COFINS PIS/Pasep INSS/CPP ICMS IPI ISS Total
+0,00 0,00 0,00 0,00 0,00 0,00 0,00 0,00 0,00
+Total do Débito Exigível (R$)
+IRPJ CSLL COFINS PIS/Pasep INSS/CPP ICMS IPI ISS Total
+808,87 514,73 1.873,63 405,90 6.176,79 4.926,72 0,00 0,00 14.706,64
+.
+.
+4) Total Geral da Empresa
+Total do Débito Declarado (exigível + suspenso) (R$)
+IRPJ CSLL COFINS PIS/Pasep INSS/CPP ICMS IPI ISS Total
+808,87 514,73 1.873,63 405,90 6.176,79 4.926,72 0,00 0,00 14.706,64

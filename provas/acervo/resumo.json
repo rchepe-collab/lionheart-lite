@@ -1,0 +1,42 @@
+{
+ "comercio": {
+  "anexo": "I",
+  "cnpj": "11222333000181",
+  "receita_ano": 2371500.6,
+  "rbt12_final": 2371500.6,
+  "compras_ano": 1375470.36,
+  "devolucoes": 2,
+  "pgdas": 12,
+  "xml": 122
+ },
+ "industria": {
+  "anexo": "II",
+  "cnpj": "22333444000172",
+  "receita_ano": 3168182.38,
+  "rbt12_final": 3168182.38,
+  "compras_ano": 1457363.84,
+  "devolucoes": 1,
+  "pgdas": 12,
+  "xml": 121
+ },
+ "servico": {
+  "anexo": "III",
+  "cnpj": "33444555000163",
+  "receita_ano": 927761.71,
+  "rbt12_final": 927761.71,
+  "compras_ano": 102053.8,
+  "devolucoes": 0,
+  "pgdas": 12,
+  "xml": 120
+ },
+ "agro": {
+  "anexo": "I",
+  "cnpj": "44555666000154",
+  "receita_ano": 3967159.76,
+  "rbt12_final": 3967159.76,
+  "compras_ano": 2499310.68,
+  "devolucoes": 1,
+  "pgdas": 12,
+  "xml": 121
+ }
+}

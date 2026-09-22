@@ -1,0 +1,79 @@
+ Extrato do Simples Nacional
+Gerado em 15/01/2027 09:12:44
+Apurado em 12/10/2026 10:31:02
+Apuração Original
+PGDAS-D 2018 Versão 2.2.27
+1) Informações do Contribuinte
+CNPJ Básico: 33.444.555 Nome Empresarial: ORION CONTABILIDADE E ASSESSORIA LTDA
+Data de Abertura: 14/03/2019 Regime de Apuração: Competência Optante pelo Simples Nacional: Sim
+2) Informações da Apuração 33444555000163202610001
+Período de Apuração (PA): 10/2026
+2.1 Discriminativo de Receitas
+Total de Receitas Brutas (R$) Mercado Interno Mercado Externo Total
+Receita Bruta do PA (RPA) - Competência 93.868,19 0,00 93.868,19
+Receita bruta acumulada nos doze meses anteriores ao PA
+(RBT12)909.230,36 0,00 909.230,36
+Receita bruta acumulada nos doze meses anteriores ao PA
+proporcionalizada (RBT12p)
+Receita bruta acumulada no ano-calendário corrente (RBA) 756.896,26 0,00 756.896,26
+Receita bruta acumulada no ano-calendário anterior
+(RBAA)862.818,40 0,00 862.818,40
+Limite de receita bruta proporcionalizado 4.800.000,00 4.800.000,00
+.
+.
+2.2) Receitas Brutas Anteriores (R$)
+2.2.1) Mercado Interno
+01/2025 53.827,09 02/2025 55.803,77 03/2025 70.846,23 04/2025 73.811,71
+05/2025 80.841,06 06/2025 67.436,00 07/2025 64.629,02 08/2025 73.301,35
+09/2025 76.119,88 10/2025 87.297,42 11/2025 91.788,05 12/2025 67.116,82
+2.2.2) Mercado Externo
+01/2025 0,00 02/2025 0,00 03/2025 0,00 04/2025 0,00
+.
+.
+2.3) Folha de Salários Anteriores (R$)
+263.676,80
+.
+.
+2.4) Fator r
+Fator r = 0,29
+.
+.
+2.5) Valores Fixos
+Não se aplica
+.
+.
+3) Informações dos Estabelecimentos - valores referentes às Receitas Informadas
+CNPJ Estabelecimento: 33.444.555/0001-63
+Município: PORTO ALEGRE UF: RS
+Sublimite de Receita Anual (R$): 3.600.000,00 Impedido de recolher ICMS/ISS no DAS: Não
+.
+.
+                                                                                      Página 1
+
+
+
+Valor do Débito por Tributo para a Atividade (R$):
+Prestação de serviços, exceto para o exterior
+Receita Bruta Informada: R$ 93.868,19
+IRPJ CSLL COFINS PIS/Pasep INSS/CPP ICMS IPI ISS Total
+453,58 396,88 1.453,72 315,24 4.921,33 0,00 0,00 3.798,72 11.339,47
+Parcela 1: R$ 93.868,19
+.
+.
+Informações por Estabelecimento
+Valor Informado: 93.868,19
+Total do Débito Declarado (exigível + suspenso)
+IRPJ CSLL COFINS PIS/Pasep INSS/CPP ICMS IPI ISS Total
+453,58 396,88 1.453,72 315,24 4.921,33 0,00 0,00 3.798,72 11.339,47
+Total do Débito com Exigibilidade Suspensa (R$)
+IRPJ CSLL COFINS PIS/Pasep INSS/CPP ICMS IPI ISS Total
+0,00 0,00 0,00 0,00 0,00 0,00 0,00 0,00 0,00
+Total do Débito Exigível (R$)
+IRPJ CSLL COFINS PIS/Pasep INSS/CPP ICMS IPI ISS Total
+453,58 396,88 1.453,72 315,24 4.921,33 0,00 0,00 3.798,72 11.339,47
+.
+.
+4) Total Geral da Empresa
+Total do Débito Declarado (exigível + suspenso) (R$)
+IRPJ CSLL COFINS PIS/Pasep INSS/CPP ICMS IPI ISS Total
+453,58 396,88 1.453,72 315,24 4.921,33 0,00 0,00 3.798,72 11.339,47

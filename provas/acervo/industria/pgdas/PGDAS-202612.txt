@@ -1,0 +1,81 @@
+ Extrato do Simples Nacional
+Gerado em 15/01/2027 09:12:44
+Apurado em 12/12/2026 10:31:02
+Apuração Original
+PGDAS-D 2018 Versão 2.2.27
+1) Informações do Contribuinte
+CNPJ Básico: 22.333.444 Nome Empresarial: METALFORJA INDUSTRIA DE PECAS LTDA
+Data de Abertura: 14/03/2019 Regime de Apuração: Competência Optante pelo Simples Nacional: Sim
+2) Informações da Apuração 22333444000172202612001
+Período de Apuração (PA): 12/2026
+2.1 Discriminativo de Receitas
+Total de Receitas Brutas (R$) Mercado Interno Mercado Externo Total
+Receita Bruta do PA (RPA) - Competência 230.988,79 0,00 230.988,79
+Receita bruta acumulada nos doze meses anteriores ao PA
+(RBT12)3.152.013,16 0,00 3.152.013,16
+Receita bruta acumulada nos doze meses anteriores ao PA
+proporcionalizada (RBT12p)
+Receita bruta acumulada no ano-calendário corrente (RBA) 3.168.182,38 0,00 3.168.182,38
+Receita bruta acumulada no ano-calendário anterior
+(RBAA)2.946.409,60 0,00 2.946.409,60
+Limite de receita bruta proporcionalizado 4.800.000,00 4.800.000,00
+.
+.
+2.2) Receitas Brutas Anteriores (R$)
+2.2.1) Mercado Interno
+01/2025 179.475,66 02/2025 207.330,19 03/2025 252.155,01 04/2025 261.838,38
+05/2025 273.276,09 06/2025 237.764,94 07/2025 218.492,80 08/2025 239.150,43
+09/2025 261.009,87 10/2025 296.689,20 11/2025 304.407,46 12/2025 214.819,57
+2.2.2) Mercado Externo
+01/2025 0,00 02/2025 0,00 03/2025 0,00 04/2025 0,00
+.
+.
+2.3) Folha de Salários Anteriores (R$)
+Nenhuma
+.
+.
+2.4) Fator r
+Fator r = Não se aplica
+.
+.
+2.5) Valores Fixos
+Não se aplica
+.
+.
+3) Informações dos Estabelecimentos - valores referentes às Receitas Informadas
+CNPJ Estabelecimento: 22.333.444/0001-72
+Município: PORTO ALEGRE UF: RS
+Sublimite de Receita Anual (R$): 3.600.000,00 Impedido de recolher ICMS/ISS no DAS: Não
+.
+.
+                                                                                      Página 1
+
+
+
+Valor do Débito por Tributo para a Atividade (R$):
+Revenda de mercadorias, exceto para o exterior - Sem substituição tributária/tributação
+monofásica/antecipação com encerramento de tributação (o substituto tributário do ICMS deve utilizar
+essa opção)
+Receita Bruta Informada: R$ 230.988,79
+IRPJ CSLL COFINS PIS/Pasep INSS/CPP ICMS IPI ISS Total
+1.522,93 969,14 3.187,08 689,47 10.383,62 8.860,69 2.076,72 0,00 27.689,65
+Parcela 1: R$ 230.988,79
+.
+.
+Informações por Estabelecimento
+Valor Informado: 230.988,79
+Total do Débito Declarado (exigível + suspenso)
+IRPJ CSLL COFINS PIS/Pasep INSS/CPP ICMS IPI ISS Total
+1.522,93 969,14 3.187,08 689,47 10.383,62 8.860,69 2.076,72 0,00 27.689,65
+Total do Débito com Exigibilidade Suspensa (R$)
+IRPJ CSLL COFINS PIS/Pasep INSS/CPP ICMS IPI ISS Total
+0,00 0,00 0,00 0,00 0,00 0,00 0,00 0,00 0,00
+Total do Débito Exigível (R$)
+IRPJ CSLL COFINS PIS/Pasep INSS/CPP ICMS IPI ISS Total
+1.522,93 969,14 3.187,08 689,47 10.383,62 8.860,69 2.076,72 0,00 27.689,65
+.
+.
+4) Total Geral da Empresa
+Total do Débito Declarado (exigível + suspenso) (R$)
+IRPJ CSLL COFINS PIS/Pasep INSS/CPP ICMS IPI ISS Total
+1.522,93 969,14 3.187,08 689,47 10.383,62 8.860,69 2.076,72 0,00 27.689,65

@@ -46446,8 +46446,19 @@ function lhImportXML_aggregate(notas){
   }
   for(var i=0;i<notas.length;i++){ var o=notas[i]; a.n++;
     a.vProd+=o.vProd; a.vNF+=o.vNF; a.vICMS+=o.vICMS; a.vPIS+=o.vPIS; a.vCOFINS+=o.vCOFINS;
-    var _ehSaida = _empAg ? ((o.emitCNPJ||'').replace(/\D/g,'')===_empAg) : (o.tpNF==='1');
+    /* v846 — DEVOLUCAO DE VENDA. A v557 passou a classificar por CNPJ em vez de
+       tpNF, e isso esta certo: nota de COMPRA tem tpNF=1 porque e saida DO
+       FORNECEDOR. Mas a regra deixou de olhar tpNF por completo, e a devolucao de
+       venda e emitida pela PROPRIA empresa com tpNF=0 — entrava somando receita.
+       Medido no acervo real: NF-e 1406, CFOP 1202, R$ 484,80. Descontando ela,
+       as notas fecham com o PGDAS ao centavo.
+       Agora: emitida por nos com tpNF=1 e saida; com tpNF=0 e devolucao e ABATE. */
+    var _nosso  = _empAg ? ((o.emitCNPJ||'').replace(/\D/g,'')===_empAg) : (o.tpNF==='1');
+    var _devol  = _nosso && String(o.tpNF)==='0';
+    var _ehSaida = _nosso && !_devol;
     if(_ehSaida){ a.nSaida++; a.vProdSaida+=o.vProd; a.vNFSaida+=o.vNF; a.vICMSSaida+=o.vICMS; }
+    else if(_devol){ a.nDevol=(a.nDevol||0)+1; a.vDevol=(a.vDevol||0)+o.vNF;
+                     a.vProdSaida-=o.vProd; a.vNFSaida-=o.vNF; a.vICMSSaida-=o.vICMS; }
     if(o.emitNome&&!a.emitNome){ a.emitNome=o.emitNome; a.emitCNPJ=o.emitCNPJ; }
     var d=(o.dhEmi||'').slice(0,10); if(d){ if(!a.dtMin||d<a.dtMin)a.dtMin=d; if(!a.dtMax||d>a.dtMax)a.dtMax=d; }
   }
@@ -46461,7 +46472,8 @@ function lhImportXML_aggregate(notas){
     var _prS=0,_prV=0,_ppS=0,_ppV=0,_vPzS=0,_cap=0,_nCap=0,_monoV=0,_monoN=0,_vstE=0,_aqPF=0,_icmsS=0;
     for(var _q2=0;_q2<notas.length;_q2++){
       var _o2=notas[_q2]; var _e2=String(_o2.emitCNPJ||'').replace(/\D/g,'');
-      var _sai2=_empAg?(_e2===_empAg):(String(_o2.tpNF)==='1');
+      /* v846 — mesma regra da devolucao no pos-passe: nota nossa com tpNF=0 nao e venda. */
+      var _sai2=(_empAg?(_e2===_empAg):(String(_o2.tpNF)==='1')) && String(_o2.tpNF)!=='0';
       var _de=_dY(_o2.dhEmi||''); var _tem=false; var _ds2=_o2.dups||[];
       for(var _w2=0;_w2<_ds2.length;_w2++){
         var _dv=_dY(_ds2[_w2].venc||''); var _vv=+_ds2[_w2].v||0;
@@ -50186,7 +50198,11 @@ function lhBkpAviso(m){try{if(window.mostrarToast){mostrarToast(m);return;}}catc
     classif:{fat:'classif_fat',atual:'classif_atual',cred:'classif_cred',tipo:'merc'},
     /* ── lincados nesta rodada (gaps) ── */
     c05:{fat:'c05_fat',fornReg:'c05_forn_regular',fornSN:'c05_forn_simples',fornImp:'c05_forn_import',icmsUF:'c05_icms_aliq',segmento:'c05_seg',folha:'c05_folha',folhaEscala:'mensal',prolabore:'c05_prolabore',plEscala:'mensal',socios:'c05_socios',compras:'c05_custos',comprasEscala:'mensal',b2c:'c05_cli_b2c',exportPct:'c05_export'},
-    c10:{fat:'c10_faturamento',regime:'c10_regime',despesasEscala:'mensal',despesas:{aluguel:'c10_aluguel',software:'c10_sistemas'},folha:'c10_folha',folhaEscala:'mensal'},
+    /* v846 — entrada removida: os cinco alvos (c10_faturamento, c10_regime,
+       c10_aluguel, c10_sistemas, c10_folha) nao existem no documento. A tela c10
+       e de precificacao de honorarios (custo/hora, margem, exito) e nunca teve
+       esses campos. O mapa prometia uma tela que nao recebia nada. Se um dia a c10
+       ganhar faturamento e regime, a entrada volta com os ids reais. */
     c11:{fat:'c11_fat'},
     n04:{fat:'n04_fat',cred:'n04_pct_insumos',fornReg:'n04_pct_compras_credito',folha:'n04_folha',folhaEscala:'anual',b2b:'n04_pct_b2b',iss:'n04_iss',anexo:'n04_anexo'},
     n33:{fat:'n33_fat',regime:'n33_regime',segmento:'n33_setor'},
@@ -50846,7 +50862,7 @@ var nCampos=0,nCalcs=0;
       var m=window.LH_PREFILL_MAP[k],tocou=false;
       var rfat=(m.escala==='mensal')?rMensal:(m.escala==='anual')?rAnual:rPeriodo;
       if(m.fat && setVal(m.fat,Math.round(rfat),'fat')){ nCampos++; tocou=true; }
-      if(m.atual && setVal(m.atual,(m.tipo==='merc'?pctMerc:pctServ,'atual'))){ nCampos++; tocou=true; }
+      if(m.atual && setVal(m.atual,(m.tipo==='merc'?pctMerc:pctServ),'atual')){ nCampos++; tocou=true; }
       /* zero aqui costuma significar "não veio no arquivo", não "alíquota zero" —
          preencher com 0 apagaria o valor que o usuário digitou. */
       if(m.pisField && pctPisCof>0 && setVal(m.pisField,pctPisCof,'pisField')){ nCampos++; tocou=true; }
@@ -50990,6 +51006,16 @@ var nCampos=0,nCalcs=0;
         if(setVal(m.icmsUF,window.FP_UF_ICMS[_uf],'icmsUF')){ nCampos++; tocou=true; }
       }
       if(m.cnpj && _cnpj && setVal(m.cnpj,_cnpj,'cnpj')){ nCampos++; tocou=true; }
+      /* v846 — o papel 'nome' estava no mapa desde sempre e o motor nunca o lia.
+         A tela Proposta saia com CNPJ preenchido e o cliente em branco, e ninguem
+         percebia porque o campo de cima enchia. Fonte: razao do PGDAS, e o emitente
+         das notas como reserva. */
+      if(m.nome){
+        var _nomeEmp='';
+        try{ _nomeEmp=String((window.LH_IMPORT_PGDAS&&window.LH_IMPORT_PGDAS.razao)||
+                             (window.LH_IMPORT_XML&&window.LH_IMPORT_XML.emitNome)||'').trim(); }catch(_e){}
+        if(_nomeEmp && setVal(m.nome,_nomeEmp,'nome')){ nCampos++; tocou=true; }
+      }
       if(m.nome && _nome && setVal(m.nome,_nome,'nome')){ nCampos++; tocou=true; }
       /* v492 — mix de fornecedores por CRT (vem dos XMLs de entrada) */
       /* o botão "ler XMLs de COMPRA" tem prioridade (o usuário escolheu os arquivos);
@@ -66513,6 +66539,12 @@ function _capexChart(imediato, antigo, cdc){
     }
     /* SPED-like: registros |XXXX| */
     if(/\|0000\|/.test(c) || /^\|\d{4}\|/m.test(c)){
+      /* v846 — ECD antes do resto: parseECD existe desde sempre, mas o detector
+         nao tinha ramo e o arquivo caia em SPED_desconhecido. Quem arrastava a ECD
+         para a Central lia 'SPED nao reconhecido' e concluia que a ferramenta nao
+         le ECD — que le. O |LECD| do registro 0000 e a assinatura da escrituracao
+         contabil e nao aparece em nenhum outro SPED. */
+      if(/\|LECD\||\|I050\|/.test(c)) return 'ECD';
       if(/\|M300\||\|M350\||\bLECF\b/.test(c)) return 'ECF';
       if(/\|C190\||\|E110\|/.test(c)) return 'SPEDFiscal';
       if(/\|M200\||\|M600\||\|0111\|/.test(c)) return 'EFD';
@@ -66550,6 +66582,8 @@ function _capexChart(imediato, antigo, cdc){
 
   var LABELS={EFD:'EFD Contribuições', PGDAS:'PGDAS-D', eSocial:'eSocial', Balancete:'Balancete',
     SPEDFiscal:'SPED Fiscal', ECF:'ECF (LALUR)', NFe:'NF-e', XML_desconhecido:'XML não reconhecido',
+    /* v846 — quatro tipos que o detector ja reconhecia e a tela nao sabia nomear. */
+    REINF:'EFD-Reinf', NFSE:'NFS-e', CTE:'CT-e', ECD:'ECD (contábil)',
     SPED_desconhecido:'SPED não reconhecido', DESCONHECIDO:'Não reconhecido'};
 
   function lerArquivo(f){
@@ -66576,10 +66610,26 @@ function _capexChart(imediato, antigo, cdc){
         };
         fr.readAsArrayBuffer(f);
       } else {
+        /* v846 — ENCODING. Lia tudo como ISO-8859-1. XML de NF-e declara UTF-8 e
+           o acento saia corrompido ('Servico' virava 'ServiA§o'). Para numero nao
+           muda nada (e ASCII), mas para NFS-e (descricao do servico), Balancete
+           (nome da conta) e eSocial (nome do segurado) o texto E o dado.
+           Agora: le como UTF-8 e so cai para ISO-8859-1 se aparecer o caractere de
+           substituicao — que e a marca de ter lido latin-1 como utf-8. */
         var fr=new FileReader();
-        fr.onload=function(){ res({nome:f.name, texto:fr.result, isPdf:false, file:f}); };
+        fr.onload=function(){
+          var t=String(fr.result||'');
+          if(t.indexOf('\uFFFD')>=0){
+            var fr2=new FileReader();
+            fr2.onload=function(){ res({nome:f.name, texto:fr2.result, isPdf:false, file:f, _enc:'ISO-8859-1'}); };
+            fr2.onerror=function(){ res({nome:f.name, texto:t, isPdf:false, file:f, _enc:'utf-8'}); };
+            try{ fr2.readAsText(f,'ISO-8859-1'); }catch(e){ res({nome:f.name, texto:t, isPdf:false, file:f, _enc:'utf-8'}); }
+            return;
+          }
+          res({nome:f.name, texto:t, isPdf:false, file:f, _enc:'utf-8'});
+        };
         fr.onerror=function(){ res({nome:f.name, texto:'', file:f, erro:true}); };
-        try{ fr.readAsText(f,'ISO-8859-1'); }catch(e){ fr.readAsText(f); }
+        try{ fr.readAsText(f,'UTF-8'); }catch(e){ fr.readAsText(f); }
       }
     });
   }
@@ -66694,12 +66744,25 @@ window.LH_PORTEIRO={
               try{ if(window.lhRenderRecusas) window.lhRenderRecusas(); }catch(_e){}
             } }catch(_e){} }, 1400); }catch(_e){}
         }catch(_e){ window._LH_PROTOCOLO=null; }
+        /* v846 — grupos.ERRO era preenchido e nunca lido: arquivo que nao pode ser
+           aberto sumia sem aviso. O caso que mais dolorido e o PDF: o pdf.js e
+           carregado da cdnjs em tempo de execucao e, se a rede do escritorio
+           bloquear a CDN, TODO PGDAS falha calado. Como o PGDAS e a ancora da
+           escala (v560), o usuario nao fica sem uma tela: fica com faturamento
+           projetado 30% alto achando que esta certo. Tem de aparecer na tela. */
         lidos.forEach(function(l){
           if(l.erro){ (grupos.ERRO=grupos.ERRO||[]).push(l.nome); return; }
           var tipo=detectarTipo(l.nome, l.texto);
           (grupos[tipo]=grupos[tipo]||[]).push(l);
         });
         var resumo=[], aplicados=0;
+        if(grupos.ERRO && grupos.ERRO.length){
+          var _ehPdf=grupos.ERRO.some(function(n){ return /\.pdf$/i.test(String(n||'')); });
+          resumo.push({t:'Não foi possível ler', n:grupos.ERRO.length, ok:false,
+            extra: grupos.ERRO.slice(0,3).join(', ') + (grupos.ERRO.length>3?' e mais '+(grupos.ERRO.length-3):'')
+              + (_ehPdf ? ' · leitura de PDF indisponível (sem acesso à biblioteca externa) — digite os valores à mão ou envie o arquivo em outro formato' : '')});
+          try{ if(typeof mostrarToast==='function') mostrarToast('\u26a0 '+grupos.ERRO.length+' arquivo(s) não puderam ser lidos'+(_ehPdf?' — a leitura de PDF não está disponível agora':'')+'. Os campos correspondentes NÃO foram preenchidos.','error'); }catch(_e){}
+        }
 
         /* EFD Contribuições */
         if(grupos.EFD){ window.LH_EFD_SERIE=[]; var _efdAcc={ok:false,files:0,cnpj:'',empresa:'',dtIni:'',dtFin:'',receitaBruta:0,pisApurado:0,cofinsApurado:0,credPIS:0,credCOFINS:0,credTotal:0,basePIS:0,saidasTotal:0,monoSaidas:0,stSaidas:0,zeroSaidas:0,exportSaidas:0,icmsSaidas:0,devolEntradas:0,saldoCredDisp:0,_sdLast:0,_dtFinMax:'',regimeInc:''};
