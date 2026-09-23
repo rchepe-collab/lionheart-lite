@@ -82,7 +82,7 @@ setTimeout(()=>{
   console.log('  -- agendar demonstração --');
   const wz=d.querySelector('.conversa a');
   ex('bloco existe', !!wz);
-  ex('número certo', /wa\.me\/5553999823848/.test(wz.getAttribute('href')));
+  ex('número certo', /wa\.me\/5553999503279/.test(wz.getAttribute('href')));
   ex('abre em aba nova com noopener', wz.target==='_blank' && /noopener/.test(wz.rel));
   ex('mensagem já preenchida', /text=/.test(wz.getAttribute('href')));
   ex('é o último elemento da página', d.querySelector('#comecar a[href="assinar.html"]')
@@ -96,9 +96,10 @@ setTimeout(()=>{
   ex('caixa flutuante existe', !!fl);
   ex('tem os dois botoes', fl.querySelectorAll('a').length===2);
   ex('primeiro leva a assinar', fl.querySelector('.flutua').getAttribute('href')==='assinar.html');
-  ex('segundo e a demonstracao', /wa\.me\/5553999823848/.test(fl.querySelector('.flutua-2').getAttribute('href')));
+  ex('segundo e a demonstracao', /wa\.me\/5553999503279/.test(fl.querySelector('.flutua-2').getAttribute('href')));
   ex('nasce escondida', !fl.classList.contains('vis'));
-  ex('tres convites no site', d.querySelectorAll('a[href*="wa.me/5553999823848"]').length===3);
+  ex('tres convites no site', d.querySelectorAll('a[href*="wa.me/5553999503279"]').length===3);
+  ex('nenhum convite de demonstracao no numero antigo', d.querySelectorAll('a[data-lh="demo"][href*="5553999823848"]').length===0);
   ex('um convite apos as dores', !!d.querySelector('#solucoes a[href*="wa.me"]'));
   dom.window.scrollY=300; dom.window.dispatchEvent(new dom.window.Event('scroll'));
   ex('aparece com 300px de rolagem', fl.classList.contains('vis'));
