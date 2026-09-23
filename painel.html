@@ -284,9 +284,9 @@
     </section>
 
     <section id="s-origens">
-      <h2>De onde veio</h2>
-      <p class="nota">A origem é a do primeiro toque: se a pessoa veio do LinkedIn e voltou direto dias depois para assinar, o crédito continua do LinkedIn. <b>(direto)</b> é quem chegou sem marca na URL — não é erro, é a maior parte do mundo.</p>
-      <div class="rolar"><table><thead><tr><th>Origem</th><th>Visitas</th><th>Ver planos</th><th>Demonstração</th><th>Abriu compra</th><th>Escolheu</th></tr></thead><tbody id="t-origens"></tbody></table></div>
+      <h2>De onde vieram os visitantes</h2>
+      <p class="nota">A origem é a do primeiro toque: se a pessoa veio do LinkedIn e voltou direto dias depois para assinar, o crédito continua do LinkedIn. <b>Acesso direto</b> é quem chegou sem marca no link — digitou o endereço, veio de um favorito ou de um link sem código. Não é erro, é a maior parte do mundo. Passe o mouse sobre um nome para ver o código do link.</p>
+      <div class="rolar"><table><thead><tr><th>Origem</th><th>Visitas</th><th>Viram os planos</th><th>Pediram demonstração</th><th>Abriram a compra</th><th>Escolheram o plano</th></tr></thead><tbody id="t-origens"></tbody></table></div>
     </section>
 
     <section>
@@ -334,6 +334,31 @@
   var $ = function(id){ return document.getElementById(id); };
 
   /* ── ferramentas ─────────────────────────────────────────────────────── */
+  /* ★ v852 · NOME DA ORIGEM. O código do link (?de=...) continua sendo o que
+     vai ao servidor e o que sai no CSV; na tela aparece o nome. Código sem
+     nome aparece como veio — nunca some. */
+  var ORIGENS = {
+    '(direto)': 'Acesso direto',
+    'linkedin': 'LinkedIn · postagem',
+    'li-direto': 'LinkedIn · mensagem direta',
+    'email-direto': 'E-mail direto',
+    'whatsapp': 'WhatsApp',
+    'wa-carlos': 'WhatsApp · Carlos',
+    'wa-grupo': 'WhatsApp · grupo',
+    'instagram': 'Instagram'
+  };
+  var CANAL = { li: 'LinkedIn', wa: 'WhatsApp', em: 'E-mail' };
+  function nomeOrigem(v){
+    v = String(v || '(direto)');
+    if(ORIGENS[v]) return ORIGENS[v];
+    var m = /^p(\d{1,3})(?:-(li|wa|em))?$/.exec(v);
+    if(m) return 'Parceiro ' + (m[1].length < 2 ? '0' + m[1] : m[1]) + (m[2] ? ' · ' + CANAL[m[2]] : '');
+    return v;
+  }
+  function celOrigem(v){
+    v = v || '(direto)';
+    return '<td title="código: ' + esc(v) + '">' + esc(nomeOrigem(v)) + '</td>';
+  }
   function esc(t){ return String(t==null?'':t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function reais(v){ v = Number(v)||0; return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0}); }
   function data(d){ if(!d) return '—'; var p=String(d).slice(0,10).split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
@@ -656,7 +681,7 @@
     var ano = String(e.de).slice(0,4) !== String(e.ate).slice(0,4) || String(e.ate).slice(0,4) !== String(new Date().getFullYear());
     var t = '<b>' + esc(dataCurta(e.de, ano)) + ' a ' + esc(dataCurta(e.ate, ano)) + '</b>';
     if(e.filtro_etapa)  t += ' · só quem <b>' + esc(ETAPAS[e.filtro_etapa] || e.filtro_etapa) + '</b>';
-    if(e.filtro_origem) t += ' · origem <b>' + esc(e.filtro_origem) + '</b>';
+    if(e.filtro_origem) t += ' · origem <b>' + esc(nomeOrigem(e.filtro_origem)) + '</b>';
     return t;
   }
 
@@ -680,7 +705,8 @@
     [''].concat(vistas).forEach(function(v){
       var b = document.createElement('button');
       b.type = 'button'; b.setAttribute('data-origem', v);
-      b.textContent = v || 'Todas';
+      b.textContent = v ? nomeOrigem(v) : 'Todas';
+      if(v) b.title = 'código: ' + v;
       b.setAttribute('aria-pressed', String((e.filtro_origem || '') === v));
       b.addEventListener('click', function(){ carregar(pedido({ origem: v })); });
       fo.appendChild(b);
@@ -781,7 +807,7 @@
     var to = $('t-origens'); to.innerHTML = '';
     if(!og.length){ to.innerHTML = '<tr><td colspan="6" class="vazio">Nenhuma visita no período.</td></tr>'; }
     og.forEach(function(x){
-      to.insertAdjacentHTML('beforeend', '<tr><td class="d">' + esc(x.origem || '(direto)') + '</td><td>' + numero(x.visitas) + '</td><td>' + numero(x.ver_planos) + '</td><td>' + numero(x.demonstracao) + '</td><td>' + numero(x.abriu_compra) + '</td><td>' + numero(x.escolheu) + '</td></tr>');
+      to.insertAdjacentHTML('beforeend', '<tr><td class="d" title="código: ' + esc(x.origem || '(direto)') + '">' + esc(nomeOrigem(x.origem)) + '</td><td>' + numero(x.visitas) + '</td><td>' + numero(x.ver_planos) + '</td><td>' + numero(x.demonstracao) + '</td><td>' + numero(x.abriu_compra) + '</td><td>' + numero(x.escolheu) + '</td></tr>');
     });
 
     /* atenção */
@@ -817,7 +843,7 @@
     var tm = $('t-material'); tm.innerHTML = '';
     if(!lml.length){ tm.innerHTML = '<tr><td colspan="7" class="vazio">Ninguém baixou material neste período.</td></tr>'; }
     lml.forEach(function(x){
-      tm.insertAdjacentHTML('beforeend', '<tr><td class="d">' + esc(x.email) + '</td><td>' + esc(x.telefone || '—') + '</td><td>' + esc(x.nome || '—') + '</td><td>' + esc(x.material) + '</td><td>' + esc(x.origem || '(direto)') + '</td><td>' + dataHora(x.quando) + '</td><td>' + (x.virou_conta ? '<span class="selo ok">virou conta</span>' : '<span class="selo nao">ainda não</span>') + '</td></tr>');
+      tm.insertAdjacentHTML('beforeend', '<tr><td class="d">' + esc(x.email) + '</td><td>' + esc(x.telefone || '—') + '</td><td>' + esc(x.nome || '—') + '</td><td>' + esc(x.material) + '</td>' + celOrigem(x.origem) + '<td>' + dataHora(x.quando) + '</td><td>' + (x.virou_conta ? '<span class="selo ok">virou conta</span>' : '<span class="selo nao">ainda não</span>') + '</td></tr>');
     });
 
     var ab = r.abandonou || {}, abl = ab.lista || [];
@@ -825,7 +851,7 @@
     var ta = $('t-abandonou'); ta.innerHTML = '';
     if(!abl.length){ ta.innerHTML = '<tr><td colspan="7" class="vazio">Ninguém parou no meio do caminho neste período.</td></tr>'; }
     abl.forEach(function(x){
-      ta.insertAdjacentHTML('beforeend', '<tr><td class="d">' + esc(x.email) + '</td><td>' + esc(x.plano) + '</td><td>' + esc(x.ciclo) + '</td><td>' + esc(x.origem || '(direto)') + '</td><td>' + dataHora(x.quando) + '</td><td>' + (x.tentativas||1) + '</td><td>' + (x.tem_conta ? '<span class="selo ok">tem conta</span>' : '<span class="selo nao">sem conta</span>') + '</td></tr>');
+      ta.insertAdjacentHTML('beforeend', '<tr><td class="d">' + esc(x.email) + '</td><td>' + esc(x.plano) + '</td><td>' + esc(x.ciclo) + '</td>' + celOrigem(x.origem) + '<td>' + dataHora(x.quando) + '</td><td>' + (x.tentativas||1) + '</td><td>' + (x.tem_conta ? '<span class="selo ok">tem conta</span>' : '<span class="selo nao">sem conta</span>') + '</td></tr>');
     });
 
     /* uso */

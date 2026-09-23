@@ -266,9 +266,25 @@ async function comOPainelAberto(resposta) {
     const linhas = $(dom, 't-origens').querySelectorAll('tr');
     ex('uma linha por origem', linhas.length === 3, linhas.length + ' linhas');
     ex('ordenado por visitas (a maior primeiro)', /73/.test(linhas[0].textContent));
-    ex('sem marca na URL vira (direto)', /\(direto\)/.test($(dom, 't-origens').textContent));
+    ex('sem marca na URL vira Acesso direto', /Acesso direto/.test($(dom, 't-origens').textContent));
+    ex('o código cru não aparece na tabela', !/\(direto\)/.test($(dom, 't-origens').textContent));
+    ex('o código fica no title da célula', !!$(dom, 't-origens').querySelector('td[title="código: linkedin"]'));
     ex('mostra as colunas do funil por origem',
-       /linkedin/.test($(dom, 't-origens').textContent) && /instagram/.test($(dom, 't-origens').textContent));
+       /LinkedIn · postagem/.test($(dom, 't-origens').textContent) && /Instagram/.test($(dom, 't-origens').textContent));
+    ex('título novo da seção', /De onde vieram os visitantes/.test(html));
+    {
+      /* a função mora dentro do IIFE da página: extrai o trecho e avalia à parte */
+      const i0 = html.indexOf('var ORIGENS = {'), i1 = html.indexOf('function celOrigem');
+      const w = { eval: (x) => new Function(html.slice(i0, i1) + '; return ' + x)() };
+      ex('nome: li-direto', w.eval("nomeOrigem('li-direto')") === 'LinkedIn · mensagem direta');
+      ex('nome: email-direto', w.eval("nomeOrigem('email-direto')") === 'E-mail direto');
+      ex('nome: whatsapp', w.eval("nomeOrigem('whatsapp')") === 'WhatsApp');
+      ex('nome: vazio é Acesso direto', w.eval("nomeOrigem('')") === 'Acesso direto');
+      ex('nome: parceiro p01', w.eval("nomeOrigem('p01')") === 'Parceiro 01');
+      ex('nome: parceiro p01-wa', w.eval("nomeOrigem('p01-wa')") === 'Parceiro 01 · WhatsApp');
+      ex('nome: parceiro p01-li', w.eval("nomeOrigem('p01-li')") === 'Parceiro 01 · LinkedIn');
+      ex('código desconhecido aparece como veio', w.eval("nomeOrigem('feira-poa')") === 'feira-poa');
+    }
     ex('a página explica a regra do primeiro toque',
        /origem é a do primeiro toque/i.test(html));
   }
@@ -316,7 +332,7 @@ async function comOPainelAberto(resposta) {
        !/x@y\.com/.test($(dom, 't-material').textContent)
        && !/lead@escritorio/.test($(dom, 't-abandonou').textContent));
     ex('a origem aparece nas duas bases',
-       /linkedin/.test($(dom, 't-material').textContent) && /instagram/.test($(dom, 't-abandonou').textContent));
+       /LinkedIn · postagem/.test($(dom, 't-material').textContent) && /Instagram/.test($(dom, 't-abandonou').textContent));
     ex('marca quem não tem conta', /sem conta/.test($(dom, 't-abandonou').textContent));
 
     ex('selo verde: material tem consentimento',
@@ -537,11 +553,11 @@ async function comOPainelAberto(resposta) {
     'a origem ativa fica marcada (e Todas não)': o.telaTres.origemLinkedin && !o.telaTres.todas,
     'o seletor de etapa mostra a etapa ativa': o.telaTres.etapa === 'site:demonstracao',
     'o recorte diz a etapa': /só quem pediu demonstração/.test(o.telaTres.recorte),
-    'o recorte diz a origem': /origem linkedin/.test(o.telaTres.recorte),
+    'o recorte diz a origem (pelo nome)': /origem LinkedIn · postagem/.test(o.telaTres.recorte),
     'Personalizado marcado, nenhum botão pronto': o.telaLivre.livre && !o.telaLivre.algumPronto,
     'o recorte diz as datas do período livre':
       o.telaLivre.recorte.indexOf(curta(ontem) + ' a ' + curta(hoje)) === 0,
-    'o recorte combina os três': /só quem pediu demonstração · origem linkedin/.test(o.telaLivre.recorte),
+    'o recorte combina os três': /só quem pediu demonstração · origem LinkedIn · postagem/.test(o.telaLivre.recorte),
     'os campos de data mostram o que foi aplicado': o.telaLivre.de === ontem && o.telaLivre.ate === hoje,
     'sem filtro, o recorte é só o período': o.telaFim.todas && !/só quem|origem/.test(o.telaFim.recorte) && o.telaFim.livre
   });
