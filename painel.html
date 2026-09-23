@@ -23,6 +23,9 @@
        mostra um total e a base tem outro;
      · nenhuma biblioteca externa — carrega em qualquer 4G, e não quebra
        quando um CDN some.
+
+     ★ v850 · FILTROS: período livre, etapa e origem. Os três se combinam, e
+     o que aparece como ativo é o ECO do servidor, não o clique.
      ═══════════════════════════════════════════════════════════════════════ */
   :root{
     --breu:#080808; --breu-alto:#0e0e0f; --carvao:#141415;
@@ -59,6 +62,19 @@
   .periodo button{ background:var(--carvao); border:1px solid rgba(255,255,255,.08); color:var(--linho);
                    border-radius:7px; padding:6px 12px; font:inherit; font-size:.8rem; cursor:pointer }
   .periodo button[aria-pressed="true"]{ background:linear-gradient(135deg,#d9b53a,#c9a227); color:#0c1628; border-color:var(--ouro); font-weight:600 }
+  .periodo input[type=date]{ background:var(--carvao); border:1px solid rgba(255,255,255,.12); color:var(--creme); border-radius:7px;
+                             padding:5px 8px; font:inherit; font-size:.8rem; color-scheme:dark }
+  .periodo label{ font-size:.74rem; color:var(--pedra) }
+  .periodo select{ background:var(--carvao); border:1px solid rgba(255,255,255,.12); color:var(--linho); border-radius:7px;
+                   padding:6px 10px; font:inherit; font-size:.8rem; max-width:100% }
+  .livre-campos{ display:inline-flex; gap:6px; align-items:center; flex-wrap:wrap }
+  /* o recorte ativo, em uma linha: é o que o servidor disse que aplicou */
+  .recorte{ font-size:.84rem; color:var(--linho); background:rgba(201,162,39,.07); border:1px solid rgba(201,162,39,.22);
+            border-radius:8px; padding:8px 12px; margin:0 0 18px }
+  .recorte b{ color:var(--ouro-claro); font-weight:500 }
+  .marca-base{ display:inline-block; font-size:.6rem; letter-spacing:.06em; text-transform:none; color:var(--ambar);
+               border:1px solid rgba(232,176,32,.35); border-radius:20px; padding:0 7px; margin-left:6px; vertical-align:2px }
+  .etapa .so-email{ font-size:.7rem; color:var(--ambar); margin-top:3px }
 
   /* cartões */
   .grade{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin-bottom:22px }
@@ -206,16 +222,41 @@
     <button type="button" data-dias="30" aria-pressed="true">30 dias</button>
     <button type="button" data-dias="90">90 dias</button>
     <button type="button" data-dias="365">1 ano</button>
+    <button type="button" id="p-livre">Personalizado</button>
+    <span class="livre-campos" id="livre-campos" hidden>
+      <label for="f-de">de</label><input type="date" id="f-de">
+      <label for="f-ate">até</label><input type="date" id="f-ate">
+      <button type="button" id="f-aplicar">Aplicar</button>
+    </span>
   </div>
+
+  <!-- ★ v850 · ETAPA E ORIGEM. O que aparece marcado aqui vem do ECO do
+       servidor (de, ate, filtro_etapa, filtro_origem), nunca do clique: se o
+       servidor não aplicou, a tela não finge que aplicou. -->
+  <div class="periodo" role="group" aria-label="Etapa">
+    <label for="f-etapa"><span>Olhar só quem…</span></label>
+    <select id="f-etapa">
+      <option value="">Todos</option>
+      <option value="site:ver_planos">clicou em ver planos</option>
+      <option value="site:demonstracao">pediu demonstração</option>
+      <option value="assinar:abriu">abriu a compra</option>
+      <option value="assinar:escolheu">escolheu plano</option>
+      <option value="assinar:digitou_email">digitou o e-mail</option>
+      <option value="assinar:recusou_termos">recusou os termos</option>
+    </select>
+  </div>
+  <div class="periodo" role="group" aria-label="Origem" id="f-origens" hidden></div>
+
+  <div class="recorte" id="recorte" hidden></div>
 
   <div id="carregando" class="carregando">Buscando os números…</div>
 
   <div id="conteudo" hidden>
     <div class="grade">
-      <div class="cartao"><div class="rotulo">Assinantes pagantes</div><div class="valor ouro" id="k-pagantes">—</div><div class="sub" id="k-pagantes-sub"></div></div>
-      <div class="cartao"><div class="rotulo">Receita mensal recorrente</div><div class="valor ouro" id="k-mrr">—</div><div class="sub">soma dos planos ativos, no preço mensal</div></div>
-      <div class="cartao"><div class="rotulo">Contas no Livre</div><div class="valor" id="k-livre">—</div><div class="sub">viram o Diagnóstico, ainda não compraram</div></div>
-      <div class="cartao"><div class="rotulo">Cortesias</div><div class="valor" id="k-cortesia">—</div><div class="sub">parceiros e conta interna</div></div>
+      <div class="cartao"><div class="rotulo">Assinantes pagantes<span class="marca-base" hidden>base inteira</span></div><div class="valor ouro" id="k-pagantes">—</div><div class="sub" id="k-pagantes-sub"></div></div>
+      <div class="cartao"><div class="rotulo">Receita mensal recorrente<span class="marca-base" hidden>base inteira</span></div><div class="valor ouro" id="k-mrr">—</div><div class="sub">soma dos planos ativos, no preço mensal</div></div>
+      <div class="cartao"><div class="rotulo">Contas no Livre<span class="marca-base" hidden>base inteira</span></div><div class="valor" id="k-livre">—</div><div class="sub">viram o Diagnóstico, ainda não compraram</div></div>
+      <div class="cartao"><div class="rotulo">Cortesias<span class="marca-base" hidden>base inteira</span></div><div class="valor" id="k-cortesia">—</div><div class="sub">parceiros e conta interna</div></div>
       <div class="cartao"><div class="rotulo">Cálculos no período</div><div class="valor" id="k-calc">—</div><div class="sub" id="k-calc-sub"></div></div>
     </div>
 
@@ -231,7 +272,7 @@
     </section>
 
     <section id="s-atencao">
-      <h2>O que pede decisão hoje</h2>
+      <h2>O que pede decisão hoje<span class="marca-base" hidden>base inteira</span></h2>
       <p class="nota">A mesma lista que chega por e-mail às 9h. Vazia é o normal.</p>
       <div class="rolar"><table><thead><tr><th>Conta</th><th>Plano</th><th>Validade</th><th>Situação</th></tr></thead><tbody id="t-atencao"></tbody></table></div>
     </section>
@@ -291,7 +332,6 @@
   var BASE  = 'https://dilrjxsbcejcgprajayo.supabase.co/functions/v1';
   var CHAVE = 'lh_token';           /* a mesma do CORE: entrou num, entrou no outro */
   var $ = function(id){ return document.getElementById(id); };
-  var dias = 30;
 
   /* ── ferramentas ─────────────────────────────────────────────────────── */
   function esc(t){ return String(t==null?'':t).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
@@ -542,14 +582,6 @@
     carregar();
   }
 
-  Array.prototype.forEach.call(document.querySelectorAll('.periodo button'), function(b){
-    b.addEventListener('click', function(){
-      dias = parseInt(b.getAttribute('data-dias'), 10) || 30;
-      Array.prototype.forEach.call(document.querySelectorAll('.periodo button'), function(x){ x.setAttribute('aria-pressed', String(x===b)); });
-      carregar();
-    });
-  });
-
   /* a última resposta do servidor: o CSV sai exatamente do que está na tela,
      nunca de uma segunda chamada que pode vir diferente */
   var ultimo = null;
@@ -573,19 +605,144 @@
       }));
   });
 
-  function carregar(){
+  /* ── filtros (v850) ────────────────────────────────────────────────────
+     O ESTADO ATIVO MORA NO ECO. A página não guarda "qual filtro está
+     ligado" em variável nenhuma: pinta os controles e a linha do recorte com
+     o que o servidor devolveu (de, ate, filtro_etapa, filtro_origem). Se o
+     servidor ignorou um filtro, a tela mostra que ele foi ignorado — o
+     contrário seria um recorte dizendo uma coisa e os números sendo outra.
+     O próximo pedido também parte do eco: muda só o controle mexido. */
+  var ETAPAS = {
+    'site:ver_planos':        'clicou em ver planos',
+    'site:demonstracao':      'pediu demonstração',
+    'assinar:abriu':          'abriu a compra',
+    'assinar:escolheu':       'escolheu plano',
+    'assinar:digitou_email':  'digitou o e-mail',
+    'assinar:recusou_termos': 'recusou os termos'
+  };
+  var PRONTOS = [7, 30, 90, 365];
+
+  function diasEntre(a, b){
+    var pa = String(a||'').split('-'), pb = String(b||'').split('-');
+    return Math.round((Date.UTC(+pb[0], pb[1]-1, +pb[2]) - Date.UTC(+pa[0], pa[1]-1, +pa[2])) / 864e5);
+  }
+  /* período pronto ou personalizado, lido do eco: no pronto o servidor conta
+     "agora menos N dias" (ate − de = N); no livre, 'ate' é inclusivo
+     (ate − de = N − 1). */
+  function prontoDoEco(e){
+    if(!e || !e.de || !e.ate) return 0;
+    var n = Number(e.dias) || 0;
+    return (PRONTOS.indexOf(n) !== -1 && diasEntre(e.de, e.ate) === n) ? n : 0;
+  }
+  function comFiltro(e){ return !!(e && (e.filtro_etapa || e.filtro_origem)); }
+
+  /* o pedido: parte do eco e troca só o que mudou */
+  function pedido(muda){
+    var e = ultimo || {}, x = {};
+    var n = prontoDoEco(e);
+    if(muda && ('dias' in muda)){ x.dias = muda.dias; }
+    else if(muda && ('de' in muda)){ x.de = muda.de; if(muda.ate) x.ate = muda.ate; }
+    else if(n || !e.de){ x.dias = n || 30; }
+    else { x.de = e.de; x.ate = e.ate; }
+    var etapa  = (muda && ('etapa'  in muda)) ? muda.etapa  : (e.filtro_etapa  || '');
+    var origem = (muda && ('origem' in muda)) ? muda.origem : (e.filtro_origem || '');
+    if(etapa)  x.etapa  = etapa;
+    if(origem) x.origem = origem;
+    return x;
+  }
+
+  function dataCurta(d, comAno){ var p = String(d||'').slice(0,10).split('-'); return p.length===3 ? p[2]+'/'+p[1]+(comAno ? '/'+p[0] : '') : String(d||''); }
+  function recorteTexto(e){
+    var ano = String(e.de).slice(0,4) !== String(e.ate).slice(0,4) || String(e.ate).slice(0,4) !== String(new Date().getFullYear());
+    var t = '<b>' + esc(dataCurta(e.de, ano)) + ' a ' + esc(dataCurta(e.ate, ano)) + '</b>';
+    if(e.filtro_etapa)  t += ' · só quem <b>' + esc(ETAPAS[e.filtro_etapa] || e.filtro_etapa) + '</b>';
+    if(e.filtro_origem) t += ' · origem <b>' + esc(e.filtro_origem) + '</b>';
+    return t;
+  }
+
+  /* pinta os controles com o eco — e só com ele */
+  function marcarControles(e){
+    e = e || {};
+    var n = prontoDoEco(e), livre = !!e.de && !n;
+    Array.prototype.forEach.call(document.querySelectorAll('.periodo button[data-dias]'), function(b){
+      b.setAttribute('aria-pressed', String(!livre && parseInt(b.getAttribute('data-dias'),10) === n));
+    });
+    $('p-livre').setAttribute('aria-pressed', String(livre));
+    $('livre-campos').hidden = !livre;
+    $('f-de').value = e.de || ''; $('f-ate').value = e.ate || '';
+    $('f-etapa').value = e.filtro_etapa || '';
+
+    /* faixa de origens: 'origens' nunca vem filtrada, então é a lista inteira */
+    var vistas = [], fo = $('f-origens');
+    (e.origens || []).forEach(function(o){ var v = o.origem || '(direto)'; if(vistas.indexOf(v) === -1) vistas.push(v); });
+    if(e.filtro_origem && vistas.indexOf(e.filtro_origem) === -1) vistas.push(e.filtro_origem);
+    fo.innerHTML = '<span>Origem</span>';
+    [''].concat(vistas).forEach(function(v){
+      var b = document.createElement('button');
+      b.type = 'button'; b.setAttribute('data-origem', v);
+      b.textContent = v || 'Todas';
+      b.setAttribute('aria-pressed', String((e.filtro_origem || '') === v));
+      b.addEventListener('click', function(){ carregar(pedido({ origem: v })); });
+      fo.appendChild(b);
+    });
+    /* uma origem só não é escolha — a não ser que haja filtro para desligar */
+    fo.hidden = vistas.length <= 1 && !e.filtro_origem;
+
+    var rc = $('recorte');
+    rc.hidden = !e.de;
+    rc.innerHTML = e.de ? recorteTexto(e) : '';
+
+    /* o que é da base inteira não muda com filtro — e diz isso */
+    var marcar = comFiltro(e);
+    Array.prototype.forEach.call(document.querySelectorAll('.marca-base'), function(m){ m.hidden = !marcar; });
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.periodo button[data-dias]'), function(b){
+    b.addEventListener('click', function(){ carregar(pedido({ dias: parseInt(b.getAttribute('data-dias'), 10) || 30 })); });
+  });
+  $('p-livre').addEventListener('click', function(){
+    $('livre-campos').hidden = false;
+    try{ $('f-de').focus(); }catch(e){}
+  });
+  $('f-aplicar').addEventListener('click', function(){
+    var de = $('f-de').value, ate = $('f-ate').value;
+    if(!de){ $('carregando').hidden = false; $('carregando').textContent = 'Informe a data inicial.'; return; }
+    carregar(pedido({ de: de, ate: ate }));
+  });
+  $('f-etapa').addEventListener('change', function(){ carregar(pedido({ etapa: this.value })); });
+
+  /* só a resposta do último pedido desenha: clique rápido não deixa uma
+     resposta velha chegar depois e pintar o recorte errado */
+  var vez = 0;
+  function carregar(entradas){
+    entradas = entradas || { dias: 30 };
+    var filtrado = !!(entradas.de || entradas.etapa || entradas.origem);
+    var n = ++vez;
     $('conteudo').hidden = true; $('carregando').hidden = false; $('carregando').textContent = 'Buscando os números…';
-    chamar('painel', { dias: dias }).then(function(res){
+    function erro(m){
+      /* o erro aparece como o servidor escreveu; os controles voltam ao
+         último eco, porque o filtro pedido NÃO foi aplicado */
+      $('carregando').textContent = m;
+      marcarControles(ultimo);
+      $('recorte').hidden = true;
+    }
+    chamar('painel', entradas).then(function(res){
+      if(n !== vez) return;
       if(!res || !res.ok){
         var m = (res && (res.motivo || (res.resultado && res.resultado.motivo))) || 'Sem resposta.';
         if(res && (res.recusa === 'identidade')){ esquecer(); mostrarPorta('Sessão expirada. Entre de novo.'); return; }
-        $('carregando').textContent = m; return;
+        erro(m); return;
       }
       var r = res.resultado || {};
-      if(r.ok === false){ esquecer(); mostrarPorta(r.motivo || 'Esta página é só da direção.'); return; }
+      if(r.ok === false){
+        /* sem filtro nenhum, recusa é da porta; com filtro, é do filtro */
+        if(!filtrado){ esquecer(); mostrarPorta(r.motivo || 'Esta página é só da direção.'); return; }
+        erro(r.motivo || 'Não foi possível aplicar o filtro.'); return;
+      }
       desenhar(r);
+      marcarControles(r);
       $('carregando').hidden = true; $('conteudo').hidden = false;
-    }).catch(function(){ $('carregando').textContent = 'Sem conexão com o servidor.'; });
+    }).catch(function(){ if(n === vez) erro('Sem conexão com o servidor.'); });
   }
 
   function desenhar(r){
@@ -636,6 +793,9 @@
 
     /* funil */
     var f = r.funil || [], fx = $('funil'); fx.innerHTML = '';
+    /* com etapa ativa, o recorte é de visitantes; da 7 em diante o funil conta
+       por e-mail, e só alcança quem deixou o e-mail na compra */
+    var soEmail = r.filtro_etapa ? '<div class="so-email">contam só quem deixou o e-mail na compra</div>' : '';
     var base = 0; for(var i=0;i<f.length;i++){ if((f[i].qtd||0) > 0){ base = f[i].qtd; break; } }
     f.forEach(function(e, i){
       var q = e.qtd || 0, pct = base ? Math.round(q / base * 100) : 0;
@@ -644,7 +804,7 @@
       var conv = (i > 0 && ant >= AMOSTRA_MIN) ? Math.round(q / ant * 100) + '% da anterior' : '';
       fx.insertAdjacentHTML('beforeend',
         '<div class="etapa"><div class="n">' + e.n + '</div>' +
-        '<div class="barra"><i style="width:' + Math.max(pct, q ? 2 : 0) + '%"></i><b>' + esc(e.etapa) + '</b></div>' +
+        '<div><div class="barra"><i style="width:' + Math.max(pct, q ? 2 : 0) + '%"></i><b>' + esc(e.etapa) + '</b></div>' + (e.n >= 7 ? soEmail : '') + '</div>' +
         '<div><div class="qtd">' + q + '</div><div class="pct">' + conv + '</div></div></div>');
     });
 
