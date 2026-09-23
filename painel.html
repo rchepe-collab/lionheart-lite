@@ -17,7 +17,8 @@
 
      O QUE ELA NÃO TEM, E POR QUÊ:
      · nenhuma chave secreta — o login é o mesmo do CORE, e o servidor só
-       responde para quem tem admin_papel = 'dono' (fn_painel confere);
+       responde para quem tem admin_papel 'dono' ou 'socio' (fn_painel
+       confere; o sócio lê, não administra — v849);
      · nenhum número escrito aqui — tudo vem do banco, senão um dia o painel
        mostra um total e a base tem outro;
      · nenhuma biblioteca externa — carrega em qualquer 4G, e não quebra
@@ -47,6 +48,8 @@
   .topo h1 span{ color:var(--ouro) }
   .topo .quem{ font-size:.82rem; color:var(--pedra) }
   .topo .quem b{ color:var(--linho); font-weight:500 }
+  .topo .leitura{ font-size:.68rem; letter-spacing:.04em; color:var(--pedra); border:1px solid rgba(142,138,130,.35);
+    border-radius:20px; padding:1px 8px; margin-left:4px; vertical-align:1px }
   .topo button{ background:none; border:1px solid rgba(201,162,39,.4); color:var(--ouro); border-radius:8px;
                 padding:6px 12px; font:inherit; font-size:.78rem; cursor:pointer }
 
@@ -194,7 +197,7 @@
 <div id="painel" class="miolo" hidden>
   <div class="topo">
     <h1>Painel <span>Lionheart</span></h1>
-    <div class="quem"><b id="quem"></b> · <button id="sair" type="button">Sair</button></div>
+    <div class="quem"><b id="quem"></b><span id="leitura" class="leitura" hidden>somente leitura</span> · <button id="sair" type="button">Sair</button></div>
   </div>
 
   <div class="periodo" role="group" aria-label="Período">
@@ -417,6 +420,10 @@
   }
 
   /* ── porta ───────────────────────────────────────────────────────────── */
+  /* uma regra só, usada no login e na sessão guardada: dono e sócio leem o
+     painel; qualquer outro papel (suporte, nenhum) fica na porta */
+  var PAPEIS_DO_PAINEL = ['dono', 'socio'];
+  function podeVer(papel){ return PAPEIS_DO_PAINEL.indexOf(papel) !== -1; }
   function mostrarPorta(msg){
     $('painel').hidden = true; $('porta').hidden = false;
     $('porta-login').hidden = false; $('porta-rec').hidden = true;
@@ -434,9 +441,9 @@
     .then(function(r){ return r.json(); })
     .then(function(d){
       if(!d || !d.ok || !d.token){ mostrarPorta((d && d.motivo) || 'Não foi possível entrar.'); return; }
-      if(d.admin !== 'dono'){ mostrarPorta('Esta página é só da direção.'); return; }
+      if(!podeVer(d.admin)){ mostrarPorta('Esta página é só da direção.'); return; }
       guardar(d.token); $('senha').value = '';
-      abrir(d.nome || email);
+      abrir(d.nome || email, d.admin);
     })
     .catch(function(){ mostrarPorta('Sem conexão com o servidor.'); });
   }
@@ -528,9 +535,10 @@
   $('rec-codigo').addEventListener('input', function(){ this.value = this.value.replace(/\D/g, '').slice(0, 6); });
 
   /* ── painel ──────────────────────────────────────────────────────────── */
-  function abrir(nome){
+  function abrir(nome, papel){
     $('porta').hidden = true; $('painel').hidden = false;
     $('quem').textContent = nome || '';
+    $('leitura').hidden = papel !== 'socio';
     carregar();
   }
 
@@ -672,7 +680,7 @@
       body: JSON.stringify({ action:'verificar', token: token() }) })
     .then(function(r){ return r.json(); })
     .then(function(d){
-      if(d && d.ok && d.admin === 'dono') abrir(d.nome);
+      if(d && d.ok && podeVer(d.admin)) abrir(d.nome, d.admin);
       else { esquecer(); mostrarPorta(d && d.ok ? 'Esta página é só da direção.' : ''); }
     }).catch(function(){ mostrarPorta(''); });
   } else {

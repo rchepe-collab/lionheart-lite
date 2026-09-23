@@ -4,7 +4,8 @@
    Roda a página num navegador de mentira (jsdom) com um servidor de mentira,
    e confere os três caminhos que importam:
      1. dono entra e vê os números que o servidor mandou — nem um a mais;
-     2. suporte é barrado NA PORTA, antes de qualquer número aparecer;
+     2. suporte (e quem não tem papel) é barrado NA PORTA, antes de qualquer
+        número aparecer; o sócio (v849) entra, com o selo "somente leitura";
      3. sessão vencida volta para a porta em vez de mostrar tela vazia.
 
    E confere o que a página promete não ter: chave secreta, número escrito,
@@ -97,7 +98,11 @@ const RESPOSTA = {
 };
 const copia = (o) => JSON.parse(JSON.stringify(o));
 
-/* servidor de mentira: decide pelo corpo da chamada */
+/* servidor de mentira: decide pelo corpo da chamada.
+   dom_pediuNumeros conta quantas vezes a página pediu os números: barrar NA
+   PORTA quer dizer nem pedir — se a porta abrisse e só o servidor recusasse,
+   a tela voltaria à porta do mesmo jeito e a prova passaria à toa. */
+let dom_pediuNumeros = { n: 0 };
 function servidor(papel, sessaoValida, resposta) {
   return async (url, opts) => {
     const corpo = JSON.parse((opts && opts.body) || '{}');
@@ -106,23 +111,28 @@ function servidor(papel, sessaoValida, resposta) {
       if (corpo.action === 'verificar') return responder(sessaoValida ? { ok: true, nome: 'Ricardo', admin: papel } : { ok: false, motivo: 'Sessão expirada.' });
       if (corpo.email === 'dono@x.com') return responder({ ok: true, nome: 'Ricardo', admin: 'dono', token: 't-dono' });
       if (corpo.email === 'sup@x.com')  return responder({ ok: true, nome: 'Suporte', admin: 'suporte', token: 't-sup' });
+      if (corpo.email === 'socio@x.com') return responder({ ok: true, nome: 'Sócia', admin: 'socio', token: 't-socio' });
+      if (corpo.email === 'nada@x.com')  return responder({ ok: true, nome: 'Cliente', admin: null, token: 't-nada' });
       return responder({ ok: false, motivo: 'Email ou senha incorretos.' });
     }
     if (String(url).endsWith('/calcular')) {
       const auth = (opts.headers || {})['Authorization'] || '';
       if (!auth.replace('Bearer ', '')) return responder({ ok: false, recusa: 'identidade', motivo: 'Sessão ausente.' });
       if (corpo.calc !== 'painel') return responder({ ok: false, recusa: 'modulo' });
-      return responder(papel === 'dono' ? { ok: true, resultado: resposta } : { ok: true, resultado: { ok: false, motivo: 'Painel restrito à direção.' } });
+      dom_pediuNumeros.n++;
+      /* como fn_painel desde a v849: dono e sócio leem */
+      return responder(papel === 'dono' || papel === 'socio' ? { ok: true, resultado: resposta } : { ok: true, resultado: { ok: false, motivo: 'Painel restrito à direção.' } });
     }
     return responder({ ok: false });
   };
 }
 
-function montar(papel, sessaoValida, tokenGuardado, resposta) {
-  const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'https://lionheartintelligence.com.br/painel.html' });
+function montar(papel, sessaoValida, tokenGuardado, resposta, outroHtml) {
+  const dom = new JSDOM(outroHtml || html, { runScripts: 'outside-only', url: 'https://lionheartintelligence.com.br/painel.html' });
   const w = dom.window;
   if (tokenGuardado) w.localStorage.setItem('lh_token', tokenGuardado);
   dom.chamadasDeRede = 0;
+  dom.pediuNumeros = dom_pediuNumeros = { n: 0 };
   const real = servidor(papel, sessaoValida, resposta || RESPOSTA);
   w.fetch = (u, o) => { dom.chamadasDeRede++; return real(u, o); };
 
@@ -330,18 +340,84 @@ async function comOPainelAberto(resposta) {
        dom.chamadasDeRede === antesDoCsv, (dom.chamadasDeRede - antesDoCsv) + ' chamada(s) durante a exportação');
   }
 
-  console.log('\n-- 8 · o suporte é barrado na porta --');
-  dom = montar('suporte', false, null);
-  await espera(20);
-  $(dom, 'email').value = 'sup@x.com'; $(dom, 'senha').value = 'segredo';
-  $(dom, 'entrar').click();
-  await espera(60);
-  ex('continua na porta', !$(dom, 'porta').hidden && $(dom, 'painel').hidden);
-  ex('diz que é só da direção', /direção/.test($(dom, 'aviso-porta').textContent));
-  ex('não guardou token', !dom.window.localStorage.getItem('lh_token'));
-  ex('nenhum número foi desenhado', $(dom, 'k-pagantes').textContent === '—');
-  ex('nenhuma base vazou para quem não é dono',
+  console.log('\n-- 8 · só dono e sócio passam da porta --');
+  /* entra pelo login e, com o papel que o servidor devolver, confere se
+     ficou barrado na porta sem ver nem pedir número nenhum */
+  async function pelaPorta(papel, email, outroHtml) {
+    const d = montar(papel, false, null, null, outroHtml);
+    await espera(20);
+    $(d, 'email').value = email; $(d, 'senha').value = 'segredo';
+    $(d, 'entrar').click();
+    await espera(60);
+    return d;
+  }
+  const barrado = (d) =>
+    !$(d, 'porta').hidden && $(d, 'painel').hidden
+    && /direção/.test($(d, 'aviso-porta').textContent)
+    && !d.window.localStorage.getItem('lh_token')
+    && d.pediuNumeros.n === 0
+    && $(d, 'k-pagantes').textContent === '—'
+    && !/lead@escritorio|x@y\.com/.test(d.window.document.body.textContent);
+
+  dom = await pelaPorta('suporte', 'sup@x.com');
+  ex('suporte: continua na porta', !$(dom, 'porta').hidden && $(dom, 'painel').hidden);
+  ex('suporte: diz que é só da direção', /direção/.test($(dom, 'aviso-porta').textContent));
+  ex('suporte: não guardou token', !dom.window.localStorage.getItem('lh_token'));
+  ex('suporte: nem pediu os números ao servidor', dom.pediuNumeros.n === 0, dom.pediuNumeros.n + ' pedido(s)');
+  ex('suporte: nenhum número foi desenhado', $(dom, 'k-pagantes').textContent === '—');
+  ex('suporte: nenhuma base vazou',
      !/lead@escritorio|x@y\.com/.test(dom.window.document.body.textContent));
+
+  dom = await pelaPorta(null, 'nada@x.com');
+  ex('sem papel: barrado na porta, sem token nem número', barrado(dom));
+
+  dom = await pelaPorta('socio', 'socio@x.com');
+  ex('sócio: entra no painel', $(dom, 'porta').hidden && !$(dom, 'painel').hidden);
+  ex('sócio: guardou o token', dom.window.localStorage.getItem('lh_token') === 't-socio');
+  ex('sócio: vê os números', $(dom, 'k-pagantes').textContent === '2');
+  ex('sócio: selo "somente leitura" no cabeçalho',
+     !$(dom, 'leitura').hidden && /somente leitura/.test($(dom, 'leitura').textContent)
+     && dom.window.document.querySelector('.topo').contains($(dom, 'leitura')));
+
+  dom = await pelaPorta('dono', 'dono@x.com');
+  ex('dono: NÃO leva o selo de somente leitura', $(dom, 'leitura').hidden);
+
+  console.log('\n-- 8b · a mesma regra ao reabrir com a sessão guardada --');
+  for (const [papel, rotulo] of [['suporte', 'suporte'], [null, 'sem papel']]) {
+    const d = montar(papel, true, 't-guardado');
+    await espera(80);
+    ex(rotulo + ': sessão guardada não abre o painel',
+       !$(d, 'porta').hidden && $(d, 'painel').hidden && d.pediuNumeros.n === 0);
+    ex(rotulo + ': e o token guardado é esquecido', !d.window.localStorage.getItem('lh_token'));
+  }
+  {
+    const d = montar('socio', true, 't-socio');
+    await espera(80);
+    ex('sócio: sessão guardada entra direto', $(d, 'porta').hidden && !$(d, 'painel').hidden);
+    ex('sócio: com o selo de somente leitura', !$(d, 'leitura').hidden);
+  }
+
+  console.log('\n-- 8c · teste ao contrário: a porta é que barra --');
+  {
+    /* PORTA ESCANCARADA: se podeVer deixasse todo mundo passar, as
+       verificações acima têm de reprovar — senão estariam passando à toa */
+    const aberta = html.replace(/function podeVer\(papel\)\{[^}]*\}/, 'function podeVer(papel){ return true; }');
+    ex('(a mutação da porta pegou)', aberta !== html);
+    const dSup = await pelaPorta('suporte', 'sup@x.com', aberta);
+    ex('com a porta aberta, o suporte deixaria de ser barrado', !barrado(dSup));
+    const dNada = await pelaPorta(null, 'nada@x.com', aberta);
+    ex('com a porta aberta, quem não tem papel também', !barrado(dNada));
+
+    /* SÓ O DONO NA LISTA: o sócio tem de voltar a ser barrado — prova que
+       é a lista de papéis que o deixa entrar, e não um acaso */
+    const soDono = html.replace(/var PAPEIS_DO_PAINEL = \[[^\]]*\];/, "var PAPEIS_DO_PAINEL = ['dono'];");
+    ex('(a mutação da lista pegou)', soDono !== html);
+    const dSoc = await pelaPorta('socio', 'socio@x.com', soDono);
+    ex('sem "socio" na lista, o sócio é barrado', barrado(dSoc));
+    const dSocGuardado = montar('socio', true, 't-socio', null, soDono);
+    await espera(80);
+    ex('e a sessão guardada do sócio também', !$(dSocGuardado, 'porta').hidden && dSocGuardado.pediuNumeros.n === 0);
+  }
 
   console.log('\n-- 9 · sessão vencida volta para a porta --');
   dom = montar('dono', false, 't-velho');
@@ -354,6 +430,7 @@ async function comOPainelAberto(resposta) {
   await espera(80);
   ex('entrou sem pedir senha', $(dom, 'porta').hidden && !$(dom, 'painel').hidden);
   ex('mostra quem é', /Ricardo/.test($(dom, 'quem').textContent));
+  ex('dono pela sessão guardada: sem selo de somente leitura', $(dom, 'leitura').hidden);
 
   console.log('\nRESULTADO: ' + (falhou ? falhou + ' FALHOU' : 'tudo aprovado') + '\n');
   process.exit(falhou ? 1 : 0);
