@@ -13121,17 +13121,31 @@ try{ setTimeout(function(){ window.LH_cnpjAuto(true); }, 2500); }catch(e){}
    por CNPJ e restaurado na carga, respeitando a regra do vazio. */
 window.LH_centralSalvar = function(){
   try{
+    if(window.__LH_RESTAURANDO) return false; /* ★ v854 · ver lhBkpRestaurar */
     var P = window.LH_CENTRAL_PROC; if(!P || !P.cnpj) return false;
     var campos = {};
     ['dxh_rbt12','dxh_fat','dxh_aliq','dxh_comp','dxh_folha','dxh_forn_regular','dxh_forn_simples',
      'dxh_cli_regular','dxh_cli_simples','dxh_cli_b2c','dxh_export','dxh_anexo',
      'c05_fat','c05_custos','c05_folha','c05_seg','c05_socios','c05_prolabore','c05_margem'
     ].forEach(function(id){ var e=document.getElementById(id);
-      if(e && String(e.value||'').trim()) campos[id]=e.value; });
+      if(!e || !String(e.value||'').trim()) return;
+      /* ★ v854 · valor de fábrica não é dado do cliente. O seletor de segmento nasce
+         em 'servicos_gerais'; gravar isso apagava o 'comercio_atacado' apurado. */
+      if(e.tagName==='SELECT'){ var o=e.options[e.selectedIndex]; if(o && o.defaultSelected) return; }
+      else if(e.value===e.defaultValue) return;
+      campos[id]=e.value; });
     if(!Object.keys(campos).length) return false;
+    /* ★ v854 · SOMA, NÃO TROCA. O autosave de 6 s rodava antes de a tela ser
+       preenchida (cliente sem CNPJ no cadastro: a restauração não achava o dossiê)
+       e regravava o resumo com um campo só — os 17 apurados dos documentos sumiam
+       6 segundos depois de abrir a ferramenta. Agora o que está na tela atualiza o
+       que já estava guardado; campo que a tela não tem não apaga o guardado. */
+    var chaveC = 'lh_central_'+P.cnpj, antigo = null;
+    try{ antigo = JSON.parse(localStorage.getItem(chaveC)||'null'); }catch(_e){}
+    if(antigo && antigo.campos){ campos = Object.assign({}, antigo.campos, campos); }
     var pacote = { cnpj:P.cnpj, raiz:P.raiz||'', quando:new Date().toISOString(), campos:campos,
-                   aliqEf:(window._LH_ALIQ_EF_SN||null) };
-    localStorage.setItem('lh_central_'+P.cnpj, JSON.stringify(pacote));
+                   aliqEf:(window._LH_ALIQ_EF_SN||(antigo&&antigo.aliqEf)||null) };
+    localStorage.setItem(chaveC, JSON.stringify(pacote));
     return true;
   }catch(e){ return false; }
 };
@@ -19842,6 +19856,10 @@ window.LH_PERSIST = (function(){
 
   function salvarPagina(pageId, eid){
     if(!pageId) return;
+    /* ★ v854 · durante a restauração de backup NINGUÉM grava: o recarregar dispara
+       o beforeunload, e ele salvava a tela aberta (ainda com os dados velhos) por
+       cima da mesma calculadora que o backup acabara de trazer. */
+    if(window.__LH_RESTAURANDO) return;
     var dados = coletar(pageId);
     if(!dados) return;
     try{ localStorage.setItem(chave(pageId, eid), JSON.stringify(dados)); }catch(e){}
@@ -50056,7 +50074,10 @@ function inject(){ var n=0; document.querySelectorAll('.resultado-section').forE
   </div>
 </div>
 <script>
-function lhBkpColeta(){var o={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);o[k]=localStorage.getItem(k);}return o;}
+/* ★ v854 · a sessão (token de acesso) não vai para o arquivo: backup é dado do
+   cliente, não chave de entrada — e o arquivo circula por e-mail e pen drive. */
+var LH_BKP_FORA = /(^|::)(lh_token|lh_token_em|lh_refresh)$/;
+function lhBkpColeta(){var o={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(LH_BKP_FORA.test(k))continue;o[k]=localStorage.getItem(k);}return o;}
 function lhBkpBaixar(){
   try{
     var pacote={_app:'Lionheart',_versao:1,_data:new Date().toISOString(),dados:lhBkpColeta()};
@@ -50074,10 +50095,18 @@ function lhBkpRestaurar(input){
   r.onload=function(){
     try{
       var pp=JSON.parse(r.result),dados=pp.dados||pp;
-      Object.keys(dados).forEach(function(k){localStorage.setItem(k,dados[k]);});
+      /* ★ v854 · a partir daqui a tela aberta não grava mais nada (LH_PERSIST e
+         Central): senão o recarregar sobrescrevia o que acabou de voltar. Não
+         restaura a sessão do arquivo (fica a de quem está logado agora), nem
+         valor vazio (null virava o texto "null"). */
+      window.__LH_RESTAURANDO = true;
+      Object.keys(dados).forEach(function(k){
+        if(LH_BKP_FORA.test(k) || dados[k]==null) return;
+        localStorage.setItem(k,dados[k]);
+      });
       lhBkpAviso('\u2705 Dados restaurados! Recarregando...');
       setTimeout(function(){location.reload();},1200);
-    }catch(e){lhBkpAviso('\u274C Arquivo inv\u00e1lido: '+e.message);}
+    }catch(e){window.__LH_RESTAURANDO = false; lhBkpAviso('\u274C Arquivo inv\u00e1lido: '+e.message);}
   };
   r.readAsText(f);
 }
