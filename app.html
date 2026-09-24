@@ -6469,6 +6469,7 @@ function lhTrocarSenha(){
     <button onclick="abrirPagina('tour',null)" title="Imersão — Aprenda a usar a ferramenta" style="background:rgba(201,162,39,0.10);color:rgba(201,162,39,0.85);border:1px solid rgba(201,162,39,0.28);height:36px;padding:0 14px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:0.78em;font-weight:600;flex-shrink:0;white-space:nowrap;font-family:'DM Sans',sans-serif;">Aprenda</button>
     <button id="btn-cliente-topbar" onclick="LH_abrirSeletorCliente()" title="Cliente ativo — clique para trocar" style="background:rgba(201,162,39,0.12);color:#e8b020;border:1px solid rgba(201,162,39,0.40);height:36px;padding:0 14px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:7px;font-size:0.78em;font-weight:700;flex-shrink:0;white-space:nowrap;font-family:'DM Sans',sans-serif;"><span style="opacity:.85;"></span><span id="btn-cliente-topbar-nome">Selecionar cliente</span><span style="opacity:.6;font-size:0.85em;">▼</span></button>
     <button onclick="lhBkpAbrir()" title="Backup dos dados — fase beta" style="background:linear-gradient(135deg,#f4cc4a,#c9a227);color:#1a1407;border:none;height:36px;padding:0 14px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:7px;font-size:0.78em;font-weight:700;flex-shrink:0;white-space:nowrap;font-family:'DM Sans',sans-serif;box-shadow:0 3px 12px rgba(201,162,39,.3);">💾 Backup</button>
+    <button id="lh-sup-btn" onclick="lhSupAbrir()" title="Falar com o suporte pelo WhatsApp" style="background:rgba(37,211,102,0.10);color:#4ade80;border:1px solid rgba(37,211,102,0.35);height:36px;padding:0 14px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:7px;font-size:0.78em;font-weight:700;flex-shrink:0;white-space:nowrap;font-family:'DM Sans',sans-serif;">💬 Suporte</button>
     <div id="lh-aprenda-topbar" style="display:none;align-items:center;gap:9px;height:36px;padding:0 11px;border-radius:8px;background:rgba(201,162,39,0.10);border:1px solid rgba(201,162,39,0.38);flex-shrink:0;white-space:nowrap;font-family:'DM Sans',sans-serif;">
       <span style="font-size:1.05em;color:var(--gold);line-height:1;flex-shrink:0;"></span>
       <span style="font-size:0.62rem;font-weight:700;letter-spacing:0.03em;color:var(--gold);text-transform:uppercase;line-height:1.15;">Quer dominar<br>esta ferramenta?</span>
@@ -50122,6 +50123,93 @@ function lhBkpAbrir(){(document.getElementById('lhBkpModal')||{style:{}}).style.
 function lhBkpFechar(){(document.getElementById('lhBkpModal')||{style:{}}).style.display='none';}
 function lhBkpContar(){try{var el=document.getElementById('lhBkpInfo');if(el)el.textContent=localStorage.length+' itens guardados no navegador.';}catch(e){}}
 function lhBkpAviso(m){try{if(window.mostrarToast){mostrarToast(m);return;}}catch(e){}var el=document.getElementById('lhBkpMsg');if(el){el.textContent=m;}else{alert(m);}}
+</script>
+
+<!-- ★ v856 · SUPORTE PELO WHATSAPP
+     O cliente descreve o problema e a mensagem chega pronta no WhatsApp do
+     suporte, com quem é, o plano e a tela em que estava — o suporte não precisa
+     perguntar "qual tela?". Não passa por servidor nenhum: é só o link wa.me.
+     NÃO vai dado do cliente do escritório (nome, números, documentos): só a
+     tela e o que a própria pessoa escreveu. -->
+<div id="lhSupModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.65);align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)lhSupFechar()">
+  <div style="background:#0d1626;border:1px solid rgba(37,211,102,.35);border-radius:16px;max-width:460px;width:100%;padding:26px;color:#eef2f8;font-family:system-ui,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div style="font-size:1.3em;font-weight:800;color:#4ade80;margin-bottom:6px">💬 Falar com o suporte</div>
+    <p style="font-size:.88em;color:rgba(238,242,248,.7);margin:0 0 14px;line-height:1.5">Conte o que aconteceu. A mensagem abre pronta no WhatsApp, já dizendo em que tela você estava — é só enviar.</p>
+    <label for="lh-sup-oque" style="display:block;font-size:.82em;font-weight:700;margin-bottom:5px">O que aconteceu?</label>
+    <textarea id="lh-sup-oque" rows="4" maxlength="1200" placeholder="Ex.: importei o PGDAS e o faturamento ficou zerado na Regime Ótimo" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#eef2f8;padding:10px;font:inherit;font-size:.9em;resize:vertical"></textarea>
+    <label for="lh-sup-esperava" style="display:block;font-size:.82em;font-weight:700;margin:12px 0 5px">O que você esperava? <span style="font-weight:400;color:rgba(238,242,248,.5)">(opcional)</span></label>
+    <input id="lh-sup-esperava" maxlength="400" placeholder="Ex.: o faturamento de R$ 2,7 mi preenchido" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#eef2f8;padding:10px;font:inherit;font-size:.9em">
+    <div id="lh-sup-msg" style="font-size:.82em;color:#f87171;min-height:1.2em;margin-top:8px"></div>
+    <button id="lh-sup-enviar" onclick="lhSupEnviar()" style="width:100%;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;font-weight:700;border:none;border-radius:10px;padding:13px;cursor:pointer;font-size:.95em;margin-top:4px">Enviar pelo WhatsApp</button>
+    <p style="font-size:.76em;color:rgba(238,242,248,.5);margin:10px 0 0;text-align:center;line-height:1.5">Sem WhatsApp neste computador? Fale com a gente no <b style="color:#eef2f8;white-space:nowrap">(53) 99982-3848</b>.<br>Nenhum número ou documento dos seus clientes vai na mensagem.</p>
+    <button onclick="lhSupFechar()" style="width:100%;background:none;border:none;color:rgba(238,242,248,.5);margin-top:8px;cursor:pointer;font-size:.85em">Fechar</button>
+  </div>
+</div>
+<script>
+var LH_SUP_WA = '5553999823848';
+function lhSupAbrir(){
+  var m=document.getElementById('lhSupModal'); if(!m) return;
+  m.style.display='flex';
+  var d=document.getElementById('lh-sup-msg'); if(d) d.textContent='';
+  setTimeout(function(){ try{ document.getElementById('lh-sup-oque').focus(); }catch(e){} },50);
+}
+function lhSupFechar(){ var m=document.getElementById('lhSupModal'); if(m) m.style.display='none'; }
+/* quem é: o e-mail sai do próprio token de acesso (o login não guarda o e-mail à parte) */
+function lhSupQuem(){
+  var nome='', email='', plano='';
+  try{ nome = localStorage.getItem('lh_nome') || sessionStorage.getItem('lh_nome') || ''; }catch(e){}
+  try{ plano = localStorage.getItem('lh_plano') || ''; }catch(e){}
+  try{
+    var t = localStorage.getItem('lh_token') || '';
+    var b = t.split('.')[1];
+    if(b){ b=b.replace(/-/g,'+').replace(/_/g,'/'); while(b.length%4) b+='=';
+      var j = JSON.parse(decodeURIComponent(escape(atob(b)))); email = j.email || ''; }
+  }catch(e){}
+  return { nome:nome, email:email, plano:plano };
+}
+/* onde estava: o título da tela aberta, não o conteúdo dela */
+function lhSupTela(){
+  try{
+    var pg=document.querySelector('.page.active'); if(!pg) return 'tela inicial';
+    var h=pg.querySelector('h1, h2, .page-title');
+    var t=(h && h.textContent || '').replace(/\s+/g,' ').trim();
+    return (t ? t.slice(0,80) : '') || pg.id.replace(/^page-/,'');
+  }catch(e){ return '?'; }
+}
+function lhSupNavegador(){
+  var u=navigator.userAgent||'';
+  var n=/Edg\//.test(u)?'Edge':/OPR\//.test(u)?'Opera':/Chrome\//.test(u)?'Chrome':/Firefox\//.test(u)?'Firefox':/Safari\//.test(u)?'Safari':'outro';
+  var s=/Windows/.test(u)?'Windows':/Mac OS/.test(u)?'Mac':/Android/.test(u)?'Android':/iPhone|iPad/.test(u)?'iOS':/Linux/.test(u)?'Linux':'';
+  return n+(s?' · '+s:'');
+}
+function lhSupTexto(oque, esperava){
+  var q=lhSupQuem(), d=new Date(), p=function(n){return String(n).padStart(2,'0');};
+  var l=['🦁 *Suporte Lionheart*'];
+  l.push('Quem: '+(q.nome||'(sem nome)')+(q.email?' · '+q.email:'')+(q.plano?' · plano '+q.plano:''));
+  l.push('Tela: '+lhSupTela());
+  l.push('');
+  l.push('*O que aconteceu:* '+oque);
+  if(esperava) l.push('*Esperava:* '+esperava);
+  l.push('');
+  l.push(lhSupNavegador()+' · '+p(d.getDate())+'/'+p(d.getMonth()+1)+' '+p(d.getHours())+':'+p(d.getMinutes()));
+  return l.join('\n');
+}
+function lhSupEnviar(){
+  var oque=String((document.getElementById('lh-sup-oque')||{}).value||'').trim();
+  var esp =String((document.getElementById('lh-sup-esperava')||{}).value||'').trim();
+  var aviso=document.getElementById('lh-sup-msg');
+  if(aviso) aviso.style.color='#f87171';
+  if(oque.length<10){ if(aviso) aviso.textContent='Conte em uma frase o que aconteceu — assim a gente já chega com a resposta.'; return; }
+  var url='https://wa.me/'+LH_SUP_WA+'?text='+encodeURIComponent(lhSupTexto(oque, esp));
+  /* sem o 'noopener' no terceiro argumento: com ele o navegador devolve null mesmo
+     quando abriu, e a queda para a mesma aba tiraria a pessoa da ferramenta */
+  var w=null; try{ w=window.open(url,'_blank'); if(w) w.opener=null; }catch(e){}
+  if(!w){ if(aviso){ aviso.style.color='#fbbf24';
+      aviso.innerHTML='O navegador bloqueou a janela. <a href="'+url+'" target="_blank" rel="noopener" style="color:#4ade80">Clique aqui para abrir o WhatsApp</a>.'; }
+    return; }
+  lhSupFechar();
+  try{ document.getElementById('lh-sup-oque').value=''; document.getElementById('lh-sup-esperava').value=''; }catch(e){}
+}
 </script>
 
 <script>
