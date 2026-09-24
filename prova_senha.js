@@ -112,6 +112,7 @@ const PAGINAS = [
         "  fetch(LH_LOGIN_URL, {\n    method:'POST',\n    headers:{'Content-Type':'application/json'},\n    body: JSON.stringify({ action:'trocarSenha', email:_lhTrocaEmail, senha:_lhTrocaSenha, novaSenha:nova, produto:LH_PROD })\n  }).then(",
         "  var url=LH_LOGIN_URL+'?action=trocarSenha&email='+encodeURIComponent(_lhTrocaEmail)+'&senha='+encodeURIComponent(_lhTrocaSenha)+'&novaSenha='+encodeURIComponent(nova)+'&produto='+LH_PROD;\n  fetch(url).then("
       ]],
+      adminSoNoReload: [["try{ if(res && res.token && window.LH_ADMIN && typeof LH_ADMIN.instalar==='function') LH_ADMIN.instalar(); }catch(e){}", ""]],
       troca6: [["if(nova.length<8){ msg.textContent='A nova senha precisa ter ao menos 8 caracteres.'; return; }",
                 "if(nova.length<6){ msg.textContent='A nova senha precisa ter ao menos 6 caracteres.'; return; }"]]
     }
@@ -483,6 +484,24 @@ const VERIFICA = [
       const n = p.dom.chamadas.filter((x) => x.corpo.action === 'trocarSenha' || x.url.indexOf('trocarSenha') >= 0).length;
       const rotulo = /8 caracteres/.test(tr.textContent);
       return [n === 0 && p.d.getElementById('lh-troca-msg').textContent !== '' && rotulo, 'chamadas=' + n + ' rótulo8=' + rotulo];
+    }
+  },
+  {
+    /* v853 · o menu de administração nascia só 2,2 s após abrir a página; quem
+       entrava pela tela de login depois disso ficava sem ele até recarregar */
+    nome: 'depois do login, o menu de administração é pedido de novo ao servidor',
+    soCore: true,
+    sabotagem: 'adminSoNoReload',
+    async rodar(pag, src) {
+      const p = abrir(pag, src); await espera(20);
+      let pedidos = 0;
+      p.w.LH_ADMIN = { instalar: () => { pedidos++; } };
+      p.digitar('loginEmail', EXISTE); p.el('loginSenha').value = 'qualquer123';
+      p.clicar('loginBtn');
+      await ate(() => p.w.localStorage.getItem('lh_token') === 't-login', 1000);
+      await espera(20);
+      const entrou = p.w.localStorage.getItem('lh_token') === 't-login';
+      return [entrou && pedidos === 1, 'entrou=' + entrou + ' pedidos=' + pedidos];
     }
   },
   {

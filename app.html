@@ -5630,6 +5630,13 @@ function lhEntrarOk(res){
   }catch(e){}
   var ov=document.getElementById('lh-login-overlay'); if(ov) ov.style.display='none';
   var tr=document.getElementById('lh-troca-overlay'); if(tr) tr.style.display='none';
+  /* ★ v853 · o menu de administração nascia uma vez só, 2,2 s depois de a página
+     abrir. Quem entrava pela tela de login (sessão vencida, senha nova, primeiro
+     acesso) chegava depois disso, sem token naquela hora — e o menu não vinha
+     até recarregar a página. Agora, com o token na mão, pergunta de novo ao
+     servidor. instalar() não duplica o item e continua só mostrando o menu se
+     o servidor confirmar o papel. */
+  try{ if(res && res.token && window.LH_ADMIN && typeof LH_ADMIN.instalar==='function') LH_ADMIN.instalar(); }catch(e){}
 }
 function lhAbrirTroca(email, senha){
   _lhTrocaEmail=email; _lhTrocaSenha=senha;
