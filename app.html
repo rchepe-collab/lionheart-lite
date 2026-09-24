@@ -18791,7 +18791,9 @@ function ctcCalc(){
     </div>
 
     <!-- Vídeos: estrutura preservada · slots prontos pra inserir os Looms depois -->
-        <!-- ★ v821 · a trilha cresce por cartão. Slot vago diz "Vídeo em breve" e
+        <!-- ★ v855 · 10 vídeos, sem cartão "em breve": Backup logo depois do menu,
+         Importação depois das Centrais, Painel do Escritório por último.
+         ★ v821 · a trilha cresce por cartão. Slot vago diz "Vídeo em breve" e
          NÃO promete quantidade — foi o erro das etiquetas removidas na v820. -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:18px;">
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
@@ -18811,6 +18813,21 @@ function ctcCalc(){
       </div>
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
         <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
+          <video controls preload="none" playsinline poster="video/backup-capa.jpg"
+            style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000"
+            aria-label="Backup e restauração dos dados">
+            <source src="video/backup.mp4" type="video/mp4">
+            <a href="video/backup.mp4">Baixe o arquivo</a>.
+          </video>
+        </div>
+        <div style="padding:14px 16px;">
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 2 · 2 MIN 21</div>
+          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Backup dos seus dados</div>
+          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Por que fazer, quando fazer e como restaurar: seus clientes ficam no seu computador, e o backup leva tudo junto.</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
+        <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
           <video controls preload="none" playsinline poster="video/cadastro-capa.jpg"
             style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000"
             aria-label="Cadastro de cliente e grupo econômico">
@@ -18819,7 +18836,7 @@ function ctcCalc(){
           </video>
         </div>
         <div style="padding:14px 16px;">
-          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 2 · 2 MIN 40</div>
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 3 · 2 MIN 40</div>
           <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Cadastro de cliente e grupo</div>
           <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Cliente solo e grupo econômico: matriz, filiais, holding, sócios PF e coligadas.</div>
         </div>
@@ -18834,9 +18851,24 @@ function ctcCalc(){
           </video>
         </div>
         <div style="padding:14px 16px;">
-          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 3 · 6 MIN 55</div>
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 4 · 6 MIN 55</div>
           <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Centrais de Análises</div>
           <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Onde cada resultado aparece e como ler: KPI, Análise, e o caminho até a Central de Oportunidades.</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
+        <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
+          <video controls preload="none" playsinline poster="video/importar-documentos-capa.jpg"
+            style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000"
+            aria-label="Importação de documentos na Central">
+            <source src="video/importar-documentos.mp4" type="video/mp4">
+            <a href="video/importar-documentos.mp4">Baixe o arquivo</a>.
+          </video>
+        </div>
+        <div style="padding:14px 16px;">
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 5 · 2 MIN 12</div>
+          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Importação de Documentos</div>
+          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Arraste a pasta do cliente: PGDAS, XML, CT-e e SPED processados de uma vez, e o que cada um preenche nas calculadoras.</div>
         </div>
       </div>
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
@@ -18849,7 +18881,7 @@ function ctcCalc(){
           </video>
         </div>
         <div style="padding:14px 16px;">
-          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 4 · 3 MIN 21</div>
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 6 · 3 MIN 21</div>
           <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Como preencher as Centrais</div>
           <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Campo a campo: o que a Central de Documentos já preenche, o que você digita, e o que pode ficar em branco.</div>
         </div>
@@ -18864,7 +18896,7 @@ function ctcCalc(){
           </video>
         </div>
         <div style="padding:14px 16px;">
-          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 5 · 4 MIN 10</div>
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 7 · 4 MIN 10</div>
           <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Jornada do Cliente</div>
           <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">O que vender para cada perfil e em que ano — os serviços ranqueados por prioridade até 2033.</div>
         </div>
@@ -18879,7 +18911,7 @@ function ctcCalc(){
           </video>
         </div>
         <div style="padding:14px 16px;">
-          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 6 · 4 MIN 13</div>
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 8 · 4 MIN 13</div>
           <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Diagnóstico</div>
           <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">As perguntas e a leitura do resultado: risco, oportunidade, e a agenda que vai virar proposta.</div>
         </div>
@@ -18894,48 +18926,24 @@ function ctcCalc(){
           </video>
         </div>
         <div style="padding:14px 16px;">
-          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 7 · 4 MIN 25</div>
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 9 · 4 MIN 25</div>
           <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Proposta Comercial</div>
           <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Do que o Diagnóstico apontou ao cronograma mês a mês, com o acumulado e a sua marca.</div>
         </div>
       </div>
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
         <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
-          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
-            <div style="font-size:1.9em;opacity:.45;">&#127916;</div>
-            <div style="font-size:0.76em;color:rgba(200,215,235,0.5);margin-top:4px;letter-spacing:.04em;">Em breve</div>
-          </div>
+          <video controls preload="none" playsinline poster="video/painel-escritorio-capa.jpg"
+            style="position:absolute;top:0;left:0;width:100%;height:100%;background:#000"
+            aria-label="Painel do Escritório">
+            <source src="video/painel-escritorio.mp4" type="video/mp4">
+            <a href="video/painel-escritorio.mp4">Baixe o arquivo</a>.
+          </video>
         </div>
         <div style="padding:14px 16px;">
-          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 8 · em breve</div>
-          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Importar documentos</div>
-          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">SPED, XML e PGDAS: para onde vai cada informação depois da importação.</div>
-        </div>
-      </div>
-      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
-        <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
-          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
-            <div style="font-size:1.9em;opacity:.45;">&#127916;</div>
-            <div style="font-size:0.76em;color:rgba(200,215,235,0.5);margin-top:4px;letter-spacing:.04em;">Em breve</div>
-          </div>
-        </div>
-        <div style="padding:14px 16px;">
-          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 9 · em breve</div>
-          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Classificador em Massa</div>
-          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Mil itens classificados de uma vez, e o que fazer com os de baixa confiança.</div>
-        </div>
-      </div>
-      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(184,148,31,0.25);border-radius:14px;overflow:hidden;">
-        <div style="position:relative;padding-bottom:56.25%;height:0;background:#0a0f18;border-bottom:1px dashed rgba(184,148,31,0.35);">
-          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
-            <div style="font-size:1.9em;opacity:.45;">&#127916;</div>
-            <div style="font-size:0.76em;color:rgba(200,215,235,0.5);margin-top:4px;letter-spacing:.04em;">Em breve</div>
-          </div>
-        </div>
-        <div style="padding:14px 16px;">
-          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 10 · em breve</div>
-          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Ler uma calculadora</div>
-          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">KPI, Análise, Memória de cálculo e Base legal — a ordem vale para as 153.</div>
+          <div style="font-size:0.7em;color:#c9a227;font-weight:800;letter-spacing:0.06em;">VÍDEO 10 · 2 MIN 39</div>
+          <div style="font-family:'Syne',sans-serif;font-size:1.05em;font-weight:800;color:#fff;margin-top:3px;">Painel do Escritório</div>
+          <div style="font-size:0.8em;color:var(--text2);margin-top:4px;">Dashboard do cliente, Motor 360°, LTV da carteira e o relatório profissional: a visão do escritório inteiro.</div>
         </div>
       </div>
     </div>
