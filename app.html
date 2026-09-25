@@ -46665,7 +46665,7 @@ function parseNFeXML(xmlText){
          emitCPF preenchido = produtor rural pessoa física (aquisição sem crédito
          de PIS/COFINS, mas com crédito presumido nas cadeias do agro). */
       destIE: _dest?txt(_dest,'indIEDest'):'',
-      destCNPJ: _dest?String(txt(_dest,'CNPJ')||'').replace(/\D/g,''):'', destCPF: _dest?String(txt(_dest,'CPF')||'').replace(/\D/g,''):'',
+      destCNPJ: _dest?String(txt(_dest,'CNPJ')||'').replace(/\D/g,''):'', destCPF: _dest?String(txt(_dest,'CPF')||'').replace(/\D/g,''):'', destNome: _dest?String(txt(_dest,'xNome')||''):'',
       emitCPF: emit?String(txt(emit,'CPF')||'').replace(/\D/g,''):'',
       vProd:tot?n(txt(tot,'vProd')):0, vNF:tot?n(txt(tot,'vNF')):0, vBCICMS:tot?n(txt(tot,'vBC')):0,
       vICMS:tot?n(txt(tot,'vICMS')):0, vST:tot?n(txt(tot,'vST')):0, vPIS:tot?n(txt(tot,'vPIS')):0, vCOFINS:tot?n(txt(tot,'vCOFINS')):0,
@@ -47128,7 +47128,7 @@ function parseNFeXML(xmlText){
          emitCPF preenchido = produtor rural pessoa física (aquisição sem crédito
          de PIS/COFINS, mas com crédito presumido nas cadeias do agro). */
       destIE: _dest?txt(_dest,'indIEDest'):'',
-      destCNPJ: _dest?String(txt(_dest,'CNPJ')||'').replace(/\D/g,''):'', destCPF: _dest?String(txt(_dest,'CPF')||'').replace(/\D/g,''):'',
+      destCNPJ: _dest?String(txt(_dest,'CNPJ')||'').replace(/\D/g,''):'', destCPF: _dest?String(txt(_dest,'CPF')||'').replace(/\D/g,''):'', destNome: _dest?String(txt(_dest,'xNome')||''):'',
       emitCPF: emit?String(txt(emit,'CPF')||'').replace(/\D/g,''):'',
       vProd:tot?n(txt(tot,'vProd')):0, vNF:tot?n(txt(tot,'vNF')):0, vBCICMS:tot?n(txt(tot,'vBC')):0,
       vICMS:tot?n(txt(tot,'vICMS')):0, vST:tot?n(txt(tot,'vST')):0, vPIS:tot?n(txt(tot,'vPIS')):0, vCOFINS:tot?n(txt(tot,'vCOFINS')):0,
@@ -50554,7 +50554,7 @@ function lhSupEnviar(){
     c04:{fat:'c04_faturamento',fornReg:'c04_creditos_lp',fornSN:'c04_creditos_sn',regime:'c04_regime',segmento:'c04_cnae'},
     classif:{fat:'classif_fat',atual:'classif_atual',cred:'classif_cred',tipo:'merc'},
     /* ── lincados nesta rodada (gaps) ── */
-    c05:{fat:'c05_fat',fornReg:'c05_forn_regular',fornSN:'c05_forn_simples',fornImp:'c05_forn_import',icmsUF:'c05_icms_aliq',segmento:'c05_seg',folha:'c05_folha',folhaEscala:'mensal',prolabore:'c05_prolabore',plEscala:'mensal',socios:'c05_socios',compras:'c05_custos',comprasEscala:'mensal',b2c:'c05_cli_b2c',exportPct:'c05_export'},
+    c05:{fat:'c05_fat',fornReg:'c05_forn_regular',fornSN:'c05_forn_simples',fornImp:'c05_forn_import',icmsUF:'c05_icms_aliq',segmento:'c05_seg',folha:'c05_folha',folhaEscala:'mensal',prolabore:'c05_prolabore',plEscala:'mensal',socios:'c05_socios',compras:'c05_custos',comprasEscala:'mensal',b2c:'c05_cli_b2c',exportPct:'c05_export',cliRegular:'c05_cli_regular',cliSimples:'c05_cli_simples'},
     /* v846 — entrada removida: os cinco alvos (c10_faturamento, c10_regime,
        c10_aluguel, c10_sistemas, c10_folha) nao existem no documento. A tela c10
        e de precificacao de honorarios (custo/hora, margem, exito) e nunca teve
@@ -50958,6 +50958,17 @@ function setVal(id,v,papel){ var e=document.getElementById(id); if(e){ e.value=v
         _pctExport=+(_vExp/_vSaida*100).toFixed(1);
         try{ window._LH_PCT_EXPORT=_pctExport; }catch(_e){}
       }
+      /* ★ v857 · o motor de saída vem da conta única (lhMixSaidaNotas) */
+      try{
+        window._LH_MIX_CLIENTES=null;
+        var _mxU = window.lhMixSaidaNotas ? window.lhMixSaidaNotas(_no) : null;
+        if(_mxU){
+          _pctB2B=_mxU.regularTotal; _pctB2C=_mxU.naoCred; _pctExport=_mxU.exportacao;
+          window._LH_PCT_EXPORT=_pctExport;
+          window._LH_MIX_CLIENTES={ regular:_mxU.regular, outros:0, naoContrib:_mxU.naoCred, exportacao:_mxU.exportacao, base:_mxU.base, unificado:true };
+          window.LH_IMPORT_CLI={ ok:true, pB2C:_mxU.naoCred, pB2B:_mxU.regular, pExp:_mxU.exportacao, pPub:_mxU.pub, nNotas:_mxU.n };
+        }
+      }catch(_e){}
       if(_vEnt>0)  _pctImport=+(_vImp/_vEnt*100).toFixed(1);
       _aquisPF=_vPF;
       _transfInternas=_vTransf;
@@ -51003,6 +51014,7 @@ function setVal(id,v,papel){ var e=document.getElementById(id); if(e){ e.value=v
          2 = contribuinte isento de IE · 9 = não contribuinte (consumidor final)
          É o dado que o Dentro × Híbrido precisa e que estava sendo digitado à mão. */
       (function(){
+        if(window._LH_MIX_CLIENTES && window._LH_MIX_CLIENTES.unificado) return;  /* ★ v857 · já veio da conta única */
         var _r=0,_o=0,_n=0,_tv=0;
         for(var _c=0;_c<_no.length;_c++){
           var _nc=_no[_c]; if(String(_nc.tpNF||'')!=='1') continue;
@@ -51330,6 +51342,12 @@ var nCampos=0,nCalcs=0;
         if(_mx){
           if(m.cliRegular && setVal(m.cliRegular,_mx.regular,'cliRegular')){ nCampos++; tocou=true; }
           if(m.cliSimples && setVal(m.cliSimples,_mx.outros,'cliSimples')){ nCampos++; tocou=true; }
+          /* ★ v857 · a conta única escreve os quatro campos, zeros inclusive —
+             zero que não é escrito deixa o valor antigo na tela e a soma quebra */
+          if(_mx.unificado){
+            if(m.b2c) setVal(m.b2c,_mx.naoContrib,'b2c');
+            if(m.exportPct) setVal(m.exportPct,_mx.exportacao,'exportPct');
+          }
         }
       }catch(_e){}
       if(m.bemCapital && _bemCapital>0 && setVal(m.bemCapital,Math.round(_bemCapital),'bemCapital')){ nCampos++; tocou=true; }
@@ -53255,6 +53273,52 @@ window.lhConsistDxHC05 = function(alvoId){
 window._lhEntePublico = function(nome){
   var s=String(nome||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   return /(SERVICO AUTONOMO|\bSAAE\b|\bSAAE|\bDAE\b|\bDAEE\b|AGUA E ESGOTO|DEPARTAMENTO (MUNICIPAL )?DE AGUA|MUNICIPIO DE|PREFEITURA|CAMARA MUNICIPAL|CAMARA DE VEREADORES|GOVERNO DO ESTADO|GOVERNO FEDERAL|SECRETARIA (DE|MUNICIPAL)|AUTARQUIA|INSTITUTO FEDERAL|UNIVERSIDADE (FEDERAL|ESTADUAL)|\bTRIBUNAL|MINISTERIO|\bUNIAO\b|PODER (JUDICIARIO|EXECUTIVO|LEGISLATIVO)|ASSEMBLEIA LEGISLATIVA|FUNDO (MUNICIPAL|ESTADUAL|NACIONAL)|HOSPITAL (MUNICIPAL|ESTADUAL|UNIVERSITARIO)|FUNDACAO (MUNICIPAL|ESTADUAL|PUBLICA)|POLICIA (MILITAR|CIVIL|FEDERAL)|CORPO DE BOMBEIROS|\bEXERCITO\b|\bMARINHA\b|AERONAUTICA)/.test(s);
+};
+
+/* ★ v857 · MOTOR DE SAÍDA — UMA CONTA SÓ, QUE FECHA EM 100%.
+   Havia três contas diferentes para o mesmo perfil de clientes: a do botão
+   de XML da DxH (pelo destinatário), a da Central (pelo indIEDest) e o % B2B
+   (pela IE ou CNPJ). Cada uma escrevia um campo, e a tela somava 113% na DxH
+   e 37,8% na Regime Ótimo com os documentos reais de um cliente de saneamento.
+   Pior: a da Central contava as notas de VENDA DOS FORNECEDORES (vêm no XML
+   de entrada com tpNF=1) como se fossem vendas da empresa.
+   indIEDest não diz se o cliente toma crédito de CBS/IBS — uma autarquia de
+   água tem IE e não toma. Aqui a regra é a do destinatário:
+     exportação (idDest 3 ou CFOP 7xxx) · ente público pelo nome · CPF ou sem
+     destinatário = não creditante · CNPJ = B2B, que fica no regular (a nota não
+     diz o regime do cliente PJ; o contador ajusta Regular × Simples).
+   B2B é o RESTO: os campos fecham em 100 por construção.
+   Os três de cliente (Real/Presumido, Simples, não creditante) são fatias das
+   vendas NO PAÍS — é assim que a DxH os lê (normaliza os três e trata a
+   exportação à parte, sobre o total). A exportação vem sobre o total. */
+window.lhMixSaidaNotas = function(notas){
+  var emp=(window.LH_IMPORT_PGDAS&&window.LH_IMPORT_PGDAS.cnpj)?String(window.LH_IMPORT_PGDAS.cnpj).replace(/\D/g,''):String(window.LH_EMP_CNPJ||'').replace(/\D/g,'');
+  var raizEmp=emp.slice(0,8);
+  var TRANSF=['151','152','408','409','658','659','552','553','554','555','556','557'];
+  var vExp=0,vPub=0,vNC=0,vB2B=0,n=0;
+  (notas||[]).forEach(function(nt){
+    if(!nt || String(nt.tpNF||'')!=='1') return;
+    var em=String(nt.emitCNPJ||'').replace(/\D/g,'');
+    if(raizEmp && em && em.slice(0,8)!==raizEmp) return;          /* venda do fornecedor: não é saída da empresa */
+    var v=parseFloat(nt.vProd||nt.vNF||0)||0; if(!v) return;
+    var dc=String(nt.destCNPJ||'').replace(/\D/g,''), cf=String(nt.cfop||'');
+    if((raizEmp && dc.slice(0,8)===raizEmp) || TRANSF.indexOf(cf.slice(1))>=0) return; /* transferência entre filiais */
+    n++;
+    if(String(nt.idDest||'')==='3' || cf.charAt(0)==='7'){ vExp+=v; return; }
+    if(dc.length===14){
+      if(window._lhEntePublico && window._lhEntePublico(nt.destNome||'')) vPub+=v; else vB2B+=v;
+      return;
+    }
+    vNC+=v;                                                        /* CPF ou sem destinatário */
+  });
+  var tot=vExp+vPub+vNC+vB2B; if(tot<=0) return null;
+  var dom=tot-vExp;
+  var r1=function(x){ return Math.round(x*10)/10; };
+  var pExp=r1(vExp/tot*100);
+  var pNC = dom>0 ? r1((vNC+vPub)/dom*100) : 0;
+  var pReg = dom>0 ? r1(100-pNC) : 0; if(pReg<0) pReg=0;
+  return { regular:pReg, simples:0, naoCred:pNC, pub:(dom>0?r1(vPub/dom*100):0), exportacao:pExp,
+           regularTotal:r1(vB2B/tot*100), n:n, base:tot };
 };
 
 window.lhPuxarMix = function(pref){
@@ -67667,13 +67731,18 @@ var alvo=page.querySelector('.page-content')||page;
        somavam mais de 100%, disparando o aviso de normalizacao e distorcendo o
        repasse. Agora fecham em 100 por construcao. */
     var pB2B=Math.round((100-pNaoCred-pExp)*10)/10; if(pB2B<0)pB2B=0;
+    /* ★ v857 · os três de cliente são fatias das vendas no país (a DxH normaliza
+       os três e trata a exportação à parte) — mesma regra de lhMixSaidaNotas */
+    var _dom=tot-vExp;
+    if(_dom>0){ pNaoCred=Math.round((vB2C+vPub)/_dom*1000)/10; pB2B=Math.round((100-pNaoCred)*10)/10; }
+    else { pNaoCred=0; pB2B=0; }
     var S=function(id,v){ var e=document.getElementById(id); if(e){ e.value=v; e.dispatchEvent(new Event('input')); } };
     S('dxh_cli_b2c',pNaoCred);
     S('dxh_export',pExp);
     /* v390: so o B2B PRIVADO e creditante; ente publico entra no nao-creditante automaticamente */
     S('dxh_cli_regular',pB2B); S('dxh_cli_simples',0);
     /* v393 (A4): espelha o MESMO perfil de cliente no Regime Otimo -> guardiao verde, sem preencher na mao */
-    try{ S('c05_cli_b2c',pNaoCred); S('c05_cli_regular',pB2B); S('c05_cli_simples',0); }catch(_e){}
+    try{ S('c05_cli_b2c',pNaoCred); S('c05_cli_regular',pB2B); S('c05_cli_simples',0); S('c05_export',pExp); }catch(_e){}
     window.LH_IMPORT_CLI={ok:true, pB2C:pNaoCred, pB2B:pB2B, pExp:pExp, pPub:pPub, nNotas:nNotas};
     if(info) info.innerHTML='✓ '+nNotas+' venda(s) lidas: <b>'+pB2B+'% B2B privado</b> · <b>'+pPub+'% ente público (não-creditante)</b> · <b>'+pB2C+'% B2C</b> · <b>'+pExp+'% exportação</b>'
       +'<br><span style="opacity:.75;font-size:.92em">⚠ A nota não traz o regime do cliente PJ — o B2B entrou todo como Real/Presumido; ajuste a divisão Regular×Simples se souber a carteira.</span>';
