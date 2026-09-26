@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v862";</script>
+<body><script>window.LH_VERSAO='v863';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -58608,6 +58608,96 @@ function acEscolhe(i){
    return r;
  };
  window.LH_SNBASE={TRAT:TRAT, base:base};
+})();
+</script>
+<script>
+/* ⬥ v863 — SERVIÇO (NBS) NA NOTA SIMULADA + balde nos itens da base
+   O que estava errado:
+   1. Desde a v113 o grupo "⌘ SERVIÇOS (NBS)" entra no seletor da nota, mas só a Formação de Preço (v245)
+      aprendeu a ler "NBS:…". Na nota, snAddV → SN_DA_BASE (só conhece "NCM:") → snItem original →
+      LH_CLASSIF_PRODUTOS[NaN] → "Cannot read properties of undefined (reading 'n')". Qualquer serviço quebrava.
+   2. O item vindo da base (NCM ou NBS) não carregava o balde (b). snCodigos usa o balde → tudo saía 000 · 000001,
+      até um alimento −60% escolhido pela base.
+   3. 872 dos 944 NBS estão com tratamento "nd" (sem regime mapeado). Para esses, a nota aplica a REGRA GERAL
+      (art. 14) e diz isso na tela — exceto as famílias que a LC 214 nomeia expressamente por atividade, que a
+      camada reconhece pela descrição/LC 116: hotelaria e bares/restaurantes (−40%, arts. 273-283), transporte de passageiros
+      (−40%, arts. 284-285), saúde e educação (−60%, art. 130), profissões regulamentadas e parques (−30%, art. 137)
+      — os mesmos artigos do catálogo da nota. O resto fica "regra geral — confira", em vez de fingir uma alíquota. */
+(function(){
+ 'use strict';
+ var ALIQ={cheia:26.5,'cheia+IS':26.5,red30:18.55,red60:10.6,red40:15.9,'red40-setor':15.9,zero:0,'zero-cond':0,isento:0,imune:0,adrem:null};
+ var LAB={cheia:'Padrão (26,5%)','cheia+IS':'Padrão + Imposto Seletivo',red30:'Redução 30%',red60:'Redução 60%',red40:'Redução 40%','red40-setor':'Redução 40%',zero:'Alíquota zero','zero-cond':'Alíquota zero (condicionada)',isento:'Isento',imune:'Imune',adrem:'Ad rem (R$/unidade)'};
+ var BALDE={zero:'ZERO','zero-cond':'ZERO',isento:'ZERO',imune:'ZERO',red60:'60',red30:'30',red40:'40','red40-setor':'40'};
+ /* famílias que a lei nomeia por atividade (só para NBS "nd") */
+ var FAM=[
+  {re:/servi[cç]os de hospedagem (em quartos|para visitantes|, exceto para visitantes)|\bhot[eé]is?\b|pousad|\bmot[eé]is?\b|hostel|albergue/i, lc:/^9\.01$/, trat:'red40', art:'Arts. 277-283 LC 214 — hotelaria (−40%, sem crédito ao cliente)'},
+  {re:/fornecimento de (refei|alimenta)|servi[cç]os de restaurante|fornecimento de bebidas em bares|lanchonete|self-service/i, lc:null, trat:'red40', art:'Arts. 273-276 LC 214 — bares e restaurantes (−40%, sem crédito ao cliente)'},
+  {re:/^servi[cç]os (especiais )?de transporte (rodovi[aá]rio|ferrovi[aá]rio|aquavi[aá]rio|metrovi[aá]rio|hidrovi[aá]rio)[^.]{0,60}passageiros/i, lc:/^16\.01$/, trat:'red40', art:'Arts. 284-285 LC 214 — transporte de passageiros (−40%)'},
+  {re:/parques? (tem[aá]ticos?|de divers|aqu[aá]ticos?)/i, lc:/^12\.05$/, trat:'red30', art:'Art. 137, IV LC 214 — parques (−30%)'},
+  {re:/^servi[cç]os (m[eé]dicos|hospitalares|odontol[oó]gicos|de fisioterapia|de enfermagem|de psicologia|de an[aá]lises cl[ií]nicas|de diagn[oó]stico por imagem)(?!.*animais)/i, lc:/^4\.(0\d|1\d|20|21)$/, trat:'red60', art:'Art. 130, I LC 214 — serviços de saúde (−60%)'},
+  {re:/^servi[cç]os (de pr[eé]-escola|de educa[cç][aã]o infantil|de ensino (fundamental|m[eé]dio)|educacionais de gradua[cç][aã]o|educacionais de (p[oó]s|cursos sequenciais|extens[aã]o)|de educa[cç][aã]o (profissional|t[eé]cnica))/i, lc:/^8\.01$/, trat:'red60', art:'Art. 130, II LC 214 — serviços de educação (−60%)'},
+  {re:/^servi[cç]os de (representa[cç][aã]o e consultoria jur[ií]dica|consultoria jur[ií]dica|consultoria tribut[aá]ria|auditoria cont[aá]bil|escritura[cç][aã]o mercantil|folha de pagamento|arquitetura|engenharia para projetos|consultoria em arquitetura|relações p[uú]blicas)|^servi[cç]os jur[ií]dicos|^servi[cç]os veterin[aá]rios|^servi[cç]os de atendimento, assist[eê]ncia ou tratamento para animais/i, lc:/^17\.(13|14|16|19)$|^5\.01$|^7\.(01|03|19)$|^35\.01$/, trat:'red30', art:'Art. 137 LC 214 — profissões regulamentadas (−30%)'}
+ ];
+ function achaNBS(v){
+   var F=window.LH_FISCAL; if(!F||!F.nbs) return null;
+   var k=String(v).slice(4);
+   for(var i=0;i<F.nbs.length;i++){ var x=F.nbs[i]; if((x.nbs||x.desc)===k) return x; }
+   return null;
+ }
+ window.SN_NBS_TRAT=function(x){
+   var t=x.trat, art='', conf=false;
+   if(!t || t==='nd'){
+     t='cheia'; conf=true; art='art. 14 LC 214 — regra geral (NBS sem regime específico mapeado)';
+     var lc=x.lc116?String(x.lc116).trim():'', desc=String(x.desc||'');
+     var veta=/constru[cç][aã]o|obras? de|dep[oó]sito|armazen|planos? (privados )?de (sa[uú]de|assist|atendimento|medicina)|s[ií]tios eletr|aplicativos|infraestrutura|reservas|pesquisa e desenvolvimento|consultoria (financeira|em gest[aã]o)|imobili[aá]rio|transporte escolar|explora[cç][aã]o de recursos|licenciamento|manuten[cç][aã]o|instala[cç][aã]o|gest[aã]o hospitalar|recursos humanos|sob contrato|operadores de transportes|para eventos|acolhimento|assist[eê]ncia a idosos|assist[eê]ncia social|imprensa|biblioteca/i;
+     if(!veta.test(desc)){
+       for(var i=0;i<FAM.length;i++){ var f=FAM[i];
+         var bate = f.re.test(desc) || (!!lc && !!f.lc && lc.split(/\s*,\s*/).every(function(c){ return f.lc.test(c); }));
+         if(bate){ t=f.trat; art=f.art; conf=false; break; } }
+     }
+   }
+   return {trat:t, art:art, conferir:conf};
+ };
+ var _daBase=window.SN_DA_BASE;
+ window.SN_DA_BASE=function(prefix){
+   var sel=document.getElementById(prefix+'_prod');
+   if(sel && String(sel.value).indexOf('NBS:')===0){
+     var x=achaNBS(sel.value); if(!x) return null;
+     var r=window.SN_NBS_TRAT(x), a=ALIQ[r.trat];
+     var ok=(a!==null && a!==undefined);
+     return {ncm:'', nbs:x.nbs||'', desc:x.desc, trat:r.trat, fonte:(r.art?r.art+' · ':'')+(x.fonte||''),
+             aliq:ok?a:0, lab:(LAB[r.trat]||r.trat)+(r.conferir?' — confira com o contador':''), cor:ok?(r.conferir?'#b8860b':'#2f7d4f'):'#d18189', ok:ok,
+             av:ok?(r.conferir?'A base ainda não mapeia o regime deste NBS; a nota aplica a regra geral (26,5% cheia). Se a atividade tiver redução na LC 214, use o item pelo catálogo ou o item manual.':''):'Regime ad rem: valor por unidade, não percentual — a nota não inventa alíquota.',
+             conferir:r.conferir};
+   }
+   return _daBase? _daBase.apply(this, arguments) : null;
+ };
+ var _itemBase=window.snItemBase;
+ window.snItemBase=function(prefix){
+   var it=_itemBase? _itemBase.apply(this, arguments) : null; if(!it) return it;
+   var b=window.SN_DA_BASE(prefix); if(!b) return it;
+   it.b=BALDE[b.trat]||'PADRAO';
+   if(b.nbs!==undefined){ it.nome=b.desc+(b.nbs?' · NBS '+b.nbs:''); it.nbs=b.nbs; it.art=(b.fonte||'').slice(0,58); }
+   return it;
+ };
+ /* rótulo do dropdown: o serviço "nd" passa a mostrar o que a nota vai fazer com ele */
+ function rotular(){
+   ['snv_prod','snc_prod'].forEach(function(id){
+     var sel=document.getElementById(id); if(!sel||sel._v863) return;
+     var n=0;
+     [].forEach.call(sel.options,function(o){
+       if(String(o.value).indexOf('NBS:')!==0) return;
+       var x=achaNBS(o.value); if(!x) return;
+       var r=window.SN_NBS_TRAT(x), a=ALIQ[r.trat];
+       if(o.textContent.indexOf('%')<0 && a!==null && a!==undefined){ o.textContent=o.textContent+' · '+String(a).replace('.',',')+'%'+(r.conferir?' (regra geral — confira)':''); n++; }
+       o.dataset.trat=r.trat;
+     });
+     if(n) sel._v863=true;
+   });
+ }
+ var _ap=window.abrirPagina;
+ window.abrirPagina=function(id){ var r=_ap.apply(this,arguments); if(id==='simnotas'){ [1200,2800,4500].forEach(function(t){ setTimeout(rotular,t); }); } return r; };
+ var tent=0; (function tentar(){ rotular(); if(++tent<30) setTimeout(tentar,700); })();
 })();
 </script>
 <script>
