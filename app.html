@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v860";</script>
+<body><script>window.LH_VERSAO="v861";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -52280,7 +52280,7 @@ function cmAutoAudit(trat,cst,cclass){
   if(!LH_CCT_OFICIAL[c]) return {ok:false,motivo:'cClassTrib '+c+' NÃO existe na tabela oficial v1.60'};
   if(String(cst)!==c.slice(0,3)) return {ok:false,motivo:'CST '+cst+' incoerente com cClassTrib '+c+' (3 primeiros dígitos)'};
   var fam=c.slice(0,3);
-  var esperado={cheia:['000'],red60:['200'],zero:['200','400','410'],adrem:['620'],imune:['400','410'],difer:['510','515']};
+  var esperado={cheia:['000'],red60:['200'],zero:['200','400','410'],adrem:['620','000'],imune:['400','410'],difer:['510','515']}; /* v861: bebida alcoólica marcada ad rem é IBS/CBS integral (000) + Imposto Seletivo */
   if(trat&&esperado[trat]&&esperado[trat].indexOf(fam)<0) return {ok:false,motivo:'Tratamento '+trat+' incompatível com família CST '+fam};
   return {ok:true,motivo:'OK · '+LH_CCT_OFICIAL[c]};
 }
@@ -52762,7 +52762,13 @@ function cmAliqAno(trat,ano){
   return Math.round(a.total*100*fator*100)/100;
 }
 function cmCclassPorFonte(trat,fonte){
-  /* cClassTrib POR DISPOSITIVO LEGAL (IT 2025.002 v1.60) — só códigos confirmados na tabela oficial */
+  /* ★ v861 · delega ao resolvedor único (lhCClassResolve). Corrige: imune → CST 410 (antes 400 com código 410);
+     diferimento agro → 515001 (antes 510001, energia elétrica); medicamento de alíquota zero → 200009 (antes 200032,
+     o de −60%); dispositivo médico com −60% → 200030 (antes 200004, o de alíquota zero). */
+  if(typeof window.lhCClassResolve==='function'){
+    var _r=window.lhCClassResolve(trat, fonte);
+    if(_r && _r.cclass){ return [_r.cst, _r.confirmar && trat!=='cheia' && trat!=='cheia+IS' && !/anexo/i.test(String(fonte||'')) ? _r.cclass+'*' : _r.cclass]; }
+  }
   var f=String(fonte||'').toLowerCase();
   if(trat==='cheia'||trat==='cheia+IS') return ['000','000001'];
   if(trat==='adrem') return ['620','620001'];
@@ -52848,7 +52854,7 @@ function cmBuildRows(){
       var mp=cmCclassPorFonte(it.trat,fonte); cst=mp[0]; cclass=mp[1];
       var aa=aliqs(it.trat); a26=aa[0];a29=aa[1];a33=aa[2];
       if(it.status==='ok_desc'&&!ncm&&it.ncm_sug)ncm=it.ncm_sug;
-      if(it.trat==='adrem'){ tratLabel='MONOFASICO art.172'; }
+      if(it.trat==='adrem'){ tratLabel=(cclass==='000001')?'INTEGRAL + IMPOSTO SELETIVO':'MONOFASICO art.172'; }
       else if(it.status==='ambiguo'){ tratLabel=(CM_TRAT_LABEL[it.trat]||it.trat)+' (AMBIGUO)'; }
       else { tratLabel=(CM_TRAT_LABEL[it.trat]||it.trat); }
       var auOk=null;
@@ -53087,6 +53093,79 @@ window.LH_CST_TRAT = {
    (antes: versão out/2025 com 144). Fonte: Portal Nacional da NF-e; conferida contra duas publicações independentes
    e contra a distribuição por CST (200: 54 · 410: 38 · 550: 25 · 820: 9 · 620: 7 · 000: 5 · 011: 5). */
 window.LH_CCLASSTRIB_VERSAO='IT RT 2025.002 · 22/06/2026 · 164 códigos';
+/* ★ v861 · RESOLVEDOR ÚNICO DE cClassTrib — tratamento + o que o item É → código oficial (IT RT 2025.002, 22/06/2026).
+   Antes havia três caminhos: o Classificador em massa (regra por anexo, quase certa), o Auditor de Cadastro e o
+   Simulador de Notas (mapa de 11 tratamentos com códigos ERRADOS: −30% → 200011 nutrição enteral p/ órgão público;
+   −40% → 200031 acessibilidade PcD; monofásico → 220001 incorporação imobiliária; −60% → sempre 200003 cesta).
+   O código NÃO sai só do percentual: sai do dispositivo legal (anexo) e da natureza do item. Quando o texto não
+   decide, devolve o código mais provável com confirmar:true — a tela manda para o contador, não crava. */
+window.lhCClassResolve = function(trat, texto){
+  var t=' '+String(texto||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')+' ';
+  var k=String(trat||'cheia');
+  var AL={'cheia+IS':'cheia','zero-cond':'zero',isencao:'isento',diferimento:'difer',mono:'adrem',PADRAO:'cheia',ZERO:'zero','60':'red60','30':'red30','40':'red40'};
+  if(AL[k]) k=AL[k];
+  function r(c,conf,nota,regra){
+    var d=(window.LH_CCLASSTRIB&&typeof LH_CCLASSTRIB[c]==='string')?LH_CCLASSTRIB[c]:((window.LH_CCT_OFICIAL&&LH_CCT_OFICIAL[c])||'');
+    return {cst:c.slice(0,3), cclass:c, oficial:d, confirmar:!!conf, nota:nota||'', regra:regra||k};
+  }
+  var R=function(re){ return re.test(t); };
+  if(k==='cheia') return r('000001');
+  if(k==='adrem'){
+    if(R(/gasolin|diesel|etanol|glp|gas natural|combust|lubrif|querosene|biodiesel/)) return r('620001');
+    if(R(/cervej|cachac|vinho|bebida|alcool|\brum\b|whisk|vodka|cigarr|fumo|tabaco/)) return r('000001',false,'IBS/CBS integral; o Imposto Seletivo é à parte');
+    return r('620001',true);
+  }
+  if(k==='imune'){
+    if(R(/livro|jornal|periodic|papel de imprensa|papel destinado|impressao de livro/)) return r('410008');
+    if(R(/fonograma/)) return r('410009');
+    return r('410004', !R(/export/));
+  }
+  if(k==='isento') return r('400001');
+  if(k==='difer') return R(/energia/)? r('510001') : r('515001', !R(/anexo ix|insumo|agro|milho|soja|algodao|farelo/));
+  if(k==='imob_v') return r('200046');
+  if(k==='imob_l') return r('200027');
+  if(k==='zero'){
+    if(R(/automove|taxist/)) return r('200015');
+    if(R(/anexo xv\b|hortic|fruta|\bovos?\b|batata|tomate|cebola|banana|legume/)) return r('200014');
+    if(R(/anexo xiii|acessibilidade|\bpcd\b|cadeira de roda|auditiv|coclear/)) return r('200007');
+    if(R(/anexo xii\b|dispositivos? medic|protes|ortoped|eletrocard|eletroenc|tomograf|ressonan|ultrass|respirador|infusao|raio x|raios/)) return r('200004');
+    if(R(/menstrua|absorvent|tampo/)) return r('200013');
+    if(R(/livro|jornal|periodic/)) return r('410008');
+    if(R(/anexo xiv|medicament|farmac|vacina|imunolog/)) return r('200009');
+    if(R(/anexo i\b|cesta|arroz|feijao|leite|carne|cafe|acucar|farinha|oleo|\bsal\b|macarrao|\bpao\b|queijo|manteiga|formula infantil|peixe/)) return r('200003');
+    return r('200003',true);
+  }
+  if(k==='red60'){
+    if(R(/transporte.*(urbano|metropolit|coletivo)|coletivo de passageiros/)) return r('400001',true,'a lei prevê isenção para o transporte público coletivo urbano (art. 157); a ferramenta aplica −60% por prudência');
+    if(R(/anexo xiii|anexo v\b|acessibilidade|\bpcd\b/)) return r('200031');
+    if(R(/anexo iv\b|anexo xii|dispositiv|ortoped|oculos|lentes|reagente|fratura/)) return r('200030');
+    if(R(/anexo vi\b|nutric|enteral|parenteral/)) return r('200033');
+    if(R(/anexo viii|higien|fralda|sabonete|bucal|absorv/)) return r('200035');
+    if(R(/anexo ix|insumo|fertiliz|adubo|defensiv|semente|racao|suplemento.? anima|trator|maquinas? agric/)) return r('200038');
+    if(R(/anexo x\b|evento|feira|artistic|cultur|jornalis|audiovisual/)) return r('200039');
+    if(R(/anexo xiv|medicament|farmac/)) return r('200032');
+    if(R(/anexo ii\b|\beduca|\bensino|\bescola|idioma|\bcurso/)) return r('200028');
+    if(R(/anexo iii\b|saude|consulta|exame|internac|hospital|psicolog|terapia|clinic/)) return r('200029');
+    if(R(/anexo vii\b|aliment|\bmel\b|suco|polpa|extrato|massa/)) return r('200034');
+    if(R(/agropecu|animais vivos|bovino|suino|\baves\b|hortic|fruta|in natura|producao animal|producao vegetal/)) return r('200036');
+    return r('200034',true);
+  }
+  if(k==='red30'){
+    if(R(/parque/)) return r('200048');
+    if(R(/artistic|cultur|jornalis|comunicac/)) return r('200039',true,'a tabela oficial trata produções artísticas, culturais e jornalísticas no Anexo X (−60%); a ferramenta aplica −30% — confirmar');
+    return r('200052');
+  }
+  if(k==='red40'){
+    if(R(/transporte|passageir|onibus|rodoviar/)) return r('200049');
+    if(R(/\bbar(es)?\b|restaurant|lanchonete|padaria|alimentac|preparados no local/)) return r('200047');
+    if(R(/hotel|hosped|pousad|parque|resort/)) return r('200048');
+    if(R(/agencia|turismo|viage/)) return r('200051');
+    if(R(/aere/)) return r('200050');
+    return r('200047',true);
+  }
+  return r('000001',true);
+};
+
 window.LH_CCLASSTRIB = {
  '000001':'Situações tributadas integralmente pelo IBS e CBS',
  '000002':'Exploração de via',
@@ -56974,6 +57053,10 @@ function snBaldeDaAliq(a){ a=+a; if(a===0) return 'ZERO'; if(a===10.6) return '6
 function snCodigos(it){
   var mb={ZERO:'zero','60':'red60','30':'red30','40':'red40',PADRAO:'cheia'};
   var chave=mb[(it&&it.b)||'PADRAO']||'cheia';
+  if(typeof window.lhCClassResolve==='function'){
+    var x=window.lhCClassResolve((it&&it.b)||'PADRAO', [it&&it.nome, it&&it.lab, it&&it.art].join(' '));
+    return {cst:x.cst, cclass:x.cclass, chave:chave, oficial:x.oficial+(x.nota?' — '+x.nota:''), confirmar:x.confirmar};
+  }
   var m=(window.LH_CCLASSTRIB_MAPA&&LH_CCLASSTRIB_MAPA.mapa)?LH_CCLASSTRIB_MAPA.mapa[chave]:null;
   var r=m?{cst:m.cst,cclass:m.cclass,chave:chave,desc:m.desc}:{cst:'000',cclass:'000001',chave:chave};
   try{ var o=window.LH_CCLASSTRIB&&LH_CCLASSTRIB[r.cclass]; if(typeof o==='string') r.oficial=o; }catch(_e){}
@@ -56987,7 +57070,7 @@ function snTabela(itens,delFn,credFator){
     h+='<tr><td>'+it.nome+'<span class="art">'+it.lab+(it.art?' · '+it.art:'')+'</span></td>'+
        '<td class="n">'+it.qtd+'</td><td class="n">'+SN_FMT(it.vu)+'</td><td class="n">'+SN_FMT(it.tot)+'</td>'+
        '<td class="n">'+it.aliq.toLocaleString("pt-BR")+'%</td>'+
-       (function(){ var c=snCodigos(it); return '<td class="sn-cod" title="'+String(c.oficial||c.desc||'').replace(/"/g,'&quot;')+'" style="font-family:ui-monospace,monospace;font-size:.7rem;white-space:nowrap;color:#1c1c1c">'+c.cst+' · '+c.cclass+'</td>'; })()+
+       (function(){ var c=snCodigos(it); return '<td class="sn-cod" title="'+String(c.oficial||c.desc||'').replace(/"/g,'&quot;')+'" style="font-family:ui-monospace,monospace;font-size:.7rem;white-space:nowrap;color:#1c1c1c">'+c.cst+' · '+c.cclass+(c.confirmar?' <span title="confirmar com o contador" style="color:#c0653e">?</span>':'')+'</td>'; })()+
        '<td class="n" style="color:#e0a83a">'+(it.velho!==undefined? SN_FMT(it.velho)
            +'<span class="art" style="display:block;font-size:.62rem">'
            +(it.velhoTipo==='iss'?'ISS':'ICMS')+' '+(it.velhoAliq||0).toLocaleString('pt-BR')+'%'
@@ -57437,16 +57520,16 @@ window.LH_CCLASSTRIB_MAPA = {
  // trat → {cst, cclass, desc, art, pRed}
  mapa:{
   cheia:   {cst:"000", cclass:"000001", desc:"Tributação integral (padrão 26,5%)", art:"art. 12 LC 214", pRed:0},
-  red30:   {cst:"200", cclass:"200011", desc:"Redução de 30% — serviços profissionais regulamentados", art:"art. 127 LC 214", pRed:30},
-  red60:   {cst:"200", cclass:"200003", desc:"Redução de 60% — alimentação humana / saúde / educação (conf. anexo)", art:"arts. 128/135 LC 214", pRed:60},
-  red40:   {cst:"200", cclass:"200031", desc:"Regime específico −40% (hotelaria/bares/transporte inter)", art:"arts. 273/281/286 LC 214", pRed:40},
+  red30:   {cst:"200", cclass:"200052", desc:"Redução de 30% — serviços profissionais regulamentados", art:"art. 127 LC 214", pRed:30},
+  red60:   {cst:"200", cclass:"200034", desc:"Redução de 60% — alimentação humana / saúde / educação (conf. anexo)", art:"arts. 128/135 LC 214", pRed:60},
+  red40:   {cst:"200", cclass:"200047", desc:"Regime específico −40% (hotelaria/bares/transporte inter)", art:"arts. 273/281/286 LC 214", pRed:40},
   zero:    {cst:"200", cclass:"200003", desc:"Alíquota zero — cesta básica (Anexo I)", art:"art. 125 · Anexo I LC 214", pRed:100},
-  imune:   {cst:"400", cclass:"410027", desc:"Imunidade — exportação de bem/serviço", art:"art. 8º LC 214", pRed:100},
+  imune:   {cst:"410", cclass:"410004", desc:"Imunidade — exportação de bem/serviço", art:"art. 8º LC 214", pRed:100},
   isento:  {cst:"400", cclass:"400001", desc:"Isenção — transporte público coletivo urbano", art:"art. 157 LC 214", pRed:100},
   difer:   {cst:"510", cclass:"515001", desc:"Diferimento — insumos agropecuários (Anexo IX)", art:"art. 138 LC 214", pRed:0},
-  mono:    {cst:"220", cclass:"220001", desc:"Monofásico — combustíveis (ad rem)", art:"arts. 172+ LC 214", pRed:0},
-  imob_v:  {cst:"200", cclass:"220003", desc:"Alienação de bem imóvel (regime específico −50%)", art:"arts. 251+ LC 214", pRed:50},
-  imob_l:  {cst:"200", cclass:"221001", desc:"Locação/arrendamento de bem imóvel (−70%)", art:"arts. 251+ LC 214", pRed:70}
+  mono:    {cst:"620", cclass:"620001", desc:"Monofásico — combustíveis (ad rem)", art:"arts. 172+ LC 214", pRed:0},
+  imob_v:  {cst:"200", cclass:"200046", desc:"Alienação de bem imóvel (regime específico −50%)", art:"arts. 251+ LC 214", pRed:50},
+  imob_l:  {cst:"200", cclass:"200027", desc:"Locação/arrendamento de bem imóvel (−70%)", art:"arts. 251+ LC 214", pRed:70}
  }
 };
 // mapeia o "b" do catálogo (balde) + trat NCM → chave do cClassTrib
@@ -57492,6 +57575,12 @@ function acBusca(){
 function acEscolhe(i){
  var x=window._acRes[i]; if(!x)return;
  var chave=acChave(x), c=LH_CCLASSTRIB_MAPA.mapa[chave];
+ /* ★ v861 · o código vem do resolvedor (natureza do item), não só do tratamento */
+ try{ if(typeof window.lhCClassResolve==='function'){
+   var _tr=x.trat||x.tratC||x.b||chave; if(_tr==='mono') _tr='adrem';
+   var _rv=window.lhCClassResolve(_tr, [x.desc,x.n,x.nome,x.fonte,x.art].join(' '));
+   c={cst:_rv.cst, cclass:_rv.cclass, desc:(_rv.oficial||c.desc)+(_rv.nota?' — '+_rv.nota:''), art:c.art, pRed:c.pRed};
+ } }catch(_e){}
  var box=document.getElementById("ac_result");
  box.style.display="block";
  box.innerHTML='<div style="background:linear-gradient(135deg,rgba(201,162,39,.10),rgba(201,162,39,.03));border:1px solid rgba(201,162,39,.4);border-radius:14px;padding:20px;margin-bottom:14px">'
@@ -58269,7 +58358,11 @@ function acEscolhe(i){
 
  function esc(t){ return String(t==null?'':t).replace(/[<>&"]/g,function(c){
    return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]; }); }
- function cc(trat){
+ function cc(trat, texto){
+   /* ★ v861 · com o texto do item, o resolvedor dá o código pela natureza; sem texto, o mapa (já corrigido) */
+   if(texto && typeof window.lhCClassResolve==='function' && TRAT2CHAVE[trat]){
+     var _r=window.lhCClassResolve(trat, texto); if(_r&&_r.cclass) return {cst:_r.cst, cclass:_r.cclass, desc:_r.oficial};
+   }
    var k = TRAT2CHAVE[trat];
    if(!k || !window.LH_CCLASSTRIB_MAPA || !LH_CCLASSTRIB_MAPA.mapa) return null;
    return LH_CCLASSTRIB_MAPA.mapa[k] || null;
@@ -58331,7 +58424,7 @@ function acEscolhe(i){
    box.style.display='block';
 
    var v = x.v, trat = x.trat, arm = (v && v.armadilha && v.armadilha.length) ? v.armadilha : null;
-   var c = cc(trat);
+   var c = cc(trat, (x.desc||'')+' '+((v&&v.fonte)||'')+' '+(x.fonte||''));
    var presumido = (x.tipo==='NCM' && v && !v.tem);
 
    var h='<div class="acc-w">';
@@ -58371,7 +58464,7 @@ function acEscolhe(i){
         códigos iguais é mentira com cara de resposta. */
      var resolvidos = opcoes.map(function(o){
        var it = window.lhCClassItem ? lhCClassItem(x.cod, o.trat) : null;
-       return {o:o, c: it || cc(o.trat), verif: !!it};
+       return {o:o, c: it || cc(o.trat, (o.desc||'')+' '+((v&&v.fonte)||'')), verif: !!it};
      });
      var cods = resolvidos.map(function(r){ return r.c? r.c.cclass : '—'; });
      var colide = cods.length>1 && cods.every(function(v){ return v===cods[0]; }) && cods[0]!=='—';

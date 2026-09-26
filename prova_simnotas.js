@@ -61,7 +61,7 @@ function rodar(html) {
   if (!r.erro) {
     ex('a tabela tem a coluna CST · cClassTrib', r.venda.ths.includes('CST · cClassTrib'), r.venda.ths.join('|'));
     ex('item padrão → 000 · 000001', r.venda.cods[0] === '000 · 000001', r.venda.cods[0]);
-    ex('item −60% (alimentos) → 200 · 200003', r.venda.cods[1] === '200 · 200003', r.venda.cods[1]);
+    ex('item −60% (alimentos, Anexo VII) → 200 · 200034', r.venda.cods[1] === '200 · 200034', r.venda.cods[1]);
     ex('por fora: cliente paga 1.500 + 123,20 = 1.623,20', perto(r.venda.paga, 1623.20), r.venda.paga);
     ex('por fora: IBS + CBS na nota = 123,20', perto(r.venda.novo, 123.20), r.venda.novo);
     ex('ICMS/ISS dentro do preço = 270,00', perto(r.venda.velho, 270), r.venda.velho);
@@ -92,9 +92,8 @@ function rodar(html) {
     (s) => !perto(s.venda.paga, 1623.20));
   await sab('alerta de volta ao "50%" → reprova', 'aqui estimamos <b>20% do imposto cheio</b>', 'aqui estimamos 50%',
     (s) => !/20% do imposto cheio/.test(s.compra.alerta));
-  await sab('balde errado no item manual/catálogo → códigos errados → reprova', "var mb={ZERO:'zero','60':'red60','30':'red30','40':'red40',PADRAO:'cheia'};\n  var chave=mb[(it&&it.b)||'PADRAO']||'cheia';",
-    "var mb={ZERO:'zero','60':'red60','30':'red30','40':'red40',PADRAO:'cheia'};\n  var chave='cheia';",
-    (s) => s.venda.cods[1] !== '200 · 200003');
+  await sab('balde ignorado no resolvedor → alimentos saem como padrão → reprova', "var x=window.lhCClassResolve((it&&it.b)||'PADRAO',", "var x=window.lhCClassResolve('PADRAO',",
+    (s) => s.venda.cods[1] !== '200 · 200034');
   console.log(falhou ? '\nRESULTADO: ' + falhou + ' reprovada(s)' : '\nRESULTADO: tudo aprovado');
   process.exit(falhou ? 1 : 0);
 })();

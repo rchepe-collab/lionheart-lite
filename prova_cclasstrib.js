@@ -67,7 +67,7 @@ function rodar(html) {
     'window.LH_CCLASSTRIB_MAPA = {\n versao:"IT 2025.002', 'window.LH_CCLASSTRIB = {\n versao:"IT 2025.002',
     (s) => s.total !== 164 || s.temMapaNoLugarErrado);
   await sab('um código a menos → reprova', " '550025':'", " '550025x':'", (s) => s.total !== 164);
-  await sab('nota sem a tabela oficial → tooltip vazio → reprova', "if(typeof o==='string') r.oficial=o;", "if(false) r.oficial=o;",
+  await sab('nota sem a descrição oficial → tooltip vazio → reprova', "oficial:x.oficial+(x.nota?' — '+x.nota:'')", "oficial:''",
     (s) => !/tributadas integralmente/.test(s.tdTitle));
   console.log(falhou ? '\nRESULTADO: ' + falhou + ' reprovada(s)' : '\nRESULTADO: tudo aprovado');
   process.exit(falhou ? 1 : 0);
