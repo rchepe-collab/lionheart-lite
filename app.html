@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v830";</script>
+<body><script>window.LH_VERSAO="v859";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -17000,6 +17000,9 @@ function ctcCalc(){
 #page-simnotas table.itens th{background:#1c1c1c;color:#f7f5ef;padding:5px 6px;font-size:.6rem;letter-spacing:.4px;text-align:left}
 #page-simnotas table.itens th.n,#page-simnotas table.itens td.n{text-align:right;font-variant-numeric:tabular-nums}
 #page-simnotas table.itens td{padding:6px;border-bottom:1px solid #ddd7c8}
+/* ★ v859 · a nota é papel claro: o texto das linhas e das opções não pode herdar a cor clara do tema escuro */
+#page-simnotas .nota table.itens td:not([style]){color:#1c1c1c !important}
+#page-simnotas #snv_quem label{color:#1c1c1c !important}
 #page-simnotas table.itens .art{font-size:.58rem;color:#777;display:block}
 #page-simnotas .del{color:#a03040;cursor:pointer;font-weight:800;text-align:center}
 #page-simnotas .vazio{text-align:center;color:#999;padding:16px;font-style:italic;font-size:.8rem}
@@ -17056,10 +17059,26 @@ function ctcCalc(){
       <div id="snv_lista"><div class="vazio">Nota vazia — adicione o primeiro item.</div></div>
       <div class="totaliz">
         <div class="tot"><div class="l">VALOR DA NOTA</div><div class="v" id="snv_tot">R$ 0,00</div></div>
-        <div class="tot"><div class="l">IBS (17,7 p.p.)</div><div class="v" id="snv_ibs">R$ 0,00</div></div>
-        <div class="tot"><div class="l">CBS (8,8 p.p.)</div><div class="v" id="snv_cbs">R$ 0,00</div></div>
+        <div class="tot"><div class="l">IBS (UF + MUNICÍPIO)</div><div class="v" id="snv_ibs">R$ 0,00</div></div>
+        <div class="tot"><div class="l">CBS</div><div class="v" id="snv_cbs">R$ 0,00</div></div>
         <div class="tot dest"><div class="l">TOTAL TRIBUTOS</div><div class="v" id="snv_trib">R$ 0,00</div></div>
         <div class="tot"><div class="l">CARGA EFETIVA</div><div class="v" id="snv_pct">0,0%</div></div>
+      </div>
+      <!-- ★ v859 · quem paga o quê: IBS/CBS são "por fora" (não integram a própria base — art. 12 §1º LC 214);
+           ICMS/ISS continuam "por dentro" do preço até 2032. O dono precisa ver as duas coisas na mesma nota. -->
+      <div id="snv_quem" style="margin-top:12px;border-top:1px dashed #c9c4b6;padding-top:10px">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.74rem;color:#555">
+          <b style="color:#1c1c1c;letter-spacing:.4px">QUEM PAGA O QUÊ</b>
+          <label style="cursor:pointer;color:#1c1c1c;font-size:.74rem"><input type="radio" name="snv_modo" value="fora" checked onchange="snRenderV()"> o valor informado <b>não inclui</b> IBS/CBS (por fora — nota B2B)</label>
+          <label style="cursor:pointer;color:#1c1c1c;font-size:.74rem"><input type="radio" name="snv_modo" value="dentro" onchange="snRenderV()"> o valor informado <b>já inclui</b> IBS/CBS (preço de prateleira — B2C)</label>
+        </div>
+        <div class="totaliz" style="grid-template-columns:repeat(4,1fr);border-top:none;padding-top:8px;margin-top:4px">
+          <div class="tot"><div class="l">CLIENTE PAGA</div><div class="v" id="snv_paga">R$ 0,00</div></div>
+          <div class="tot"><div class="l">IBS + CBS NA NOTA</div><div class="v" id="snv_novo">R$ 0,00</div></div>
+          <div class="tot"><div class="l">ICMS/ISS DENTRO DO PREÇO</div><div class="v" id="snv_velho2">R$ 0,00</div></div>
+          <div class="tot dest"><div class="l">FICA COM VOCÊ (SEM TRIBUTOS)</div><div class="v" id="snv_fica">R$ 0,00</div></div>
+        </div>
+        <div id="snv_quem_txt" style="font-size:.72rem;color:#666;margin-top:4px"></div>
       </div>
       <div class="alerta" id="snv_alerta" style="display:none"></div>
     </div>
@@ -17095,7 +17114,7 @@ function ctcCalc(){
       <div class="totaliz">
         <div class="tot"><div class="l">VALOR DA NOTA</div><div class="v" id="snc_tot">R$ 0,00</div></div>
         <div class="tot"><div class="l">IMPOSTO EMBUTIDO</div><div class="v" id="snc_trib">R$ 0,00</div></div>
-        <div class="tot"><div class="l">IBS + CBS</div><div class="v" id="snc_split">—</div></div>
+        <div class="tot"><div class="l">IBS (UF+MUN) + CBS</div><div class="v" id="snc_split">—</div></div>
         <div class="tot dest"><div class="l">CRÉDITO A APROPRIAR</div><div class="v" id="snc_cred">R$ 0,00</div></div>
         <div class="tot"><div class="l">CUSTO LÍQUIDO REAL</div><div class="v" id="snc_liq">R$ 0,00</div></div>
       </div>
@@ -56885,14 +56904,14 @@ function snItem(prefix){
       qtd=Math.max(1,+document.getElementById(prefix+'_qtd').value||1),
       vu=+document.getElementById(prefix+'_vu').value||0;
   if(vu<=0)return null;
-  var nome,aliq,lab,art="";
+  var nome,aliq,lab,art="",balde="PADRAO";
   if(sel.value==='MAN'){
     nome=document.getElementById(prefix+'_mnome').value||'Item manual';
     var mb=document.getElementById(prefix+'_mbalde').value.split('|');
-    aliq=+mb[0]; lab=mb[1];
+    aliq=+mb[0]; lab=mb[1]; balde=snBaldeDaAliq(aliq);
   } else if(sel.value!==''){
     var p=LH_CLASSIF_PRODUTOS[+sel.value];
-    nome=p.n; aliq=SN_BALDE_A[p.b]!==undefined?SN_BALDE_A[p.b]:26.5; lab=SN_BALDE_L[p.b]||'Padrão'; art=p.art||'';
+    nome=p.n; aliq=SN_BALDE_A[p.b]!==undefined?SN_BALDE_A[p.b]:26.5; lab=SN_BALDE_L[p.b]||'Padrão'; art=p.art||''; balde=p.b||'PADRAO';
   } else return null;
   var tot=qtd*vu, trib=tot*aliq/100;
   var _i0=trib*(17.7/26.5), _c0=trib*(8.8/26.5), _f=(window.SN_FAT?window.SN_FAT():{c:1,i:1});
@@ -56913,7 +56932,7 @@ function snItem(prefix){
   var _velho = tot * (velhoAliq/100) * fVelho;
 
   var novo = _i0*_f.i + _c0*_f.c;
-  return {id:SN_SEQ++,nome:nome,qtd:qtd,vu:vu,tot:tot,aliq:aliq,lab:lab,art:art,
+  return {id:SN_SEQ++,nome:nome,qtd:qtd,vu:vu,tot:tot,aliq:aliq,lab:lab,art:art,b:balde,
           _ibs0:_i0,_cbs0:_c0,ibs:_i0*_f.i,cbs:_c0*_f.c,
           velho:_velho, velhoTipo:velhoTipo, velhoAliq:velhoAliq, velhoFat:fVelho,
           novo:novo,
@@ -56925,14 +56944,25 @@ function snAddC(){var it=snItem('snc'); if(!it)return; SN_C.push(it);
   (document.getElementById('snc_vu')||{}).value='';(document.getElementById('snc_qtd')||{}).value=1;snRenderC();}
 function snDelV(id){SN_V=SN_V.filter(function(x){return x.id!==id;});snRenderV();}
 function snDelC(id){SN_C=SN_C.filter(function(x){return x.id!==id;});snRenderC();}
+/* ★ v859 · o par de códigos que o emissor exige por item (CST-IBS/CBS + cClassTrib), da mesma amostra do
+   Auditor de Cadastro (LH_CCLASSTRIB, IT 2025.002). É ponto de partida — o contador confirma. */
+function snBaldeDaAliq(a){ a=+a; if(a===0) return 'ZERO'; if(a===10.6) return '60'; if(a===15.9) return '40'; if(a===18.55) return '30'; return 'PADRAO'; }
+function snCodigos(it){
+  var mb={ZERO:'zero','60':'red60','30':'red30','40':'red40',PADRAO:'cheia'};
+  var chave=mb[(it&&it.b)||'PADRAO']||'cheia';
+  var m=(window.LH_CCLASSTRIB&&LH_CCLASSTRIB.mapa)?LH_CCLASSTRIB.mapa[chave]:null;
+  if(!m) return {cst:'000',cclass:'000001',chave:chave};
+  return {cst:m.cst,cclass:m.cclass,chave:chave,desc:m.desc};
+}
 function snTabela(itens,delFn,credFator){
   /* v98: a coluna do imposto VELHO. Durante a transição os dois sistemas
      convivem na mesma nota — omitir o ICMS/ISS era mostrar meia nota. */
-  var h='<table class="itens"><tr><th>PRODUTO / SERVIÇO</th><th class="n">QTD</th><th class="n">V.UNIT</th><th class="n">V.TOTAL</th><th class="n">ALÍQ.</th><th class="n" style="color:#e0a83a">ICMS/ISS</th><th class="n">IBS</th><th class="n">CBS</th><th class="n">TRIBUTO</th>'+(credFator!==undefined?'<th class="n">CRÉDITO</th>':'')+'<th></th></tr>';
+  var h='<table class="itens"><tr><th>PRODUTO / SERVIÇO</th><th class="n">QTD</th><th class="n">V.UNIT</th><th class="n">V.TOTAL</th><th class="n">ALÍQ.</th><th title="CST-IBS/CBS · cClassTrib — sugestão da amostra oficial; o contador confirma">CST · cClassTrib</th><th class="n" style="color:#e0a83a">ICMS/ISS</th><th class="n">IBS</th><th class="n">CBS</th><th class="n">TRIBUTO</th>'+(credFator!==undefined?'<th class="n">CRÉDITO</th>':'')+'<th></th></tr>';
   itens.forEach(function(it){
     h+='<tr><td>'+it.nome+'<span class="art">'+it.lab+(it.art?' · '+it.art:'')+'</span></td>'+
        '<td class="n">'+it.qtd+'</td><td class="n">'+SN_FMT(it.vu)+'</td><td class="n">'+SN_FMT(it.tot)+'</td>'+
        '<td class="n">'+it.aliq.toLocaleString("pt-BR")+'%</td>'+
+       (function(){ var c=snCodigos(it); return '<td class="sn-cod" style="font-family:ui-monospace,monospace;font-size:.7rem;white-space:nowrap;color:#1c1c1c">'+c.cst+' · '+c.cclass+'</td>'; })()+
        '<td class="n" style="color:#e0a83a">'+(it.velho!==undefined? SN_FMT(it.velho)
            +'<span class="art" style="display:block;font-size:.62rem">'
            +(it.velhoTipo==='iss'?'ISS':'ICMS')+' '+(it.velhoAliq||0).toLocaleString('pt-BR')+'%'
@@ -57001,10 +57031,26 @@ function snvRender(r, ent, motivo){
   (document.getElementById('snv_cbs')||{}).textContent=SN_FMT(cbs);
   (document.getElementById('snv_trib')||{}).textContent=SN_FMT(trib);
   (document.getElementById('snv_pct')||{}).textContent=(tot>0?(trib/tot*100):0).toFixed(1).replace('.',',')+'%';
+  snvQuemPaga(tot, ibs+cbs, velho);
   var al=document.getElementById('snv_alerta');
   if(esp){al.style.display='block';al.innerHTML='ℹ <b>Regime específico na nota:</b> Hotelaria e Bares (−40%, arts. 277–283) <b>não geram crédito</b> ao cliente. Eventos/Feiras (−60%, art. 139 + Anexo X) <b>geram</b>. A caracterização correta define a carga e o crédito do adquirente.';}
   else al.style.display='none';
 
+}
+/* ★ v859 · quem paga o quê. Por fora: cliente paga valor + IBS/CBS; por dentro: o valor já é o preço final,
+   a base é valor/(1+r) e o IBS/CBS é a diferença (r = alíquota efetiva do ano sobre a base). ICMS/ISS sempre por dentro. */
+function snvQuemPaga(tot, novo, velho){
+  var modo=(document.querySelector('input[name="snv_modo"]:checked')||{value:'fora'}).value;
+  var paga, novoD, fica, txt;
+  if(modo==='dentro'){ var r=tot>0?novo/tot:0; var base=tot/(1+r); novoD=tot-base; paga=tot; fica=base-velho;
+    txt='Preço de prateleira: o cliente paga '+SN_FMT(paga)+'; dentro dele vão '+SN_FMT(novoD)+' de IBS/CBS e '+SN_FMT(velho)+' de ICMS/ISS. Base de cálculo do IBS/CBS: '+SN_FMT(base)+'.'; }
+  else { novoD=novo; paga=tot+novo; fica=tot-velho;
+    txt='Nota por fora: o cliente paga '+SN_FMT(tot)+' + '+SN_FMT(novo)+' de IBS/CBS = '+SN_FMT(paga)+'. O ICMS/ISS ('+SN_FMT(velho)+') já está dentro do valor. Se o cliente é PJ do regime regular, os '+SN_FMT(novo)+' voltam para ele como crédito.'; }
+  (document.getElementById('snv_paga')||{}).textContent=SN_FMT(paga);
+  (document.getElementById('snv_novo')||{}).textContent=SN_FMT(novoD);
+  (document.getElementById('snv_velho2')||{}).textContent=SN_FMT(velho);
+  (document.getElementById('snv_fica')||{}).textContent=SN_FMT(fica);
+  var t=document.getElementById('snv_quem_txt'); if(t) t.textContent=tot>0?txt:'';
 }
 function snRenderV(){
   var ent=snvLerEntradas();
@@ -57051,7 +57097,7 @@ function sncRender(r, ent, motivo){
   (document.getElementById('snc_cred')||{}).textContent=SN_FMT(cred);
   (document.getElementById('snc_liq')||{}).textContent=SN_FMT(tot-cred);
   var al=document.getElementById('snc_alerta');
-  if(reg==='simples'){al.style.display='block';al.innerHTML='⚠ <b>Fornecedor do Simples/MEI:</b> na Reforma o crédito fica <b>limitado ao efetivamente recolhido</b> pelo fornecedor — aqui estimamos 50% (valor editável na validação). O regime do fornecedor passa a pesar na decisão de compra: compare o <b>custo líquido real</b>, não só o preço.';}
+  if(reg==='simples'){al.style.display='block';al.innerHTML='⚠ <b>Fornecedor do Simples/MEI:</b> na Reforma o crédito fica <b>limitado ao efetivamente recolhido</b> pelo fornecedor (art. 47 §9º, II, LC 214) — aqui estimamos <b>20% do imposto cheio</b>, a parcela típica do DAS; peça ao contador a fatia exata do Anexo do fornecedor. O regime do fornecedor passa a pesar na decisão de compra: compare o <b>custo líquido real</b>, não só o preço.';}
   else al.style.display='none';
 
 }
