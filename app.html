@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v859";</script>
+<body><script>window.LH_VERSAO="v860";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -52736,7 +52736,7 @@ function cmWireUpload(){
 function cmMapaTratamento(trat){
   /* deriva CST + cClassTrib do tratamento usando a tabela oficial embarcada */
   try{
-    var mapa=(window.LH_CCLASSTRIB&&LH_CCLASSTRIB.mapa)||{};
+    var mapa=(window.LH_CCLASSTRIB_MAPA&&LH_CCLASSTRIB_MAPA.mapa)||{};
     var chave=trat;
     if(trat==='cheia+IS')chave='cheia';
     var m=mapa[chave];
@@ -53083,15 +53083,19 @@ window.LH_CST_TRAT = {
  '820':{nome:'Tributacao em documento especifico',trat:'especifico',rot:'Documento especifico'},
  '830':{nome:'Exclusao da base de calculo',trat:'exclusao',rot:'Exclusao da base de calculo'}
 };
+/* ★ v860 · TABELA OFICIAL cClassTrib — Informe Técnico RT 2025.002, versão de 22/06/2026: 164 códigos em 18 CST
+   (antes: versão out/2025 com 144). Fonte: Portal Nacional da NF-e; conferida contra duas publicações independentes
+   e contra a distribuição por CST (200: 54 · 410: 38 · 550: 25 · 820: 9 · 620: 7 · 000: 5 · 011: 5). */
+window.LH_CCLASSTRIB_VERSAO='IT RT 2025.002 · 22/06/2026 · 164 códigos';
 window.LH_CCLASSTRIB = {
- '000001':'Situações tributadas integralmente pelo IBS e CBS.',
+ '000001':'Situações tributadas integralmente pelo IBS e CBS',
  '000002':'Exploração de via',
  '000003':'Regime automotivo - projetos incentivados (art. 311)',
  '000004':'Regime automotivo - projetos incentivados (art. 312)',
  '000005':'Operação com EAC destinado à mistura com gasolina A, mas com saída do biocombustível com destinação diversa',
  '010001':'Operações do FGTS não realizadas pela Caixa Econômica Federal',
  '010002':'Operações do serviço financeiro',
- '011001':'Planos de assistência funerária.',
+ '011001':'Planos de assistência funerária',
  '011002':'Planos de assistência à saúde',
  '011003':'Intermediação de planos de assistência à saúde',
  '011004':'Concursos e prognósticos',
@@ -53127,7 +53131,7 @@ window.LH_CCLASSTRIB = {
  '200029':'Fornecimento dos serviços de saúde humana (Anexo III)',
  '200030':'Venda dos dispositivos médicos (Anexo IV)',
  '200031':'Fornecimento dos dispositivos de acessibilidade próprios para pessoas com deficiência (Anexo V)',
- '200032':'Fornecimento dos medicamentos registrados na Anvisa ou produzidos por farmácias de manipulação, ressalvados os medicamentos sujeitos à alíquota zero',
+ '200032':'Fornecimento dos medicamentos registrados na Anvisa ou produzidos por farmácias de manipulação',
  '200033':'Fornecimento das composições para nutrição enteral e parenteral (Anexo VI)',
  '200034':'Fornecimento dos alimentos destinados ao consumo humano (Anexo VII)',
  '200035':'Fornecimento dos produtos de higiene pessoal e limpeza (Anexo VIII)',
@@ -53136,11 +53140,11 @@ window.LH_CCLASSTRIB = {
  '200038':'Fornecimento dos insumos agropecuários e aquícolas (Anexo IX)',
  '200039':'Fornecimento dos bens e serviços relacionados com produções nacionais artísticas, culturais, de eventos, jornalísticas e audiovisuais (Anexo X)',
  '200040':'Fornecimento de serviços de comunicação institucional à administração pública',
- '200041':'Fornecimento de serviço de educação desportiva (art. 141. I)',
- '200042':'Fornecimento de serviço de gestão e exploração do desporto (art. 141. II)',
+ '200041':'Fornecimento de serviço de educação desportiva (art. 141, I)',
+ '200042':'Fornecimento de serviço de gestão e exploração do desporto (art. 141, II)',
  '200043':'Fornecimento à administração pública dos serviços e dos bens relativos à soberania (Anexo XI)',
- '200044':'Operações e prestações de serviços de segurança da informação e segurança cibernética (Anexo XI)',
- '200045':'Operações relacionadas a projetos de reabilitação urbana de zonas históricas e de áreas críticas',
+ '200044':'Operações e prestações de serviços de segurança da informação e segurança cibernética desenvolvidos por sociedade que tenha sócio brasileiro (Anexo XI)',
+ '200045':'Operações relacionadas a projetos de reabilitação urbana de zonas históricas e de áreas críticas de recuperação e reconversão urbanística',
  '200046':'Operações com bens imóveis',
  '200047':'Bares e Restaurantes',
  '200048':'Hotelaria, Parques de Diversão e Parques Temáticos',
@@ -53149,7 +53153,7 @@ window.LH_CCLASSTRIB = {
  '200051':'Agências de Turismo',
  '200052':'Prestação de serviços de profissões intelectuais',
  '200053':'Fornecimento de medicamentos registrados na Anvisa, quando classificados como soros ou vacinas',
- '200054':'Fornecimento de bem material pela cooperativa de produção agropecuária a associado não sujeito ao regime regular',
+ '200054':'Fornecimento de bem material pela cooperativa de produção agropecuária a associado não sujeito ao regime regular do IBS e da CBS',
  '220001':'Incorporação imobiliária submetida ao regime especial de tributação',
  '220002':'Incorporação imobiliária submetida ao regime especial de tributação',
  '220003':'Alienação de imóvel decorrente de parcelamento do solo',
@@ -53189,7 +53193,7 @@ window.LH_CCLASSTRIB = {
  '410027':'Exportação de serviço ou de bem imaterial',
  '410028':'Operações com bens imóveis realizadas por pessoas físicas não consideradas contribuintes',
  '410029':'Operações acobertadas somente pelo ICMS',
- '410030':'Estorno de crédito por perecimento, deteriorização, roubo, furto ou extravio.',
+ '410030':'Estorno de crédito por perecimento, deteriorização, roubo, furto ou extravio',
  '410031':'Fornecimento em período anterior ao início de vigência de incidências de CBS e IBS',
  '410032':'Tributos incidentes na operação que não integram a base de cálculo do IBS e da CBS',
  '410033':'Operações de Fundos de Investimento Imobiliário (FII) e Fundos de Investimento nas Cadeias Produtivas do Agronegócio (Fiagro)',
@@ -53204,29 +53208,49 @@ window.LH_CCLASSTRIB = {
  '550002':'Regime de Trânsito',
  '550003':'Regimes de Depósito (art. 85)',
  '550004':'Regimes de Depósito (art. 87)',
+ '550005':'Regimes de Depósito (art. 87, Parágrafo único)',
  '550006':'Regimes de Permanência Temporária',
  '550007':'Regimes de Aperfeiçoamento',
  '550008':'Importação de bens para o Regime de Repetro-Temporário',
+ '550009':'GNL-Temporário',
  '550010':'Repetro-Permanente',
  '550011':'Repetro-Industrialização',
+ '550012':'Repetro-Nacional',
+ '550013':'Repetro-Entreposto',
  '550014':'Zona de Processamento de Exportação',
+ '550015':'Regime Tributário para Incentivo à Modernização e à Ampliação da Estrutura Portuária',
+ '550016':'Regime Especial de Incentivos para o Desenvolvimento da Infraestrutura',
+ '550017':'Regime Tributário para Incentivo à Atividade Naval - Renaval (Art. 107, I)',
  '550018':'Desoneração da aquisição de bens de capital',
  '550019':'Importação de bem material por indústria incentivada para utilização na ZFM',
  '550020':'Áreas de livre comércio',
  '550021':'Industrialização destinada a exportações',
+ '550022':'Regime Especial de Incentivos para a Produção de Hidrogênio de Baixa Emissão de Carbono (Rehidro)',
+ '550023':'Operações com hidrocarbonetos líquidos derivados de petróleo não combustíveis ou de gás natural, inclusive nafta',
+ '550024':'Regime Tributário para Incentivo à Atividade Naval - Renaval (Art. 107, II)',
+ '550025':'Regime Tributário para Incentivo à Atividade Naval - Renaval (Art. 107, III)',
  '620001':'Tributação monofásica sobre combustíveis',
  '620002':'Tributação monofásica com responsabilidade pela retenção sobre combustíveis',
  '620003':'Tributação monofásica com responsabilidade de retenção de tributos por terceiros',
+ '620004':'Tributação monofásica sobre mistura de EAC com gasolina A em percentual superior ao obrigatório',
+ '620005':'Tributação monofásica sobre mistura de EAC com gasolina A em percentual inferior ao obrigatório',
  '620006':'Tributação monofásica sobre combustíveis cobrada anteriormente',
+ '620007':'Perecimento, deteriorização, roubo, furto ou extravio no regime monofásico',
  '800001':'Fusão, cisão ou incorporação',
  '800002':'Transferência de crédito do associado, inclusive as cooperativas singulares',
- '810001':'Crédito presumido sobre o valor apurado nos fornecimentos a partir da ZFM',
+ '810001':'Crédito presumido de IBS sobre o valor apurado nos fornecimentos a partir da ZFM',
  '811001':'Anulação de Crédito por Saídas Imunes/Isentas',
  '811002':'Débitos de notas fiscais não processadas na apuração',
  '811003':'Desenquadramento do Simples Nacional',
- '820001':'Documento com informações de fornecimento de serviços de planos de assistência à saúde (art. 234 LC 214)',
+ '820001':'Documento com informações de fornecimento de serviços de planos de assistência à saúde elencados no art. 234 da LC nº 214, de 2025',
+ '820002':'Documento com informações de fornecimento de serviços de planos de assistência funerária',
+ '820003':'Documento com informações de fornecimento de serviços de planos de assistência à saúde de animais domésticos',
+ '820004':'Documento com informações de prestação de serviços de concursos de prognósticos',
  '820005':'Documento com informações de alienação de bens imóveis',
+ '820006':'Documento com informações de fornecimento de serviços de exploração de via',
  '820007':'Documento com informações de fornecimento de serviços financeiros',
+ '820008':'Documento com informações de fornecimento de serviço continuado, mas com tributação realizada em fatura anterior',
+ '820009':'Cobrança relativa a fornecimentos declarados em outro documento',
  '830001':'Documento com exclusão da BC da CBS e do IBS de energia elétrica fornecida pela distribuidora à UC'
 }
 /* leitor: codigo cClassTrib -> tratamento oficial + fundamento */
@@ -53381,7 +53405,7 @@ window.lhLerClassTrib = function(codigo){
   if(c.length!==6) return null;
   var cst = c.slice(0,3);
   var info = window.LH_CST_TRAT[cst] || {nome:'CST '+cst, trat:'cheia', rot:'Tratamento nao mapeado (confirmar)'};
-  var desc = window.LH_CCLASSTRIB[c] || '(codigo nao consta na amostra embarcada - confirmar no Portal NF-e)';
+  var desc = window.LH_CCLASSTRIB[c] || '(codigo nao consta na tabela oficial embarcada — '+(window.LH_CCLASSTRIB_VERSAO||'')+' — confirmar no Portal NF-e)';
   /* fundamento: extrai Anexo/artigo da descricao */
   var mAnexo = desc.match(/Anexo\s+[IVXLC]+/i);
   var mArt = desc.match(/art\.?\s*\d+[^)]*/i);
@@ -56950,9 +56974,10 @@ function snBaldeDaAliq(a){ a=+a; if(a===0) return 'ZERO'; if(a===10.6) return '6
 function snCodigos(it){
   var mb={ZERO:'zero','60':'red60','30':'red30','40':'red40',PADRAO:'cheia'};
   var chave=mb[(it&&it.b)||'PADRAO']||'cheia';
-  var m=(window.LH_CCLASSTRIB&&LH_CCLASSTRIB.mapa)?LH_CCLASSTRIB.mapa[chave]:null;
-  if(!m) return {cst:'000',cclass:'000001',chave:chave};
-  return {cst:m.cst,cclass:m.cclass,chave:chave,desc:m.desc};
+  var m=(window.LH_CCLASSTRIB_MAPA&&LH_CCLASSTRIB_MAPA.mapa)?LH_CCLASSTRIB_MAPA.mapa[chave]:null;
+  var r=m?{cst:m.cst,cclass:m.cclass,chave:chave,desc:m.desc}:{cst:'000',cclass:'000001',chave:chave};
+  try{ var o=window.LH_CCLASSTRIB&&LH_CCLASSTRIB[r.cclass]; if(typeof o==='string') r.oficial=o; }catch(_e){}
+  return r;
 }
 function snTabela(itens,delFn,credFator){
   /* v98: a coluna do imposto VELHO. Durante a transição os dois sistemas
@@ -56962,7 +56987,7 @@ function snTabela(itens,delFn,credFator){
     h+='<tr><td>'+it.nome+'<span class="art">'+it.lab+(it.art?' · '+it.art:'')+'</span></td>'+
        '<td class="n">'+it.qtd+'</td><td class="n">'+SN_FMT(it.vu)+'</td><td class="n">'+SN_FMT(it.tot)+'</td>'+
        '<td class="n">'+it.aliq.toLocaleString("pt-BR")+'%</td>'+
-       (function(){ var c=snCodigos(it); return '<td class="sn-cod" style="font-family:ui-monospace,monospace;font-size:.7rem;white-space:nowrap;color:#1c1c1c">'+c.cst+' · '+c.cclass+'</td>'; })()+
+       (function(){ var c=snCodigos(it); return '<td class="sn-cod" title="'+String(c.oficial||c.desc||'').replace(/"/g,'&quot;')+'" style="font-family:ui-monospace,monospace;font-size:.7rem;white-space:nowrap;color:#1c1c1c">'+c.cst+' · '+c.cclass+'</td>'; })()+
        '<td class="n" style="color:#e0a83a">'+(it.velho!==undefined? SN_FMT(it.velho)
            +'<span class="art" style="display:block;font-size:.62rem">'
            +(it.velhoTipo==='iss'?'ISS':'ICMS')+' '+(it.velhoAliq||0).toLocaleString('pt-BR')+'%'
@@ -57406,7 +57431,8 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",realoca); else realoca();
  setTimeout(realoca,600);
 })();
-window.LH_CCLASSTRIB = {
+/* ★ v860 · era window.LH_CCLASSTRIB e APAGAVA a tabela oficial de 6 dígitos (carregava por último). Renomeado. */
+window.LH_CCLASSTRIB_MAPA = {
  versao:"IT 2025.002 · amostra O1 (SVRS: dfe-portal.svrs.rs.gov.br)",
  // trat → {cst, cclass, desc, art, pRed}
  mapa:{
@@ -57465,7 +57491,7 @@ function acBusca(){
 }
 function acEscolhe(i){
  var x=window._acRes[i]; if(!x)return;
- var chave=acChave(x), c=LH_CCLASSTRIB.mapa[chave];
+ var chave=acChave(x), c=LH_CCLASSTRIB_MAPA.mapa[chave];
  var box=document.getElementById("ac_result");
  box.style.display="block";
  box.innerHTML='<div style="background:linear-gradient(135deg,rgba(201,162,39,.10),rgba(201,162,39,.03));border:1px solid rgba(201,162,39,.4);border-radius:14px;padding:20px;margin-bottom:14px">'
@@ -58245,8 +58271,8 @@ function acEscolhe(i){
    return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]; }); }
  function cc(trat){
    var k = TRAT2CHAVE[trat];
-   if(!k || !window.LH_CCLASSTRIB || !LH_CCLASSTRIB.mapa) return null;
-   return LH_CCLASSTRIB.mapa[k] || null;
+   if(!k || !window.LH_CCLASSTRIB_MAPA || !LH_CCLASSTRIB_MAPA.mapa) return null;
+   return LH_CCLASSTRIB_MAPA.mapa[k] || null;
  }
 
  /* ═══ ① A PAUTA DO CADASTRO ═══
