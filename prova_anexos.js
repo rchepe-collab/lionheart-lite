@@ -8,7 +8,7 @@ const fs = require('fs'), path = require('path');
 const APP = fs.readFileSync(path.join(__dirname, 'app.html'), 'utf8');
 let falhou = 0;
 const ex = (n, ok, d) => { console.log('  ' + (n + ' ').padEnd(70, '.') + ' ' + (ok ? 'true' : 'FALHOU' + (d ? ' — ' + d : ''))); if (!ok) falhou++; };
-const OFICIAL = { I: 94, IV: 77, V: 21, VI: 64, VII: 49, VIII: 7, IX: 85, XII: 29, XIII: 7, XV: 24 };
+const OFICIAL = { I: 94, IV: 77, V: 21, VI: 64, VII: 49, VIII: 7, IX: 86, XII: 29, XIII: 7, XV: 24 };   /* IX: 85 códigos + item 10 (sementes) por capítulos 7/10/12 (v869) */
 const TRAT = { I: 'zero', IV: 'red60', V: 'red60', VI: 'red60', VII: 'red60', VIII: 'red60', IX: 'red60', XII: 'zero', XIII: 'zero', XV: 'zero' };
 /* casos que o arquivo da Fossati e a conciliação mostraram */
 const CASOS = [
@@ -27,6 +27,15 @@ const CASOS = [
   ['39174090', 'CONECTOR DE MANGUEIRA COM ENGATE', 'cheia', '000001', 'Anexo IV cita 3917.40 só p/ conector completo com tampa'],
   ['28151100', 'SODA CAUSTICA 1KG', 'cheia', '000001', 'Anexo IX cita 2815.11 como insumo agro (hidróxido de sódio p/ uso agropecuário)'],
   ['28151100', 'HIDROXIDO DE SODIO USO AGROPECUARIO CORRETIVO', 'red60', '200038', 'Anexo IX item 8 — descrição confirma'],
+  /* v869: sementes (Anexo IX item 10, capítulos 7/10/12) só com a palavra na descrição; máquinas agrícolas não são insumo */
+  ['10051000', 'SEMENTE DE MILHO HIBRIDO SC 60K', 'red60', '200038', 'Anexo IX item 10'],
+  ['10051000', 'MILHO PIPOCA 500G', 'cheia', '000001', 'cap. 10 sem "semente" → regra geral'],
+  ['87019300', 'TRATOR AGRICOLA 75CV', 'cheia', '000001', 'máquina não é insumo'],
+  ['31021010', 'UREIA AGRICOLA 50KG', 'red60', '200038', 'Anexo IX item 2 — marcador agro fecha o CONFERIR'],
+  ['87131000', 'CADEIRA DE RODAS MANUAL', 'zero', '200007', 'Anexo XIII'],
+  ['49019900', 'LIVRO DIDATICO', 'imune', '410008', 'art. 9º IV'],
+  ['96190000', 'ABSORVENTE INTERNO 16 UN', 'zero', '200013', 'art. 146 saúde menstrual'],
+  ['87032100', 'AUTOMOVEL HATCH 1.0 FLEX', 'cheia+IS', '000001', 'IS não é benefício condicionado'],
   /* v867: Anexo I item 16 cita 1905.90.90 só para o pão francês — bolo e croissant no mesmo NCM são regra geral */
   ['19059090', 'PAO FRANCES KG', 'zero', '200003', 'Anexo I item 16'],
   ['19059090', 'BOLO DE CHOCOLATE KG', 'cheia', '000001', 'mesmo NCM, não é pão francês'],

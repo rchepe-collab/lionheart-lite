@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v868';</script>
+<body><script>window.LH_VERSAO='v869';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -52308,7 +52308,7 @@ function cmMontaIdx(){
     var raw=String(base[i].ncm);
     /* entradas compostas ('3003/3004', '9619 (fralda)') → extrair todos os tokens numéricos >=4 díg. */
     var toks=raw.split(/[^0-9.]+/).map(function(t){return t.replace(/[^0-9]/g,'');}).filter(function(t){return t.length>=4;});
-    if(!toks.length){var d=raw.replace(/[^0-9]/g,''); if(d.length>=4)toks=[d];}
+    if(!toks.length){var d=raw.replace(/[^0-9]/g,''); if(d.length>=4)toks=[d]; else if(d.length===2 && base[i].esp){ CM_IDX.cap=CM_IDX.cap||{}; if(CM_IDX.cap[d]===undefined) CM_IDX.cap[d]=base[i]; } }   /* v869: capítulo inteiro (Anexo IX item 10, sementes dos cap. 7/10/12) só com produto específico */
     for(var j=0;j<toks.length;j++){
       var bk=toks[j];
       if(CM_IDX.exact[bk]===undefined)CM_IDX.exact[bk]=base[i];
@@ -52360,6 +52360,39 @@ var CM_SEM_BENEFICIO=[
   {ncm:/^(2710|3403|3819|2712|3811)/, nao:/gasolina|diesel|querosene (de )?avia|\bqav\b|etanol|\bglp\b|\bgnv\b|biodiesel|oleo combust|óleo combust/, re:/graxa|lubrif|[oó]leo (de )?(m[aá]quina|singer|2 ?t|4 ?t|motor|hidr[aá]ul|mineral|corrente|silicone|penetr|branco)|micro.?[oó]leo|[oó]leo (lubr|multiuso|anticor)|\blubr?\b|lube\b|drylube|rost off|desengrip|vaselina|solvente|thinner|aguarr|arraz|raz\b|diluente|wd.?40|limpa contato|querosene|removedor|spray|aditivo|fluido|parafina|cera/, rotulo:'lubrificante, solvente ou querosene de limpeza', lei:'o regime monofásico (art. 172) vale só para combustíveis listados — lubrificante e solvente são integrais'},
   {ncm:/^2207/, nao:/combust[ií]vel|\behc\b|\beac\b|hidratado combust|anidro combust/, re:/gel|70|92|46|inpm|liq|l[ií]quido|limpeza|antiss[eé]ptic|acendedor|lareira|churrasq|domiss|etilico|et[ií]lico|aero/, rotulo:'álcool de limpeza/uso doméstico', lei:'o regime monofásico (art. 172) vale só para o etanol combustível'}
 ];
+/* ★ v869 · marcadores fortes por anexo: quando a descrição traz o marcador, o produto É do anexo (soja/bovino/lavoura = agro;
+   PcD/surdez = acessibilidade). Veio do teste de estresse com agro, indústria, serviços, varejo e turismo. */
+var CM_MARCADOR={
+  agro:/agr[ií]c|agropecu|agron|bovin|su[ií]n|av[ií]c|ovin|caprin|equin|lavoura|pecu[aá]r|rural|semente|muda de|mudas|fertiliz|adubo|\bnpk\b|ureia|calc[aá]rio|ra[cç][aã]o (bovin|su[ií]n|av[ií]c|equin|animal|para (gado|frango|porco|vaca|bezerr))|sal mineral|herbicid|fungicid|inseticida agr|acaricid|nematicid|defensiv|inoculant|vacina (animal|aftosa|bovin|su[ií]n|av[ií]c|veterin)|s[eê]men|embri[aã]o|pinto de|pintinho|frango de corte|leit[aã]o|bezerr|matriz|reprodutor|silagem|feno|forrag|pastag|gado|soja|milho|trigo|arroz em casca|algod[aã]o|cana|caf[eé] em (coco|gr[aã]o)|tratamento de sementes/,
+  pcd:/pcd|defici|braille|acessib|surd|auditiv|cadeira de rodas|muleta|bengala|andador|[óo]rtese|pr[óo]tese|implante coclear|amputad|mobilidade reduzida/
+};
+function cmMarcadorAnexo(hit,dn){
+  var f=String((hit&&hit.fonte)||'').toLowerCase();
+  if(/anexo ix|agropecu|insumo/.test(f)) return CM_MARCADOR.agro.test(dn);
+  if(/anexo xiii|anexo v\b|pcd|acessib/.test(f)) return CM_MARCADOR.pcd.test(dn);
+  return false;
+}
+/* ★ v869 · regras firmes: o NCM (com ou sem a descrição) decide sem CONFERIR */
+function cmRegraFirme(k,hit,desc){
+  var d=lhNorm(desc||'');
+  /* livros, jornais e periódicos: imunidade (art. 9º, IV) — o NCM 4901/4902 já é o livro/jornal; só agenda/caderno/álbum ficam de fora */
+  if(/^(4901|4902|4903)/.test(k)){
+    if(/agenda|caderno|album|figurinha|catalogo|folheto|panfleto|calendario|bloco/.test(d)) return {ncm:hit?hit.ncm:k,desc:desc,trat:'cheia',fonte:'Art. 14 — regra geral (agendas, cadernos, álbuns e catálogos não têm a imunidade de livros/jornais)',seg:'comercio'};
+    return {ncm:hit?hit.ncm:k,desc:(hit&&hit.desc)||'Livros, jornais e periódicos',trat:'imune',fonte:'Art. 9º, IV LC 214 — imunidade constitucional (livros, jornais e periódicos)',seg:'comercio'};
+  }
+  /* saúde menstrual: absorventes, coletores e tampões = alíquota ZERO (art. 146) — não é o −60% do Anexo VIII (fraldas) */
+  if(/^9619/.test(k) && /absorvent|coletor menstrual|calcinha absorvent|tamp[aã]o|protetor diario|menstrua/.test(d) && !/fralda|geriatr|incontin/.test(d))
+    return {ncm:'9619.00.00',desc:'Absorventes, tampões e coletores menstruais',trat:'zero',fonte:'Art. 146 LC 214 — cuidados básicos à saúde menstrual (alíquota ZERO)',seg:'comercio'};
+  /* medicamentos: −60% firme (art. 129/130); a alíquota ZERO vale só para a lista definida em ato do Executivo (Anexo XIV revogado pela LC 227) */
+  if(/^(3003|3004)/.test(k) && hit && hit.trat==='zero' && /anexo xiv revogado/i.test(String(hit.fonte||'')))
+    return {ncm:hit.ncm,desc:hit.desc,trat:'red60',fonte:'Redução 60% — medicamentos (arts. 129-130 LC 214). Alíquota ZERO só para a lista por ato do Executivo (Anexo XIV revogado pela LC 227/2026): confira o princípio ativo',seg:'comercio'};
+  /* máquinas e implementos agrícolas (tratores 8701, semeadores/colheitadeiras 8432-8436) NÃO são insumos do Anexo IX: regra geral firme */
+  if(/^(8701|8432|8433|8434|8436)/.test(k) && !/pcd|acessib/.test(d)) return {ncm:hit?hit.ncm:k,desc:(hit&&hit.desc)||'Máquinas e implementos agrícolas',trat:'cheia',fonte:'Art. 14 — regra geral: máquinas e implementos agrícolas não constam do Anexo IX (insumos agropecuários); o crédito integral na compra é o benefício do produtor',seg:'agro'};
+  /* cadeira de rodas (8713) e aparelhos auditivos (9021.40): Anexo XIII, alíquota zero — o NCM já é o produto */
+  if(/^8713/.test(k)) return {ncm:hit?hit.ncm:k,desc:'Cadeiras de rodas',trat:'zero',fonte:'Anexo XIII — dispositivos de acessibilidade PcD (alíquota ZERO) · 8713',seg:'comercio'};
+  if(/^902140/.test(k)) return {ncm:hit?hit.ncm:k,desc:'Aparelhos para facilitar a audição dos surdos',trat:'zero',fonte:'Anexo XIII — dispositivos de acessibilidade PcD (alíquota ZERO) · 9021.40',seg:'comercio'};
+  return null;
+}
 function cmSemBeneficio(k,hit,desc){
   if(!hit || !hit.trat || hit.trat==='cheia' || !desc) return null;
   var d=lhNorm(desc);
@@ -52466,8 +52499,10 @@ function cmBuscaTrat(ncm,desc){
   if(CM_IDX.exact[k]){hit=CM_IDX.exact[k];exato=true;}
   else if(CM_IDX.byStart[k])hit=CM_IDX.byStart[k];
   else { for(var L=k.length-1;L>=4;L--){ var p=k.slice(0,L); if(CM_IDX.exact[p]){hit=CM_IDX.exact[p];break;} } }
+  if(!hit && CM_IDX.cap && CM_IDX.cap[k.slice(0,2)] && cmNcmValido(k)) hit=CM_IDX.cap[k.slice(0,2)];   /* v869: capítulo com produto específico (sementes) */
   if(!hit)return null;
   var _sb=cmSemBeneficio(k,hit,desc); if(_sb) return _sb;   /* v864: descrição indica produto SEM benefício → regra geral firme */
+  var _fm=cmRegraFirme(k,hit,desc); if(_fm) return _fm;      /* v869: casos em que o NCM (+ descrição) decide sozinho, sem CONFERIR */
   /* v480 — DESCRIÇÃO DECIDE (art. 7-A LC 227): se a entrada curada tem descRules, a descrição
      do produto resolve o tratamento. Benefício NÃO se presume: regra de benefício casada confirma;
      regra de "cheia" casada = produto sem benefício (definitivo); NENHUMA regra casa num NCM cujo
@@ -52477,12 +52512,18 @@ function cmBuscaTrat(ncm,desc){
      descrição casar com pelo menos duas palavras da lei (ou todas, quando a lei tem uma ou duas); senão é regra
      geral, em silêncio — sem mandar 1.400 conexões de PVC para revisão. */
   if(hit.esp && hit.kw && hit.kw.length){
-    var _dE=lhNorm(desc||''), _nk=hit.kw.filter(function(k){ return _dE.indexOf(lhNorm(k))>=0; }).length;
+    /* v869: a lei escreve no plural ("sementes", "mudas", "cadeiras de rodas") e o cadastro no singular — compara pela raiz
+       (5 letras) nos dois sentidos, e um marcador forte do próprio anexo (agropecuário, PcD…) conta como acerto */
+    var _dE=lhNorm(desc||''), _tokD=_dE.split(/[^a-z0-9]+/).filter(function(t){ return t.length>=4; });
+    var _raiz=function(t){ return t.slice(0,Math.min(5,t.length)); };
+    var _nk=hit.kw.filter(function(k){ var kn=lhNorm(k); if(_dE.indexOf(kn)>=0) return true; var kr=_raiz(kn); return kn.length>=5 && _tokD.some(function(t){ return _raiz(t)===kr; }); }).length;
+    var _capInteiro=String(hit.ncm||'').replace(/\D/g,'').length<=2;
+    var _marc=(!_capInteiro) && cmMarcadorAnexo(hit,_dE); if(_marc) _nk=Math.max(_nk,(hit.need||2));   /* entrada de capítulo inteiro (sementes): só a palavra da lei vale, marcador não basta */
     /* com uma só palavra útil na lei ("conector completo com tampa" → "conect"), palavra solta não basta:
        exige a frase inteira da lei na descrição do produto */
     var _frase=desc && lhNorm(hit.desc||'') && _dE.indexOf(lhNorm(hit.desc||''))>=0;
     var _need=hit.need||((hit.kw.length>=2)?2:99);
-    if(desc && (_nk>=_need || _frase)) return {ncm:hit.ncm,desc:hit.desc,trat:hit.trat,fonte:(hit.fonte||'')+' \u2014 descri\u00e7\u00e3o confirma o produto do anexo',seg:hit.seg};
+    if(desc && (_nk>=_need || _frase)) return {ncm:hit.ncm,desc:hit.desc,trat:hit.trat,fonte:String(hit.fonte||'').replace(/ \u00b7 CONFERIR[^\u2014]*/,'')+' \u2014 descri\u00e7\u00e3o confirma o produto do anexo',seg:hit.seg};
     return {ncm:hit.ncm,desc:hit.desc,trat:'cheia',fonte:'Art. 14 \u2014 regra geral (o NCM consta no '+String(hit.fonte||'').replace(/ \u00b7 CONFERIR.*$/,'')+' apenas para \u201c'+String(hit.desc||'').slice(0,60)+'\u201d; a descri\u00e7\u00e3o n\u00e3o indica esse produto)',seg:hit.seg};
   }
   if(hit.descRules && hit.descRules.length && desc){
@@ -52494,6 +52535,9 @@ function cmBuscaTrat(ncm,desc){
     if(_mR){
       if(_mR.trat==='cheia') return {ncm:hit.ncm,desc:hit.desc,trat:'cheia',fonte:(hit.fonte||'')+' \u2014 descri\u00e7\u00e3o indica produto SEM o benef\u00edcio do anexo (art.14)',seg:hit.seg};
       return {ncm:hit.ncm,desc:hit.desc,trat:_mR.trat,fonte:(hit.fonte||'')+' \u2014 descri\u00e7\u00e3o confirma o enquadramento no anexo',seg:hit.seg};
+    }
+    if(hit.trat && hit.trat!=='cheia' && cmMarcadorAnexo(hit,_dR)){   /* v869: marcador do anexo na descrição (bovino, lavoura, PcD…) fecha a hipótese */
+      return {ncm:hit.ncm,desc:hit.desc,trat:hit.trat,fonte:String(hit.fonte||'').replace(/ \u00b7 CONFERIR[^\u2014]*/,'')+' \u2014 descri\u00e7\u00e3o confirma a destina\u00e7\u00e3o do anexo',seg:hit.seg};
     }
     if(hit.trat && hit.trat!=='cheia'){
       return {ncm:hit.ncm,desc:hit.desc,trat:'cheia',fonte:'NCM com benef\u00edcio condicionado \u00e0 descri\u00e7\u00e3o ('+(hit.fonte||'')+') \u2014 descri\u00e7\u00e3o do produto N\u00c3O confirma o item listado no anexo; aplicado art.14 (CONFERIR)',seg:hit.seg,st:'conferir',origem:'trava_descrules'};
@@ -52507,7 +52551,7 @@ function cmBuscaTrat(ncm,desc){
      específica (PCD, dispositivo médico, medicamento, higiene básica), confirmar que a
      descrição do produto realmente casa. Senão, o mesmo NCM aplicaria benefício ao produto
      errado (ex.: 8302.41 "barra PCD"=zero vs "puxador"=cheia). */
-  if(hit.trat && hit.trat!=='cheia' && desc){
+  if(hit.trat && hit.trat!=='cheia' && hit.trat!=='cheia+IS' && desc){   /* v869: IS não é benefício — nunca vai a CONFERIR por descrição */
     var d=String(desc).toLowerCase();
     /* AD REM (art. 172): SÓ combustíveis listados. Lubrificante/graxa/solvente NÃO é monofásico. */
     if(hit.trat==='adrem'){
@@ -52526,10 +52570,15 @@ function cmBuscaTrat(ncm,desc){
     var faixaAlimentar=/anexo i\b|anexo vii\b|anexo xv|cesta|hortifr|aliment|frutas|ovos|carne|arroz|feij[ãa]o/.test(fonteL);
     var precisaDesc=(porFaixa&&!faixaAlimentar)||/pcd|acessibilidade|braille|defici|cir[úu]rgic|hospitalar|medicament|farmac|ortop[ée]dic|prótese|dispositivo m[ée]dic|higiene (bucal|pessoal|b[áa]sica)|corretiv|oft[áa]lmic/.test(fonteL);
     if(precisaDesc){
-      var confirma=/pcd|defici|braille|acessibil|cir[úu]rgic|hospitalar|medicament|f[áa]rmac|ortop[ée]dic|pr[óo]tese|est[ée]ril|paciente|enfermagem|ambulatori|creme dental|escova dental|sabonete|papel higi[êe]nic|corretiv|de grau|oft[áa]lmic/.test(d);
+      var confirma=/pcd|defici|braille|acessibil|cir[úu]rgic|hospitalar|medicament|f[áa]rmac|ortop[ée]dic|pr[óo]tese|est[ée]ril|paciente|enfermagem|ambulatori|creme dental|escova dental|sabonete|papel higi[êe]nic|corretiv|de grau|oft[áa]lmic|auditiv|cadeira de rodas|muleta|bengala|andador|[óo]rtese|implante|livro|jornal|revista|peri[óo]dic/.test(d)
+                   || (/anexo ix|agropecu|insumo/.test(fonteL) && cmMarcadorAnexo({fonte:'Anexo IX'},lhNorm(d)));
       if(!confirma){
         return {ncm:hit.ncm,desc:hit.desc,trat:'cheia',fonte:'NCM tem benefício condicionado à descrição ('+(hit.fonte||'')+') — descrição do produto NÃO confirma; aplicado art.14 (CONFERIR)',seg:hit.seg,st:'conferir',origem:'trava_desc'};
       }
+    }
+    /* v869: a fonte do anexo traz "CONFERIR destinação"; quando a descrição confirma pelo marcador do anexo, a hipótese fecha */
+    if(/CONFERIR/.test(String(hit.fonte||'')) && cmMarcadorAnexo(hit,lhNorm(d))){
+      return {ncm:hit.ncm,desc:hit.desc,trat:hit.trat,fonte:String(hit.fonte).replace(/ \u00b7 CONFERIR[^\u2014]*/,'')+' \u2014 descri\u00e7\u00e3o confirma a destina\u00e7\u00e3o',seg:hit.seg};
     }
   }
   return hit;
@@ -52638,7 +52687,9 @@ function cmProcessar(rows){
       var _nd=String(it.nbs).replace(/\D/g,''), _x=null;
       for(var _i=0;_i<LH_FISCAL.nbs.length && _nd.length>=4;_i++){ var _c=String(LH_FISCAL.nbs[_i].nbs||'').replace(/\D/g,''); if(_c && (_c===_nd || _c.indexOf(_nd)===0 || _nd.indexOf(_c)===0)){ _x=LH_FISCAL.nbs[_i]; break; } }
       it.tipo='S';
-      if(_x){ var _r=window.SN_NBS_TRAT(_x); it.status=_r.conferir?'ok_default':'ok'; it.trat=_r.trat; it.conf=_r.conferir?'media':'alta';
+      if(_x){ var _r=window.SN_NBS_TRAT(_x);
+        if(_r.especifico){ it.status='ambiguo'; it.trat='cheia'; it.conf='baixa'; it.fonte=_r.art+' · NBS '+(_x.nbs||'')+' — '+String(_x.desc||'').slice(0,80)+' — não precificar pela alíquota geral; use a calculadora do regime'; st.revisar++; st.ambiguo=(st.ambiguo||0)+1; return; }
+        it.status=_r.conferir?'ok_default':'ok'; it.trat=_r.trat; it.conf=_r.conferir?'media':'alta';
         it.fonte=(_r.art?_r.art+' · ':'')+'NBS '+(_x.nbs||'')+' — '+String(_x.desc||'').slice(0,80)+(_r.conferir?' (regra geral — NBS sem regime específico mapeado)':'');
         st.classif++; if(_r.conferir) st.defaultCheia++; if(_r.trat==='red60'||_r.trat==='red30'||_r.trat==='red40'||_r.trat==='zero') st.benef++; return; }
       it.status='validar'; it.trat='cheia'; it.fonte='NBS '+it.nbs+' não localizado na tabela oficial — requer validação'; st.revisar++; return;
@@ -55957,7 +56008,7 @@ if(!window.LH_SN.tabelas) window.LH_SN.tabelas = {};
   {a:'IX',i:'8',ncm:'2836.20.90',desc:'Ácido nítrico, ácido sulfúrico, ácido fosfórico, fosfatos de cálcio naturais, enxofre, ácido clorídrico, ácido fosforoso, ácido acético, hidróxido de ',trat:'red60',seg:'agro',fonte:'art. 138 · Anexo IX item 8 · CONFERIR destinação agropecuária e registro (legislação específica)',esp:1,need:2,kw:["acido", "nitri", "sulfu", "fosfo", "fosfa", "calci", "enxof", "clori", "aceti", "hidro", "sodio", "carbo"]},
   {a:'IX',i:'8',ncm:'2915.21.00',desc:'Ácido nítrico, ácido sulfúrico, ácido fosfórico, fosfatos de cálcio naturais, enxofre, ácido clorídrico, ácido fosforoso, ácido acético, hidróxido de ',trat:'red60',seg:'agro',fonte:'art. 138 · Anexo IX item 8 · CONFERIR destinação agropecuária e registro (legislação específica)',esp:1,need:2,kw:["acido", "nitri", "sulfu", "fosfo", "fosfa", "calci", "enxof", "clori", "aceti", "hidro", "sodio", "carbo"]},
   {a:'IX',i:'9',ncm:'3507.90.4',desc:'Enzimas preparadas para decomposição de matéria orgânica animal e vegetal',trat:'red60',seg:'agro',fonte:'art. 138 · Anexo IX item 9 · CONFERIR destinação agropecuária e registro (legislação específica)',esp:1,need:2,kw:["enzim", "decom", "mater", "organ", "anima", "veget"]},
-  {a:'IX',i:'11',ncm:'06.01',desc:'Mudas de plantas e demais materiais propagativos de plantas e fungos, inclusive plantas e fungos nativos de espécies florestais; em conformidade com a',trat:'red60',seg:'agro',fonte:'art. 138 · Anexo IX item 11 · CONFERIR destinação agropecuária e registro (legislação específica)',esp:1,need:2,kw:["mudas", "plant", "propa", "fungo", "nativ", "espec", "flore", "demai"]},
+  {a:'IX',i:'10',ncm:'07',cap:'Capítulos 7, 10 e 12',desc:'Semente genética, básica, certificada (C1/C2), não certificada (S1/S2) e sementes de cultivar local, tradicional ou crioula',trat:'red60',seg:'agro',fonte:'art. 138 · Anexo IX item 10 (sementes — capítulos 7, 10 e 12)',esp:1,need:1,kw:['semente','sementes']},{a:'IX',i:'10',ncm:'10',cap:'Capítulos 7, 10 e 12',desc:'Semente genética, básica, certificada (C1/C2), não certificada (S1/S2) e sementes de cultivar local, tradicional ou crioula',trat:'red60',seg:'agro',fonte:'art. 138 · Anexo IX item 10 (sementes — capítulos 7, 10 e 12)',esp:1,need:1,kw:['semente','sementes']},{a:'IX',i:'10',ncm:'12',cap:'Capítulos 7, 10 e 12',desc:'Semente genética, básica, certificada (C1/C2), não certificada (S1/S2) e sementes de cultivar local, tradicional ou crioula',trat:'red60',seg:'agro',fonte:'art. 138 · Anexo IX item 10 (sementes — capítulos 7, 10 e 12)',esp:1,need:1,kw:['semente','sementes']},{a:'IX',i:'11',ncm:'06.01',desc:'Mudas de plantas e demais materiais propagativos de plantas e fungos, inclusive plantas e fungos nativos de espécies florestais; em conformidade com a',trat:'red60',seg:'agro',fonte:'art. 138 · Anexo IX item 11 · CONFERIR destinação agropecuária e registro (legislação específica)',esp:1,need:2,kw:["mudas", "plant", "propa", "fungo", "nativ", "espec", "flore", "demai"]},
   {a:'IX',i:'11',ncm:'06.02',desc:'Mudas de plantas e demais materiais propagativos de plantas e fungos, inclusive plantas e fungos nativos de espécies florestais; em conformidade com a',trat:'red60',seg:'agro',fonte:'art. 138 · Anexo IX item 11 · CONFERIR destinação agropecuária e registro (legislação específica)',esp:1,need:2,kw:["mudas", "plant", "propa", "fungo", "nativ", "espec", "flore", "demai"]},
   {a:'IX',i:'12',ncm:'3002.12',desc:'Vacinas, soros e medicamentos, de uso veterinário, exceto de animais domésticos',trat:'red60',seg:'agro',fonte:'art. 138 · Anexo IX item 12 · CONFERIR destinação agropecuária e registro (legislação específica)',esp:1,need:2,kw:["vacin", "soros", "medic", "veter", "anima", "domes"]},
   {a:'IX',i:'12',ncm:'3002.15',desc:'Vacinas, soros e medicamentos, de uso veterinário, exceto de animais domésticos',trat:'red60',seg:'agro',fonte:'art. 138 · Anexo IX item 12 · CONFERIR destinação agropecuária e registro (legislação específica)',esp:1,need:2,kw:["vacin", "soros", "medic", "veter", "anima", "domes"]},
@@ -56229,7 +56280,7 @@ if(!window.LH_SN.tabelas) window.LH_SN.tabelas = {};
        if(e.esp && e.a==='I' && !x.descRules && !x.esp){ x.esp=1; x.kw=e.kw; x.need=e.need; x.desc=x.desc||e.desc; if(!/Anexo/.test(String(x.fonte||''))) x.fonte=e.fonte; }   /* v867: no Anexo I, produto específico vale mesmo quando o tratamento já batia (pão francês em 1905.90.90); nos outros anexos a trava de descrição do v480 já cuida */
        return;
      }
-     var n={ncm:e.ncm, desc:e.desc, trat:e.trat, fonte:e.fonte, seg:e.seg, st:'lei', origem:'v862'}; if(e.esp){ n.esp=1; n.kw=e.kw; n.need=e.need; }
+     var n={ncm:e.ncm, desc:e.desc, trat:e.trat, fonte:e.fonte, seg:e.seg, st:'lei', origem:'v862'}; if(e.esp){ n.esp=1; n.kw=e.kw; n.need=e.need; } if(e.cap) n.cap=e.cap;
      arr.push(n); idx[k]=n; novos++;
    });
    if(B && B.itens!==arr) B.itens=arr;
@@ -58382,7 +58433,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      var prontos={CONFIRMADO:1,REGRA_GERAL:1,BENEFICIO_IDENTIFICADO:1,SUGERIDO_DESCRICAO:1};
      /* bebida/cigarro: a base diz "adrem" por causa do IS, mas o IBS/CBS é percentual (integral) — precifica como cheia + IS marcado */
      if(it.trat==='adrem'){ var _mp=(typeof cmCclassPorFonte==='function')?cmCclassPorFonte(it.trat,it.fonte||''):['','']; if(String(_mp[1]).replace('*','')==='000001' && s!=='REVISAO_NCM' && s!=='PENDENTE'){ f.trat='cheia+IS'; ok.push(f); return; } f.motivo='regime ad rem (R$/unidade), não percentual — combustível'; fora.push(f); return; }
-     if(!prontos[s]){ f.motivo=(s==='REVISAO_NCM'||s==='PENDENTE')?'NCM a validar no cadastro':'em revisão tributária — resolva no Classificador'; fora.push(f); return; }
+     if(!prontos[s]){ f.motivo=(s==='REVISAO_NCM'||s==='PENDENTE')?'NCM a validar no cadastro':(/regime espec/i.test(f.fonte)?'regime específico (base e alíquota próprias) — não se precifica pela alíquota geral':'em revisão tributária — resolva no Classificador'); fora.push(f); return; }
      ok.push(f);
    });
    return {ok:ok, fora:fora};
@@ -59141,7 +59192,10 @@ function acEscolhe(i){
    if(!t || t==='nd'){
      t='cheia'; conf=true; art='art. 14 LC 214 — regra geral (NBS sem regime específico mapeado)';
      var lc=x.lc116?String(x.lc116).trim():'', desc=String(x.desc||'');
-     var veta=/constru[cç][aã]o|obras? de|dep[oó]sito|armazen|planos? (privados )?de (sa[uú]de|assist|atendimento|medicina)|s[ií]tios eletr|aplicativos|infraestrutura|reservas|pesquisa e desenvolvimento|consultoria (financeira|em gest[aã]o)|imobili[aá]rio|transporte escolar|explora[cç][aã]o de recursos|licenciamento|manuten[cç][aã]o|instala[cç][aã]o|gest[aã]o hospitalar|recursos humanos|sob contrato|operadores de transportes|para eventos|acolhimento|assist[eê]ncia a idosos|assist[eê]ncia social|imprensa|biblioteca/i;
+     /* v869: regimes específicos (arts. 182+): base e alíquota próprias — não se precifica pela alíquota geral */
+     var esp=/planos? (privados )?de (sa[uú]de|assist[eê]ncia)|servi[cç]os de (seguro|resseguro)|seguro (de vida|sa[uú]de|de danos|garantia)|previd[eê]ncia (privada|complementar)|capitaliza[cç][aã]o|arrendamento mercantil financeiro|leasing financeiro|cart[aã]o de cr[eé]dito|cons[oó]rcio|servi[cç]os financeiros|institui[cç][aã]o financeira|intermedia[cç][aã]o financeira|banc[aá]rio|corretagem de (seguros|valores|c[aâ]mbio)|loteria|apostas?|sociedade cooperativa|incorpora[cç][aã]o imobili|aliena[cç][aã]o de im[oó]v|loca[cç][aã]o de im[oó]v/i;
+     if(esp.test(desc)) return {trat:'especifico', art:'Regime específico (arts. 182 e seguintes LC 214) — base de cálculo e alíquota próprias', conferir:true, especifico:true};
+     var veta=/^servi[cç]os de constru[cç][aã]o|obras? de|dep[oó]sito|armazen|s[ií]tios eletr|aplicativos|infraestrutura|reservas|pesquisa e desenvolvimento|consultoria (financeira|em gest[aã]o)|transporte escolar|explora[cç][aã]o de recursos|licenciamento|manuten[cç][aã]o|instala[cç][aã]o|gest[aã]o hospitalar|recursos humanos|sob contrato|operadores de transportes|para eventos|acolhimento|assist[eê]ncia a idosos|assist[eê]ncia social|imprensa|biblioteca/i;
      if(!veta.test(desc)){
        for(var i=0;i<FAM.length;i++){ var f=FAM[i];
          var bate = f.re.test(desc) || (!!lc && !!f.lc && lc.split(/\s*,\s*/).every(function(c){ return f.lc.test(c); }));
@@ -59156,10 +59210,10 @@ function acEscolhe(i){
    if(sel && String(sel.value).indexOf('NBS:')===0){
      var x=achaNBS(sel.value); if(!x) return null;
      var r=window.SN_NBS_TRAT(x), a=ALIQ[r.trat];
-     var ok=(a!==null && a!==undefined);
+     var ok=(a!==null && a!==undefined) && !r.especifico;
      return {ncm:'', nbs:x.nbs||'', desc:x.desc, trat:r.trat, fonte:(r.art?r.art+' · ':'')+(x.fonte||''),
              aliq:ok?a:0, lab:(LAB[r.trat]||r.trat)+(r.conferir?' — confira com o contador':''), cor:ok?(r.conferir?'#b8860b':'#2f7d4f'):'#d18189', ok:ok,
-             av:ok?(r.conferir?'A base ainda não mapeia o regime deste NBS; a nota aplica a regra geral (26,5% cheia). Se a atividade tiver redução na LC 214, use o item pelo catálogo ou o item manual.':''):'Regime ad rem: valor por unidade, não percentual — a nota não inventa alíquota.',
+             av:ok?(r.conferir?'A base ainda não mapeia o regime deste NBS; a nota aplica a regra geral (26,5% cheia). Se a atividade tiver redução na LC 214, use o item pelo catálogo ou o item manual.':''):(r.especifico?'Regime específico (planos de saúde, seguros, serviços financeiros, imobiliário…): base e alíquota próprias — a nota não aplica a alíquota geral.':'Regime ad rem: valor por unidade, não percentual — a nota não inventa alíquota.'),
              conferir:r.conferir};
    }
    return _daBase? _daBase.apply(this, arguments) : null;
