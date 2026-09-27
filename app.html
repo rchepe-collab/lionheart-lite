@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v863';</script>
+<body><script>window.LH_VERSAO='v864';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -52284,6 +52284,133 @@ function cmAutoAudit(trat,cst,cclass){
   if(trat&&esperado[trat]&&esperado[trat].indexOf(fam)<0) return {ok:false,motivo:'Tratamento '+trat+' incompatível com família CST '+fam};
   return {ok:true,motivo:'OK · '+LH_CCT_OFICIAL[c]};
 }
+/* ★ v864 · O CLASSIFICADOR DIZ O QUE É SEU E O QUE É DO CADASTRO
+   1. cmSemBeneficio — regras de descrição NEGATIVAS: quando a descrição indica um produto que a lei NÃO beneficia
+      (puxador não é barra de apoio PcD; lâmpada LED não é aparelho PcD; luva de látex de trabalho não é luva
+      cirúrgica; óculos de proteção não é óculos de grau; cupinicida doméstico não é insumo agropecuário; graxa não
+      é combustível), o item é regra geral DEFINITIVA (CONFIRMADO), não "revisão". Na Fossati isso tirava ~350 dos
+      491 itens de revisão. Benefício continua exigindo evidência positiva (v480/v862) — só a negativa ficou firme.
+   2. cmSugereNCM — NCM de 8 dígitos que não existe na tabela oficial: procura um código válido a UM erro de
+      digitação (troca de um dígito ou de dois vizinhos) cuja descrição oficial case com a do produto
+      (3017.80.90 "trena" → 9017.80.90). É sugestão, com o nome: o NCM do cadastro não é alterado.
+   3. cmLeitura — o bloco "Como ler este resultado", calculado do próprio arquivo: por que cada grupo está em revisão
+      (NCM, quantidade, o que a lei exige) e por que cada item está em "validar" (zerado, inexistente, digitação),
+      na tela, no Dashboard do Excel, no topo da aba Pendencias e no Leia-me. Para o dono entender que revisão e
+      validação são trabalho do cadastro/contador em 3% do catálogo — não falha da ferramenta. */
+var CM_SEM_BENEFICIO=[
+  {ncm:/^8302/, nao:/barra de apoio|pcd|acessib|banheiro (pne|acess)|corrim/, re:/puxador|dobradi|fechadur|cadeado|cremona|cantoneir|suporte|tarjet|cal[cç]o|prendedor|rod[ií]zi|trinco|ferrolh|al[cç]a|gancho|olhal|fecho|vara p|mola|batente|passador|ma[cç]anet|roseta|chapa testa|corrente|trilho|roldana|cabide|porta (cadeado|papel|toalha)|espelho|trava|fixador|recolhedor|persiana|borboleta|cadar[cç]o|churrasq|esquadria|carrinho|fecho|pino|bucha/, rotulo:'ferragem comum (puxador, dobradiça, cadeado, suporte)', lei:'o Anexo XIII cita 8302 só para barras de apoio e acessórios de acessibilidade PcD'},
+  {ncm:/^(8543|8531|8513|8539)/, nao:/pcd|braille|acessib|defici/, re:/lamp|l[aâ]mpada|\bled\b|spot|bulbo|tubular|sensor|lumin[aá]ria|refletor|painel|fita|controle|dimmer|lanterna|plafon|arandela|pendente|kit led|\blpd\b|w8[0-9]{2}\b|\ba6[05]\b|e-?27|e-?14|\bg9\b|\bgu10\b/, rotulo:'iluminação/LED', lei:'o Anexo V cita o NCM só para aparelhos de acessibilidade PcD'},
+  {ncm:/^(9017|9015|9016|9031)/, nao:/pcd|braille|acessib|defici/, re:/esqua|giz|escala|r[eé]gua|riscador|trena|n[ií]vel|prumo|compasso|paqu[ií]metro|metro|marca[cç][aã]o|linha|transferidor|calibr|medidor/, rotulo:'ferramenta de medição/traçado', lei:'o Anexo V cita o NCM só para instrumentos adaptados a PcD'},
+  {ncm:/^(900410|90049090)/, nao:/de grau|oftalm|corretiv|lente corretiva|receitad/, re:/./, rotulo:'óculos de sol ou de proteção (NCM 9004.10 / 9004.90.90, fora da subposição de óculos corretivos)', lei:'a redução de dispositivos médicos vale só para óculos corretivos (9004.90.10)'},
+  {ncm:/^9004/, nao:/de grau|oftalm|corretiv|lente corretiva|receitad/, re:/seg|prote|natac|natação|sol\b|fum[eê]|espelhad|incolor|antiembac|ampla vis|visor|epi|escuro|cinza|\binc\b|\bcz\b|amar|ton \d|\bmod\b/, rotulo:'óculos de proteção/sol/natação', lei:'a redução de dispositivos médicos vale só para óculos corretivos (de grau)'},
+  {ncm:/^(401519|40159)/, nao:/cir[uú]rgic|procediment|est[eé]ril|hospitalar|m[eé]dic|odont/, re:/./, rotulo:'luva/artigo de borracha de uso geral (NCM 4015.19/4015.90, fora da subposição de uso médico)', lei:'o Anexo IV cita 4015 só para luvas de uso médico (4015.12)'},
+  {ncm:/^401512/, nao:/cir[uú]rgic|procediment|est[eé]ril|hospitalar|m[eé]dic|odont/, re:/multiuso|forrad|limpeza|dom[eé]stic|neoprex|pvc|vaqueta|raspa|malha|amarel|jardim|constru/, rotulo:'luva de trabalho/limpeza', lei:'o Anexo IV cita 4015.12 só para luvas cirúrgicas e de procedimento'},
+  {ncm:/^3808/, nao:/agr[ií]c|agropecu|lavoura|pasto|pecu[aá]r|semente|formicid|herbicid|fungicida (agr|para plant)|defensiv|pulveriza|hectare|\bha\b|cultura/, re:/cupim|cupinicid|jimo|polisten|inseticid|inset\b|inset\.|inset |multinset|exterminador|mata (mosca|barata|cupim|rato|pernilong)|raticid|ratoeira|pega rato|veneno|pulga|repelent|verniz|osmocolor|aerosol|aerossol|spray|dom[eé]stic|resid|sbp|baygon|raid\b|cloro|piscina|algicid|multi.?a[cç][aã]o|purific|aromat|puro ar/, rotulo:'uso doméstico/construção (cupinicida, inseticida, cloro de piscina)', lei:'o Anexo IX cita 3808 só para uso agropecuário'},
+  {ncm:/^8517/, nao:/pcd|surd|defici|acessib|amplificad|braille/, re:/telefone|tel\b|tel\.|s\/fio|sem fio|celular|roteador|modem|switch|antena|interfone|ramal/, rotulo:'telefone/equipamento de telecomunicação comum', lei:'o Anexo V cita 8517 só para aparelhos adaptados a PcD'},
+  {ncm:/^8425/, nao:/pcd|cadeira|acessib|plataforma eleva|elevador de transfer/, re:/guincho|talha|macaco|cabrestante|tirfor|moit[aã]o/, rotulo:'guincho/talha de uso geral', lei:'o Anexo XIII cita 8425 só para equipamentos de elevação para PcD'},
+  {ncm:/^8470/, nao:/voz|braille|pcd|falante|sintetiz/, re:/calculadora|mesa|visor|d[ií]g|cient[ií]fica|bolso/, rotulo:'calculadora comum', lei:'o Anexo V cita 8470 só para calculadoras adaptadas a PcD'},
+  {ncm:/^8708/, nao:/pcd|adapta|acelerador manual|comando manual|defici/, re:/garra|bateria|cabo|espaguet|pastilha|filtro|amortec|para.?choque|retrovisor|palheta|correia/, rotulo:'peça automotiva comum', lei:'o Anexo XIII cita 8708 só para adaptações veiculares para PcD'},
+  {ncm:/^(3822|9027)/, nao:/diagn[oó]stic|cl[ií]nic|laborat[oó]rio cl|paciente|m[eé]dic|hospital|covid|gravidez|glic/, re:/piscina|aqu[aá]rio|cloro|\bph\b|agua|água|solo|combust|autom/, rotulo:'kit de teste de piscina/água', lei:'o Anexo IV cita 3822 só para reagentes de diagnóstico médico'},
+  {ncm:/^(2710|3403|3819|2712|3811)/, nao:/gasolina|diesel|querosene (de )?avia|\bqav\b|etanol|\bglp\b|\bgnv\b|biodiesel|oleo combust|óleo combust/, re:/graxa|lubrif|[oó]leo (de )?(m[aá]quina|singer|2 ?t|4 ?t|motor|hidr[aá]ul|mineral|corrente|silicone|penetr|branco)|micro.?[oó]leo|[oó]leo (lubr|multiuso|anticor)|\blubr?\b|lube\b|drylube|rost off|desengrip|vaselina|solvente|thinner|aguarr|arraz|raz\b|diluente|wd.?40|limpa contato|querosene|removedor|spray|aditivo|fluido|parafina|cera/, rotulo:'lubrificante, solvente ou querosene de limpeza', lei:'o regime monofásico (art. 172) vale só para combustíveis listados — lubrificante e solvente são integrais'},
+  {ncm:/^2207/, nao:/combust[ií]vel|\behc\b|\beac\b|hidratado combust|anidro combust/, re:/gel|70|92|46|inpm|liq|l[ií]quido|limpeza|antiss[eé]ptic|acendedor|lareira|churrasq|domiss|etilico|et[ií]lico|aero/, rotulo:'álcool de limpeza/uso doméstico', lei:'o regime monofásico (art. 172) vale só para o etanol combustível'}
+];
+function cmSemBeneficio(k,hit,desc){
+  if(!hit || !hit.trat || hit.trat==='cheia' || !desc) return null;
+  var d=lhNorm(desc);
+  for(var i=0;i<CM_SEM_BENEFICIO.length;i++){
+    var r=CM_SEM_BENEFICIO[i];
+    if(!r.ncm.test(k)) continue;
+    if(r.nao.test(d)) return null;            /* evidência positiva: segue o caminho do benefício */
+    if(!r.re.test(d)) continue;
+    return {ncm:hit.ncm,desc:hit.desc,trat:'cheia',seg:hit.seg,origem:'sem_beneficio',
+      fonte:'Art. 14 — regra geral: a descrição indica '+r.rotulo+'; '+r.lei+'. Regra geral aplicada em definição (v864)'};
+  }
+  return null;
+}
+function cmSugereNCM(k,desc){
+  try{
+    var of=window.LH_NCM_OFICIAL; if(!of||!of.porCodigo||k.length!==8) return null;
+    var cands={}, i, j, c;
+    for(i=0;i<8;i++) for(j=0;j<10;j++){ c=k.slice(0,i)+j+k.slice(i+1); if(c!==k) cands[c]=1; }
+    for(i=0;i<7;i++){ c=k.slice(0,i)+k[i+1]+k[i]+k.slice(i+2); if(c!==k) cands[c]=1; }
+    var toks=lhNorm(desc||'').split(/[^a-z0-9]+/).filter(function(t){ return t.length>=4 && !/^\d+$/.test(t); });
+    var best=null, n=0;
+    for(c in cands){
+      var it=of.porCodigo(c); if(!it) continue; n++;
+      var txt=lhNorm((it[1]||'')+' '+(of.contexto?of.contexto(c):''));
+      var sc=0; toks.forEach(function(t){ if(txt.indexOf(t.slice(0,Math.min(6,t.length)))>=0) sc++; });
+      if(sc>0 && (!best || sc>best.sc)) best={ncm:c, sc:sc, desc:String(of.contexto?of.contexto(c):it[1]).slice(0,80)};
+    }
+    if(!best && n===1){ for(c in cands){ var it1=of.porCodigo(c); if(it1) best={ncm:c, sc:0, desc:String(of.contexto?of.contexto(c):it1[1]).slice(0,80)}; } }
+    if(!best) return null;
+    best.fmt=best.ncm.replace(/^(\d{4})(\d{2})(\d{2})$/,'$1.$2.$3');
+    return best;
+  }catch(_e){ return null; }
+}
+function cmLeitura(itens){
+  var L={total:itens.length, prontos:0, rev:{}, revN:0, cad:{zero:0, inexist:0, typo:0, inexistEx:{}, typoEx:[], n:0}, semBenef:0};
+  var STOP={para:1,com:1,tipo:1,inox:1,cromad:1,zamac:1,marrom:1,azul:1,preta:1,verde:1,incolor:1,cinza:1,branco:1,branca:1,litros:1,watts:1,bivolt:1,ultra:1,alta:1,super:1,classic:1,mod:1,med:1,peq:1,base:1,fixa:1,geral:1};
+  itens.forEach(function(it){
+    var s=cmStatusFinal(it), f=lhNorm(it.fonte||'');
+    if(it.origem==='sem_beneficio' || f.indexOf('regra geral aplicada em definicao')>=0) L.semBenef++;
+    if(s==='CONFIRMADO'||s==='REGRA_GERAL'||s==='BENEFICIO_IDENTIFICADO'||s==='SUGERIDO_DESCRICAO'){ L.prontos++; return; }
+    if(s==='REVISAO_TRIBUTARIA'){
+      L.revN++;
+      var k4=cmNormNCM(it.ncm).slice(0,4)||'----';
+      var g=L.rev[k4]=L.rev[k4]||{n:0, tok:{}, motivo:''};
+      g.n++;
+      lhNorm(it.desc||'').split(/[^a-z]+/).forEach(function(t){ if(t.length>=5 && !STOP[t]) g.tok[t]=(g.tok[t]||0)+1; });
+      if(!g.motivo){
+        if(/art.?172|combust|monof/.test(f)) g.motivo='faixa de combustíveis (imposto por litro) — a lei só beneficia o combustível listado; confirmar o que é';
+        else if(/pcd|acessib|anexo xiii|anexo v\b/.test(f)) g.motivo='a lei dá benefício só para produtos de acessibilidade PcD; a descrição não permite decidir';
+        else if(/dispositivo|anexo iv|anexo xii/.test(f)) g.motivo='a lei dá benefício só para dispositivos de uso médico; a descrição não permite decidir';
+        else if(/medicament|anexo xiv|cmed/.test(f)) g.motivo='a lei dá benefício só para medicamentos registrados; a descrição não permite decidir';
+        else if(/higiene|anexo viii/.test(f)) g.motivo='a lei dá benefício só para itens de higiene do Anexo VIII; a descrição não permite decidir';
+        else if(/agro|insumo|anexo ix/.test(f)) g.motivo='a lei dá benefício só para uso agropecuário; a descrição não permite decidir';
+        else if(/aliment|anexo vii|anexo i\b|cesta/.test(f)) g.motivo='a lei dá benefício só para o alimento listado; a descrição não permite decidir';
+        else if(/ambig|insufic/.test(f)) g.motivo='descrição insuficiente para decidir';
+        else g.motivo='benefício condicionado — a descrição não permite decidir';
+      }
+      return;
+    }
+    if(s==='REVISAO_NCM'||s==='PENDENTE'){
+      L.cad.n++;
+      var kk=cmNormNCM(it.ncm);
+      if(!kk || kk.length<4 || /^0+$/.test(kk)) L.cad.zero++;
+      else if(it.ncm_sug){ L.cad.typo++; var _ex=kk.replace(/^(\d{4})(\d{2})(\d{2})$/,'$1.$2.$3')+' → '+it.ncm_sug; if(L.cad.typoEx.length<3 && L.cad.typoEx.indexOf(_ex)<0) L.cad.typoEx.push(_ex); }
+      else { L.cad.inexist++; L.cad.inexistEx[kk]=(L.cad.inexistEx[kk]||0)+1; }
+    }
+  });
+  L.revLista=Object.keys(L.rev).sort(function(a,b){ return L.rev[b].n-L.rev[a].n; }).map(function(k4){
+    var g=L.rev[k4]; var top=Object.keys(g.tok).sort(function(a,b){ return g.tok[b]-g.tok[a]; }).slice(0,3).join(', ');
+    return {ncm:k4, n:g.n, top:top, motivo:g.motivo};
+  });
+  L.cad.inexistLista=Object.keys(L.cad.inexistEx).sort(function(a,b){ return L.cad.inexistEx[b]-L.cad.inexistEx[a]; }).slice(0,3);
+  return L;
+}
+function cmLeituraTexto(L){
+  /* devolve linhas [título, texto] — as mesmas para tela, Excel e Leia-me */
+  var out=[], pct=function(n){ return L.total? (Math.round(n/L.total*1000)/10).toLocaleString('pt-BR')+'%' : '0%'; };
+  out.push(['Como ler este resultado', L.prontos.toLocaleString('pt-BR')+' de '+L.total.toLocaleString('pt-BR')+' itens ('+pct(L.prontos)+') estão classificados e prontos para importar no ERP. Os demais não são falha da classificação: são os itens em que a decisão depende de informação que não está no cadastro.'+(L.semBenef?' Em '+L.semBenef.toLocaleString('pt-BR')+' itens a descrição bastou para confirmar que NÃO há benefício (regra geral em definição).':'')]);
+  if(L.revN){
+    var top=L.revLista.slice(0,7).map(function(g){ return 'NCM '+g.ncm+' ('+g.n+(g.top?' — '+g.top:'')+'): '+g.motivo; });
+    out.push([L.revN.toLocaleString('pt-BR')+' em revisão tributária ('+pct(L.revN)+')', 'São NCM em que a LC 214 dá benefício só para um produto específico e a descrição do cadastro não permite decidir. A ferramenta não decide sem evidência e diz, na aba Pendências, qual evidência fecha cada item. '+top.join(' · ')+(L.revLista.length>7?' · e outros '+(L.revLista.length-7)+' grupos.':'.')]);
+  }
+  if(L.cad.n){
+    var partes=[];
+    if(L.cad.zero) partes.push(L.cad.zero.toLocaleString('pt-BR')+' com NCM em branco ou zerado');
+    if(L.cad.inexist) partes.push(L.cad.inexist.toLocaleString('pt-BR')+' com código que não existe na tabela oficial'+(L.cad.inexistLista.length?' (ex.: '+L.cad.inexistLista.join(', ')+')':''));
+    if(L.cad.typo) partes.push(L.cad.typo.toLocaleString('pt-BR')+' com provável erro de digitação — a sugestão está na coluna Fundamento'+(L.cad.typoEx.length?' (ex.: '+L.cad.typoEx.join('; ')+')':''));
+    out.push([L.cad.n.toLocaleString('pt-BR')+' com NCM a validar ('+pct(L.cad.n)+')', 'Problema do cadastro, não da classificação: '+partes.join('; ')+'. É exatamente o que uma adequação cadastral tem de apontar — corrigido o NCM no ERP, reimporte e o item entra classificado.']);
+  }
+  return out;
+}
+function cmLeituraHTML(L){
+  var rows=cmLeituraTexto(L); if(!rows.length) return '';
+  var h='<div style="background:rgba(201,162,39,.07);border:1px solid rgba(201,162,39,.35);border-radius:10px;padding:12px 16px;font-size:.85rem;color:#e6e0cc;line-height:1.6;margin-top:10px">';
+  rows.forEach(function(r,i){ h+='<div'+(i?' style="margin-top:8px"':'')+'><b style="color:var(--gold)">'+r[0]+'.</b> '+r[1]+'</div>'; });
+  return h+'</div>';
+}
 function cmBuscaTrat(ncm,desc){
   var k=cmNormNCM(ncm); if(!k||k.length<4) return null;
   if(!CM_IDX)cmMontaIdx();
@@ -52292,6 +52419,7 @@ function cmBuscaTrat(ncm,desc){
   else if(CM_IDX.byStart[k])hit=CM_IDX.byStart[k];
   else { for(var L=k.length-1;L>=4;L--){ var p=k.slice(0,L); if(CM_IDX.exact[p]){hit=CM_IDX.exact[p];break;} } }
   if(!hit)return null;
+  var _sb=cmSemBeneficio(k,hit,desc); if(_sb) return _sb;   /* v864: descrição indica produto SEM benefício → regra geral firme */
   /* v480 — DESCRIÇÃO DECIDE (art. 7-A LC 227): se a entrada curada tem descRules, a descrição
      do produto resolve o tratamento. Benefício NÃO se presume: regra de benefício casada confirma;
      regra de "cheia" casada = produto sem benefício (definitivo); NENHUMA regra casa num NCM cujo
@@ -52448,14 +52576,15 @@ function cmProcessar(rows){
       }
       it.status='sem_ncm'; st.semNCM++; st.revisar++; return;
     }
-    if(k.length<4){ it.status='inval'; st.ncmInval++; st.revisar++; return; }
+    if(k.length<4){ it.status='inval'; it.trat='cheia'; it.fonte='NCM em branco ou zerado ("'+String(it.ncm==null?'':it.ncm)+'") — informar o NCM no cadastro'; st.ncmInval++; st.revisar++; return; }
     grupos[k]=(grupos[k]||0)+1;
     var t=cmBuscaTrat(it.ncm,it.desc);
     if(!t){
       if(cmNcmValido(k)){ it.status='ok_default'; it.trat='cheia'; it.conf='media';
         it.fonte='Art. 14 LC 214 — regra geral (NCM válido na tabela oficial, não consta dos regimes diferenciados)';
         st.classif++; st.defaultCheia++; }
-      else { it.status='validar'; it.trat='cheia'; it.fonte='NCM não localizado na tabela oficial — requer validação'; st.revisar++; }
+      else { it.status='validar'; it.trat='cheia'; it.fonte='NCM não localizado na tabela oficial — requer validação'; st.revisar++;
+        var _sg=cmSugereNCM(k,it.desc); if(_sg){ it.ncm_sug=_sg.fmt; it.fonte+=' — provável erro de digitação: '+_sg.fmt+' ('+_sg.desc+')'; } }
     } else { it.status='ok'; it.trat=t.trat; it.conf='alta'; it.fonte=t.fonte||''; st.classif++;
       if(t.trat==='zero'||t.trat==='red60'||t.trat==='red30'||t.trat==='imune'||t.trat==='difer')st.benef++;
       if(t.trat==='cheia+IS')st.is++; }
@@ -52499,6 +52628,7 @@ function cmRender(itens,st){
   h+='<div style="margin:16px 0"><div style="color:var(--text2);font-size:.85rem">Índice de adequação cadastral</div>';
   h+='<div style="height:26px;background:rgba(255,255,255,.06);border-radius:13px;overflow:hidden;margin:8px 0"><div style="height:100%;width:'+Math.max(cmIdx,8)+'%;background:linear-gradient(90deg,#16c47c,#c9a227);display:flex;align-items:center;justify-content:flex-end;padding-right:12px;color:#0a0a0a;font-weight:700;font-size:.82rem">'+cmIdx+'%</div></div></div>';
   h+='<div style="background:rgba(120,160,210,.06);border:1px solid rgba(120,160,210,.25);border-radius:10px;padding:12px 16px;font-size:.85rem;color:#cdd6e4;line-height:1.6"><b style="color:#9fc">A economia do agrupamento:</b> os <b>'+st.total+' itens</b> se resumem a <b>'+st.grupos+' situações tributárias</b>. Resolvendo os grupos, resolve-se o catálogo — o trabalho humano concentra-se em <b>'+(cmRevTrib+cmCadastro).toLocaleString('pt-BR')+' itens</b> marcados para conferência (<b>'+cmCadastro+'</b> travas de cadastro + <b>'+cmRevTrib+'</b> revisões tributárias de benefício condicionado).</div>';
+  try{ h+=cmLeituraHTML(cmLeitura(itens)); }catch(_eL){}
   h+='</div>';
   /* resumo por tratamento (essencial p/ catálogos grandes) */
   var porTrat={};
@@ -52819,7 +52949,7 @@ function cmTipoFundamento(st, trat, fonte){
 function cmEvidencia(st, trat, fonte){
   if(st==='CONFIRMADO'||st==='REGRA_GERAL'||st==='BENEFICIO_IDENTIFICADO') return '\u2014';
   var f=String(fonte||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  if(st==='REVISAO_NCM') return 'Corrigir/validar o NCM no cadastro (codigo inexistente ou incompativel com o produto)';
+  if(st==='REVISAO_NCM'){ var _m=/provavel erro de digitacao: ([\d.]+)/.exec(f); if(_m) return 'Corrigir o NCM no cadastro - provavel erro de digitacao, sugestao: '+_m[1]+' (conferir)'; if(/em branco ou zerado/.test(f)) return 'Informar o NCM do produto no cadastro (esta em branco ou zerado)'; return 'Corrigir/validar o NCM no cadastro (codigo inexistente ou incompativel com o produto)'; }
   if(st==='PENDENTE'||/sem ncm/.test(f)) return 'Informar o NCM do produto';
   if(trat==='adrem'||/monof|art.?172|combust/.test(f)) return 'Confirmar se e combustivel listado (art.172) · querosene comercial != QAV · lubrificante/solvente = integral';
   if(/pcd|acessibilidad|anexo v\b|anexo xiii/.test(f)) return 'Uso/finalidade PCD + certificacao de acessibilidade + ficha tecnica';
@@ -52996,6 +53126,10 @@ function cmExportarExcel(){
   var pie=cmChartPNG('pie',Object.keys(byTrat),Object.keys(byTrat).map(function(k){return byTrat[k];}),palette,'Por Tratamento');
   var bar=cmChartPNG('bar',Object.keys(bySt),Object.keys(bySt).map(function(k){return bySt[k];}),palette,'Por Status');
   var imgRow=Math.max(totRow,rs)+2;
+  var LEIT=[]; try{ LEIT=cmLeituraTexto(cmLeitura(d.itens)); }catch(_eL){}
+  if(LEIT.length){ ws.getCell('A'+imgRow).value='COMO LER ESTE RESULTADO'; ws.getCell('A'+imgRow).font={bold:true,color:{argb:GOLD}}; imgRow++;
+    LEIT.forEach(function(r){ ws.getCell('A'+imgRow).value=r[0]; ws.getCell('A'+imgRow).font={bold:true,color:{argb:DARK}}; ws.getCell('A'+imgRow).alignment={vertical:'top',wrapText:true}; ws.mergeCells('B'+imgRow+':H'+imgRow); ws.getCell('B'+imgRow).value=r[1]; ws.getCell('B'+imgRow).alignment={vertical:'top',wrapText:true}; ws.getRow(imgRow).height=Math.min(140,18*Math.ceil(r[1].length/110)+6); imgRow++; });
+    imgRow++; }
   if(pie){ var i1=wb.addImage({base64:pie.split(',')[1],extension:'png'}); ws.addImage(i1,{tl:{col:0,row:imgRow},ext:{width:360,height:210}}); }
   if(bar){ var i2=wb.addImage({base64:bar.split(',')[1],extension:'png'}); ws.addImage(i2,{tl:{col:4,row:imgRow},ext:{width:360,height:210}}); }
 
@@ -53012,9 +53146,11 @@ function cmExportarExcel(){
   e.views=[{state:'frozen',ySplit:1}]; [12,12,7,16,24].forEach(function(w,i){e.getColumn(i+1).width=w;});
 
   var p=wb.addWorksheet('Pendencias',{properties:{tabColor:{argb:RED}}});
-  p.addRow(['Codigo','Descricao','NCM','Status','Tipo_Fundamento','Evidencia_Necessaria']); p.getRow(1).eachCell(hdr);
+  var pTop=1;
+  if(LEIT.length){ LEIT.forEach(function(r){ var row=p.addRow([r[0],r[1]]); p.mergeCells('B'+pTop+':F'+pTop); row.getCell(1).font={bold:true,color:{argb:DARK}}; row.getCell(1).alignment={vertical:'top',wrapText:true}; row.getCell(2).alignment={vertical:'top',wrapText:true}; row.height=Math.min(140,18*Math.ceil(r[1].length/120)+6); pTop++; }); p.addRow([]); pTop++; }
+  p.addRow(['Codigo','Descricao','NCM','Status','Tipo_Fundamento','Evidencia_Necessaria']); p.getRow(pTop).eachCell(hdr);
   rows.filter(function(r){return /REVISAO|PENDENTE/.test(r.status);}).forEach(function(r){ p.addRow([r.cod,r.desc,r.ncm,r.status,r.tipo,r.evid]); });
-  p.views=[{state:'frozen',ySplit:1}]; [12,40,12,20,24,50].forEach(function(w,i){p.getColumn(i+1).width=w;});
+  p.views=[{state:'frozen',ySplit:pTop}]; [12,40,12,20,24,50].forEach(function(w,i){p.getColumn(i+1).width=w;});
 
   var m=wb.addWorksheet('Leia-me');
   [['Lionheart Tax Classifier \u2014 Adequa\u00e7\u00e3o Cadastral CBS/IBS',''],
@@ -53025,11 +53161,11 @@ function cmExportarExcel(){
    ['Al\u00edquotas','2026 = fase-teste (CBS 0,9% + IBS 0,1%); 2029/2033 = refer\u00eancia projetada (Resolu\u00e7\u00e3o do Senado pendente)'],['',''],
    ['Autoauditoria','Cada linha validada contra a tabela oficial (164 c\u00f3digos). Itens REVISAO_*/PENDENTE exigem valida\u00e7\u00e3o do respons\u00e1vel fiscal.'],
    ['Confian\u00e7a','alta = NCM oficial + c\u00f3digo firme + autoauditoria OK \u00b7 m\u00e9dia = regra geral / c\u00f3digo a confirmar \u00b7 baixa = hip\u00f3tese em aberto'],
-   ['Aba Pendencias','Concentra os itens que exigem confer\u00eancia, com a evid\u00eancia necess\u00e1ria para fechar cada enquadramento.']
-  ].forEach(function(r){ m.addRow(r); });
+   ['Aba Pendencias','Concentra os itens que exigem confer\u00eancia, com a evid\u00eancia necess\u00e1ria para fechar cada enquadramento.'],['','']
+  ].concat(LEIT).forEach(function(r){ m.addRow(r); });
   m.getCell('A1').font={bold:true,size:14,color:{argb:GOLD}};
   m.getColumn(1).width=18; m.getColumn(2).width=92;
-  m.eachRow(function(row,n){ if(n>1) row.getCell(1).font={bold:true,color:{argb:DARK}}; });
+  m.eachRow(function(row,n){ if(n>1) row.getCell(1).font={bold:true,color:{argb:DARK}}; row.getCell(1).alignment={vertical:'top',wrapText:true}; row.getCell(2).alignment={vertical:'top',wrapText:true}; });
 
   wb.xlsx.writeBuffer().then(function(buf){
     var blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
