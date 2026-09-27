@@ -99,6 +99,7 @@ function rodar(html) {
     ex('revisão cita NCM, quantidade e o motivo legal', L[1] && /NCM 2710 \(1/.test(L[1][1]) && /combust/.test(L[1][1]), L[1] && L[1][1].slice(0, 160));
     ex('validar separa zerado / inexistente / digitação com exemplo', L[2] && /zerado/.test(L[2][1]) && /1010101/.test(L[2][1]) && /3017\.80\.90 → 9017\.80\.90/.test(L[2][1]), L[2] && L[2][1].slice(0, 200));
     ex('o bloco está na tela', /Como ler este resultado/.test(r.tela) && /Problema do cadastro/.test(r.tela));
+    ex('v865: cada tópico nasce recolhido (2 linhas) com "ver tudo"', (r.tela.match(/class="cml-t"/g) || []).length === 3 && /line-clamp:2/.test(r.tela) && /ver tudo/.test(r.tela) && !/cml-t aberto/.test(r.tela));
     ex('conta os itens confirmados pela descrição', /Em 8 itens a descri/.test(L[0][1]), L[0][1].slice(-120));
     console.log('\n-- Excel --');
     ex('exportou', !!r.xl, 'sem buffer');
@@ -122,6 +123,8 @@ function rodar(html) {
     (s) => s.by.A19.status === 'CONFIRMADO' && s.by.A19.tratLabel === 'Tributação integral');
   await sab('sugestão de NCM desligada → trena sem 9017.80.90 → reprova', 'var _sg=cmSugereNCM(k,it.desc);', 'var _sg=null;',
     (s) => !/9017\.80\.90/.test(String(s.by.A14.fonte)));
+  await sab('tópicos abertos por padrão (sem o clamp) → reprova', '.cml-x{display:-webkit-box;-webkit-line-clamp:2;', '.cml-x{display:block;',
+    (s) => !/line-clamp:2/.test(s.tela));
   await sab('bloco tirado da tela → reprova', 'try{ h+=cmLeituraHTML(cmLeitura(itens)); }catch(_eL){}', '',
     (s) => !/Como ler este resultado/.test(s.tela));
   console.log(falhou ? '\nRESULTADO: ' + falhou + ' reprovada(s)' : '\nRESULTADO: tudo aprovado');
