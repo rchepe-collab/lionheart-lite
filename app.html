@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v869';</script>
+<body><script>window.LH_VERSAO='v870';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -6236,6 +6236,10 @@ function lhTrocarSenha(){
     <div class="nav-item nav-calc-p5" onclick="abrirPagina('cr03',this)">
       <span class="ni-icon"></span><span class="ni-label">PIS/COFINS Energia</span>
       <span class="ni-pill" style="background:rgba(201,162,39,0.16);color:#c9a227;border:1px solid rgba(201,162,39,0.28);padding:1px 6px;border-radius:8px;font-size:0.62em;font-weight:700;margin-left:auto;">NOVA</span>
+    </div>
+    <div class="nav-item nav-calc-p5" onclick="abrirPagina('cadeia',this)">
+      <span class="ni-icon">⛓</span><span class="ni-label">Cadeia de Crédito · entradas × saídas</span>
+      <span class="ni-pill" style="background:rgba(201,162,39,.15);color:#c9a227">novo</span>
     </div>
     <div class="nav-item nav-calc-p5" onclick="abrirPagina('cr04',this)">
       <span class="ni-icon"></span><span class="ni-label">Créditos Plenos CBS/IBS</span>
@@ -10834,6 +10838,42 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
        v30.11.26 — CR04 · CRÉDITOS PLENOS CBS/IBS
        PROSPECTIVA (não recuperação). Adaptado V21 Gap 6 · LC 214/2025
        ══════════════════════════════════════════════ -->
+  <div class="page" id="page-cadeia">
+    <div class="calc-page-header">
+      <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(22,196,124,0.16),rgba(201,162,39,0.12));">⛓</div>
+      <div>
+        <h2>Cadeia de Crédito · de quem eu compro, para quem eu vendo</h2>
+        <p>O retrato da sua cadeia: que parte das compras gera crédito de IBS/CBS (regular, Simples, produtor rural, importação) e que parte das vendas vai para quem recupera o imposto (PJ do regime regular) ou para quem o carrega como custo (consumidor, Simples, governo). Lido dos XMLs importados na Central, montado pela carteira, ou informado. É o mesmo motor do Regime Ótimo e do Dentro × Híbrido — preencheu aqui, valeu lá — e alimenta a Precificação em Massa.</p>
+      </div>
+    </div>
+    <div class="input-card">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+        <button class="btn-secondary" onclick="LH_CADEIA.lerDocumentos()">📄 Ler dos documentos importados</button>
+        <button class="btn-secondary" onclick="lhCarteiraAbrir('forn')">＋ montar pela carteira de fornecedores</button>
+        <button class="btn-secondary" onclick="lhCarteiraAbrir('cli')">＋ montar pela carteira de clientes</button>
+        <button class="btn-secondary" onclick="abrirPagina('importxml')">Central de Documentos</button>
+      </div>
+      <h3 style="color:#3ecf8e">Entrada — de quem eu compro <span id="cad_origem_entrada"></span></h3>
+      <div class="input-grid-2">
+        <div class="input-group"><label>% das compras de fornecedor Real/Presumido</label><input type="number" id="cad_forn_regular" min="0" max="100" step="0.1" placeholder="ex: 70"></div>
+        <div class="input-group"><label>% das compras de fornecedor Simples/MEI</label><input type="number" id="cad_forn_simples" min="0" max="100" step="0.1" placeholder="ex: 25"></div>
+        <div class="input-group"><label>% das compras que é importação</label><input type="number" id="cad_forn_import" min="0" max="100" step="0.1" placeholder="ex: 0"></div>
+        <div class="input-group"><label>% de produtor rural pessoa física / sem nota</label><input type="number" id="cad_forn_pf" min="0" max="100" step="0.1" placeholder="ex: 5"><span class="lh-hint" data-hint="Compra de pessoa física não destaca IBS/CBS. Produtor rural PF tem crédito presumido (art. 168) — calculado na tela de Crédito Presumido, não aqui." onclick="lhHint(event,this)">?</span></div>
+        <div class="input-group"><label>Compras anuais (R$) — opcional, para ver o crédito em reais</label><input type="number" id="cad_compras" placeholder="ex: 1.200.000" oninput="LH_CADEIA.render()"></div>
+      </div>
+      <h3 style="color:#4a9eff;margin-top:14px">Saída — para quem eu vendo <span id="cad_origem_saida"></span></h3>
+      <div class="input-grid-2">
+        <div class="input-group"><label>% das vendas para PJ Real/Presumido (recupera o IBS/CBS)</label><input type="number" id="cad_cli_regular" min="0" max="100" step="0.1" placeholder="ex: 40"></div>
+        <div class="input-group"><label>% das vendas para PJ do Simples</label><input type="number" id="cad_cli_simples" min="0" max="100" step="0.1" placeholder="ex: 20"></div>
+        <div class="input-group"><label>% das vendas para consumidor final</label><input type="number" id="cad_cli_b2c" min="0" max="100" step="0.1" placeholder="ex: 40"></div>
+        <div class="input-group"><label>% das vendas para governo</label><input type="number" id="cad_cli_gov" min="0" max="100" step="0.1" placeholder="ex: 0"></div>
+        <div class="input-group"><label>% da receita que é exportação (imune)</label><input type="number" id="cad_cli_export" min="0" max="100" step="0.1" placeholder="ex: 0"></div>
+        <div class="input-group"><label>Dos clientes PJ, quantos são do Simples? (%) — usado na leitura dos XMLs</label><input type="number" id="cad_pj_simples" min="0" max="100" step="1" placeholder="30"><span class="lh-hint" data-hint="O XML de venda traz CPF × CNPJ do comprador, mas não o regime dele. Esta fatia divide os PJ entre regular e Simples." onclick="lhHint(event,this)">?</span></div>
+        <div class="input-group"><label>Faturamento anual (R$) — opcional</label><input type="number" id="cad_fat" placeholder="herda do Regime Ótimo se vazio" oninput="LH_CADEIA.render()"></div>
+      </div>
+    </div>
+    <div id="cad-result"></div>
+  </div>
   <div class="page" id="page-cr04">
     <div class="calc-page-header">
       <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.18),rgba(234,179,8,0.10));"></div>
@@ -12131,6 +12171,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <div class="input-group"><label>IPI (indústria)</label>
           <label style="display:flex;align-items:center;gap:8px;font-weight:400;text-transform:none;cursor:pointer"><input type="checkbox" id="pm_zfm" onchange="lhPmRender()" style="width:auto"> Zona Franca de Manaus — o IPI continua depois de 2027</label>
           <span class="lh-hint" data-hint="Se a planilha tiver coluna IPI (%), ele entra por fora hoje e zera em 2027 (art. 126 ADCT). Marque ZFM para mantê-lo." onclick="lhHint(event,this)">?</span></div>
+        <div class="input-group" style="grid-column:1/-1"><div id="pm_cadeia_info" style="font-size:.8rem;color:var(--text2)">cadeia: sem leitura — <a href="#" onclick="abrirPagina('cadeia');return false" style="color:var(--gold)">Cadeia de Crédito</a> define a parcela das compras que gera crédito e a fatia PJ das vendas</div></div>
         <div class="input-group" id="pm_custo_box" style="display:none"><label>% do custo que hoje é imposto não recuperável (vira crédito na Reforma)</label>
           <input type="number" step="0.01" id="pm_pisemb" placeholder="3,65 (PIS/COFINS cumulativo)" oninput="this._tocado=true" onchange="lhPmRender()"><span class="lh-hint" data-hint="Presumido: PIS/COFINS cumulativo 3,65% embutido nas compras, que você não credita hoje e passa a creditar como IBS/CBS a partir de 2027. Lucro Real: 0 (já credita)." onclick="lhHint(event,this)">?</span></div>
       </div>
@@ -58393,7 +58434,8 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var custoHoje=(item.custo!=null && +item.custo>0)?+item.custo:null;
    var pisEmb=(cfg.pisEmb!=null)?(+cfg.pisEmb/100):((regime==='real')?0:0.0365);
    var stEmb=0;   /* ICMS-ST já entra por dentro do preço de venda (proxy, v866); descontá-lo do custo seria contar duas vezes */
-   var custoAno=(custoHoje!=null)?custoHoje*(1 - pisEmb*(1-fPis) - stEmb*(1-fIcms)):null;
+   var cred=(cfg.creditavel!=null)?+cfg.creditavel:1;                                   /* v870: parcela das compras que gera crédito (Cadeia de Crédito) */
+   var custoAno=(custoHoje!=null)?custoHoje*(1 - pisEmb*(1-fPis)*cred - stEmb*(1-fIcms)):null;
    if(regime==='simples'){ custoAno=custoHoje; }
    var lucroHoje=(custoHoje!=null)?R-custoHoje:null;
    var o={ano:ano, hoje:P, hojeCli:r2(P+ipiHoje), ipiHoje:r2(ipiHoje), ipi:r2(ipiAno), velhoHoje:r2(velhoHoje), ficaHoje:r2(R), estr:estr, tFora:tFora, tDentro:icms*fIcms+pis*fPis,
@@ -58443,7 +58485,8 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var regime=g('pm_regime')||'presumido';
    var zf=document.getElementById('pm_zfm');
    return {regime:regime, b2b:g('pm_cliente')==='pj', icmsMedio:num(g('pm_icms'))||0, pisMedio:num(g('pm_pis')), estr:g('pm_estr')||'fica', tipo:g('pm_tipo')||'todos', busca:(g('pm_busca')||'').toLowerCase(),
-           lista:g('pm_lista')||'', zfm:!!(zf&&zf.checked), pisEmb:num(g('pm_pisemb'))};
+           lista:g('pm_lista')||'', zfm:!!(zf&&zf.checked), pisEmb:num(g('pm_pisemb')),
+           creditavel:(function(){ try{ var c=window.LH_CADEIA&&LH_CADEIA.calcular(2033); var e=LH_CADEIA.get().entrada; return (c && Object.keys(e).some(function(k){ return e[k]!=null; }))?c.creditavel:1; }catch(_e){ return 1; } })()};
  }
  window.lhPmCalcular=function(f, cfg){
    var out={anos:{}}; var item={trat:f.trat, preco:f.preco, icms:f.icms, st:f.st, pis:pisDoCST(f.cstPis,cfg.regime), ipi:f.ipi, custo:f.custo};
@@ -58608,6 +58651,158 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
  var _ap=window.abrirPagina;
  window.abrirPagina=function(id){ var r=_ap.apply(this,arguments); if(id==='precmassa'){ wire(); var n=document.getElementById('pm-n'); if(n&&window.CM_ULTIMO&&CM_ULTIMO.itens){ n.textContent=CM_ULTIMO.itens.length.toLocaleString('pt-BR')+' itens classificados prontos para precificar'; n.style.display=''; } } return r; };
  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',wire); else wire();
+})();
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════════════════════
+   ★ v870 · CADEIA DE CRÉDITO — um estado, três telas, uma leitura de documentos
+   O "motor de entrada / motor de saída" existia duas vezes (Regime Ótimo = c05_* e Dentro × Híbrido = dxh_*), com
+   dois caminhos de dado: os XMLs de compra preenchiam só o c05; o dxh só recebia digitação ou carteira. Agora há um
+   estado único (LH_CADEIA), os campos das duas telas são espelhos dele, a aba nova "Cadeia de Crédito" é o retrato,
+   e a leitura de documentos escreve uma vez só:
+   · entrada: CRT do emitente em cada XML de compra (3 = regular; 1/2 = Simples/MEI; CPF = produtor rural/PF);
+   · saída: destinatário de cada XML de venda — CPF = consumidor; CNPJ = PJ; idDest 3/exterior = exportação.
+     O XML não diz o regime do comprador PJ; a fatia "dos PJ, quantos são Simples" fica manual (padrão por setor).
+   Consumidores: Regime Ótimo, Dentro × Híbrido, Precificação em Massa (crédito de compra e fatia PJ), Split Payment.
+   A conta do c05/dxh não muda — só de onde os campos leem. Dado do cliente fica no navegador (LH_PERSIST).
+   ═══════════════════════════════════════════════════════════════════════════════════════════ */
+(function(){
+ 'use strict';
+ var CH='LH_CADEIA::';
+ var ESPELHO={
+   entrada:{ regular:['c05_forn_regular','dxh_forn_regular','cad_forn_regular'], simples:['c05_forn_simples','dxh_forn_simples','cad_forn_simples'], importacao:['c05_forn_import','dxh_forn_import','cad_forn_import'], pf:['cad_forn_pf'] },
+   saida:{ regular:['c05_cli_regular','dxh_cli_regular','cad_cli_regular'], simples:['c05_cli_simples','dxh_cli_simples','cad_cli_simples'], b2c:['c05_cli_b2c','dxh_cli_b2c','cad_cli_b2c'], exportacao:['c05_export','dxh_export','cad_cli_export'], governo:['cad_cli_gov'] }
+ };
+ var VAZIO=function(){ return {entrada:{regular:null,simples:null,importacao:null,pf:null}, saida:{regular:null,simples:null,b2c:null,exportacao:null,governo:null}, origem:{entrada:null,saida:null}, pjSimplesPct:null}; };
+ var estado=VAZIO(), mudo=false;
+ function eid(){ try{ return (window.LH_PERSIST && LH_PERSIST.entidade)? LH_PERSIST.entidade() : (window.LH_EMP_CNPJ||'geral'); }catch(_e){ return 'geral'; } }
+ function num(v){ if(v==null||v==='') return null; var n=parseFloat(String(v).replace(',','.')); return isFinite(n)?n:null; }
+ function r1(x){ return Math.round(x*10)/10; }
+ function salvar(){ try{ localStorage.setItem(CH+eid(), JSON.stringify(estado)); }catch(_e){} }
+ function carregar(){ try{ var s=localStorage.getItem(CH+eid()); if(s){ var o=JSON.parse(s); estado=o; } }catch(_e){} }
+ function escrever(lado){
+   mudo=true;
+   try{ Object.keys(ESPELHO[lado]).forEach(function(k){ var v=estado[lado][k]; if(v==null) return; ESPELHO[lado][k].forEach(function(id){ var e=document.getElementById(id); if(!e) return; var nv=String(r1(v)); if(e.value!==nv){ e.value=nv; e.dispatchEvent(new Event('input')); } }); }); }
+   finally{ mudo=false; }
+ }
+ function lerDeCampo(lado, id){
+   /* um campo espelhado mudou pela mão do usuário: o grupo dele vira o estado */
+   var grupo=null; Object.keys(ESPELHO[lado]).forEach(function(k){ ESPELHO[lado][k].forEach(function(i){ if(i===id) grupo=i.split('_')[0]; }); });
+   if(!grupo) return;
+   Object.keys(ESPELHO[lado]).forEach(function(k){ var i=ESPELHO[lado][k].filter(function(x){ return x.indexOf(grupo+'_')===0; })[0]; if(i){ var e=document.getElementById(i); if(e) estado[lado][k]=num(e.value); } });
+   estado.origem[lado]={tipo:'manual', detalhe:'informado na tela '+({c05:'Regime Ótimo',dxh:'Dentro × Híbrido',cad:'Cadeia de Crédito'}[grupo]||grupo), quando:new Date().toISOString().slice(0,10)};
+   salvar(); escrever(lado); render();
+ }
+ function adotar(){
+   /* estado vazio mas a tela já tem números (restaurados pelo LH_PERSIST ou digitados antes do v870): o estado adota */
+   ['entrada','saida'].forEach(function(lado){ if(Object.keys(estado[lado]).some(function(k){ return estado[lado][k]!=null; })) return;
+     var grupos=['c05','dxh','cad']; for(var g=0;g<grupos.length;g++){ var achou=false; Object.keys(ESPELHO[lado]).forEach(function(k){ var id=ESPELHO[lado][k].filter(function(x){ return x.indexOf(grupos[g]+'_')===0; })[0]; var e=id&&document.getElementById(id); if(e && num(e.value)!=null){ estado[lado][k]=num(e.value); achou=true; } });
+       if(achou){ estado.origem[lado]={tipo:'manual', detalhe:'valores já informados na tela '+({c05:'Regime Ótimo',dxh:'Dentro × Híbrido',cad:'Cadeia de Crédito'}[grupos[g]]), quando:new Date().toISOString().slice(0,10)}; salvar(); break; } } });
+ }
+ function ligar(){
+   ['entrada','saida'].forEach(function(lado){ Object.keys(ESPELHO[lado]).forEach(function(k){ ESPELHO[lado][k].forEach(function(id){ var e=document.getElementById(id); if(!e||e._cadeia) return; e._cadeia=true;
+     e.addEventListener('input', function(){ if(mudo) return; lerDeCampo(lado,id); }); }); }); });
+   var ps=document.getElementById('cad_pj_simples'); if(ps && !ps._cadeia){ ps._cadeia=true; ps.addEventListener('input', function(){ estado.pjSimplesPct=num(ps.value); salvar(); render(); }); }
+ }
+
+ /* ── leitura de documentos ── */
+ function lerEntrada(){
+   var c=window.LH_IMPORT_CRT;
+   var notas=(window._LH_XML_NOTAS||window.LH_XML_NOTAS||[]);
+   var emp=(window.LH_IMPORT_PGDAS&&window.LH_IMPORT_PGDAS.cnpj)?String(window.LH_IMPORT_PGDAS.cnpj).replace(/\D/g,''):String(window.LH_EMP_CNPJ||'').replace(/\D/g,'');
+   /* preferimos as notas cruas (têm CPF do emitente = produtor rural e idDest = importação não aparece em NF-e nacional) */
+   var compras=notas.filter(function(n){ var dest=String(n.destCNPJ||'').replace(/\D/g,''); return emp? (dest===emp && String(n.emitCNPJ||'').replace(/\D/g,'')!==emp) : String(n.tpNF||'')==='0'; });
+   var s={regular:0,simples:0,pf:0,importacao:0}, n=0;
+   compras.forEach(function(nt){ var v=+nt.vProd||+nt.vNF||0; if(!(v>0)) return; n++;
+     if(String(nt.emitCPF||'').replace(/\D/g,'')) s.pf+=v; else if(String(nt.emitCRT||'')==='3') s.regular+=v; else if(/^(1|2)$/.test(String(nt.emitCRT||''))) s.simples+=v; else s.regular+=v; });
+   var tot=s.regular+s.simples+s.pf+s.importacao;
+   if(tot>0){ estado.entrada={regular:r1(s.regular/tot*100), simples:r1(s.simples/tot*100), pf:r1(s.pf/tot*100), importacao:r1(s.importacao/tot*100)}; estado.origem.entrada={tipo:'documentos', detalhe:n+' notas de compra lidas (CRT do emitente)', quando:new Date().toISOString().slice(0,10)}; return true; }
+   if(c && c.ok){ estado.entrada={regular:r1(c.pReg), simples:r1(c.pSN), pf:0, importacao:0}; estado.origem.entrada={tipo:'documentos', detalhe:(c.nForn||0)+' fornecedores (CRT)', quando:new Date().toISOString().slice(0,10)}; return true; }
+   return false;
+ }
+ function lerSaida(){
+   var notas=(window._LH_XML_NOTAS||window.LH_XML_NOTAS||[]);
+   var emp=(window.LH_IMPORT_PGDAS&&window.LH_IMPORT_PGDAS.cnpj)?String(window.LH_IMPORT_PGDAS.cnpj).replace(/\D/g,''):String(window.LH_EMP_CNPJ||'').replace(/\D/g,'');
+   var vendas=notas.filter(function(n){ var em=String(n.emitCNPJ||'').replace(/\D/g,''); return emp? em===emp : String(n.tpNF||'')==='1'; });
+   var s={pj:0,b2c:0,exportacao:0,governo:0}, n=0;
+   vendas.forEach(function(nt){ var v=+nt.vProd||+nt.vNF||0; if(!(v>0)) return; n++;
+     var cpf=String(nt.destCPF||'').replace(/\D/g,''), cnpj=String(nt.destCNPJ||'').replace(/\D/g,'');
+     if(String(nt.idDest||'')==='3' || String(nt.destUF||'').toUpperCase()==='EX') s.exportacao+=v;
+     else if(cpf && !cnpj) s.b2c+=v;
+     else if(cnpj) s.pj+=v; else s.b2c+=v; });
+   var tot=s.pj+s.b2c+s.exportacao+s.governo; if(!(tot>0)) return false;
+   var pjS=(estado.pjSimplesPct!=null)?estado.pjSimplesPct:30;   /* o XML não traz o regime do comprador: fatia manual, padrão 30% */
+   var pj=s.pj/tot*100;
+   estado.saida={regular:r1(pj*(1-pjS/100)), simples:r1(pj*pjS/100), b2c:r1(s.b2c/tot*100), exportacao:r1(s.exportacao/tot*100), governo:r1(s.governo/tot*100)};
+   estado.origem.saida={tipo:'documentos', detalhe:n+' notas de venda lidas (CPF × CNPJ × exterior do destinatário; regime do PJ estimado em '+pjS+'% Simples)', quando:new Date().toISOString().slice(0,10)};
+   return true;
+ }
+ window.LH_CADEIA={
+   get:function(){ return JSON.parse(JSON.stringify(estado)); },
+   set:function(lado, valores, origem){ Object.keys(valores||{}).forEach(function(k){ if(k in estado[lado]) estado[lado][k]=num(valores[k]); }); if(origem) estado.origem[lado]=origem; salvar(); escrever(lado); render(); },
+   lerDocumentos:function(silencioso){ carregar(); var a=lerEntrada(), b=lerSaida(); if(a) escrever('entrada'); if(b) escrever('saida'); salvar(); render();
+     if(!silencioso && typeof mostrarToast==='function') mostrarToast((a||b)?('✓ Cadeia lida dos documentos: '+(a?'entradas':'')+(a&&b?' e ':'')+(b?'saídas':'')):'Importe XMLs de compra e de venda na Central primeiro','success'); return a||b; },
+   /* o que a cadeia significa em crédito */
+   calcular:function(ano){
+     ano=+ano||2033; var e=estado.entrada, s=estado.saida;
+     var A=(typeof getAliq==='function')?getAliq(ano):null; var tFora=A?A.total:0.265;
+     var reg=(e.regular||0)/100, sn=(e.simples||0)/100, imp=(e.importacao||0)/100, pf=(e.pf||0)/100;
+     /* crédito de IBS/CBS sobre o valor comprado: regular e importação = integral; Simples = só o destacado (~20% do cheio, art. 47 §9º);
+        produtor rural PF = crédito presumido (art. 168) — aqui contado como 0 e sinalizado; sem nota = 0 */
+     var credEnt=(reg+imp)*tFora + sn*tFora*0.20;
+     var perdido=sn*tFora*0.80 + pf*tFora;
+     var sReg=(s.regular||0)/100, sSN=(s.simples||0)/100, sB2C=(s.b2c||0)/100, sExp=(s.exportacao||0)/100, sGov=(s.governo||0)/100;
+     return {ano:ano, tFora:tFora, creditavel:reg+imp+sn*0.2, credEntradaPct:credEnt*100, perdidoPct:perdido*100, recuperavelSaida:sReg*100, custoFinalSaida:(sSN+sB2C+sGov)*100, exportacao:sExp*100, pfPct:pf*100, snPct:sn*100};
+   },
+   ligar:ligar, render:function(){ render(); }
+ };
+ /* ── a aba ── */
+ function render(){
+   var el=document.getElementById('cad-result'); if(!el) return;
+   var e=estado.entrada, s=estado.saida, oE=estado.origem.entrada, oS=estado.origem.saida;
+   var temE=Object.keys(e).some(function(k){ return e[k]!=null; }), temS=Object.keys(s).some(function(k){ return s[k]!=null; });
+   var selo=function(o){ return o?('<span style="font-size:.72rem;color:'+(o.tipo==='documentos'?'#16c47c':'#e8b93a')+'">'+(o.tipo==='documentos'?'● lido dos documentos':o.tipo==='carteira'?'● montado pela carteira':'● informado manualmente')+' — '+o.detalhe+' · '+o.quando+'</span>'):'<span style="font-size:.72rem;color:var(--text2)">sem dado ainda</span>'; };
+   var oe=document.getElementById('cad_origem_entrada'); if(oe) oe.innerHTML=selo(oE);
+   var os=document.getElementById('cad_origem_saida'); if(os) os.innerHTML=selo(oS);
+   if(!temE && !temS){ el.innerHTML='<div class="input-card"><h3 style="color:var(--gold)">Sua cadeia ainda não foi lida</h3><div style="color:var(--text2);font-size:.9rem">Importe XMLs de compra e de venda na Central de Documentos e clique em <b>Ler dos documentos</b>, monte pela carteira, ou informe os percentuais acima. O resultado vale para o Regime Ótimo, o Dentro × Híbrido e a Precificação em Massa — sem digitar de novo.</div></div>'; return; }
+   var fat=num((document.getElementById('cad_fat')||{}).value)||num((document.getElementById('c05_fat')||{}).value)||num((document.getElementById('dxh_fat')||{}).value)||0;
+   var compras=num((document.getElementById('cad_compras')||{}).value)||0;
+   var c27=LH_CADEIA.calcular(2027), c29=LH_CADEIA.calcular(2029), c33=LH_CADEIA.calcular(2033);
+   var pct=function(x){ return (Math.round((+x||0)*10)/10).toLocaleString('pt-BR')+'%'; }, fmt=function(x){ return 'R$ '+(+x||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
+   var h='<div class="input-card"><h3 style="color:var(--gold)">Retrato da cadeia</h3><div class="kpi-grid">';
+   h+='<div class="kpi-card kpi-hero"><div class="kpi-label">Compras que geram crédito integral</div><div class="kpi-value">'+pct((e.regular||0)+(e.importacao||0))+'</div><div class="kpi-label" style="margin-top:4px">regular + importação</div></div>';
+   h+='<div class="kpi-card"><div class="kpi-label">Compras de Simples/MEI (crédito ~20%)</div><div class="kpi-value" style="color:#e8b93a">'+pct(e.simples||0)+'</div></div>';
+   h+='<div class="kpi-card"><div class="kpi-label">Produtor rural PF / sem nota</div><div class="kpi-value" style="color:#e05a4d">'+pct(e.pf||0)+'</div><div class="kpi-label" style="margin-top:4px">crédito presumido / zero</div></div>';
+   h+='<div class="kpi-card"><div class="kpi-label">Vendas em que o cliente recupera o IBS/CBS</div><div class="kpi-value" style="color:#16c47c">'+pct(s.regular||0)+'</div><div class="kpi-label" style="margin-top:4px">PJ do regime regular</div></div>';
+   h+='<div class="kpi-card"><div class="kpi-label">Vendas em que o imposto é custo final</div><div class="kpi-value">'+pct((s.b2c||0)+(s.simples||0)+(s.governo||0))+'</div><div class="kpi-label" style="margin-top:4px">consumidor + Simples + governo</div></div>';
+   if(s.exportacao) h+='<div class="kpi-card"><div class="kpi-label">Exportação (imune)</div><div class="kpi-value">'+pct(s.exportacao)+'</div></div>';
+   h+='</div>';
+   h+='<div style="overflow-x:auto;margin-top:12px"><table style="width:100%;border-collapse:collapse;font-size:.84rem"><thead><tr>';
+   ['','2027','2029','2033'].forEach(function(t){ h+='<th style="text-align:'+(t?'right':'left')+';padding:7px 10px;color:var(--gold);font-size:.74rem;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.12)">'+t+'</th>'; });
+   h+='</tr></thead><tbody>';
+   var linha=function(rot,f,tit){ h+='<tr><td style="padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.06)" title="'+(tit||'')+'">'+rot+'</td>'+[c27,c29,c33].map(function(c){ return '<td style="text-align:right;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.06)">'+f(c)+'</td>'; }).join('')+'</tr>'; };
+   linha('IBS/CBS creditável sobre o que você compra', function(c){ return pct(c.credEntradaPct); }, 'alíquota do ano × parcela creditável da cadeia');
+   linha('Crédito perdido (Simples 80% + PF/sem nota)', function(c){ return pct(c.perdidoPct)+(compras?' · '+fmt(compras*c.perdidoPct/100)+'/ano':''); }, 'o que você deixa na mesa por comprar de quem não destaca IBS/CBS');
+   linha('Fatia das vendas com IBS/CBS recuperável pelo cliente', function(c){ return pct(c.recuperavelSaida); });
+   h+='</tbody></table></div>';
+   h+='<div style="background:rgba(201,162,39,.07);border:1px solid rgba(201,162,39,.35);border-radius:10px;padding:12px 16px;font-size:.85rem;color:#e6e0cc;line-height:1.6;margin-top:12px">';
+   h+='<b style="color:var(--gold)">O que isso muda nas outras telas.</b> Regime Ótimo e Dentro × Híbrido já usam esta cadeia (os campos deles são espelhos destes). Na <b>Precificação em Massa</b>, o crédito de compra passa a valer só sobre a parcela creditável ('+pct(c33.creditavel*100)+' das compras) e a fatia PJ ('+pct(s.regular||0)+') define quanto do catálogo aceita "subir só o imposto". '
+   +(c33.pfPct>0?'Produtor rural pessoa física: o crédito presumido (art. 168) depende do setor — conte com ele na tela de Crédito Presumido · Agroindústria, não aqui. ':'')
+   +(c33.snPct>=30?'Mais de um terço das compras vem do Simples: renegociar fornecedores para o regime regular (ou para o híbrido, a partir de 2027) recupera '+pct(c33.snPct*0.8*c33.tFora)+' do custo em 2033. ':'')
+   +(oS&&oS.tipo==='documentos'?'A fatia "PJ do Simples" nas vendas é estimativa ('+((estado.pjSimplesPct!=null)?estado.pjSimplesPct:30)+'%): o XML de venda não traz o regime do comprador — ajuste no campo ao lado se souber. ':'')
+   +'</div></div>';
+   el.innerHTML=h;
+   try{ var b=document.getElementById('pm_cadeia_info'); if(b) b.textContent='cadeia: '+pct(c33.creditavel*100)+' das compras geram crédito · '+pct(s.regular||0)+' das vendas para PJ regular'; }catch(_e){}
+ }
+ /* ── ganchos: leitura automática quando a Central preenche o CRT; abertura da aba ── */
+ var _aplicaCRT=window.lhC05AplicarCRT;
+ if(typeof _aplicaCRT==='function'){ window.lhC05AplicarCRT=function(){ var r=_aplicaCRT.apply(this,arguments); try{ if(window.LH_IMPORT_CRT&&LH_IMPORT_CRT.ok){ carregar(); lerEntrada(); lerSaida(); salvar(); escrever('entrada'); escrever('saida'); render(); } }catch(_e){} return r; }; }
+ var _cartAp=window.lhCarteiraAplicar;
+ if(typeof _cartAp==='function'){ window.lhCarteiraAplicar=function(){ var r=_cartAp.apply(this,arguments); try{ var t=window._lhCartTipo==='forn'?'entrada':'saida'; var g=(t==='entrada')?'dxh_forn_regular':'dxh_cli_regular'; lerDeCampo(t,g); estado.origem[t]={tipo:'carteira', detalhe:'montado pela carteira', quando:new Date().toISOString().slice(0,10)}; salvar(); render(); }catch(_e){} return r; }; }
+ var _ap=window.abrirPagina;
+ window.abrirPagina=function(id){ var r=_ap.apply(this,arguments); try{ carregar(); ligar(); if(id==='cadeia'||id==='c05'||id==='dxh'){ setTimeout(function(){ ligar(); adotar(); escrever('entrada'); escrever('saida'); render(); },300); } }catch(_e){} return r; };
+ function boot(){ carregar(); ligar(); setTimeout(function(){ ligar(); adotar(); render(); },1500); }
+ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
 })();
 </script>
 <script>

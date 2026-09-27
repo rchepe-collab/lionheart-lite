@@ -152,7 +152,7 @@ function rodar(html, cfg) {
     (s) => s.by.A3 && s.by.A3.c.anos[2033].final > 45);
   await sab('IPI não zera em 2027 → máquina fica 1.142,87 sem ZFM → reprova', 'var ipiAno=(ano<=2026 || cfg.zfm)?ipiHoje:0;', 'var ipiAno=ipiHoje;',
     (s) => !perto(s.by.M1.c.anos[2027].finalCli, 1042.87));
-  await sab('crédito de compra desligado → custo não cai → "manter margem" volta a 99,11 → reprova', 'var custoAno=(custoHoje!=null)?custoHoje*(1 - pisEmb*(1-fPis) - stEmb*(1-fIcms)):null;', 'var custoAno=custoHoje;',
+  await sab('crédito de compra desligado → custo não cai → "manter margem" volta a 99,11 → reprova', 'var custoAno=(custoHoje!=null)?custoHoje*(1 - pisEmb*(1-fPis)*cred - stEmb*(1-fIcms)):null;', 'var custoAno=custoHoje;',
     (s) => !perto(s.margem.A1.c.anos[2033].finalCli, 95.50));
   await sab('cerveja de volta à trava de combustíveis → fonte com CONFERIR (o Classificador regrediu) → reprova', "if(/^(2203|2204|2205|2206|2208|2402|2403)/.test(k) || /imposto seletivo|bebida|cigarr|fumo|tabaco/.test(String(hit.fonte||'').toLowerCase())){", "if(false){",
     (s) => !s.by.I1 || /CONFERIR/.test(String(s.by.I1.f.fonte)) || s.by.I1.f.status !== 'CONFIRMADO');
