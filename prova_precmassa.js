@@ -48,6 +48,7 @@ function rodar(html, cfg) {
             out.margem = rerun('margem'); out.markup = rerun('markup');
             out.zfm = rerun('fica', () => { w.document.getElementById('pm_zfm').checked = true; }); w.document.getElementById('pm_zfm').checked = false;
             out.atacado = rerun('fica', () => { set('pm_lista', 'PRECO_ATACADO'); }); set('pm_lista', 'PRECO_VENDA');
+            set('pm_tipo', 'S'); w.lhPmRender(); out.soServ = w.document.getElementById('pm-result').innerHTML; out.soServN = w.document.getElementById('pm_tipo_n').textContent; set('pm_tipo', 'todos');
             out.by = rerun('fica'); out.html = out.by.__html;
             /* motor direto */
             out.m = {}; [2026, 2027, 2029, 2033].forEach((a) => { out.m[a] = { fica: w.lhPreco({ trat: 'cheia', preco: 100, icms: 18, pis: 3.65 }, a, { regime: 'presumido' }, 'fica'), preco: w.lhPreco({ trat: 'cheia', preco: 100, icms: 18, pis: 3.65 }, a, { regime: 'presumido' }, 'preco'), pj: w.lhPreco({ trat: 'cheia', preco: 100, icms: 18, pis: 3.65 }, a, { regime: 'presumido' }, 'pj'), simples: w.lhPreco({ trat: 'cheia', preco: 100, icms: 18 }, a, { regime: 'simples' }, 'fica'), red60: w.lhPreco({ trat: 'red60', preco: 100, icms: 18, pis: 3.65 }, a, { regime: 'presumido' }, 'fica') }; });
@@ -104,9 +105,10 @@ function rodar(html, cfg) {
     ex('mostra a classificação como coluna de leitura (200 · 200035 do papel higiênico)', /200 · 200035/.test(r.html));
     ex('bloco "Como ler esta tabela" recolhível', /Como ler esta tabela/.test(r.html) && /line-clamp:2/.test(r.html) && /ver tudo/.test(r.html));
     ex('KPIs: sobem / caem / não precificados', /Sobem em 2033/.test(r.html) && /Caem em 2033/.test(r.html) && /Não precificados/.test(r.html));
+    ex('filtro "só serviços" num arquivo só de produtos → aviso claro, não KPIs zerados', /Nenhum serviço neste catálogo/.test(r.soServ) && !/Sobem em 2033/.test(r.soServ) && /7 produtos · 0 serviços/.test(r.soServN), (r.soServ || '').slice(0, 120) + ' | ' + r.soServN);
     console.log('\n-- v867: prateleira × líquido PJ · lista de preço · IPI · IS --');
     ex('parafuso 2033: prateleira 99,11 · líquido PJ 78,35 (o mesmo preço lido de dois jeitos)', perto(r.by.A1.c.anos[2033].finalCli, 99.11) && perto(r.by.A1.c.anos[2033].liqPJ, 78.35));
-    ex('a tabela tem as colunas "2033 PRATELEIRA" e "2033 LÍQUIDO PJ"', /2033 PRATELEIRA/.test(r.html) && /2033 LÍQUIDO PJ/.test(r.html));
+    ex('a tabela tem as colunas "2033 PRATELEIRA", "SEM IBS/CBS = LÍQUIDO PJ" e "IBS/CBS 2033 (FORA)"', /2033 PRATELEIRA/.test(r.html) && /SEM IBS\/CBS = LÍQUIDO PJ/.test(r.html) && /IBS\/CBS 2033 \(FORA\)/.test(r.html) && /IBS\/CBS 2027 \(FORA\)/.test(r.html));
     ex('duas colunas de preço → seletor de lista aparece', r.tela.lista === '' , r.tela.lista);
     ex('lista ATACADO: parafuso hoje 85 → 2033 84,24', perto(r.atacado.A1.c.anos[2033].hoje, 85) && perto(r.atacado.A1.c.anos[2033].finalCli, 85 * 0.7835 * 1.265), r.atacado.A1.c.anos[2033].finalCli);
     ex('máquina com IPI 10%: cliente paga 1.100 hoje; em 2027 o IPI zera', perto(r.by.M1.c.anos[2033].hojeCli, 1100) && r.by.M1.c.anos[2027].ipi === 0 && perto(r.by.M1.c.anos[2026].ipi, 100), JSON.stringify([r.by.M1.c.anos[2033].hojeCli, r.by.M1.c.anos[2027].ipi]));
