@@ -27,6 +27,10 @@ const CASOS = [
   ['39174090', 'CONECTOR DE MANGUEIRA COM ENGATE', 'cheia', '000001', 'Anexo IV cita 3917.40 só p/ conector completo com tampa'],
   ['28151100', 'SODA CAUSTICA 1KG', 'cheia', '000001', 'Anexo IX cita 2815.11 como insumo agro (hidróxido de sódio p/ uso agropecuário)'],
   ['28151100', 'HIDROXIDO DE SODIO USO AGROPECUARIO CORRETIVO', 'red60', '200038', 'Anexo IX item 8 — descrição confirma'],
+  /* v867: Anexo I item 16 cita 1905.90.90 só para o pão francês — bolo e croissant no mesmo NCM são regra geral */
+  ['19059090', 'PAO FRANCES KG', 'zero', '200003', 'Anexo I item 16'],
+  ['19059090', 'BOLO DE CHOCOLATE KG', 'cheia', '000001', 'mesmo NCM, não é pão francês'],
+  ['19059090', 'CROISSANT UNIDADE', 'cheia', '000001', 'mesmo NCM, não é pão francês'],
 ];
 function rodar(html) {
   return new Promise((ok) => {

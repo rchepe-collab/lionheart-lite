@@ -56065,7 +56065,7 @@ if(!window.LH_SN.tabelas) window.LH_SN.tabelas = {};
   {a:'I',i:'14',ncm:'1701.14.00',desc:'Açúcar classificado nos códigos e',trat:'zero',seg:'comercio',fonte:'art. 125 · Anexo I item 14'},
   {a:'I',i:'14',ncm:'1701.99.00',desc:'Açúcar classificado nos códigos e',trat:'zero',seg:'comercio',fonte:'art. 125 · Anexo I item 14'},
   {a:'I',i:'15',ncm:'1902.1',desc:'Massas alimentícias da subposição',trat:'zero',seg:'comercio',fonte:'art. 125 · Anexo I item 15'},
-  {a:'I',i:'16',ncm:'1905.90.90',desc:'Pão comumente denominado pão francês, de formato cilíndrico e alongado, com miolo branco creme e macio, e casca dourada e crocante, elaborado a partir',trat:'zero',seg:'comercio',fonte:'art. 125 · Anexo I item 16'},
+  {a:'I',i:'16',ncm:'1905.90.90',desc:'Pão comumente denominado pão francês, de formato cilíndrico e alongado, com miolo branco creme e macio, e casca dourada e crocante, elaborado a partir',trat:'zero',seg:'comercio',fonte:'art. 125 · Anexo I item 16',esp:1,need:1,kw:['pao frances','pao comum','pao de sal','pao sal','paozinho','pao d agua','pao dagua','cacetinho','pao massa grossa','pao carioquinha']},
   {a:'I',i:'16',ncm:'1901.20.10',desc:'Pão comumente denominado pão francês, de formato cilíndrico e alongado, com miolo branco creme e macio, e casca dourada e crocante, elaborado a partir',trat:'zero',seg:'comercio',fonte:'art. 125 · Anexo I item 16'},
   {a:'I',i:'16',ncm:'1901.20.90',desc:'Pão comumente denominado pão francês, de formato cilíndrico e alongado, com miolo branco creme e macio, e casca dourada e crocante, elaborado a partir',trat:'zero',seg:'comercio',fonte:'art. 125 · Anexo I item 16'},
   {a:'I',i:'17',ncm:'1104.12.00',desc:'Grãos de aveia dos códigos e',trat:'zero',seg:'comercio',fonte:'art. 125 · Anexo I item 17'},
@@ -56226,6 +56226,7 @@ if(!window.LH_SN.tabelas) window.LH_SN.tabelas = {};
      if(x){
        if(x.trat!==e.trat && !(x.trat==='zero' && e.trat==='red60')){ x.trat=e.trat; x.fonte=e.fonte; x.st='lei'; if(e.esp && !x.descRules){ x.esp=1; x.kw=e.kw; x.need=e.need; } corrigidos++; }
        else if(!/Anexo/.test(String(x.fonte||''))){ x.fonte=e.fonte+' — '+String(x.fonte||''); x.st='lei'; }
+       if(e.esp && e.a==='I' && !x.descRules && !x.esp){ x.esp=1; x.kw=e.kw; x.need=e.need; x.desc=x.desc||e.desc; if(!/Anexo/.test(String(x.fonte||''))) x.fonte=e.fonte; }   /* v867: no Anexo I, produto específico vale mesmo quando o tratamento já batia (pão francês em 1905.90.90); nos outros anexos a trava de descrição do v480 já cuida */
        return;
      }
      var n={ncm:e.ncm, desc:e.desc, trat:e.trat, fonte:e.fonte, seg:e.seg, st:'lei', origem:'v862'}; if(e.esp){ n.esp=1; n.kw=e.kw; n.need=e.need; }
