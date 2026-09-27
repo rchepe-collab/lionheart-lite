@@ -123,7 +123,7 @@ function rodar(html) {
     (s) => s.by.A19.status === 'CONFIRMADO' && s.by.A19.tratLabel === 'Tributação integral');
   await sab('sugestão de NCM desligada → trena sem 9017.80.90 → reprova', 'var _sg=cmSugereNCM(k,it.desc);', 'var _sg=null;',
     (s) => !/9017\.80\.90/.test(String(s.by.A14.fonte)));
-  await sab('tópicos abertos por padrão (sem o clamp) → reprova', '.cml-x{display:-webkit-box;-webkit-line-clamp:2;', '.cml-x{display:block;',
+  await sab('tópicos abertos por padrão (sem o clamp) → reprova', '#cm-leitura .cml-x{display:-webkit-box;-webkit-line-clamp:2;', '#cm-leitura .cml-x{display:block;',
     (s) => !/line-clamp:2/.test(s.tela));
   await sab('bloco tirado da tela → reprova', 'try{ h+=cmLeituraHTML(cmLeitura(itens)); }catch(_eL){}', '',
     (s) => !/Como ler este resultado/.test(s.tela));
