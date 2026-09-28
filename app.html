@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v871';</script>
+<body><script>window.LH_VERSAO='v872';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -52413,7 +52413,7 @@ var CM_SEM_BENEFICIO=[
 /* ★ v869 · marcadores fortes por anexo: quando a descrição traz o marcador, o produto É do anexo (soja/bovino/lavoura = agro;
    PcD/surdez = acessibilidade). Veio do teste de estresse com agro, indústria, serviços, varejo e turismo. */
 var CM_MARCADOR={
-  agro:/agr[ií]c|agropecu|agron|bovin|su[ií]n|av[ií]c|ovin|caprin|equin|lavoura|pecu[aá]r|rural|semente|muda de|mudas|fertiliz|adubo|\bnpk\b|ureia|calc[aá]rio|ra[cç][aã]o (bovin|su[ií]n|av[ií]c|equin|animal|para (gado|frango|porco|vaca|bezerr))|sal mineral|herbicid|fungicid|inseticida agr|acaricid|nematicid|defensiv|inoculant|vacina (animal|aftosa|bovin|su[ií]n|av[ií]c|veterin)|s[eê]men|embri[aã]o|pinto de|pintinho|frango de corte|leit[aã]o|bezerr|matriz|reprodutor|silagem|feno|forrag|pastag|gado|soja|milho|trigo|arroz em casca|algod[aã]o|cana|caf[eé] em (coco|gr[aã]o)|tratamento de sementes/,
+  agro:/agr[ií]c|agropecu|agron|bovin|su[ií]n|av[ií]c|ovin|caprin|equin|lavoura|pecu[aá]r|rural|semente|muda de|mudas|fertiliz|adubo|\bnpk\b|ureia|calc[aá]rio|ra[cç][aã]o (bovin|su[ií]n|av[ií]c|equin|animal|de (aves|frango|peixe|camar[aã]o|gado|porco|vaca|bezerr|codorn|abelha)|para (aves|gado|frango|porco|vaca|bezerr|peixe|camar[aã]o|codorn|abelha))|\baves\b|avicult|piscicult|aquicult|carcinicult|apicult|frango|galinha|poedeira|codorn|tilapia|camar[aã]o|abelha|sal mineral|herbicid|fungicid|inseticida agr|acaricid|nematicid|defensiv|inoculant|vacina (animal|aftosa|bovin|su[ií]n|av[ií]c|veterin)|s[eê]men|embri[aã]o|pinto de|pintinho|frango de corte|leit[aã]o|bezerr|matriz|reprodutor|silagem|feno|forrag|pastag|gado|soja|milho|trigo|arroz em casca|algod[aã]o|cana|caf[eé] em (coco|gr[aã]o)|tratamento de sementes/,
   pcd:/pcd|defici|braille|acessib|surd|auditiv|cadeira de rodas|muleta|bengala|andador|[óo]rtese|pr[óo]tese|implante coclear|amputad|mobilidade reduzida/
 };
 function cmMarcadorAnexo(hit,dn){
@@ -52434,6 +52434,10 @@ function cmRegraFirme(k,hit,desc){
   if(/^9619/.test(k) && /absorvent|coletor menstrual|calcinha absorvent|tamp[aã]o|protetor diario|menstrua/.test(d) && !/fralda|geriatr|incontin/.test(d))
     return {ncm:'9619.00.00',desc:'Absorventes, tampões e coletores menstruais',trat:'zero',fonte:'Art. 146 LC 214 — cuidados básicos à saúde menstrual (alíquota ZERO)',seg:'comercio'};
   /* medicamentos: −60% firme (art. 129/130); a alíquota ZERO vale só para a lista definida em ato do Executivo (Anexo XIV revogado pela LC 227) */
+  /* ★ v872 · o NCM 3003/3004 É medicamento por definição (capítulo 30): a descrição não precisa dizer "medicamento" —
+     "Amoxicilina 500mg 21 cápsulas" ia para revisão por causa da trava de descrição. Regra firme. */
+  if(/^(3003|3004)/.test(k) && hit && hit.trat==='red60')
+    return {ncm:hit.ncm,desc:hit.desc,trat:'red60',fonte:'Redução 60% — medicamentos (arts. 129-130 LC 214; NCM 3003/3004 = medicamento por definição). Alíquota ZERO só para a lista por ato do Executivo: confira o princípio ativo',seg:'comercio'};
   if(/^(3003|3004)/.test(k) && hit && hit.trat==='zero' && /anexo xiv revogado/i.test(String(hit.fonte||'')))
     return {ncm:hit.ncm,desc:hit.desc,trat:'red60',fonte:'Redução 60% — medicamentos (arts. 129-130 LC 214). Alíquota ZERO só para a lista por ato do Executivo (Anexo XIV revogado pela LC 227/2026): confira o princípio ativo',seg:'comercio'};
   /* máquinas e implementos agrícolas (tratores 8701, semeadores/colheitadeiras 8432-8436) NÃO são insumos do Anexo IX: regra geral firme */
@@ -52723,6 +52727,7 @@ function cmProcessar(rows){
   if(iNCM<0){ if(typeof mostrarToast==='function')mostrarToast('Não achei coluna de NCM. Cabeçalhos: NCM, Descrição','error'); return; }
   var itens=[];
   for(var r=1;r<rows.length;r++){ var row=rows[r]; if(!row||!row.length)continue;
+    if(!row.some(function(c){ return c!=null && String(c).trim()!==''; })) continue;   /* v872: linha em branco no meio da planilha não é item */
     var _it={cod:iCod>=0?row[iCod]:('#'+r), desc:iDesc>=0?row[iDesc]:'', ncm:row[iNCM]};
     _it.x={preco:iPreco>=0?row[iPreco]:null, custo:iCusto>=0?row[iCusto]:null, ipi:iIPI>=0?row[iIPI]:null, icms:iIcms>=0?row[iIcms]:null, cstIcms:iCstIcms>=0?row[iCstIcms]:'', cstPis:iCstPis>=0?row[iCstPis]:'',
            custoNovo:iCustoNovo>=0?row[iCustoNovo]:null, varCusto:iVarCusto>=0?row[iVarCusto]:null, grupo:iGrupo>=0?String(row[iGrupo]==null?'':row[iGrupo]).trim():''};
@@ -52764,15 +52769,29 @@ function cmProcessar(rows){
       it.status='sem_ncm'; st.semNCM++; st.revisar++; return;
     }
     if(k.length<4){ it.status='inval'; it.trat='cheia'; it.fonte='NCM em branco ou zerado ("'+String(it.ncm==null?'':it.ncm)+'") — informar o NCM no cadastro'; st.ncmInval++; st.revisar++; return; }
+    /* ★ v872 · NCM com 7 dígitos: quase sempre é zero à esquerda perdido pelo Excel ("4012010" = 04012010). Antes casava
+       como prefixo e saía "confirmado" sem aviso; agora vai a revisão com a(s) sugestão(ões) que existem na tabela oficial. */
+    var _nota7='';
+    if(k.length===7){
+      var _c7=[], _o7=window.LH_NCM_OFICIAL;
+      [['0'+k,'à esquerda'], [k+'0','à direita']].forEach(function(p){ var c=p[0]; if(_o7 && _o7.porCodigo && _o7.porCodigo(c)) _c7.push({k:c, lado:p[1], fmt:c.replace(/^(\d{4})(\d{2})(\d{2})$/,'$1.$2.$3'), desc:String(_o7.contexto?_o7.contexto(c):(_o7.porCodigo(c)[1]||'')).slice(0,60)}); });
+      if(_c7.length===1){   /* um só candidato existe: restaura e segue, avisando (o Excel derruba o zero de 01 a 09 — leite, arroz, carne — e às vezes o final) */
+        k=_c7[0].k; it.ncm=k; it.ncm_corrigido=_c7[0].fmt; st.ncm7=(st.ncm7||0)+1;
+        _nota7='NCM lido como '+_c7[0].fmt+' (planilha trazia 7 dígitos: zero '+_c7[0].lado+' restaurado — confira) · ';
+      } else {
+        it.status='validar'; it.trat='cheia'; it.fonte='NCM com 7 dígitos ("'+k+'") — provável zero à esquerda perdido na planilha'+(_c7.length?': pode ser '+_c7.map(function(c){ return c.fmt+' ('+c.desc+')'; }).join(' ou '):' (nem 0'+k+' nem '+k+'0 existem na tabela oficial)')+' — corrija no cadastro';
+        st.ncmInval++; st.revisar++; return;
+      }
+    }
     grupos[k]=(grupos[k]||0)+1;
     var t=cmBuscaTrat(it.ncm,it.desc);
     if(!t){
       if(cmNcmValido(k)){ it.status='ok_default'; it.trat='cheia'; it.conf='media';
-        it.fonte='Art. 14 LC 214 — regra geral (NCM válido na tabela oficial, não consta dos regimes diferenciados)';
+        it.fonte=_nota7+'Art. 14 LC 214 — regra geral (NCM válido na tabela oficial, não consta dos regimes diferenciados)';
         st.classif++; st.defaultCheia++; }
       else { it.status='validar'; it.trat='cheia'; it.fonte='NCM não localizado na tabela oficial — requer validação'; st.revisar++;
         var _sg=cmSugereNCM(k,it.desc); if(_sg){ it.ncm_sug=_sg.fmt; it.fonte+=' — provável erro de digitação: '+_sg.fmt+' ('+_sg.desc+')'; } }
-    } else { it.status='ok'; it.trat=t.trat; it.conf='alta'; it.fonte=t.fonte||''; st.classif++;
+    } else { it.status='ok'; it.trat=t.trat; it.conf='alta'; it.fonte=_nota7+(t.fonte||''); st.classif++;
       if(t.trat==='zero'||t.trat==='red60'||t.trat==='red30'||t.trat==='imune'||t.trat==='difer')st.benef++;
       if(t.trat==='cheia+IS')st.is++; }
   }
@@ -58484,7 +58503,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
  /* ── a ficha vinda do Classificador (só itens prontos) ── */
  function fichas(cfgLista){
    var d=window.CM_ULTIMO; if(!d||!d.itens) return {ok:[], fora:[]};
-   var ok=[], fora=[];
+   var ok=[], fora=[], temColPreco=!!(d.st && d.st.colsPreco && d.st.colsPreco.length);
    d.itens.forEach(function(it){
      var s=(typeof cmStatusFinal==='function')?cmStatusFinal(it):'';
      var x=it.x||{};
@@ -58496,6 +58515,9 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      /* bebida/cigarro: a base diz "adrem" por causa do IS, mas o IBS/CBS é percentual (integral) — precifica como cheia + IS marcado */
      if(it.trat==='adrem'){ var _mp=(typeof cmCclassPorFonte==='function')?cmCclassPorFonte(it.trat,it.fonte||''):['','']; if(String(_mp[1]).replace('*','')==='000001' && s!=='REVISAO_NCM' && s!=='PENDENTE'){ f.trat='cheia+IS'; ok.push(f); return; } f.motivo='regime ad rem (R$/unidade), não percentual — combustível'; fora.push(f); return; }
      if(!prontos[s]){ f.motivo=(s==='REVISAO_NCM'||s==='PENDENTE')?'NCM a validar no cadastro':(/regime espec/i.test(f.fonte)?'regime específico (base e alíquota próprias) — não se precifica pela alíquota geral':'em revisão tributária — resolva no Classificador'); fora.push(f); return; }
+     /* ★ v872 · a planilha TEM coluna de preço e este item veio sem preço (vazio ou zero): não há o que reprecificar — antes saía por R$ 100 */
+     if(temColPreco && !(f.preco>0)){ f.motivo='sem preço no cadastro (coluna de preço vazia ou zero)'; fora.push(f); return; }
+     f.custoMaior=!!(f.custo>0 && f.preco>0 && f.custo>f.preco);
      ok.push(f);
    });
    return {ok:ok, fora:fora};
@@ -58570,9 +58592,12 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    /* v871: quem teve custo novo · o preço de hoje com o custo novo (só custo) · serviço puro fora da variação */
    var temVar=rows.some(function(r){ return r.c.custoNovo!=null; }), nVar=0, somaCH=0, somaCN=0, somaSoCusto=0, somaHojeVar=0, servPuro=0;
    var pediuVar=(cfg.varCusto!=null&&cfg.varCusto!==0)||Object.keys(cfg.varGrupo||{}).length>0||F.ok.some(function(f){ return f.custoNovo!=null||f.varCusto!=null; });
-   rows.forEach(function(r){ if(r.c.custoNovo!=null){ nVar++; somaCH+=r.f.custo; somaCN+=r.c.custoNovo; somaSoCusto+=r.c.soCusto.finalCli; somaHojeVar+=r.c.anos[2033].hojeCli; } if(pediuVar && r.f.tipo==='S' && !(r.f.custo>0)) servPuro++; });
+   var nInv=0, nCustoMaior=0;
+   rows.forEach(function(r){ if(r.c.custoNovo!=null){ nVar++; somaCH+=r.f.custo; somaCN+=r.c.custoNovo; somaSoCusto+=r.c.soCusto.finalCli; somaHojeVar+=r.c.anos[2033].hojeCli; } if(pediuVar && r.f.tipo==='S' && !(r.f.custo>0)) servPuro++;
+     if(r.f.custo>0 && ((r.f.custoNovo!=null && !(r.f.custoNovo>0)) || (r.f.varCusto!=null && r.f.varCusto<=-100))) nInv++;   /* v872: custo novo ≤ 0 ou variação ≤ −100% não é custo — ignorado, e dito */
+     if(r.f.custoMaior) nCustoMaior++; });
    var varCustoMed=somaCH?((somaCN-somaCH)/somaCH*100):0, varSoCusto=somaHojeVar?((somaSoCusto-somaHojeVar)/somaHojeVar*100):0;
-   var _vn=document.getElementById('pm_var_n'); if(_vn) _vn.textContent=temVar?('— '+nVar.toLocaleString('pt-BR')+' itens com custo novo'+(servPuro?' · '+servPuro+' serviço'+(servPuro===1?'':'s')+' puro'+(servPuro===1?'':'s')+' fora (sem custo)':'')):(pediuVar&&servPuro?'— '+servPuro+' serviço'+(servPuro===1?'':'s')+' puro'+(servPuro===1?'':'s')+' fora (sem custo)':'');
+   var _vn=document.getElementById('pm_var_n'); if(_vn) _vn.textContent=(temVar?('— '+nVar.toLocaleString('pt-BR')+' itens com custo novo'+(servPuro?' · '+servPuro+' serviço'+(servPuro===1?'':'s')+' puro'+(servPuro===1?'':'s')+' fora (sem custo)':'')):(pediuVar&&servPuro?'— '+servPuro+' serviço'+(servPuro===1?'':'s')+' puro'+(servPuro===1?'':'s')+' fora (sem custo)':''))+(nInv?' · '+nInv+' custo'+(nInv===1?'':'s')+' novo'+(nInv===1?'':'s')+' inválido'+(nInv===1?'':'s')+' (≤ 0 ou variação ≤ −100%) ignorado'+(nInv===1?'':'s'):'');
    var h='<div class="input-card"><h3 style="color:var(--gold)">Tabela de preços 2027-33 — '+ESTR[cfg.estr]+'</h3>';
    h+='<div style="color:var(--text2);font-size:.88rem;margin-bottom:12px">'+n.toLocaleString('pt-BR')+' itens precificados · regime '+({presumido:'Lucro Presumido',real:'Lucro Real',simples:'Simples Nacional'}[cfg.regime]||cfg.regime)+' · '+(cfg.b2b?'vende para PJ':'vende para consumidor')+(temPreco?'':' · <b>sem coluna de preço: resultado por R$ 100</b>')+'</div>';
    h+='<div class="kpi-grid">';
@@ -58593,7 +58618,8 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      ['De onde vêm os números','Alíquota nova por item: do tratamento que o Classificador deu (coluna Classificação; o fundamento legal está no tooltip). Curva da transição: a mesma da nota simulada (CBS 8,7% + IBS 0,1% em 2027-28; IBS sobe 10 pontos ao ano de 2029 a 2032 enquanto ICMS/ISS caem 1/10; 26,5% de referência em 2033). Imposto velho: '+(cfg.regime==='simples'?'Simples Nacional, dentro do DAS.':('ICMS '+(estimados?'do próprio cadastro em '+(n-estimados)+' itens e a média informada ('+pct(cfg.icmsMedio)+') em '+estimados+' itens (marcados "est.")':'do próprio cadastro (coluna ALIQUOTA_ICMS)')+'; PIS/COFINS pelo CST do item ou pelo regime ('+pct(PIS_REGIME[cfg.regime])+')'+(st?'; '+st+' itens com ICMS-ST (CSOSN 500/CST 060): o ICMS foi pago na compra mas está dentro do preço — entra pelo cadastro ou pela média, marcado "ST"':'')+'.'))],
      ['Prateleira × líquido para PJ','O preço final é um só; o que muda é quem compra. O consumidor paga o preço de prateleira (com IBS/CBS). A empresa do regime regular paga o mesmo número, mas recupera o IBS/CBS como crédito — o custo líquido dela é a coluna "líquido PJ" (preço sem IBS/CBS). Por isso não existe "preço médio B2B/B2C" na Reforma: são duas leituras do mesmo preço.'+(nIPI?' IPI: '+nIPI+' itens têm IPI por fora hoje; ele '+(cfg.zfm?'continua (Zona Franca)':'zera a partir de 2027 (art. 126 ADCT), e a variação já desconta isso')+'.':'')+(nIS?' Imposto Seletivo: '+nIS+' itens estão marcados "+ IS" — ele NÃO está somado (é por produto, às vezes por unidade); confira na calculadora do IS.':'')],
      (nCusto?['Custo e crédito de compra (estimativa)','Em '+nCusto+' itens há custo. O custo de '+(cfg.regime==='real'?'hoje já é líquido de PIS/COFINS (Lucro Real credita): o custo não muda':'hoje carrega PIS/COFINS cumulativo que você não recupera ('+pct((cfg.pisEmb!=null?cfg.pisEmb:3.65))+', ajustável no topo): a partir de 2027 isso vira crédito de IBS/CBS e o custo cai')+'. O ICMS-ST não é descontado do custo (já está por dentro do preço). As estratégias "manter a margem %" e "manter o markup" usam esse custo do ano — é a conta que mostra quem pode BAIXAR preço em 2033 e ganhar mercado.']:null),
-     ((temVar||pediuVar)?['Custo de compra novo (reprecificar, não formar preço)', (temVar?('Em '+nVar+' itens o custo de compra mudou ('+(varCustoMed>0?'+':'')+pct(varCustoMed)+' em média) — pela coluna CUSTO_NOVO/VAR_CUSTO da planilha, pelo % do grupo ou pelo % geral, nessa ordem. A tabela passa a ter três leituras: <b>hoje c/ custo novo</b> (só o custo, imposto de hoje), <b>2033 só imposto</b> (custo de hoje, imposto novo) e <b>2033 prateleira</b> (os dois). '):'Você pediu variação de custo, mas nenhum item da tabela tem custo de compra na planilha — nada mudou além do imposto. ')+'Na estratégia "manter o que fica com você" a variação líquida do custo passa inteira ao preço; em "manter o preço" ela come o lucro; em margem % e markup ela entra pelo custo do ano. Serviço puro (honorário, hora — sem coluna CUSTO) fica de fora: nele só o imposto muda'+(servPuro?' — '+servPuro+' neste arquivo':'')+'. Custo novo da mesma natureza do custo de hoje (líquido do que você já credita).']:null),
+     ((temVar||pediuVar)?['Custo de compra novo (reprecificar, não formar preço)', (temVar?('Em '+nVar+' itens o custo de compra mudou ('+(varCustoMed>0?'+':'')+pct(varCustoMed)+' em média) — pela coluna CUSTO_NOVO/VAR_CUSTO da planilha, pelo % do grupo ou pelo % geral, nessa ordem. A tabela passa a ter três leituras: <b>hoje c/ custo novo</b> (só o custo, imposto de hoje), <b>2033 só imposto</b> (custo de hoje, imposto novo) e <b>2033 prateleira</b> (os dois). '):'Você pediu variação de custo, mas nenhum item da tabela tem custo de compra na planilha — nada mudou além do imposto. ')+'Na estratégia "manter o que fica com você" a variação líquida do custo passa inteira ao preço; em "manter o preço" ela come o lucro; em margem % e markup ela entra pelo custo do ano. Serviço puro (honorário, hora — sem coluna CUSTO) fica de fora: nele só o imposto muda'+(servPuro?' — '+servPuro+' neste arquivo':'')+'. Custo novo da mesma natureza do custo de hoje (líquido do que você já credita).'+(nInv?' <b>'+nInv+' custo'+(nInv===1?'':'s')+' novo'+(nInv===1?'':'s')+' inválido'+(nInv===1?'':'s')+'</b> (zero, negativo ou variação de −100% ou mais): não é custo, foi ignorado — o item seguiu só pelo imposto.':'')]:null),
+     (nCustoMaior?['Custo maior que o preço em '+nCustoMaior+' item'+(nCustoMaior===1?'':'s'),'Nesses itens o custo de compra do cadastro é maior que o preço de venda: ou é erro de cadastro, ou é venda abaixo do custo (promoção, isca). A ferramenta reprecifica do mesmo jeito — o lucro sai negativo e a linha leva o selo "custo > preço". Confira no ERP antes de publicar.']:null),
      [F.fora.length.toLocaleString('pt-BR')+' itens não precificados', F.fora.length?('Não é falha da precificação: '+(function(){ var m={}; F.fora.forEach(function(f){ m[f.motivo]=(m[f.motivo]||0)+1; }); return Object.keys(m).map(function(k){ return m[k]+' '+k; }).join('; '); })()+'. Resolva no Classificador em Massa e volte aqui — eles entram na tabela sem reimportar.'):'Todos os itens do catálogo entraram na tabela.']];
    h+='<style>#pm-leitura .cml-t{cursor:pointer;margin-top:8px}#pm-leitura .cml-t:first-child{margin-top:0}#pm-leitura .cml-x{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}#pm-leitura .cml-t.aberto .cml-x{display:block;-webkit-line-clamp:unset}#pm-leitura .cml-m{color:var(--gold);font-size:.78rem;font-weight:700;margin-left:4px;white-space:nowrap}</style>';
    h+='<div id="pm-leitura" style="background:rgba(201,162,39,.07);border:1px solid rgba(201,162,39,.35);border-radius:10px;padding:12px 16px;font-size:.85rem;color:#e6e0cc;line-height:1.6;margin-top:10px">';
@@ -58621,7 +58647,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      h+='<tr><td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);white-space:normal;min-width:220px">'+String(r.f.desc||'').slice(0,60)+'<span style="display:block;font-size:.68rem;color:var(--text2)">'+r.f.cod+' · '+(r.f.nbs?'NBS '+r.f.nbs:'NCM '+r.f.ncm)+'</span></td>';
      h+='<td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05)" title="'+String(r.f.fonte||'').replace(/"/g,'&quot;').slice(0,200)+'">'+(CM_TRAT_LABEL[r.f.trat]||r.f.trat)+(y33.is?' <span style="background:rgba(224,90,77,.18);color:#e05a4d;border:1px solid rgba(224,90,77,.4);padding:0 6px;border-radius:8px;font-size:.66rem;font-weight:800" title="Imposto Seletivo não somado — por produto/unidade; confira na calculadora do IS">+ IS</span>':'')+'<span style="display:block;font-family:ui-monospace,monospace;font-size:.68rem;color:var(--text2)">'+mp[0]+' · '+String(mp[1]).replace('*','')+' · '+pct(cmAliqAno(r.f.trat,2033))+' em 2033</span></td>';
      h+='<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05)">'+pct(r.c.icmsUsado)+(r.f.st?' <span style="font-size:.66rem;color:#9fc" title="ICMS-ST: pago na compra, dentro do preço">ST</span>':'')+(r.c.icmsEstimado?' <span style="font-size:.66rem;color:#e8b93a">est.</span>':'')+'</td>';
-     if(temCusto) h+='<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05)">'+(y33.custoHoje!=null?fmt(y33.custoHoje)+(r.c.custoNovo!=null?' → <b style="color:'+(r.c.custoNovo>y33.custoHoje?'#e05a4d':'#16c47c')+'">'+fmt(r.c.custoNovo)+'</b>':(temVar?' → <span style="color:var(--text2)">igual</span>':''))+' → '+fmt(y33.custo):'—')+'</td>';
+     if(temCusto) h+='<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05)">'+(r.f.custoMaior?'<span style="background:rgba(224,90,77,.18);color:#e05a4d;border:1px solid rgba(224,90,77,.4);padding:0 6px;border-radius:8px;font-size:.66rem;font-weight:800;margin-right:4px" title="custo de compra maior que o preço de venda: erro de cadastro ou venda abaixo do custo">custo &gt; preço</span>':'')+(y33.custoHoje!=null?fmt(y33.custoHoje)+(r.c.custoNovo!=null?' → <b style="color:'+(r.c.custoNovo>y33.custoHoje?'#e05a4d':'#16c47c')+'">'+fmt(r.c.custoNovo)+'</b>':(temVar?' → <span style="color:var(--text2)">igual</span>':''))+' → '+fmt(y33.custo):'—')+'</td>';
      var soC=function(){ if(!temVar) return ''; var o=r.c.soCusto; if(!o) return '<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);color:var(--text2)" title="custo não mudou neste item'+(r.f.tipo==='S'&&!(r.f.custo>0)?' — serviço puro, sem custo de compra na planilha':'')+'">'+fmt(y33.hojeCli)+'</td>'; var dc=o.finalCli-y33.hojeCli; return '<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);color:'+(dc>0.005?'#e0a83a':dc<-0.005?'#16c47c':'inherit')+'" title="preço de hoje reprecificado só pelo custo novo (imposto de hoje) · custo '+fmt(o.custoHoje)+' → '+fmt(o.custoNovo)+' · fica '+fmt(o.fica)+(o.lucro!=null?' · lucro '+fmt(o.lucro):'')+'">'+fmt(cfg.estr==='preco'?o.fica:o.finalCli)+'</td>'; };
      var soI=function(){ if(!temVar) return ''; var o=r.c.soImposto33; if(!o) return '<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);color:var(--text2)">'+fmt(cfg.estr==='preco'?y33.fica:y33.finalCli)+'</td>'; return '<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05)" title="2033 com o custo de hoje: só o imposto mudou · por dentro '+fmt(o.base)+' + IBS/CBS '+fmt(o.fora)+' = '+fmt(o.finalCli)+' · fica '+fmt(o.fica)+'">'+fmt(cfg.estr==='preco'?o.fica:o.finalCli)+'</td>'; };
      var fora=function(a){ var o=y[a]; return '<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);color:#e0a83a" title="IBS/CBS destacado por fora em '+a+' ('+pct(o.tFora*100)+' sobre '+fmt(o.base)+')'+(o.velho?' · ainda por dentro: ICMS/ISS '+fmt(o.velho):'')+'">'+fmt(o.fora)+'</td>'; };
