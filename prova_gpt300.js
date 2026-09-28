@@ -26,7 +26,13 @@ const ROWS = [H,
   ['2007', 'Feijão vendido abaixo do custo', '07133329', '', '8', '11', '', '', 'CESTA', '7', '000', '06'],
   ['2008', 'Custo novo negativo', '34022000', '', '18.9', '10', '-25', '', 'LIMPEZA', '18', '000', '01'],
   ['2009', 'Variação de custo -150', '34025011', '', '8.9', '5', '', '-150', 'LIMPEZA', '18', '000', '01'],
-  ['1001', 'Arroz tipo 1 5kg', '10063021', '', '27.9', '17.78', '', '-10', 'CESTA', '12', '000', '06']];
+  ['1001', 'Arroz tipo 1 5kg', '10063021', '', '27.9', '17.78', '', '-10', 'CESTA', '12', '000', '06'],
+  /* v873 · o catálogo de 2.500 (tabela oficial) pegou mais estes */
+  ['3001', 'Item com letras no NCM', 'ABC02010', '', '25.9', '15', '', '', 'COMUM', '18', '000', '01'],
+  ['3002', 'Fresadora CNC', '847621', '', '98000', '61000', '', '', 'MAQUINAS', '18', '000', '01'],
+  ['3003', 'Batatas-doces', '07142000', '', '6.9', '3.1', '', '', 'HORTIFRUTI', '7', '000', '06'],
+  ['3004', 'Fios utilizados para limpar os espaços interdentais (fio dental)', '33062000', '', '9.9', '5', '', '', 'HIGIENE', '18', '000', '01'],
+  ['3005', 'Amitraz; cipermetrina', '30049046', '', '45', '28', '', '', 'FARMACIA', '18', '000', '04']];
 const SEM_PRECO = [['CODIGO', 'DESCRICAO', 'NCM'], ['A1', 'ARROZ TIPO 1 5KG', '10063021']];
 function rodar(html) {
   return new Promise((ok) => {
@@ -69,7 +75,13 @@ function rodar(html) {
     ex('leite com NCM "4012010" (zero à esquerda perdido) → lido como 0401.20.10, cesta básica zero', r.it['1017'].trat === 'zero' && r.it['1017'].corr === '0401.20.10' && /zero à esquerda restaurado/.test(r.it['1017'].fonte), r.it['1017'].trat + ' ' + r.it['1017'].corr + ' ' + r.it['1017'].fonte.slice(0, 90));
     ex('parafuso "7318150" (zero à direita perdido) → lido como 7318.15.00, integral, com aviso', r.it['2025'].trat === 'cheia' && r.it['2025'].corr === '7318.15.00' && /zero à direita restaurado/.test(r.it['2025'].fonte), r.it['2025'].corr + ' ' + r.it['2025'].fonte.slice(0, 90));
     ex('"1234567" (nenhum candidato na tabela oficial) → revisão com o motivo', r.it['2001'].status === 'REVISAO_NCM' && /7 dígitos/.test(r.it['2001'].fonte) && /nem 01234567 nem 12345670/.test(r.it['2001'].fonte), r.it['2001'].status + ' ' + r.it['2001'].fonte.slice(0, 120));
-    ex('a planilha tem 10 linhas de dados + 1 em branco: 10 itens (a linha vazia não é item)', r.n === 10, String(r.n));
+    ex('a planilha tem 15 linhas de dados + 1 em branco: 15 itens (a linha vazia não é item)', r.n === 15, String(r.n));
+    console.log('\n-- v873: o que o catálogo de 2.500 linhas (tabela oficial) pegou --');
+    ex('NCM com letras ("ABC02010") → revisão, não carne bovina (0201) pelos dígitos que sobram', r.it['3001'].status === 'REVISAO_NCM' && /NCM com letras/.test(r.it['3001'].fonte), r.it['3001'].status + ' ' + r.it['3001'].fonte.slice(0, 80));
+    ex('NCM com 6 dígitos ("847621") → classifica pelo prefixo e avisa na fonte', r.it['3002'].status === 'REGRA_GERAL' && /6 dígitos/.test(r.it['3002'].fonte), r.it['3002'].status + ' ' + r.it['3002'].fonte.slice(0, 80));
+    ex('batata-doce (0714.20.00) = −60% hortícolas (o NCM já é o produto; não pede a palavra "alimento")', r.it['3003'].trat === 'red60' && r.it['3003'].status === 'BENEFICIO_IDENTIFICADO', r.it['3003'].trat + ' ' + r.it['3003'].status);
+    ex('fio dental (3306.20.00) = −60% higiene pessoal básica', r.it['3004'].trat === 'red60' && r.it['3004'].status === 'BENEFICIO_IDENTIFICADO', r.it['3004'].trat + ' ' + r.it['3004'].status);
+    ex('amitraz (3004.90.46, base "zero só na lista") = −60% medicamento, não integral', r.it['3005'].trat === 'red60' && r.it['3005'].status === 'BENEFICIO_IDENTIFICADO', r.it['3005'].trat + ' ' + r.it['3005'].status);
     ex('contador st.ncm7 = 2 (leite e parafuso restaurados)', r.st.ncm7 === 2, String(r.st.ncm7));
     console.log('\n-- precificação --');
     ex('preço zero com coluna de preço presente → fora: "sem preço no cadastro"', /sem preço no cadastro/.test(r.fora['2006'] || ''), r.fora['2006'] || ('precificado a ' + JSON.stringify(r.rows['2006'])));
@@ -87,12 +99,14 @@ function rodar(html) {
     if (APP.split(alvo).length !== 2) throw new Error('sabotagem "' + nome + '" não achou o alvo');
     const s = await rodar(APP.replace(alvo, troca)); ex(nome, !s.erro && teste(s), s.erro);
   };
-  await sab('regra firme de 3003/3004 removida → amoxicilina volta à revisão → reprova', "if(/^(3003|3004)/.test(k) && hit && hit.trat==='red60')", "if(false)",
+  await sab('regra firme de 3003/3004 removida → amoxicilina volta à revisão → reprova', "if(/^(3003|3004)/.test(k) && hit && (hit.trat==='red60' ||", "if(false && (",
     (s) => s.it['1063'].status !== 'BENEFICIO_IDENTIFICADO');
   await sab('tratamento de 7 dígitos removido → leite "4012010" casa com pneus (4012) → reprova', 'if(k.length===7){', 'if(false){',
     (s) => s.it['1017'].trat !== 'zero' || !s.it['1017'].corr);
-  await sab('linha em branco volta a ser item → 11 itens → reprova', "if(!row.some(function(c){ return c!=null && String(c).trim()!==''; })) continue;", "",
-    (s) => s.n !== 10);
+  await sab('linha em branco volta a ser item → 16 itens → reprova', "if(!row.some(function(c){ return c!=null && String(c).trim()!==''; })) continue;", "",
+    (s) => s.n !== 15);
+  await sab('letras no NCM deixam de ser barradas → "ABC02010" vira carne bovina (0201) → reprova', "if(/[a-z]/i.test(String(it.ncm||''))){", "if(false){",
+    (s) => s.it['3001'].status !== 'REVISAO_NCM');
   await sab('preço zero volta a sair por R$ 100 → reprova', "if(temColPreco && !(f.preco>0)){ f.motivo='sem preço no cadastro (coluna de preço vazia ou zero)'; fora.push(f); return; }", "",
     (s) => !s.fora['2006']);
   console.log(falhou ? '\nRESULTADO: ' + falhou + ' reprovada(s)' : '\nRESULTADO: tudo aprovado');

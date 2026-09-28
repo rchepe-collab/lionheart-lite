@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v872';</script>
+<body><script>window.LH_VERSAO='v873';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -52436,7 +52436,7 @@ function cmRegraFirme(k,hit,desc){
   /* medicamentos: −60% firme (art. 129/130); a alíquota ZERO vale só para a lista definida em ato do Executivo (Anexo XIV revogado pela LC 227) */
   /* ★ v872 · o NCM 3003/3004 É medicamento por definição (capítulo 30): a descrição não precisa dizer "medicamento" —
      "Amoxicilina 500mg 21 cápsulas" ia para revisão por causa da trava de descrição. Regra firme. */
-  if(/^(3003|3004)/.test(k) && hit && hit.trat==='red60')
+  if(/^(3003|3004)/.test(k) && hit && (hit.trat==='red60' || (hit.trat==='zero' && /lista|anexo/i.test(String(hit.fonte||'')) && !/anexo xiv revogado/i.test(String(hit.fonte||'')))))
     return {ncm:hit.ncm,desc:hit.desc,trat:'red60',fonte:'Redução 60% — medicamentos (arts. 129-130 LC 214; NCM 3003/3004 = medicamento por definição). Alíquota ZERO só para a lista por ato do Executivo: confira o princípio ativo',seg:'comercio'};
   if(/^(3003|3004)/.test(k) && hit && hit.trat==='zero' && /anexo xiv revogado/i.test(String(hit.fonte||'')))
     return {ncm:hit.ncm,desc:hit.desc,trat:'red60',fonte:'Redução 60% — medicamentos (arts. 129-130 LC 214). Alíquota ZERO só para a lista por ato do Executivo (Anexo XIV revogado pela LC 227/2026): confira o princípio ativo',seg:'comercio'};
@@ -52621,10 +52621,10 @@ function cmBuscaTrat(ncm,desc){
       return hit;
     }
     var fonteL=String(hit.fonte||'').toLowerCase()+' '+String(hit.desc||'').toLowerCase();
-    var faixaAlimentar=/anexo i\b|anexo vii\b|anexo xv|cesta|hortifr|aliment|frutas|ovos|carne|arroz|feij[ãa]o/.test(fonteL);
+    var faixaAlimentar=/anexo i\b|anexo vii\b|anexo xv|cesta|hortifr|hort[ií]c|legum|verdur|tub[ée]rcul|ra[ií]z|aliment|frutas|ovos|carne|arroz|feij[ãa]o/.test(fonteL);   /* v873: hortícolas/raízes são o próprio NCM (batata-doce, mandioca) */
     var precisaDesc=(porFaixa&&!faixaAlimentar)||/pcd|acessibilidade|braille|defici|cir[úu]rgic|hospitalar|medicament|farmac|ortop[ée]dic|prótese|dispositivo m[ée]dic|higiene (bucal|pessoal|b[áa]sica)|corretiv|oft[áa]lmic/.test(fonteL);
     if(precisaDesc){
-      var confirma=/pcd|defici|braille|acessibil|cir[úu]rgic|hospitalar|medicament|f[áa]rmac|ortop[ée]dic|pr[óo]tese|est[ée]ril|paciente|enfermagem|ambulatori|creme dental|escova dental|sabonete|papel higi[êe]nic|corretiv|de grau|oft[áa]lmic|auditiv|cadeira de rodas|muleta|bengala|andador|[óo]rtese|implante|livro|jornal|revista|peri[óo]dic/.test(d)
+      var confirma=/pcd|defici|braille|acessibil|cir[úu]rgic|hospitalar|medicament|f[áa]rmac|ortop[ée]dic|pr[óo]tese|est[ée]ril|paciente|enfermagem|ambulatori|creme dental|escova dental|fio dental|interdent|sabonete|papel higi[êe]nic|corretiv|de grau|oft[áa]lmic|auditiv|cadeira de rodas|muleta|bengala|andador|[óo]rtese|implante|livro|jornal|revista|peri[óo]dic|odontol|raios x|radiol|tomograf|ultrasso|ressonanc|estetosc|esfigmoman|desfibril|marca-?passo|hemodi[áa]lise|nebuliz|inalador/.test(d)
                    || (/anexo ix|agropecu|insumo/.test(fonteL) && cmMarcadorAnexo({fonte:'Anexo IX'},lhNorm(d)));
       if(!confirma){
         return {ncm:hit.ncm,desc:hit.desc,trat:'cheia',fonte:'NCM tem benefício condicionado à descrição ('+(hit.fonte||'')+') — descrição do produto NÃO confirma; aplicado art.14 (CONFERIR)',seg:hit.seg,st:'conferir',origem:'trava_desc'};
@@ -52769,6 +52769,10 @@ function cmProcessar(rows){
       it.status='sem_ncm'; st.semNCM++; st.revisar++; return;
     }
     if(k.length<4){ it.status='inval'; it.trat='cheia'; it.fonte='NCM em branco ou zerado ("'+String(it.ncm==null?'':it.ncm)+'") — informar o NCM no cadastro'; st.ncmInval++; st.revisar++; return; }
+    /* ★ v873 · NCM com letras ("ABC12345"): os dígitos que sobram casariam com outro produto — não é NCM, é revisão */
+    if(/[a-z]/i.test(String(it.ncm||''))){ it.status='validar'; it.trat='cheia'; it.fonte='NCM com letras ("'+String(it.ncm).slice(0,20)+'") — não é um código NCM; corrija no cadastro'; st.ncmInval++; st.revisar++; return; }
+    /* ★ v873 · NCM de 6 dígitos = subposição (sem o item): classifica pelo prefixo, mas avisa */
+    var _nota6=(k.length===6)?'NCM com 6 dígitos ("'+k+'" = subposição, sem o item) — classificado pelo prefixo; complete os 8 dígitos no cadastro · ':'';
     /* ★ v872 · NCM com 7 dígitos: quase sempre é zero à esquerda perdido pelo Excel ("4012010" = 04012010). Antes casava
        como prefixo e saía "confirmado" sem aviso; agora vai a revisão com a(s) sugestão(ões) que existem na tabela oficial. */
     var _nota7='';
@@ -52787,11 +52791,11 @@ function cmProcessar(rows){
     var t=cmBuscaTrat(it.ncm,it.desc);
     if(!t){
       if(cmNcmValido(k)){ it.status='ok_default'; it.trat='cheia'; it.conf='media';
-        it.fonte=_nota7+'Art. 14 LC 214 — regra geral (NCM válido na tabela oficial, não consta dos regimes diferenciados)';
+        it.fonte=_nota7+_nota6+'Art. 14 LC 214 — regra geral (NCM válido na tabela oficial, não consta dos regimes diferenciados)';
         st.classif++; st.defaultCheia++; }
       else { it.status='validar'; it.trat='cheia'; it.fonte='NCM não localizado na tabela oficial — requer validação'; st.revisar++;
         var _sg=cmSugereNCM(k,it.desc); if(_sg){ it.ncm_sug=_sg.fmt; it.fonte+=' — provável erro de digitação: '+_sg.fmt+' ('+_sg.desc+')'; } }
-    } else { it.status='ok'; it.trat=t.trat; it.conf='alta'; it.fonte=_nota7+(t.fonte||''); st.classif++;
+    } else { it.status='ok'; it.trat=t.trat; it.conf='alta'; it.fonte=_nota7+_nota6+(t.fonte||''); st.classif++;
       if(t.trat==='zero'||t.trat==='red60'||t.trat==='red30'||t.trat==='imune'||t.trat==='difer')st.benef++;
       if(t.trat==='cheia+IS')st.is++; }
   }
