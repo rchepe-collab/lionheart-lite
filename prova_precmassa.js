@@ -142,17 +142,17 @@ function rodar(html, cfg) {
     if (APP.split(alvo).length !== 2) throw new Error('sabotagem "' + nome + '" não achou o alvo');
     const s = await rodar(APP.replace(alvo, troca)); ex(nome, !s.erro && teste(s), s.erro);
   };
-  await sab('por dentro sem o divisor (base = R) → 2027 sai 78,35 em vez de 95,55 → reprova', 'else { base=R/(1-tD);', 'else { base=R;',
+  await sab('por dentro sem o divisor (base = R) → 2027 sai 78,35 em vez de 95,55 → reprova', 'else { base=(R+dCusto)/(1-tD);', 'else { base=R+dCusto;',
     (s) => !perto(s.m[2027].fica.base, 95.55));
-  await sab('IBS/CBS calculado por dentro (base/(1+t)) → 2033 diverge da nota → reprova', 'fora=base*tFora; fin=base+fora; velho=base*tD; fica=base-velho; }\n   o.base', 'fora=base-base/(1+tFora); fin=base; velho=base*tD; fica=base-velho; }\n   o.base',
+  await sab('IBS/CBS calculado por dentro (base/(1+t)) → 2033 diverge da nota → reprova', 'fora=base*tFora; fin=base+fora; velho=base*tD; fica=base-velho; }   /* fica = o de hoje ± a variação do custo */', 'fora=base-base/(1+tFora); fin=base; velho=base*tD; fica=base-velho; }',
     (s) => !perto(s.m[2033].fica.final, 99.11));
-  await sab('Simples tratado como Presumido → preço muda → reprova', "if(regime==='simples' || ano<=2026){", "if(ano<=2026){",
+  await sab('Simples tratado como Presumido → preço muda → reprova', "var neutro=(regime==='simples' || ano<=2026);", "var neutro=(ano<=2026);",
     (s) => !(s.m[2033].simples.final === 100));
   await sab('ST volta a zero de ICMS → cimento sobe 20% → reprova', 'var icms=(item.icms!=null && +item.icms>0)?+item.icms:(+cfg.icmsMedio||0);', 'var icms=item.st?0:((item.icms!=null && +item.icms>0)?+item.icms:(+cfg.icmsMedio||0));',
     (s) => s.by.A3 && s.by.A3.c.anos[2033].final > 45);
   await sab('IPI não zera em 2027 → máquina fica 1.142,87 sem ZFM → reprova', 'var ipiAno=(ano<=2026 || cfg.zfm)?ipiHoje:0;', 'var ipiAno=ipiHoje;',
     (s) => !perto(s.by.M1.c.anos[2027].finalCli, 1042.87));
-  await sab('crédito de compra desligado → custo não cai → "manter margem" volta a 99,11 → reprova', 'var custoAno=(custoHoje!=null)?custoHoje*(1 - pisEmb*(1-fPis)*cred - stEmb*(1-fIcms)):null;', 'var custoAno=custoHoje;',
+  await sab('crédito de compra desligado → custo não cai → "manter margem" volta a 99,11 → reprova', 'var custoAno=(custoHoje!=null)?custoBase*fCred:null;', 'var custoAno=custoHoje;',
     (s) => !perto(s.margem.A1.c.anos[2033].finalCli, 95.50));
   await sab('cerveja de volta à trava de combustíveis → fonte com CONFERIR (o Classificador regrediu) → reprova', "if(/^(2203|2204|2205|2206|2208|2402|2403)/.test(k) || /imposto seletivo|bebida|cigarr|fumo|tabaco/.test(String(hit.fonte||'').toLowerCase())){", "if(false){",
     (s) => !s.by.I1 || /CONFERIR/.test(String(s.by.I1.f.fonte)) || s.by.I1.f.status !== 'CONFIRMADO');
