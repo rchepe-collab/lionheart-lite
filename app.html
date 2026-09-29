@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v877';</script>
+<body><script>window.LH_VERSAO='v878';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3859,7 +3859,7 @@ window.LH_PONTE = (function(){
     snRenderC: { calc:'simnotas',
       entradas:function(G){ var reg=((G.el('snc_forn_reg')||{}).value)||'regular'; var ano=(typeof window.SN_ANO==='number')?window.SN_ANO:2027;
         return (window.SN_C||[]).map(function(it){ return { valor:+(it.tot||0), regime_emitente:reg, aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano,
-          aliq_velha:(window.SN_VELHO_ALIQ?window.SN_VELHO_ALIQ('snc'):0), tipo_velho:(window.SN_VELHO_TIPO?window.SN_VELHO_TIPO('snc'):'icms') }; }); },   /* manda a alíquota que a TELA usou (NaN → 0), para comparar motor com motor */
+          aliq_velha:(window.SN_VELHO_ALIQ?window.SN_VELHO_ALIQ('snc'):0), tipo_velho:(window.SN_VELHO_TIPO?window.SN_VELHO_TIPO('snc'):'icms'), leitura:(window.SN_LEITURA||'fisco') }; }); },   /* manda a alíquota que a TELA usou (NaN → 0), para comparar motor com motor */
       esperado:function(lista){ if(!Array.isArray(lista)) return null; var d=0; lista.forEach(function(r){ d+=Number((r&&r.nota_de_venda&&r.nota_de_venda.ibs_cbs_destacado)||0); }); return { destacado:+d.toFixed(2) }; },
       local:function(){ var d=0; (window.SN_C||[]).forEach(function(it){ d+=(+it.cbs||0)+(+it.ibs||0); }); return { destacado:+d.toFixed(2) }; },
       render:function(r, ent, motivo){ sncRender(r, ent, motivo); } },
@@ -17097,7 +17097,7 @@ function ctcCalc(){
 #page-simnotas .nota-cab{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #1c1c1c;padding-bottom:8px;margin-bottom:10px;flex-wrap:wrap;gap:8px}
 #page-simnotas .nota-cab .tit{font-weight:800;font-size:.95rem;letter-spacing:.5px}
 #page-simnotas .nota-cab .num{font-size:.72rem;color:#555}
-#page-simnotas .addbar{display:grid;grid-template-columns:2.2fr .7fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px}
+#page-simnotas .addbar{display:grid;grid-template-columns:2.2fr .7fr 1fr .9fr auto;gap:8px;align-items:end;margin-bottom:8px}
 #page-simnotas .addbar label{display:block;font-size:.62rem;color:#666;margin-bottom:2px;letter-spacing:.3px}
 #page-simnotas .addbar input,#page-simnotas .addbar select,#page-simnotas .fornbar select,#page-simnotas .manrow input,#page-simnotas .manrow select{width:100%;padding:7px 9px;background:#fff;border:1px solid #c9c4b6;border-radius:6px;color:#1c1c1c;font-size:.82rem;font-family:inherit}
 #page-simnotas .btn-item{padding:8px 14px;border-radius:7px;border:none;font-weight:800;font-size:.8rem;cursor:pointer;background:#1c1c1c;color:#f7f5ef}
@@ -17149,6 +17149,7 @@ function ctcCalc(){
         <div><label>PRODUTO / SERVIÇO (a alíquota vem do produto)</label><select id="snv_prod"></select></div>
         <div><label>QTD</label><input id="snv_qtd" type="number" value="" placeholder="1" min="1"></div>
         <div><label>VALOR UNITÁRIO (R$)</label><input id="snv_vu" type="number" placeholder="100,00"></div>
+        <div><label>ICMS/ISS DENTRO (%)</label><input id="snv_velhoaliq" type="number" step="0.1" placeholder="18 · serviço: 5" title="v878 · o ICMS (produto) ou ISS (serviço) que já está dentro do valor. O IBS/CBS incide sobre o valor SEM ele (LC 214 art. 12 §2º V). Vazio = 18 para produto, 5 para serviço"></div>
         <button class="btn-item" onclick="snAddV()">+ Adicionar à nota e calcular</button>
       </div>
       <div class="manrow" id="snv_man">
@@ -17206,6 +17207,7 @@ function ctcCalc(){
         <div><label>PRODUTO / SERVIÇO adquirido</label><select id="snc_prod"></select></div>
         <div><label>QTD</label><input id="snc_qtd" type="number" value="" placeholder="1" min="1"></div>
         <div><label>VALOR UNITÁRIO (R$)</label><input id="snc_vu" type="number" placeholder="100,00"></div>
+        <div><label>ICMS/ISS DENTRO (%)</label><input id="snc_velhoaliq" type="number" step="0.1" placeholder="18 · serviço: 5" title="o ICMS/ISS que já está dentro do valor da compra; o IBS/CBS do fornecedor incide sobre o valor sem ele (art. 12 §2º V)"></div>
         <button class="btn-item" onclick="snAddC()">+ Adicionar à nota e calcular</button>
       </div>
       <div class="manrow" id="snc_man">
@@ -54621,13 +54623,15 @@ if(!window.LH_SN.tabelas) window.LH_SN.tabelas = {};
    var velhoAliq = window.SN_VELHO_ALIQ ? window.SN_VELHO_ALIQ(prefix) : 0;
    var velhoTipo = window.SN_VELHO_TIPO ? window.SN_VELHO_TIPO(prefix) : 'icms';
    var fVelho = (_f.icms!==undefined && _f.icms!==null) ? _f.icms : 1;
-   var _velho = tot * (velhoAliq/100) * fVelho;
-   var novo = _i0*_f.i + _c0*_f.c;
+   /* v878: IBS/CBS sobre o valor SEM o ICMS/ISS (art. 12 §2º V) */
+   var _aAno=(_i0*_f.i + _c0*_f.c)/(tot||1), _q=window.SN_BASE_ART12(tot,_aAno,(velhoAliq/100)*fVelho);
+   var _velho = _q.velho, _esc=(_aAno>0)?_q.novo/(tot*_aAno):1;
+   var novo = _q.novo;
 
    return {id:(window.SN_SEQ? SN_SEQ++ : Date.now()),
      nome:b.desc+' · NCM '+b.ncm, qtd:qtd, vu:vu, tot:tot,
      aliq:b.aliq, lab:b.lab, art:(b.fonte||'').slice(0,58),
-     _ibs0:_i0, _cbs0:_c0, ibs:_i0*_f.i, cbs:_c0*_f.c,
+     _ibs0:_i0, _cbs0:_c0, ibs:_i0*_f.i*_esc, cbs:_c0*_f.c*_esc, baseNovo:_q.base,
      velho:_velho, velhoTipo:velhoTipo, velhoAliq:velhoAliq, velhoFat:fVelho,
      novo:novo, trib:novo+_velho,
      ncm:b.ncm, trat:b.trat};
@@ -57957,11 +57961,13 @@ function snItem(prefix){
   var velhoAliq = window.SN_VELHO_ALIQ ? window.SN_VELHO_ALIQ(prefix) : 0;
   var velhoTipo = window.SN_VELHO_TIPO ? window.SN_VELHO_TIPO(prefix) : 'icms';
   var fVelho = (_f.icms!==undefined && _f.icms!==null) ? _f.icms : 1;
-  var _velho = tot * (velhoAliq/100) * fVelho;
-
-  var novo = _i0*_f.i + _c0*_f.c;
+  /* v878: IBS/CBS sobre o valor SEM o ICMS/ISS (art. 12 §2º V); o ICMS/ISS conforme a leitura */
+  var _aAno=(_i0*_f.i + _c0*_f.c)/(tot||1), _q=window.SN_BASE_ART12(tot,_aAno,(velhoAliq/100)*fVelho);
+  var _velho = _q.velho;
+  var _esc=(_aAno>0)?_q.novo/(tot*_aAno):1;                    /* escala IBS e CBS na mesma proporção */
+  var novo = _q.novo;
   return {id:SN_SEQ++,nome:nome,qtd:qtd,vu:vu,tot:tot,aliq:aliq,lab:lab,art:art,b:balde,
-          _ibs0:_i0,_cbs0:_c0,ibs:_i0*_f.i,cbs:_c0*_f.c,
+          _ibs0:_i0,_cbs0:_c0,ibs:_i0*_f.i*_esc,cbs:_c0*_f.c*_esc,baseNovo:_q.base,
           velho:_velho, velhoTipo:velhoTipo, velhoAliq:velhoAliq, velhoFat:fVelho,
           novo:novo,
           trib:novo + _velho};      /* TRIBUTO = novo + velho. A nota inteira. */
@@ -58015,7 +58021,7 @@ function snvLerEntradas(){
   var velhoAliq=(window.SN_VELHO_ALIQ?window.SN_VELHO_ALIQ('snv'):0);
   var velhoTipo=(window.SN_VELHO_TIPO?window.SN_VELHO_TIPO('snv'):'icms');
   return (window.SN_V||[]).map(function(it){ return { valor:+(it.tot||0), regime_emitente:reg,
-    aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano, aliq_velha:velhoAliq, tipo_velho:velhoTipo,
+    aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano, aliq_velha:velhoAliq, tipo_velho:velhoTipo, leitura:(window.SN_LEITURA||'fisco'),
     _id:it.id }; });
 }
 function snvCalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
@@ -58075,10 +58081,16 @@ function snvRender(r, ent, motivo){
 function snvQuemPaga(tot, novo, velho){
   var modo=(document.querySelector('input[name="snv_modo"]:checked')||{value:'fora'}).value;
   var paga, novoD, fica, txt;
-  if(modo==='dentro'){ var r=tot>0?novo/tot:0; var base=tot/(1+r); novoD=tot-base; paga=tot; fica=base-velho;
-    txt='Preço de prateleira: o cliente paga '+SN_FMT(paga)+'; dentro dele vão '+SN_FMT(novoD)+' de IBS/CBS e '+SN_FMT(velho)+' de ICMS/ISS. Base de cálculo do IBS/CBS: '+SN_FMT(base)+'.'; }
+  /* v878: por fora, o valor digitado já é o valor sem IBS/CBS e o IBS/CBS foi calculado sem o ICMS/ISS na base (art. 12 §2º V).
+     Por dentro (prateleira), o valor digitado é o total: a base do IBS/CBS é o que fica (sem ICMS/ISS), R = P·(1−tD)/(1+a) na leitura
+     dos fiscos; tD e a vêm da própria lista (proporções), como antes. */
+  if(modo==='dentro'){ var fisco=(window.SN_LEITURA||'fisco')!=='plp';
+    /* a lista veio "por fora": novo foi calculado sobre (tot − velho) e velho sobre o total (fisco) ou sobre tot (plp) → recupera a e tD */
+    var a=(tot-velho)>0?novo/(tot-velho):0; var tD=fisco?((tot+novo)>0?velho/(tot+novo):0):(tot>0?velho/tot:0);
+    var R=fisco?(tot*(1-tD)/(1+a)):(tot/((1/(1-tD||1))+a)); novoD=a*R; var velhoD=tot-R-novoD; paga=tot; fica=R;
+    txt='Preço de prateleira: o cliente paga '+SN_FMT(paga)+'; dentro dele vão '+SN_FMT(novoD)+' de IBS/CBS (sobre a base '+SN_FMT(R)+', sem ICMS/ISS — art. 12 §2º V) e '+SN_FMT(velhoD)+' de ICMS/ISS. Fica com você '+SN_FMT(R)+'.'; velho=velhoD; }
   else { novoD=novo; paga=tot+novo; fica=tot-velho;
-    txt='Nota por fora: o cliente paga '+SN_FMT(tot)+' + '+SN_FMT(novo)+' de IBS/CBS = '+SN_FMT(paga)+'. O ICMS/ISS ('+SN_FMT(velho)+') já está dentro do valor. Se o cliente é PJ do regime regular, os '+SN_FMT(novo)+' voltam para ele como crédito.'; }
+    txt='Nota por fora: o cliente paga '+SN_FMT(tot)+' + '+SN_FMT(novo)+' de IBS/CBS = '+SN_FMT(paga)+'. O IBS/CBS incide sobre '+SN_FMT(tot-velho)+' (o valor sem o ICMS/ISS — art. 12 §2º V). O ICMS/ISS ('+SN_FMT(velho)+') já está dentro do valor. Se o cliente é PJ do regime regular, os '+SN_FMT(novo)+' voltam para ele como crédito.'; }
   (document.getElementById('snv_paga')||{}).textContent=SN_FMT(paga);
   (document.getElementById('snv_novo')||{}).textContent=SN_FMT(novoD);
   (document.getElementById('snv_velho2')||{}).textContent=SN_FMT(velho);
@@ -58097,7 +58109,7 @@ function sncLerEntradas(){
   var velhoAliq=(window.SN_VELHO_ALIQ?window.SN_VELHO_ALIQ('snc'):0);
   var velhoTipo=(window.SN_VELHO_TIPO?window.SN_VELHO_TIPO('snc'):'icms');
   return (window.SN_C||[]).map(function(it){ return { valor:+(it.tot||0), regime_emitente:reg,
-    aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano, aliq_velha:velhoAliq, tipo_velho:velhoTipo,
+    aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano, aliq_velha:velhoAliq, tipo_velho:velhoTipo, leitura:(window.SN_LEITURA||'fisco'),
     _id:it.id }; });
 }
 function sncCalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
@@ -58353,6 +58365,26 @@ function fpCalc(){
 <script>
 /* ===== LIONHEART · SIMULADOR DE NOTAS: TRANSIÇÃO 2026-2033 (novos entrando × velhos saindo) ===== */
 window.SN_ANO=2027;
+/* ★ v878 · a base do IBS/CBS na nota, de 2026 a 2032 (LC 214 art. 12 §2º V): o valor da operação traz o ICMS/ISS por dentro,
+   e o IBS/CBS incide sobre o valor SEM ele. tot = valor sem IBS/CBS (o que a nota chama de valor da operação);
+   a = alíquota IBS/CBS do ano (fração); tD = ICMS/ISS do ano por dentro (fração, já com a rampa 9/10…);
+   leitura 'fisco' (padrão): o ICMS/ISS incide sobre o total com o IBS/CBS (SP, CT 33.083/2026) → velho = tD·tot·(1+a)/(1+tD·a);
+   leitura 'plp' (PLP 16/2025): velho = tD·tot. Nos dois: novo = a·(tot − velho). Mesma conta da Precificação em Massa. */
+window.SN_LEITURA=window.SN_LEITURA||'fisco';
+/* ★ v878 · o imposto velho da nota: existia desde a v98 como chamada (SN_VELHO_ALIQ/SN_VELHO_TIPO) e nunca foi definido — a nota
+   mostrava "ICMS 0%" e o IBS/CBS saía sobre o valor cheio. Agora lê o campo "ICMS/ISS dentro (%)" da própria linha; vazio =
+   18 (produto) ou 5 (serviço NBS / balde de serviço). O tipo segue o item: NBS ou serviço → ISS, senão ICMS. */
+window.SN_VELHO_TIPO=function(prefix){ try{ var sel=document.getElementById(prefix+'_prod'); var v=sel?String(sel.value):''; if(v.indexOf('NBS:')===0) return 'iss';
+  if(v!==''&&v!=='MAN'&&v.indexOf('NCM:')!==0&&window.LH_CLASSIF_PRODUTOS){ var p=LH_CLASSIF_PRODUTOS[+v]; if(p&&/servi|hotel|bares|educa|sa[úu]de|transporte|profiss|consult|advoc|cont[áa]b|engenh|arquitet|eventos|turismo|locação|frete|manuten|limpeza|seguran|academia|est[ée]tica/i.test(String(p.n||''))) return 'iss'; } }catch(_e){} return 'icms'; };
+window.SN_VELHO_ALIQ=function(prefix){ try{ var e=document.getElementById(prefix+'_velhoaliq'); var v=e?parseFloat(String(e.value||'').replace(',','.')):NaN; if(isFinite(v)&&v>=0) return v;
+  var m=document.getElementById('sn_icms_med'); var vm=m?parseFloat(String(m.value||'').replace(',','.')):NaN; if(isFinite(vm)&&vm>0) return vm; }catch(_e){} return (window.SN_VELHO_TIPO(prefix)==='iss')?5:18; };
+/* reescala um item da nota para o ano corrente mantendo a base do art. 12 §2º V (usado pelo override de snItem e pelo snAno) */
+window.SN_REESCALA=function(it){ var f=SN_FAT(); if(it._cbs0===undefined){ it._cbs0=it.cbs; it._ibs0=it.ibs; }
+  var tot=+it.tot||0, aAno=tot>0?((it._ibs0*f.i)+(it._cbs0*f.c))/tot:0, fV=(f.icms!==undefined&&f.icms!==null)?f.icms:1, tD=((+it.velhoAliq||0)/100)*fV;
+  var q=window.SN_BASE_ART12(tot,aAno,tD); var esc=(aAno>0&&tot>0)?q.novo/(tot*aAno):1;
+  it.ibs=it._ibs0*f.i*esc; it.cbs=it._cbs0*f.c*esc; it.baseNovo=q.base; it.velho=q.velho; it.velhoFat=fV; it.novo=it.ibs+it.cbs; it.trib=it.novo+it.velho; return it; };
+window.SN_BASE_ART12=function(tot,a,tD,leitura){ tot=+tot||0; a=+a||0; tD=+tD||0; var fisco=((leitura||window.SN_LEITURA)!=='plp');
+  var velho=fisco?(tD*tot*(1+a)/(1+tD*a)):(tD*tot); var novo=a*(tot-velho); return {velho:velho, novo:novo, base:tot-velho}; };
 window.SN_TRANS={
  2026:{c:0.9/8.8, i:0.1/17.7, icms:1, pis:1, tit:"2026 · ANO-TESTE", tx:"CBS 0,9% + IBS 0,1% destacados na nota (compensáveis com PIS/COFINS). Sistema antigo INTEGRAL: PIS/COFINS, ICMS/ISS cheios."},
  2027:{c:8.7/8.8, i:0.1/17.7, icms:1, pis:0, tit:"2027 · CBS CHEIA (ref − 0,1 p.p.)", tx:"PIS/COFINS EXTINTOS · IPI ~97% zerado (exceto ZFM) · CBS = alíquota de referência MENOS 0,1 p.p. (art. 347, LC 214) + IBS 0,1% = carga total neutra · ICMS/ISS integrais · Imposto Seletivo (veículos/cigarros)."},
@@ -58371,13 +58403,13 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
 (function(){
  if(typeof snItem!=="function")return;
  var _snItem=snItem;
+ /* v878: o override reescalava IBS/CBS pelo ano e apagava o imposto velho do trib (trib = cbs + ibs) — meia nota de novo.
+    Agora reescala pela base do art. 12 §2º V e mantém velho no trib. */
  window.snItem=function(prefix){
   var it=_snItem(prefix); if(!it)return it;
-  if(it._cbs0===undefined){it._cbs0=it.cbs;it._ibs0=it.ibs;}
-  var f=SN_FAT(); it.cbs=it._cbs0*f.c; it.ibs=it._ibs0*f.i; it.trib=it.cbs+it.ibs;
-  return it;
+  return window.SN_REESCALA(it);
  };
- function reescala(arr){arr.forEach(function(it){if(it._cbs0===undefined){it._cbs0=it.cbs;it._ibs0=it.ibs;}var f=SN_FAT();it.cbs=it._cbs0*f.c;it.ibs=it._ibs0*f.i;it.trib=it.cbs+it.ibs;});}
+ function reescala(arr){arr.forEach(function(it){ window.SN_REESCALA(it); });}
  window.snAno=function(a){
   SN_ANO=+a;
   document.querySelectorAll("#snAnoBar .sn-ano").forEach(function(b){b.classList.toggle("on",+b.dataset.a===SN_ANO);});
@@ -59467,13 +59499,15 @@ function acEscolhe(i){
    var velhoAliq = window.SN_VELHO_ALIQ ? window.SN_VELHO_ALIQ(prefix) : 0;
    var velhoTipo = window.SN_VELHO_TIPO ? window.SN_VELHO_TIPO(prefix) : 'icms';
    var fVelho = (_f.icms!==undefined && _f.icms!==null) ? _f.icms : 1;
-   var _velho = tot * (velhoAliq/100) * fVelho;
-   var novo = _i0*_f.i + _c0*_f.c;
+   /* v878: IBS/CBS sobre o valor SEM o ICMS/ISS (art. 12 §2º V) */
+   var _aAno=(_i0*_f.i + _c0*_f.c)/(tot||1), _q=window.SN_BASE_ART12(tot,_aAno,(velhoAliq/100)*fVelho);
+   var _velho = _q.velho, _esc=(_aAno>0)?_q.novo/(tot*_aAno):1;
+   var novo = _q.novo;
 
    return {id:(window.SN_SEQ? SN_SEQ++ : Date.now()),
      nome:b.desc+' · NCM '+b.ncm, qtd:qtd, vu:vu, tot:tot,
      aliq:b.aliq, lab:b.lab, art:(b.fonte||'').slice(0,58),
-     _ibs0:_i0, _cbs0:_c0, ibs:_i0*_f.i, cbs:_c0*_f.c,
+     _ibs0:_i0, _cbs0:_c0, ibs:_i0*_f.i*_esc, cbs:_c0*_f.c*_esc, baseNovo:_q.base,
      velho:_velho, velhoTipo:velhoTipo, velhoAliq:velhoAliq, velhoFat:fVelho,
      novo:novo, trib:novo+_velho,
      ncm:b.ncm, trat:b.trat};

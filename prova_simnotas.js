@@ -67,10 +67,10 @@ function rodar(html) {
     ex('ICMS/ISS dentro do preço = 270,00', perto(r.venda.velho, 270), r.venda.velho);
     ex('fica com você = 1.500 − 270 = 1.230,00', perto(r.venda.fica, 1230), r.venda.fica);
     ex('o texto explica que o IBS/CBS vira crédito do cliente PJ', /crédito/.test(r.venda.txt), r.venda.txt.slice(0, 80));
-    /* por dentro: r = 123,20/1.500 = 0,082133 → base = 1.386,14 → IBS/CBS = 113,86 → fica = 1.386,14 − 270 = 1.116,14 */
+    /* por dentro (v878, art. 12 §2º V): a = 123,20/(1.500 − 270) = 10,016% · tD = 270/1.623,20 = 16,63% (fisco) → fica R = 1.500 × 0,8337 ÷ 1,10016 = 1.136,64 → IBS/CBS = a × R = 113,85 · ICMS = 249,51 */
     ex('por dentro: cliente paga o valor informado (1.500,00)', perto(r.dentro.paga, 1500), r.dentro.paga);
-    ex('por dentro: IBS/CBS = 1.500 − 1.500/1,082133 = 113,86', perto(r.dentro.novo, 113.86, 0.05), r.dentro.novo);
-    ex('por dentro: fica com você = 1.116,14', perto(r.dentro.fica, 1116.14, 0.05), r.dentro.fica);
+    ex('por dentro: IBS/CBS = 10,016% × 1.136,64 = 113,85 (sobre a base sem ICMS)', perto(r.dentro.novo, 113.85, 0.05), r.dentro.novo);
+    ex('por dentro: fica com você = 1.136,64 (1.500 − 113,85 de IBS/CBS − 249,51 de ICMS)', perto(r.dentro.fica, 1136.64, 0.05), r.dentro.fica);
     console.log('\n-- nota de compra: fornecedor do Simples --');
     ex('o alerta diz 20% do imposto cheio (o que o código faz)', /20% do imposto cheio/.test(r.compra.alerta), r.compra.alerta.slice(0, 120));
     ex('o alerta não diz mais 50%', !/50%/.test(r.compra.alerta));
@@ -86,7 +86,7 @@ function rodar(html) {
   };
   await sab('sem a coluna de códigos → reprova', "<th title=\"CST-IBS/CBS · cClassTrib — sugestão da amostra oficial; o contador confirma\">CST · cClassTrib</th>", '',
     (s) => !s.venda.ths.includes('CST · cClassTrib'));
-  await sab('por dentro sem o gross-up (base = valor) → IBS/CBS zera → reprova', 'var base=tot/(1+r); novoD=tot-base;', 'var base=tot; novoD=tot-base;',
+  await sab('por dentro sem o gross-up (R = total) → IBS/CBS estoura → reprova', 'var R=fisco?(tot*(1-tD)/(1+a)):(tot/((1/(1-tD||1))+a)); novoD=a*R;', 'var R=tot; novoD=a*R;',
     (s) => !perto(s.dentro.novo, 113.86, 0.05));
   await sab('por fora sem somar o IBS/CBS ao que o cliente paga → reprova', 'novoD=novo; paga=tot+novo; fica=tot-velho;', 'novoD=novo; paga=tot; fica=tot-velho;',
     (s) => !perto(s.venda.paga, 1623.20));

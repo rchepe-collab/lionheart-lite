@@ -54,10 +54,10 @@ function rodar(html, cfg) {
             out.plp2027 = w.lhPreco({ trat: 'cheia', preco: 100, icms: 18, pis: 3.65 }, 2027, { regime: 'presumido', leitura: 'plp' }, 'fica');
             out.m = {}; [2026, 2027, 2029, 2033].forEach((a) => { out.m[a] = { fica: w.lhPreco({ trat: 'cheia', preco: 100, icms: 18, pis: 3.65 }, a, { regime: 'presumido' }, 'fica'), preco: w.lhPreco({ trat: 'cheia', preco: 100, icms: 18, pis: 3.65 }, a, { regime: 'presumido' }, 'preco'), pj: w.lhPreco({ trat: 'cheia', preco: 100, icms: 18, pis: 3.65 }, a, { regime: 'presumido' }, 'pj'), simples: w.lhPreco({ trat: 'cheia', preco: 100, icms: 18 }, a, { regime: 'simples' }, 'fica'), red60: w.lhPreco({ trat: 'red60', preco: 100, icms: 18, pis: 3.65 }, a, { regime: 'presumido' }, 'fica') }; });
             out.adrem = w.lhPreco({ trat: 'adrem', preco: 6 }, 2033, {}, 'fica');
-            /* bate com a nota: IBS+CBS de um item de R$ 95,55 em 2027 pelo caminho da nota (snItemBase com SN_ANO) */
+            /* bate com a nota (v878): item de R$ 97,06 com ICMS 18 dentro em 2027 → IBS+CBS = 8,8% × 78,35 = 6,89 (a mesma base da precificação) */
             try { w.abrirPagina('simnotas'); w.snAno(2027); const idx = w.LH_CLASSIF_PRODUTOS.findIndex((p) => p.n === 'Comércio - Varejo Geral');
-              w.document.getElementById('snv_prod').value = String(idx); w.document.getElementById('snv_qtd').value = 1; w.document.getElementById('snv_vu').value = 95.55;
-              const it = w.snItem('snv'); out.nota2027 = it ? (it.ibs + it.cbs) : null; } catch (e) { out.notaErro = e.message; }
+              w.document.getElementById('snv_prod').value = String(idx); w.document.getElementById('snv_qtd').value = 1; w.document.getElementById('snv_vu').value = 97.06; w.document.getElementById('snv_velhoaliq').value = 18;
+              const it = w.snItem('snv'); out.nota2027 = it ? (it.ibs + it.cbs) : null; out.notaVelho = it ? it.velho : null; out.notaTrib = it ? it.trib : null; } catch (e) { out.notaErro = e.message; }
             /* Excel real */
             w.eval(fs.readFileSync(require.resolve('exceljs/dist/exceljs.min.js'), 'utf8'));
             let buf = null; w.URL.createObjectURL = () => 'blob:x'; w.HTMLAnchorElement.prototype.click = function () {}; const _B = w.Blob; w.Blob = function (p) { buf = p[0]; return new _B(p); };
@@ -100,7 +100,8 @@ function rodar(html, cfg) {
     ex('arroz em 2029 ainda carrega 9/10 do ICMS: 23,25 ÷ 0,937 = 24,81', r.by.A6 && perto(r.by.A6.c.anos[2029].final, 24.81), r.by.A6 && r.by.A6.c.anos[2029].final);
     ex('furadeira sem ICMS no cadastro → média 18% marcada "est."', r.by.A7 && r.by.A7.c.icmsEstimado && perto(r.by.A7.c.icmsUsado, 18));
     console.log('\n-- bate com a nota simulada --');
-    ex('IBS+CBS de R$ 95,55 em 2027 pela nota = 8,41 (mesma fonte)', r.nota2027 !== null && perto(r.nota2027, 8.41, 0.02), String(r.nota2027) + ' ' + (r.notaErro || ''));
+    ex('IBS+CBS de R$ 97,06 (ICMS 18 dentro) em 2027 pela nota = 6,89 — a mesma base da precificação (art. 12 §2º V)', r.nota2027 !== null && perto(r.nota2027, 6.89, 0.02), String(r.nota2027) + ' ' + (r.notaErro || ''));
+    ex('a nota traz o ICMS de 18,71 e o tributo total (novo + velho) = 25,60', r.notaVelho !== null && perto(r.notaVelho, 18.71, 0.02) && perto(r.notaTrib, 25.60, 0.03), r.notaVelho + ' ' + r.notaTrib);
     console.log('\n-- a tela --');
     ex('lê a ficha do Classificador: 7 prontos precificados (inclui cerveja e máquina)', Object.keys(r.by).filter((k) => k !== '__html').length === 7, Object.keys(r.by).join(','));
     ex('não precificados com motivo: gasolina (ad rem), trena (NCM a validar)', r.fora.length === 2 && r.fora.some((x) => /A4/.test(x) && /ad rem/.test(x)) && r.fora.some((x) => /A5/.test(x) && /validar/.test(x)), r.fora.join(' / '));
