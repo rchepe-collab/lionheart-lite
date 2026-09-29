@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v879';</script>
+<body><script>window.LH_VERSAO='v880';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3859,13 +3859,14 @@ window.LH_PONTE = (function(){
     snRenderC: { calc:'simnotas',
       entradas:function(G){ var reg=((G.el('snc_forn_reg')||{}).value)||'regular'; var ano=(typeof window.SN_ANO==='number')?window.SN_ANO:2027;
         return (window.SN_C||[]).map(function(it){ return { valor:+(it.tot||0), regime_emitente:reg, aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano,
-          aliq_velha:(window.SN_VELHO_ALIQ?window.SN_VELHO_ALIQ('snc'):0), tipo_velho:(window.SN_VELHO_TIPO?window.SN_VELHO_TIPO('snc'):'icms'), leitura:(window.SN_LEITURA||'fisco') }; }); },   /* manda a alíquota que a TELA usou (NaN → 0), para comparar motor com motor */
+          aliq_velha:(isFinite(+it.velhoAliq)?+it.velhoAliq:(window.SN_VELHO_ALIQ?window.SN_VELHO_ALIQ('snc'):0)), tipo_velho:(it.velhoTipo||(window.SN_VELHO_TIPO?window.SN_VELHO_TIPO('snc'):'icms')), leitura:(window.SN_LEITURA||'fisco') }; }); },   /* manda a alíquota que a TELA usou (NaN → 0), para comparar motor com motor */
       esperado:function(lista){ if(!Array.isArray(lista)) return null; var d=0; lista.forEach(function(r){ d+=Number((r&&r.nota_de_venda&&r.nota_de_venda.ibs_cbs_destacado)||0); }); return { destacado:+d.toFixed(2) }; },
       local:function(){ var d=0; (window.SN_C||[]).forEach(function(it){ d+=(+it.cbs||0)+(+it.ibs||0); }); return { destacado:+d.toFixed(2) }; },
       render:function(r, ent, motivo){ sncRender(r, ent, motivo); } },
     snRenderV: { calc:'simnotas',
       entradas:function(G){ var ano=(typeof window.SN_ANO==='number')?window.SN_ANO:2027;
-        return (window.SN_V||[]).map(function(it){ return { valor:+(it.tot||0), regime_emitente:'regular', aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano }; }); },
+        return (window.SN_V||[]).map(function(it){ return { valor:+(it.tot||0), regime_emitente:'regular', aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano,
+          aliq_velha:(isFinite(+it.velhoAliq)?+it.velhoAliq:(window.SN_VELHO_ALIQ?window.SN_VELHO_ALIQ('snv'):0)), tipo_velho:(it.velhoTipo||(window.SN_VELHO_TIPO?window.SN_VELHO_TIPO('snv'):'icms')), leitura:(window.SN_LEITURA||'fisco') }; }); },   /* v880: a venda não mandava o imposto velho — o servidor devolvia IBS/CBS sobre o valor cheio e apagava a correção do art. 12 */
       esperado:function(lista){ if(!Array.isArray(lista)) return null; var d=0; lista.forEach(function(r){ d+=Number((r&&r.nota_de_venda&&r.nota_de_venda.ibs_cbs_destacado)||0); }); return { destacado:+d.toFixed(2) }; },
       local:function(){ var d=0; (window.SN_V||[]).forEach(function(it){ d+=(+it.cbs||0)+(+it.ibs||0); }); return { destacado:+d.toFixed(2) }; },
       render:function(r, ent, motivo){ snvRender(r, ent, motivo); } },
@@ -58039,7 +58040,7 @@ function snvLerEntradas(){
   var velhoAliq=(window.SN_VELHO_ALIQ?window.SN_VELHO_ALIQ('snv'):0);
   var velhoTipo=(window.SN_VELHO_TIPO?window.SN_VELHO_TIPO('snv'):'icms');
   return (window.SN_V||[]).map(function(it){ return { valor:+(it.tot||0), regime_emitente:reg,
-    aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano, aliq_velha:velhoAliq, tipo_velho:velhoTipo, leitura:(window.SN_LEITURA||'fisco'),
+    aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano, aliq_velha:(isFinite(+it.velhoAliq)?+it.velhoAliq:velhoAliq), tipo_velho:(it.velhoTipo||velhoTipo), leitura:(window.SN_LEITURA||'fisco'),
     _id:it.id }; });
 }
 function snvCalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
@@ -58127,7 +58128,7 @@ function sncLerEntradas(){
   var velhoAliq=(window.SN_VELHO_ALIQ?window.SN_VELHO_ALIQ('snc'):0);
   var velhoTipo=(window.SN_VELHO_TIPO?window.SN_VELHO_TIPO('snc'):'icms');
   return (window.SN_C||[]).map(function(it){ return { valor:+(it.tot||0), regime_emitente:reg,
-    aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano, aliq_velha:velhoAliq, tipo_velho:velhoTipo, leitura:(window.SN_LEITURA||'fisco'),
+    aliquota_plena:(isFinite(+it.aliq)?+it.aliq:0), ano:ano, aliq_velha:(isFinite(+it.velhoAliq)?+it.velhoAliq:velhoAliq), tipo_velho:(it.velhoTipo||velhoTipo), leitura:(window.SN_LEITURA||'fisco'),
     _id:it.id }; });
 }
 function sncCalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
@@ -58447,7 +58448,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
     velhos='<div style="margin-top:6px;font-size:.8rem;color:#7a4b3a"><b>Sistema antigo nesta nota (média informada):</b> '
       +(icmsPct>0?('ICMS/ISS R$ '+SN_FMT(vIcms)+(f.icms<1&&f.icms>0?' ('+Math.round(f.icms*10)+'/10 da alíquota)':(f.icms===0?' (extinto)':''))):'')
       +(pisPct>0?((icmsPct>0?' · ':'')+'PIS/COFINS '+(f.pis>0?('R$ '+SN_FMT(vPis)):'extintos')):'')
-      +' · <b>Total nota (novos+velhos): R$ '+SN_FMT(vIcms+vPis+(function(){var t=0;(window.SN_V||[]).forEach(function(i){t+=i.trib;});return t;})())+'</b></div>';
+      +' · <b>Total nota (novos+velhos): R$ '+SN_FMT(vPis+(function(){var t=0;(window.SN_V||[]).forEach(function(i){t+=i.trib;});return t;})())+'</b></div>';   /* v880: i.trib já traz o ICMS/ISS (v878) — não somar de novo */
   }
   el.innerHTML='<div style="font-weight:800;color:#1a1400">'+f.tit+'</div><div style="font-size:.8rem;color:#4a3d1f">'+f.tx+'</div>'+velhos;
  };
