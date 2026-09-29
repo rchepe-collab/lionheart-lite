@@ -111,7 +111,8 @@ function rodar(html, cfg) {
     ex('filtro "só serviços" num arquivo só de produtos → aviso claro, não KPIs zerados', /Nenhum serviço neste catálogo/.test(r.soServ) && !/Sobem em 2033/.test(r.soServ) && /7 produtos · 0 serviços/.test(r.soServN), (r.soServ || '').slice(0, 120) + ' | ' + r.soServN);
     console.log('\n-- v867: prateleira × líquido PJ · lista de preço · IPI · IS --');
     ex('parafuso 2033: prateleira 99,11 · líquido PJ 78,35 (o mesmo preço lido de dois jeitos)', perto(r.by.A1.c.anos[2033].finalCli, 99.11) && perto(r.by.A1.c.anos[2033].liqPJ, 78.35));
-    ex('a tabela tem as colunas "2033 PRATELEIRA", "SEM IBS/CBS = LÍQUIDO PJ" e "IBS/CBS 2033 (FORA)"', /2033 PRATELEIRA/.test(r.html) && /SEM IBS\/CBS = LÍQUIDO PJ/.test(r.html) && /IBS\/CBS 2033 \(FORA\)/.test(r.html) && /IBS\/CBS 2027 \(FORA\)/.test(r.html));
+    ex('a tabela tem as colunas "2033 PRATELEIRA", "2033 SEM IBS/CBS" (o que a PJ paga) e "IBS/CBS 2033" por fora', /2033 PRATELEIRA/.test(r.html) && /2033 SEM IBS\/CBS<span[^>]*>o que a PJ paga/.test(r.html) && /IBS\/CBS 2033<span[^>]*>por fora/.test(r.html) && /IBS\/CBS 2027<span[^>]*>por fora/.test(r.html));
+    ex('"Como ler a tabela" existe, dobrado numa linha (v882)', /▸ <\/span>Como ler a tabela/.test(r.html) && /pm-dobra-x/.test(r.html) && /líquido do crédito/.test(r.html));
     ex('duas colunas de preço → seletor de lista aparece', r.tela.lista === '' , r.tela.lista);
     ex('lista ATACADO: parafuso hoje 85 → 2033 84,24', perto(r.atacado.A1.c.anos[2033].hoje, 85) && perto(r.atacado.A1.c.anos[2033].finalCli, 85 * 0.7835 * 1.265), r.atacado.A1.c.anos[2033].finalCli);
     ex('máquina com IPI 10%: cliente paga 1.100 hoje; em 2027 o IPI zera', perto(r.by.M1.c.anos[2033].hojeCli, 1100) && r.by.M1.c.anos[2027].ipi === 0 && perto(r.by.M1.c.anos[2026].ipi, 100), JSON.stringify([r.by.M1.c.anos[2033].hojeCli, r.by.M1.c.anos[2027].ipi]));
@@ -131,7 +132,7 @@ function rodar(html, cfg) {
     ex('manter margem %: 2033 = 95,50 (menor que 99,11) e a margem fica 23,42%', perto(r.margem.A1.c.anos[2033].finalCli, 95.50) && perto(r.margem.A1.c.anos[2033].margemLucro, 23.42, 0.02), JSON.stringify(r.margem.A1.c.anos[2033]));
     ex('manter markup: 2033 = 57,81 × 1,6667 = 96,35', perto(r.markup.A1.c.anos[2033].finalCli, 96.35), r.markup.A1.c.anos[2033].finalCli);
     ex('KPI "podem baixar o preço em 2033 mantendo a margem" conta o parafuso, o cimento e a máquina (3)', /Podem baixar o preço em 2033[^<]*<\/div><div class="kpi-value"[^>]*>3</.test(r.html), (r.html.match(/Podem baixar[\s\S]{0,160}/) || [''])[0].slice(0, 160));
-    ex('tabela mostra CUSTO HOJE → 2033 e LUCRO 2033', /CUSTO HOJE → 2033/.test(r.html) && /LUCRO 2033/.test(r.html));
+    ex('tabela mostra CUSTO (compra hoje → líq. do crédito 2033) e LUCRO 2033', /compra hoje → líq\. do crédito 2033/.test(r.html) && /LUCRO 2033/.test(r.html));
     ex('bloco "Custo e crédito de compra (estimativa)" na leitura', /Custo e crédito de compra/.test(r.html));
     console.log('\n-- exportações --');
     ex('Excel com 4 abas', r.xl && r.xl.abas.join() === 'Precificacao,Tabela_Precos_ERP,Nao_precificados,Leia-me', r.xl && r.xl.abas.join());

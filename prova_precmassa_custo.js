@@ -121,11 +121,11 @@ function rodar(html) {
     ex('campos por grupo: MERCEARIA BASICA, MERCEARIA, LIMPEZA, SERVICOS (só grupos com custo)', r.tela.grupos.join(',') === 'LIMPEZA,MERCEARIA,MERCEARIA BASICA,SERVICOS', r.tela.grupos.join(','));
     ex('KPI "Custo de compra novo em 7 itens"', /Custo de compra novo em 7 itens/.test(r.var.html), '');
     ex('KPI "Preço hoje só pelo custo novo"', /Preço hoje só pelo custo novo/.test(r.var.html), '');
-    ex('colunas HOJE C/ CUSTO NOVO e 2033 SÓ IMPOSTO na tabela', /HOJE C\/ CUSTO NOVO/.test(r.var.html) && /2033 SÓ IMPOSTO/.test(r.var.html), '');
+    ex('colunas HOJE, SÓ CUSTO NOVO e 2033, SÓ IMPOSTO na tabela (+ "líq." no custo 2033)', /HOJE, SÓ CUSTO NOVO/.test(r.var.html) && /2033, SÓ IMPOSTO/.test(r.var.html) && /compra hoje → compra nova → líq\. do crédito 2033/.test(r.var.html) && /líq\.<\/span>/.test(r.var.html), '');
     ex('coluna de custo mostra 4,07 → 3,00 → 2,89 no leite', /4,07 → <b[^>]*>3,00<\/b> → 2,89/.test(r.var.html), '');
     ex('bloco "Custo de compra novo (reprecificar, não formar preço)" na leitura', /Custo de compra novo \(reprecificar, não formar preço\)/.test(r.var.html), '');
     ex('a leitura diz que serviço puro fica de fora', /Serviço puro \(honorário, hora/.test(r.var.html), '');
-    ex('sem % na tela as colunas continuam (a planilha tem CUSTO_NOVO no leite) e o arroz mostra "→ igual"', /HOJE C\/ CUSTO NOVO/.test(r.semVar.html) && /17,78 → <span[^>]*>igual<\/span> → /.test(r.semVar.html), '');
+    ex('sem % na tela as colunas continuam (a planilha tem CUSTO_NOVO no leite) e o arroz mostra "→ igual"', /HOJE, SÓ CUSTO NOVO/.test(r.semVar.html) && /17,78 → <span[^>]*>igual<\/span> → /.test(r.semVar.html), '');
     ex('rodapé: "reprecificação… não forma preço"', /Reprecificação: parte do preço praticado/.test(r.var.html) && /não forma preço/.test(r.var.html), '');
 
     console.log('\n-- exportações --');
