@@ -141,7 +141,7 @@ function rodar(html) {
     if (APP.split(alvo).length !== 2) throw new Error('sabotagem "' + nome + '" não achou o alvo');
     const s = await rodar(APP.replace(alvo, troca)); ex(nome, !s.erro && teste(s), s.erro);
   };
-  await sab('variação do custo fora da estratégia "manter o que fica" → leite hoje c/ custo novo = 5,29 → reprova', 'else { base=(R+dCusto)/(1-tD);', 'else { base=R/(1-tD);',
+  await sab('variação do custo fora da estratégia "manter o que fica" → leite hoje c/ custo novo = 5,29 → reprova', 'else { q=ida(R+dCusto); }', 'else { q=ida(R); }',
     (s) => !perto(s.base.by['1017'].c.soCusto.finalCli, 4.07));
   await sab('CUSTO_NOVO da linha ignorado (só % da tela) → leite integral vira 3,66 (−10 do grupo) → reprova', 'if(f.custoNovo!=null && f.custoNovo>0) return', 'if(false) return',
     (s) => !perto(s.var.by['1017'].c.custoNovo, 3));

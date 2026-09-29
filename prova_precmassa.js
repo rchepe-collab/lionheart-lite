@@ -51,6 +51,7 @@ function rodar(html, cfg) {
             set('pm_tipo', 'S'); w.lhPmRender(); out.soServ = w.document.getElementById('pm-result').innerHTML; out.soServN = w.document.getElementById('pm_tipo_n').textContent; set('pm_tipo', 'todos');
             out.by = rerun('fica'); out.html = out.by.__html;
             /* motor direto */
+            out.plp2027 = w.lhPreco({ trat: 'cheia', preco: 100, icms: 18, pis: 3.65 }, 2027, { regime: 'presumido', leitura: 'plp' }, 'fica');
             out.m = {}; [2026, 2027, 2029, 2033].forEach((a) => { out.m[a] = { fica: w.lhPreco({ trat: 'cheia', preco: 100, icms: 18, pis: 3.65 }, a, { regime: 'presumido' }, 'fica'), preco: w.lhPreco({ trat: 'cheia', preco: 100, icms: 18, pis: 3.65 }, a, { regime: 'presumido' }, 'preco'), pj: w.lhPreco({ trat: 'cheia', preco: 100, icms: 18, pis: 3.65 }, a, { regime: 'presumido' }, 'pj'), simples: w.lhPreco({ trat: 'cheia', preco: 100, icms: 18 }, a, { regime: 'simples' }, 'fica'), red60: w.lhPreco({ trat: 'red60', preco: 100, icms: 18, pis: 3.65 }, a, { regime: 'presumido' }, 'fica') }; });
             out.adrem = w.lhPreco({ trat: 'adrem', preco: 6 }, 2033, {}, 'fica');
             /* bate com a nota: IBS+CBS de um item de R$ 95,55 em 2027 pelo caminho da nota (snItemBase com SN_ANO) */
@@ -80,15 +81,16 @@ function rodar(html, cfg) {
     console.log('\n-- o motor: preço 100, ICMS 18 + PIS/COFINS 3,65 por dentro --');
     ex('hoje fica com você 78,35', perto(m[2033].fica.ficaHoje, 78.35), m[2033].fica.ficaHoje);
     ex('2033: por dentro 78,35 · IBS/CBS 20,76 · final 99,11 (menor que hoje)', perto(m[2033].fica.base, 78.35) && perto(m[2033].fica.fora, 20.76) && perto(m[2033].fica.final, 99.11) && m[2033].fica.sinal === '▼', JSON.stringify(m[2033].fica));
-    ex('2027: por dentro 95,55 (cobre o ICMS 18) · IBS/CBS 8,41 · final 103,96', perto(m[2027].fica.base, 95.55) && perto(m[2027].fica.fora, 8.41) && perto(m[2027].fica.final, 103.96), JSON.stringify(m[2027].fica));
+    ex('2027 (v877, art. 12 §2º V): IBS/CBS 8,8% sobre os 78,35 que ficam = 6,89 (não sobre o preço com ICMS) · ICMS 18% sobre o total = 18,71 · por dentro 97,06 · final 103,96', perto(m[2027].fica.fora, 6.89) && perto(m[2027].fica.velho, 18.71) && perto(m[2027].fica.base, 97.06) && perto(m[2027].fica.final, 103.96) && perto(m[2027].fica.fica, 78.35), JSON.stringify(m[2027].fica));
+    ex('2027 leitura PLP (dupla exclusão): ICMS 18% sem o IBS/CBS = 17,20 · IBS/CBS 6,89 · final 102,44', perto(r.plp2027.velho, 17.20) && perto(r.plp2027.fora, 6.89) && perto(r.plp2027.final, 102.44), JSON.stringify(r.plp2027));
     /* 2029: ICMS 16,2% por dentro → base 78,35/0,838 = 93,50; fora 10,57% → 9,88; final 103,38 */
-    ex('2029: ICMS a 9/10 (16,2%) → por dentro 93,50 · IBS/CBS 10,57% = 9,88 · final 103,38', perto(m[2029].fica.base, 93.50) && perto(m[2029].fica.fora, 9.88) && perto(m[2029].fica.final, 103.38), JSON.stringify(m[2029].fica));
+    ex('2029: ICMS a 9/10 (16,2%) sobre o total = 16,75 · IBS/CBS 10,57% sobre 78,35 = 8,28 · por dentro 95,10 · final 103,38', perto(m[2029].fica.velho, 16.75) && perto(m[2029].fica.fora, 8.28) && perto(m[2029].fica.base, 95.10) && perto(m[2029].fica.final, 103.38), JSON.stringify(m[2029].fica));
     ex('fica com você constante em todos os anos', [2027, 2029, 2033].every((a) => perto(m[a].fica.fica, 78.35)));
     ex('−60% (papel higiênico) em 2033: 78,35 × 1,106 = 86,66', perto(m[2033].red60.final, 86.66), m[2033].red60.final);
     console.log('\n-- as estratégias fixam o que prometem --');
     ex('manter preço: final 100 em 2033 → fica 79,05 (+0,70)', perto(m[2033].preco.final, 100) && perto(m[2033].preco.fica, 79.05) && perto(m[2033].preco.dFica, 0.70), JSON.stringify(m[2033].preco));
     ex('cliente PJ: por dentro 100 · final 126,50 · fica 100', perto(m[2033].pj.base, 100) && perto(m[2033].pj.final, 126.5) && perto(m[2033].pj.fica, 100), JSON.stringify(m[2033].pj));
-    ex('cliente PJ em 2027: final 100 + 8,8 = 108,80; fica 82', perto(m[2027].pj.final, 108.8) && perto(m[2027].pj.fica, 82), JSON.stringify(m[2027].pj));
+    ex('cliente PJ em 2027: líquido PJ mantido em 100 · fica 80,72 · IBS/CBS 7,10 · final 107,10', perto(m[2027].pj.liqPJ, 100) && perto(m[2027].pj.fica, 80.72) && perto(m[2027].pj.fora, 7.10) && perto(m[2027].pj.final, 107.10), JSON.stringify(m[2027].pj));
     console.log('\n-- casos especiais --');
     ex('Simples: preço igual em todos os anos, com o motivo', [2027, 2029, 2033].every((a) => m[a].simples.final === 100 && m[a].simples.neutro) && /DAS/.test(m[2033].simples.motivo));
     ex('2026: igual a hoje (teste compensável)', m[2026].fica.final === 100 && m[2026].fica.neutro && /2026/.test(m[2026].fica.motivo));
@@ -142,10 +144,12 @@ function rodar(html, cfg) {
     if (APP.split(alvo).length !== 2) throw new Error('sabotagem "' + nome + '" não achou o alvo');
     const s = await rodar(APP.replace(alvo, troca)); ex(nome, !s.erro && teste(s), s.erro);
   };
-  await sab('por dentro sem o divisor (base = R) → 2027 sai 78,35 em vez de 95,55 → reprova', 'else { base=(R+dCusto)/(1-tD);', 'else { base=R+dCusto;',
-    (s) => !perto(s.m[2027].fica.base, 95.55));
-  await sab('IBS/CBS calculado por dentro (base/(1+t)) → 2033 diverge da nota → reprova', 'fora=base*tFora; fin=base+fora; velho=base*tD; fica=base-velho; }   /* fica = o de hoje ± a variação do custo */', 'fora=base-base/(1+tFora); fin=base; velho=base*tD; fica=base-velho; }',
+  await sab('pivô sem o ICMS por dentro (por dentro = R) → 2027 sai 78,35 em vez de 97,06 → reprova', 'else { q=ida(R+dCusto); }', 'else { q={fica:R+dCusto,fora:tFora*(R+dCusto),velho:0,fin:(R+dCusto)*(1+tFora),base:R+dCusto}; }',
+    (s) => !perto(s.m[2027].fica.base, 97.06));
+  await sab('IBS/CBS calculado por dentro (R − R/(1+t)) → 2033 diverge da nota → reprova', 'var f=tFora*Rf, v=fisco', 'var f=Rf-Rf/(1+tFora), v=fisco',
     (s) => !perto(s.m[2033].fica.final, 99.11));
+  await sab('ICMS de volta à base do IBS/CBS (o erro do v866-v876) → 2027 sai 8,41 em vez de 6,89 → reprova', 'var f=tFora*Rf, v=fisco', 'var f=tFora*Rf/(1-tD), v=fisco',
+    (s) => !perto(s.m[2027].fica.fora, 6.89));
   await sab('Simples tratado como Presumido → preço muda → reprova', "var neutro=(regime==='simples' || ano<=2026);", "var neutro=(ano<=2026);",
     (s) => !(s.m[2033].simples.final === 100));
   await sab('ST volta a zero de ICMS → cimento sobe 20% → reprova', 'var icms=(item.icms!=null && +item.icms>0)?+item.icms:(+cfg.icmsMedio||0);', 'var icms=item.st?0:((item.icms!=null && +item.icms>0)?+item.icms:(+cfg.icmsMedio||0));',

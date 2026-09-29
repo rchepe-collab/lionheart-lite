@@ -86,7 +86,7 @@ function rodar(html) {
     console.log('\n-- repasse geral 50% e 0% --');
     ex('50%: parafuso 2033 = 100 + 0,5 × (99,11 − 100) = 99,56', perto(y(r.r50, 'A1', 2033).decidido, 99.56), String(y(r.r50, 'A1', 2033).decidido));
     ex('50%: parafuso 2027 = 100 + 0,5 × (103,96 − 100) = 101,98', perto(y(r.r50, 'A1', 2027).decidido, 101.98), String(y(r.r50, 'A1', 2027).decidido));
-    ex('50%: o que não repassou sai do que fica: fica decidido 2027 = 101,98 ÷ 1,088 × (1 − 0,18) = 76,86 (< 78,35)', perto(y(r.r50, 'A1', 2027).ficaDecidido, 76.86) && y(r.r50, 'A1', 2027).ficaDecidido < 78.35, String(y(r.r50, 'A1', 2027).ficaDecidido));
+    ex('50%: o que não repassou sai do que fica: fica decidido 2027 = 101,98 × 0,82 ÷ 1,088 = 76,86 (< 78,35)', perto(y(r.r50, 'A1', 2027).ficaDecidido, 76.86) && y(r.r50, 'A1', 2027).ficaDecidido < 78.35, String(y(r.r50, 'A1', 2027).ficaDecidido));
     ex('50%: absorvido 2027 = 103,96 − 101,98 = 1,98', perto(y(r.r50, 'A1', 2027).absorvido, 1.98), String(y(r.r50, 'A1', 2027).absorvido));
     ex('50%: lucro decidido 2027 = fica decidido − custo do ano (57,81) = 19,05', perto(y(r.r50, 'A1', 2027).lucroDecidido, 19.05), String(y(r.r50, 'A1', 2027).lucroDecidido));
     ex('KPI "Preço decidido em 2033" aparece com "calculado" ao lado; bloco "Calculado × decidido"', /Preço decidido em 2033/.test(r.r50.html) && /calculado [+−-]?\d/.test(r.r50.html) && /Calculado × decidido \(repasse\)/.test(r.r50.html), '');
@@ -102,11 +102,11 @@ function rodar(html) {
     console.log('\n-- conta aberta (▸) --');
     const L = r.contaLinhas.filter((l) => l.length); const linha = (rot) => L.find((l) => l[0] === rot) || [];
     ex('abriu com as linhas hoje, 2026 (teste), 2027 … 2033', L.length === 9 && linha('hoje').length > 0 && linha('2033').length > 0, L.map((l) => l[0]).join(','));
-    ex('hoje: ICMS 18% · PIS/COFINS 3,65% · por dentro 100,00 · prateleira 100,00 · fica 78,35', linha('hoje')[1] === '18%' && linha('hoje')[2] === '3,65%' && linha('hoje')[3] === '100,00' && linha('hoje')[5] === '100,00' && linha('hoje')[7] === '78,35', linha('hoje').join(' | '));
-    ex('2027: ICMS 18% · PIS 0 (CBS substitui) · por dentro 95,55 · IBS/CBS 8,8% = 8,41 · prateleira 103,96', linha('2027')[1] === '18%' && /^0 \(CBS substitui\)/.test(linha('2027')[2]) && linha('2027')[3] === '95,55' && /8,8% = 8,41/.test(linha('2027')[4]) && linha('2027')[5] === '103,96', linha('2027').join(' | '));
-    ex('2029: ICMS 16,2% (9/10) · por dentro 93,50 · IBS/CBS 10,57% = 9,88 · prateleira 103,38', /^16,2% \(9\/10\)/.test(linha('2029')[1]) && linha('2029')[3] === '93,50' && /10,57% = 9,88/.test(linha('2029')[4]) && linha('2029')[5] === '103,38', linha('2029').join(' | '));
-    ex('2033: ICMS 0 · por dentro 78,35 · IBS/CBS 26,5% = 20,76 · prateleira 99,11 · fica 78,35', linha('2033')[1] === '0%' && linha('2033')[3] === '78,35' && /26,5% = 20,76/.test(linha('2033')[4]) && linha('2033')[5] === '99,11' && linha('2033')[7] === '78,35', linha('2033').join(' | '));
-    ex('a conta traz custo e lucro (o parafuso tem custo): 2033 custo 57,81 · lucro 20,54', linha('2033')[8] === '57,81' && linha('2033')[9] === '20,54', linha('2033').slice(8).join(' | '));
+    ex('hoje: ICMS 18% · PIS/COFINS 3,65% · por dentro 100,00 · prateleira 100,00 · fica 78,35', linha('hoje')[1] === '18%' && linha('hoje')[2] === '3,65%' && linha('hoje')[3] === '100,00' && linha('hoje')[5] === '100,00' && linha('hoje')[6] === '78,35', linha('hoje').join(' | '));
+    ex('2027: ICMS 18% · PIS 0 (CBS substitui) · por dentro 97,06 · IBS/CBS 8,8% = 6,89 (sobre os 78,35, art. 12 §2º V) · prateleira 103,96', linha('2027')[1] === '18%' && /^0 \(CBS substitui\)/.test(linha('2027')[2]) && linha('2027')[3] === '97,06' && /8,8% = 6,89/.test(linha('2027')[4]) && linha('2027')[5] === '103,96', linha('2027').join(' | '));
+    ex('2029: ICMS 16,2% (9/10) · por dentro 95,10 · IBS/CBS 10,57% = 8,28 · prateleira 103,38', /^16,2% \(9\/10\)/.test(linha('2029')[1]) && linha('2029')[3] === '95,10' && /10,57% = 8,28/.test(linha('2029')[4]) && linha('2029')[5] === '103,38', linha('2029').join(' | '));
+    ex('2033: ICMS 0 · por dentro 78,35 · IBS/CBS 26,5% = 20,76 · prateleira 99,11 · fica 78,35', linha('2033')[1] === '0%' && linha('2033')[3] === '78,35' && /26,5% = 20,76/.test(linha('2033')[4]) && linha('2033')[5] === '99,11' && linha('2033')[6] === '78,35', linha('2033').join(' | '));
+    ex('a conta traz custo e lucro (o parafuso tem custo): 2033 custo 57,81 · lucro 20,54', linha('2033')[7] === '57,81' && linha('2033')[8] === '20,54', linha('2033').slice(7).join(' | '));
     ex('o rodapé explica o derretimento (9/10 … 6/10; 2033: zero) e a estratégia', /9\/10, 8\/10, 7\/10, 6\/10; 2033: zero/.test(r.conta) && /os 78,35 são fixos/.test(r.conta), r.conta.slice(-200));
     ex('clicar de novo fecha a conta', r.contaFechou === true, '');
     console.log('\n-- Excel (repasse geral 50%) --');
