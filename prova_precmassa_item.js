@@ -53,8 +53,8 @@ function rodar(html) {
     ex('os três caminhos: segurar · repassar · dividir (repasse 50%)', r.caminhos.length === 3 && /Segurar/.test(r.caminhos[0]) && /Repassar/.test(r.caminhos[1]) && /Dividir \(repasse 50%\)/.test(r.caminhos[2]), r.caminhos.join(' | '));
     ex('dividir: preço 99,56 (metade da diferença)', /99,56/.test(r.html), '');
     const l27 = r.linhas.find((l) => l[0] === '2027') || [], l33 = r.linhas.find((l) => l[0] === '2033') || [];
-    ex('conta aberta 2027: 18% · 0 (CBS substitui) · 97,06 · 8,8% = 6,89 · 103,96 · 78,35 · custo 57,81 · lucro 20,54', l27[1] === '18%' && l27[3] === '97,06' && /6,89/.test(l27[4]) && l27[5] === '103,96' && l27[7] === '57,81' && l27[8] === '20,54', l27.join(' | '));
-    ex('conta aberta 2033: 0% · 78,35 · 26,5% = 20,76 · 99,11', l33[1] === '0%' && l33[3] === '78,35' && /20,76/.test(l33[4]) && l33[5] === '99,11', l33.join(' | '));
+    ex('conta aberta 2027 (ordem de construção): custo 57,81 + lucro 20,54 = fica 78,35 · ICMS 18,71 · PIS 0 (CBS substitui) · IBS/CBS 6,89 · prateleira 103,96', l27[1] === '57,81' && l27[2] === '20,54' && l27[3] === '78,35' && /^18,71/.test(l27[4]) && /CBS substitui/.test(l27[5]) && /^6,89/.test(l27[6]) && l27[7] === '103,96', l27.join(' | '));
+    ex('conta aberta 2033: fica 78,35 · ICMS 0 · IBS/CBS 20,76 (26,5%) · prateleira 99,11', l33[3] === '78,35' && /^0,00/.test(l33[4]) && /^20,7626,5%/.test(l33[6]) && l33[7] === '99,11', l33.join(' | '));
     ex('leitura PLP muda o 2027 para 102,44 (dupla exclusão)', /102,44/.test(r.kpiPlp[1]), r.kpiPlp[1]);
     ex('Simples: o preço não muda (100,00 em 2027 e 2033)', /100,00/.test(r.kpiSn[1]) && /100,00/.test(r.kpiSn[2]), r.kpiSn[1] + ' ' + r.kpiSn[2]);
     ex('NBS 1.0303.11.00 → −40% · 200 · 200048, descrição da base', /Redução 40%/.test(r.nbs.classe) && /200 · 200048/.test(r.nbs.classe) && /hospedagem/i.test(r.nbs.desc), r.nbs.classe.slice(0, 80) + ' / ' + r.nbs.desc);
