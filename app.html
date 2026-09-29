@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v878';</script>
+<body><script>window.LH_VERSAO='v879';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -12144,14 +12144,32 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
     <div id="cm-result"></div>
   </div>
   <div class="page" id="page-precmassa">
+    <style>#page-precmassa.pm-so-item #pm-upload-card,#page-precmassa.pm-so-item #pm-result{display:none!important}</style>
     <div class="calc-page-header">
       <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.18),rgba(22,196,124,0.1));">◆</div>
       <div>
-        <h2>Precificação em Massa 2027-33 · Tabela de preços da Reforma</h2>
+        <h2>Formação de Preço e Precificação em Massa 2027-33 · um item ou o catálogo inteiro</h2>
         <p>Esta ferramenta <b>reprecifica, não forma preço</b>: parte do preço que você já pratica e responde quanto ele muda dado o que mudou — o imposto (ano a ano, 2027-33) e, se a planilha trouxer, o custo de compra. O imposto velho por dentro derrete, o IBS/CBS entra por fora, e a tabela diz qual preço mantém o que fica com você em cada item — ou, se você mantiver o preço, quanto sobra. Não calcula custo, rateio nem margem ideal (isso é a Formação de Preço). A classificação vem do Classificador em Massa; a nota simulada prova o resultado.</p>
       </div>
     </div>
-    <div class="input-card">
+    <div class="input-card" id="pm-item-card" style="border-color:rgba(201,162,39,.45)">
+      <h3>Um item — Formação de Preço 2027-33 <span style="font-weight:400;font-size:.8rem;color:var(--text2)">· o mesmo motor do catálogo, para um produto ou serviço</span></h3>
+      <div class="input-grid-2">
+        <div class="input-group"><label>NCM (produto) ou NBS (serviço)</label>
+          <input id="pmi_cod" placeholder="ex.: 73181500 · 1.0303.11.00 · vazio = regra geral 26,5%" onchange="lhPmItemClassifica()"><span class="lh-hint" data-hint="8 dígitos = NCM (mercadoria); com pontos no padrão 1.0303.11.00 = NBS (serviço). A alíquota nova vem do Classificador (mesma base da nota e do catálogo). Vazio: tributação integral." onclick="lhHint(event,this)">?</span></div>
+        <div class="input-group"><label>Descrição (ajuda a classificar)</label><input id="pmi_desc" placeholder="ex.: parafuso sextavado · hospedagem em quarto" onchange="lhPmItemClassifica()"></div>
+        <div class="input-group"><label>Preço de venda hoje (R$)</label><input type="number" step="0.01" id="pmi_preco" placeholder="100,00"></div>
+        <div class="input-group"><label>Custo de compra hoje (R$) — opcional</label><input type="number" step="0.01" id="pmi_custo" placeholder="liga margem %, markup e custo novo"></div>
+        <div class="input-group"><label>ICMS (produto) ou ISS (serviço) por dentro (%)</label>
+          <div style="display:flex;gap:8px;align-items:center"><input type="number" step="0.1" id="pmi_icms" placeholder="18" style="flex:1"><select id="pmi_uf" onchange="lhPmItemUF()" title="ICMS modal da UF (indicativo)" style="width:auto"><option value="">UF…</option></select></div></div>
+        <div class="input-group"><label>Custo de compra novo (R$) — opcional</label><input type="number" step="0.01" id="pmi_custonovo" placeholder="o leite que custava 5 passou a 4"></div>
+        <div class="input-group" style="grid-column:1/-1"><div id="pmi_class" style="font-size:.82rem;color:var(--text2)">Regime, estratégia, leitura da transição e tipo de cliente vêm do bloco "Como você vende", logo abaixo.</div></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px"><button class="btn-calcular" onclick="lhPmItem()">◆ Calcular este item</button><button class="btn-secondary" onclick="lhPmItemExemplo()">▤ Exemplo (R$ 100 · ICMS 17 · Presumido)</button></div>
+      <div id="pmi_res" style="margin-top:12px"></div>
+    </div>
+    <div id="pm-catalogo-convite" style="display:none"></div>
+    <div class="input-card" id="pm-vende-card">
       <h3>Como você vende</h3>
       <div class="input-grid-2">
         <div class="input-group"><label>Regime tributário</label>
@@ -58770,14 +58788,16 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var tr=el.closest('tr'); var nx=tr.nextElementSibling;
    if(nx && nx.classList.contains('pm-det')){ nx.parentNode.removeChild(nx); el.textContent='▸'; return; }
    el.textContent='▾';
+   var wrap=tr.closest('div'); var larg=(wrap&&wrap.clientWidth)?(wrap.clientWidth-24):900;
+   tr.insertAdjacentHTML('afterend','<tr class="pm-det"><td colspan="30" style="padding:0;background:rgba(201,162,39,.05);border-bottom:1px solid rgba(201,162,39,.25)"><div style="position:sticky;left:0;max-width:'+larg+'px;overflow-x:auto;padding:10px 14px 14px 32px;box-sizing:border-box">'+window.lhPmContaHTML(r,cfg)+'</div></td></tr>');
+ };
+ /* o miolo da conta aberta — usado pela linha do catálogo e pelo cartão "um item" */
+ window.lhPmContaHTML=function(r,cfg){
    var th=function(t){ return '<th style="text-align:right;padding:5px 6px;color:var(--gold);font-size:.68rem;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.12)">'+t+'</th>'; };
    var td=function(v,extra){ return '<td style="text-align:right;padding:5px 6px;border-bottom:1px solid rgba(255,255,255,.05);'+(extra||'')+'">'+v+'</td>'; };
    var temC=r.f.custo!=null && r.f.custo>0, temI=!!(r.c.anos[2026].ipiHoje), temR=Math.abs(r.c.repasse.pct-100)>0.001, servico=r.f.tipo==='S';
    var A=(typeof getAliq==='function')?getAliq:null;
-   /* v877 · a tabela-mãe rola na horizontal e é larga; a conta fica presa (sticky) na área visível, com rolagem própria — antes
-      ficava cortada à direita ("o lucro não aparece") */
-   var wrap=tr.closest('div'); var larg=(wrap&&wrap.clientWidth)?(wrap.clientWidth-24):900;
-   var h='<tr class="pm-det"><td colspan="30" style="padding:0;background:rgba(201,162,39,.05);border-bottom:1px solid rgba(201,162,39,.25)"><div style="position:sticky;left:0;max-width:'+larg+'px;overflow-x:auto;padding:10px 14px 14px 32px;box-sizing:border-box">';
+   var h='';
    h+='<div style="font-size:.82rem;color:var(--text2);margin-bottom:6px"><b style="color:var(--gold)">Conta aberta — '+String(r.f.desc||'').slice(0,70)+'</b> · '+(CM_TRAT_LABEL[r.f.trat]||r.f.trat)+' ('+pct(cmAliqAno(r.f.trat,2033))+' em 2033) · estratégia: '+ESTR[cfg.estr]+(temR?' · repasse '+r.c.repasse.pct+'% ('+r.c.repasse.origem+')':'')+'</div>';
    h+='<table style="border-collapse:collapse;font-size:.78rem;white-space:nowrap"><thead><tr><th style="text-align:left;padding:5px 6px;color:var(--gold);font-size:.68rem;border-bottom:1px solid rgba(255,255,255,.12)">ANO</th>'+th(servico?'ISS DENTRO':'ICMS DENTRO')+th('PIS/COF. DENTRO')+th('POR DENTRO = LÍQ. PJ')+th('IBS/CBS FORA')+(temI?th('IPI'):'')+th('PRATELEIRA')+th('FICA')+(temC?th('CUSTO')+th('LUCRO'):'')+(temR?th('DECIDIDO')+th('FICA DEC.'):'')+'</tr></thead><tbody>';
    var hoje=r.c.anos[2026];
@@ -58791,9 +58811,66 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      h+=linha(String(a)+(a===2026?' (teste)':''),o,ic,pi,a===2033); });
    h+='</tbody></table>';
    h+='<div style="font-size:.76rem;color:var(--text2);margin-top:8px;white-space:normal">O preço por dentro cobre só o imposto velho que ainda existe no ano (2029-32: ICMS/ISS a 9/10, 8/10, 7/10, 6/10; 2033: zero). O IBS/CBS vai por fora, sobre o que fica com você (sem ICMS/ISS nem PIS/COFINS na base — LC 214 art. 12 §2º V). '+(cfg.leitura==='plp'?'Leitura PLP 16/2025: o IBS/CBS também fica fora da base do ICMS/ISS. ':'Leitura dos fiscos: o ICMS/ISS incide sobre o total com o IBS/CBS (SP, CT 33.083/2026). ')+(cfg.estr==='fica'?'Estratégia "manter o que fica": os '+fmt(hoje.ficaHoje)+' são fixos em todos os anos'+(r.c.custoNovo!=null?' (± a variação líquida do custo novo)':'')+'.':'')+(temC?' Custo do ano = custo de hoje menos o PIS/COFINS cumulativo que vira crédito a partir de 2027.':'')+(temR?' Decidido = hoje + '+r.c.repasse.pct+'% × (prateleira − hoje); o que não é repassado sai do que fica com você.':'')+'</div>';
-   h+='</div></td></tr>';
-   tr.insertAdjacentHTML('afterend',h);
+   return h;
  };
+
+ /* ═══ ★ v879 · UM ITEM — a Formação de Preço dentro da Precificação em Massa, com o mesmo motor ═══
+    Antes eram duas telas e dois motores (fn_formacao_preco × lhPreco) que davam o mesmo preço final por simetria de
+    álgebra e divergiam na divisão do imposto. Agora: um item = um catálogo de uma linha. Classifica pelo NCM/NBS como o
+    Classificador, precifica com lhPreco (custo, crédito, custo novo, estratégias, leitura, repasse) e mostra a conta
+    aberta e os três caminhos da Formação de Preço (segurar · repassar · dividir). */
+ window.lhPmItemClassifica=function(){
+   var cod=String((document.getElementById('pmi_cod')||{}).value||'').trim(), desc=String((document.getElementById('pmi_desc')||{}).value||'').trim();
+   var out={trat:'cheia', fonte:'Art. 14 LC 214 — regra geral (sem NCM/NBS informado)', tipo:'P', ncm:'', nbs:'', status:'REGRA_GERAL', ok:true};
+   var dig=cod.replace(/\D/g,'');
+   if(/^\d\.\d{4}\.\d{2}\.\d{2}$/.test(cod) || (cod.indexOf('.')>=0 && dig.length===9)){            /* NBS */
+     out.tipo='S'; out.nbs=cod; var x=null;
+     try{ var nd=dig; for(var i=0;i<LH_FISCAL.nbs.length;i++){ var c=String(LH_FISCAL.nbs[i].nbs||'').replace(/\D/g,''); if(c && (c===nd || c.indexOf(nd)===0 || nd.indexOf(c)===0)){ x=LH_FISCAL.nbs[i]; break; } } }catch(_e){}
+     if(x && typeof window.SN_NBS_TRAT==='function'){ var r=window.SN_NBS_TRAT(x); if(r.especifico){ out.ok=false; out.status='REVISAO_TRIBUTARIA'; out.fonte=r.art+' · NBS '+(x.nbs||'')+' — regime específico: não se precifica pela alíquota geral'; } else { out.trat=r.trat; out.fonte=(r.art?r.art+' · ':'')+'NBS '+(x.nbs||'')+' — '+String(x.desc||'').slice(0,80)+(r.conferir?' (regra geral — NBS sem regime específico mapeado)':''); out.status=r.conferir?'REGRA_GERAL':'CONFIRMADO'; } if(!desc) (document.getElementById('pmi_desc')||{}).value=String(x.desc||'').slice(0,60); }
+     else { out.fonte='NBS não localizado na tabela — regra geral 26,5% (confira)'; }
+   } else if(dig.length>=4){                                                                             /* NCM */
+     out.ncm=dig; var t=(typeof cmBuscaTrat==='function')?cmBuscaTrat(dig,desc):null;
+     if(t){ out.trat=t.trat; out.fonte=t.fonte||''; out.status=/CONFERIR/.test(out.fonte)?'REVISAO_TRIBUTARIA':((t.trat&&t.trat!=='cheia'&&t.trat!=='cheia+IS')?'BENEFICIO_IDENTIFICADO':'CONFIRMADO');
+       if(t.trat==='adrem'){ var mp=(typeof cmCclassPorFonte==='function')?cmCclassPorFonte(t.trat,t.fonte||''):['','']; if(String(mp[1]).replace('*','')==='000001'){ out.trat='cheia+IS'; out.status='CONFIRMADO'; } else { out.ok=false; out.fonte='regime ad rem (R$/unidade) — combustível: não é percentual'; } } }
+     else if(typeof cmNcmValido==='function' && cmNcmValido(dig)){ out.fonte='Art. 14 LC 214 — regra geral (NCM válido na tabela oficial, não consta dos regimes diferenciados)'; }
+     else { out.fonte='NCM não localizado na tabela oficial — regra geral 26,5% (confira o código)'; out.status='REVISAO_NCM'; }
+     if(!desc && window.LH_NCM_OFICIAL && LH_NCM_OFICIAL.porCodigo){ var of=LH_NCM_OFICIAL.porCodigo(dig); if(of) (document.getElementById('pmi_desc')||{}).value=String(of[1]||'').slice(0,60); }
+   }
+   var el=document.getElementById('pmi_class'); if(el){ var mp2=(typeof cmCclassPorFonte==='function')?cmCclassPorFonte(out.trat,out.fonte):['','']; el.innerHTML=(cod?('<b style="color:'+(out.ok?'var(--gold)':'#e05a4d')+'">'+(CM_TRAT_LABEL[out.trat]||out.trat)+'</b> · '+pct(cmAliqAno(out.trat,2033))+' em 2033 · '+mp2[0]+' · '+String(mp2[1]).replace('*','')+' <span style="color:var(--text2)">— '+String(out.fonte).slice(0,160)+'</span>'):'Regime, estratégia, leitura da transição e tipo de cliente vêm do bloco "Como você vende", logo abaixo.'); }
+   window._PMI_CLASS=out; return out;
+ };
+ window.lhPmItemUF=function(){ var uf=(document.getElementById('pmi_uf')||{}).value; if(uf && window.FP_UF_ICMS && FP_UF_ICMS[uf]) (document.getElementById('pmi_icms')||{}).value=FP_UF_ICMS[uf]; };
+ window.lhPmItemExemplo=function(){ var S=function(id,v){ var e=document.getElementById(id); if(e) e.value=v; }; S('pmi_cod',''); S('pmi_desc','Exemplo do encontro Fecomércio-RS (R$ 100)'); S('pmi_preco',100); S('pmi_custo',''); S('pmi_icms',17); S('pmi_custonovo',''); S('pm_regime','presumido'); S('pm_estr','fica'); lhPmItemClassifica(); lhPmItem(); };
+ window.lhPmItem=function(){
+   var res=document.getElementById('pmi_res'); if(!res) return;
+   var g=function(id){ return num((document.getElementById(id)||{}).value); };
+   var preco=g('pmi_preco'); if(!(preco>0)){ res.innerHTML='<div style="color:#e05a4d;font-size:.86rem">Informe o preço de venda de hoje.</div>'; return; }
+   var cl=window._PMI_CLASS||window.lhPmItemClassifica();
+   var cfg=cfgTela(); cfg.repLinha={}; cfg.repGrupo={};
+   if(!cl.ok){ res.innerHTML='<div class="input-card" style="border-color:rgba(224,90,77,.4)"><b style="color:#e05a4d">Este item não se precifica pela alíquota geral.</b> <span style="color:var(--text2)">'+cl.fonte+'</span></div>'; return; }
+   var f={cod:'ITEM', desc:String((document.getElementById('pmi_desc')||{}).value||cl.ncm||cl.nbs||'item'), ncm:cl.ncm, nbs:cl.nbs, tipo:cl.tipo, trat:cl.trat, status:cl.status, fonte:cl.fonte, preco:preco, custo:g('pmi_custo'), ipi:null, icms:g('pmi_icms'), st:false, cstIcms:'', cstPis:'', custoNovo:g('pmi_custonovo'), varCusto:null, grupo:''};
+   var c=window.lhPmCalcular(f,cfg); if(!c.anos[2033]){ res.innerHTML='<div style="color:#e05a4d">Não foi possível precificar (ad rem).</div>'; return; }
+   var r={f:f,c:c}, y33=c.anos[2033], y27=c.anos[2027];
+   /* os três caminhos da Formação de Preço, com o motor: segurar = manter o preço; repassar = a estratégia escolhida; dividir = repasse 50% */
+   var seg=window.lhPreco({trat:f.trat,preco:f.preco,icms:f.icms,st:false,pis:c.pisUsado,ipi:null,custo:f.custo,custoNovo:c.custoNovo},2033,cfg,'preco');
+   var cam=function(tit,cor,txt){ return '<div style="background:rgba(255,255,255,.03);border:1px solid '+cor+';border-radius:12px;padding:12px 14px"><div style="font-weight:800;color:'+cor+';font-size:.86rem">'+tit+'</div><div style="font-size:.8rem;color:#d4dce6;margin-top:6px;line-height:1.55">'+txt+'</div></div>'; };
+   var dF=y33.dFica, dP=y33.dFinal;
+   var h='<div class="kpi-grid">';
+   h+='<div class="kpi-card kpi-hero"><div class="kpi-label">Hoje</div><div class="kpi-value">'+fmt(y33.hojeCli)+'</div><div class="kpi-label" style="margin-top:4px">fica '+fmt(y33.ficaHoje)+(y33.lucroHoje!=null?' · lucro '+fmt(y33.lucroHoje):'')+'</div></div>';
+   h+='<div class="kpi-card"><div class="kpi-label">2027 · '+ESTR[cfg.estr].split(' (')[0]+'</div><div class="kpi-value">'+fmt(y27.decidido)+'</div><div class="kpi-label" style="margin-top:4px">IBS/CBS '+fmt(y27.fora)+' fora · ICMS/ISS '+fmt(y27.velho)+' dentro</div></div>';
+   h+='<div class="kpi-card"><div class="kpi-label">2033 · prateleira</div><div class="kpi-value" style="color:'+(dP>0?'#e05a4d':dP<0?'#16c47c':'inherit')+'">'+fmt(y33.decidido)+'</div><div class="kpi-label" style="margin-top:4px">'+(dP>=0?'+':'')+pct(dP/(y33.hojeCli||1)*100)+' · fica '+fmt(y33.ficaDecidido)+(y33.lucroDecidido!=null?' · lucro '+fmt(y33.lucroDecidido):'')+'</div></div>';
+   h+='<div class="kpi-card"><div class="kpi-label">Líquido para PJ 2033</div><div class="kpi-value" style="color:#9fc">'+fmt(y33.liqPJ)+'</div><div class="kpi-label" style="margin-top:4px">o cliente regular recupera '+fmt(y33.fora)+' de IBS/CBS</div></div>';
+   h+='</div>';
+   h+='<div style="margin:12px 0 6px;font-weight:700;color:var(--gold)">A decisão em 2033: o que fazer com a diferença?</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px">';
+   var ganho=seg?(seg.fica-seg.ficaHoje):0;
+   h+=cam('1 · Segurar o preço ('+fmt(y33.hojeCli)+')', ganho>=0?'#3ecf8e':'#e8916f', (ganho>=0?'Ganho de margem explícito: <b>+'+fmt(ganho)+'/item</b> — o que fica passa de '+fmt(seg.ficaHoje)+' para '+fmt(seg.fica)+'.':'Mantendo o preço, o que fica cai <b>'+fmt(-ganho)+'/item</b> ('+fmt(seg.ficaHoje)+' → '+fmt(seg.fica)+'). Segurar aqui é perder margem.'));
+   h+=cam('2 · Repassar ('+ESTR[cfg.estr].split(' (')[0].toLowerCase()+')', '#4a9eff', 'Preço calculado <b>'+fmt(y33.finalCli)+'</b> ('+(dP>=0?'+':'')+pct(dP/(y33.hojeCli||1)*100)+'). '+(dP<0?'É a arma competitiva: preço menor com a mesma sobra.':'Recompõe a sobra; negocie cedo com quem tem contrato.'));
+   h+=cam('3 · Dividir (repasse 50%)', 'var(--gold2,#e0b93a)', 'Preço em <b>'+fmt(r2(y33.hojeCli+0.5*(y33.finalCli-y33.hojeCli)))+'</b>: metade da diferença vai ao cliente, metade fica com você. Na tabela do catálogo isso é o campo "repasse".');
+   h+='</div>';
+   h+='<div style="margin-top:12px;overflow-x:auto">'+window.lhPmContaHTML(r,cfg)+'</div>';
+   res.innerHTML=h;
+ };
+ (function(){ var sel=document.getElementById('pmi_uf'); if(sel && window.FP_UF_ICMS){ Object.keys(FP_UF_ICMS).forEach(function(uf){ var o=document.createElement('option'); o.value=uf; o.textContent=uf+' · '+FP_UF_ICMS[uf]+'%'; sel.appendChild(o); }); } })();
 
  /* ── exportações ── */
  window.lhPmLinhas=function(){
@@ -58874,7 +58951,21 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
     por referência léxica — por isso se espera o CM_ULTIMO, não se embrulha a função) */
  window.lhPmEsperar=function(){ window.CM_ULTIMO=null; var t=0; (function p(){ if(window.CM_ULTIMO&&CM_ULTIMO.itens){ window._PM_APOS=false; try{ abrirPagina('precmassa'); window.lhPmRender(); }catch(_e){} return; } if(++t<600) setTimeout(p,250); })(); };
  var _ap=window.abrirPagina;
- window.abrirPagina=function(id){ var r=_ap.apply(this,arguments); if(id==='precmassa'){ wire(); var n=document.getElementById('pm-n'); if(n&&window.CM_ULTIMO&&CM_ULTIMO.itens){ n.textContent=CM_ULTIMO.itens.length.toLocaleString('pt-BR')+' itens classificados prontos para precificar'; n.style.display=''; } } return r; };
+ window.abrirPagina=function(id){
+   /* ★ v879 · Formação de Preço = o cartão "um item" da Precificação em Massa. Quem tem o catálogo (Consultoria+) cai na
+      página inteira; quem está na Adequação vê o item + "Como você vende" e o catálogo vira convite de upgrade. */
+   if(id==='formpreco'){
+     var lib=true; try{ lib=!(window.LH_PLANO && LH_PLANO.carregado() && !LH_PLANO.liberado('precmassa')); }catch(_e){}
+     var nav=arguments[1];
+     if(lib){ var r0=_ap.call(this,'precmassa',nav); wire(); document.getElementById('page-precmassa').classList.remove('pm-so-item'); var cv=document.getElementById('pm-catalogo-convite'); if(cv) cv.style.display='none'; try{ document.getElementById('pm-item-card').scrollIntoView({block:'start'}); }catch(_e){} return r0; }
+     var r1=_ap.call(this,'formpreco',nav); wire();
+     document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); }); var pg=document.getElementById('page-precmassa'); pg.classList.add('active','pm-so-item');
+     var cv2=document.getElementById('pm-catalogo-convite'); if(cv2){ cv2.style.display=''; try{ cv2.innerHTML=LH_PLANO.cardConvite('precmassa'); }catch(_e){ cv2.innerHTML=''; } }
+     return r1;
+   }
+   var r=_ap.apply(this,arguments);
+   if(id==='precmassa'){ wire(); document.getElementById('page-precmassa').classList.remove('pm-so-item'); var cv3=document.getElementById('pm-catalogo-convite'); if(cv3) cv3.style.display='none'; var n=document.getElementById('pm-n'); if(n&&window.CM_ULTIMO&&CM_ULTIMO.itens){ n.textContent=CM_ULTIMO.itens.length.toLocaleString('pt-BR')+' itens classificados prontos para precificar'; n.style.display=''; } }
+   return r; };
  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',wire); else wire();
 })();
 </script>
