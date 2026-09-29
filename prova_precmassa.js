@@ -135,7 +135,7 @@ function rodar(html, cfg) {
     ex('Excel Precificacao traz IPI, Custo e Lucro por ano', r.xl && r.xl.cols && /IPI_2027/.test(r.xl.cols) && /Custo_2033/.test(r.xl.cols) && /Lucro_2033/.test(r.xl.cols) && /Liquido_PJ_2033/.test(r.xl.cols), r.xl && r.xl.cols);
     ex('Precificacao tem 7 linhas; Nao_precificados 2', r.xl && r.xl.n === 7 && r.xl.nao === 2, r.xl && r.xl.n + '/' + r.xl.nao);
     ex('Tabela_Precos_ERP: parafuso hoje 100 → 2033 99,11 e líquido PJ 78,35', r.xl && (() => { const h = r.xl.erp[0], v = r.xl.erp.find((x) => x[0] === 'A1'); return v && perto(v[2], 100) && perto(v[h.indexOf('Preco_2033')], 99.11) && perto(v[h.indexOf('Liquido_PJ_2033')], 78.35); })(), r.xl && JSON.stringify(r.xl.erp[1]));
-    ex('CSV para o ERP com Preco_final_2027..2033, Liquido_PJ e vírgula decimal', /Preco_final_2027;.*Preco_final_2033;Liquido_PJ_2027/.test(String(r.csv)) && /A1;PARAFUSO[^\n]*;99,11;/.test(String(r.csv)), String(r.csv).split('\n').slice(0, 2).join(' | '));
+    ex('CSV para o ERP com Preco_2027..2033 (decidido = calculado com 100%), Liquido_PJ e vírgula decimal', /Preco_2027;.*Preco_2033;Liquido_PJ_2027/.test(String(r.csv)) && /A1;PARAFUSO[^\n]*;99,11;/.test(String(r.csv)), String(r.csv).split('\n').slice(0, 2).join(' | '));
   }
   console.log('\n-- ao contrário --');
   const sab = async (nome, alvo, troca, teste) => {
