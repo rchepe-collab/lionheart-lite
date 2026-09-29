@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v875';</script>
+<body><script>window.LH_VERSAO='v876';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -58750,6 +58750,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    return d.rows.map(function(r){ var y33=r.c.anos[2033]; var o={cod:r.f.cod, desc:r.f.desc, ncm:r.f.nbs?('NBS '+r.f.nbs):r.f.ncm, trat:(CM_TRAT_LABEL[r.f.trat]||r.f.trat)+(y33.is?' (+IS não somado)':''), icms:r.c.icmsUsado+(r.f.st?' ST':''), icmsEst:r.c.icmsEstimado, pis:r.c.pisUsado, ipi:y33.ipiHoje||0, hoje:y33.hoje, hojeCli:y33.hojeCli, fica:y33.ficaHoje, custoHoje:y33.custoHoje, lucroHoje:y33.lucroHoje, grupo:r.f.grupo||'',
        custoNovo:r.c.custoNovo, soCusto:(r.c.soCusto?r.c.soCusto.finalCli:null), soCustoFica:(r.c.soCusto?r.c.soCusto.fica:null), soImposto33:(r.c.soImposto33?r.c.soImposto33.finalCli:null)};
      o.repasse=r.c.repasse.pct; o.repOrigem=r.c.repasse.origem;
+     var _mp=(typeof cmCclassPorFonte==='function')?cmCclassPorFonte(r.f.trat,r.f.fonte):['','']; o.cst=String(_mp[0]||''); o.cclass=String(_mp[1]||'').replace('*','');   /* v876: CST e cClassTrib na mesma linha do preço */
      ANOS.forEach(function(a){ var y=r.c.anos[a]; o['base'+a]=y.base; o['fora'+a]=y.fora; o['ipi'+a]=y.ipi||0; o['final'+a]=y.finalCli; o['liq'+a]=y.liqPJ; o['fica'+a]=y.fica; o['custo'+a]=y.custo; o['lucro'+a]=y.lucro; o['dec'+a]=y.decidido; o['ficaDec'+a]=y.ficaDecidido; }); o.var33=y33.dFinal; o.sinal=y33.sinal; return o; });
  };
  window.lhPmCSV=function(){
@@ -58757,10 +58758,10 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var AN=ANOS.filter(function(a){return a>=2027;});
    var temV=L.some(function(o){ return o.custoNovo!=null; });
    var temR=L.some(function(o){ return Math.abs(o.repasse-100)>0.001; });
-   var head=['Codigo','Descricao','NCM_NBS','Tratamento','Preco_hoje'].concat(temV?['Preco_hoje_custo_novo']:[]).concat(AN.map(function(a){ return 'Preco_'+a; })).concat(temR?['Repasse_%'].concat(AN.map(function(a){ return 'Preco_calculado_'+a; })):[]).concat(AN.map(function(a){ return 'Liquido_PJ_'+a; }));
+   var head=['Codigo','Descricao','NCM_NBS','Tratamento','CST_IBS_CBS','cClassTrib','Preco_hoje'].concat(temV?['Preco_hoje_custo_novo']:[]).concat(AN.map(function(a){ return 'Preco_'+a; })).concat(temR?['Repasse_%'].concat(AN.map(function(a){ return 'Preco_calculado_'+a; })):[]).concat(AN.map(function(a){ return 'Liquido_PJ_'+a; }));
    var out=[head.join(';')];
    var v=function(x){ return String(x==null?'':x).replace('.',','); };
-   L.forEach(function(o){ out.push([o.cod,String(o.desc).replace(/[;\r\n"]/g,' '),o.ncm,o.trat,v(o.hojeCli)].concat(temV?[v(o.soCusto!=null?o.soCusto:o.hojeCli)]:[]).concat(AN.map(function(a){ return v(o['dec'+a]); })).concat(temR?[v(o.repasse)].concat(AN.map(function(a){ return v(o['final'+a]); })):[]).concat(AN.map(function(a){ return v(o['liq'+a]); })).join(';')); });
+   L.forEach(function(o){ out.push([o.cod,String(o.desc).replace(/[;\r\n"]/g,' '),o.ncm,o.trat,o.cst,o.cclass,v(o.hojeCli)].concat(temV?[v(o.soCusto!=null?o.soCusto:o.hojeCli)]:[]).concat(AN.map(function(a){ return v(o['dec'+a]); })).concat(temR?[v(o.repasse)].concat(AN.map(function(a){ return v(o['final'+a]); })):[]).concat(AN.map(function(a){ return v(o['liq'+a]); })).join(';')); });
    var blob=new Blob(['﻿'+out.join('\r\n')],{type:'text/csv;charset=utf-8'}); var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='Tabela_Precos_2027_33_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
  };
  window.lhPmExcel=function(){
@@ -58772,19 +58773,19 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var wb=new ExcelJS.Workbook(); wb.creator='Lionheart'; wb.created=new Date();
    var ws=wb.addWorksheet('Precificacao',{properties:{tabColor:{argb:GOLD}}});
    var temC=L.some(function(o){ return o.custoHoje!=null; }), temI=L.some(function(o){ return o.ipi>0; }), temV=L.some(function(o){ return o.custoNovo!=null; }), temG=L.some(function(o){ return !!o.grupo; }), temR=L.some(function(o){ return Math.abs(o.repasse-100)>0.001; });
-   var cols=['Codigo','Descricao','NCM_NBS'].concat(temG?['Grupo']:[]).concat(['Tratamento','ICMS_ISS_%','PIS_COFINS_%']).concat(temI?['IPI_hoje_R$']:[]).concat(['Preco_hoje','Fica_hoje']).concat(temC?['Custo_hoje','Lucro_hoje']:[]).concat(temV?['Custo_novo','Var_custo_%','Preco_hoje_custo_novo','Preco_2033_so_imposto']:[]);
+   var cols=['Codigo','Descricao','NCM_NBS'].concat(temG?['Grupo']:[]).concat(['Tratamento','CST_IBS_CBS','cClassTrib','ICMS_ISS_%','PIS_COFINS_%']).concat(temI?['IPI_hoje_R$']:[]).concat(['Preco_hoje','Fica_hoje']).concat(temC?['Custo_hoje','Lucro_hoje']:[]).concat(temV?['Custo_novo','Var_custo_%','Preco_hoje_custo_novo','Preco_2033_so_imposto']:[]);
    if(temR) cols.push('Repasse_%','Repasse_origem');
    ANOS.forEach(function(a){ cols.push('Por_dentro_'+a,'IBS_CBS_'+a); if(temI) cols.push('IPI_'+a); cols.push('Preco_final_'+a,'Liquido_PJ_'+a,'Fica_'+a); if(temC) cols.push('Custo_'+a,'Lucro_'+a); if(temR) cols.push('Preco_decidido_'+a,'Fica_decidido_'+a); }); cols.push('Var_2033_R$','Sinal');
    ws.addRow(cols); ws.getRow(1).eachCell(hdr);
-   L.forEach(function(o){ var r=[o.cod,o.desc,o.ncm]; if(temG) r.push(o.grupo); r.push(o.trat,o.icms+(o.icmsEst?' (est.)':''),o.pis); if(temI) r.push(o.ipi); r.push(o.hojeCli,o.fica); if(temC) r.push(o.custoHoje,o.lucroHoje);
+   L.forEach(function(o){ var r=[o.cod,o.desc,o.ncm]; if(temG) r.push(o.grupo); r.push(o.trat,o.cst,o.cclass,o.icms+(o.icmsEst?' (est.)':''),o.pis); if(temI) r.push(o.ipi); r.push(o.hojeCli,o.fica); if(temC) r.push(o.custoHoje,o.lucroHoje);
      if(temV) r.push(o.custoNovo!=null?o.custoNovo:null, (o.custoNovo!=null&&o.custoHoje)?Math.round((o.custoNovo/o.custoHoje-1)*10000)/100:null, o.soCusto!=null?o.soCusto:o.hojeCli, o.soImposto33!=null?o.soImposto33:o.final2033);
      if(temR) r.push(o.repasse,o.repOrigem);
      ANOS.forEach(function(a){ r.push(o['base'+a],o['fora'+a]); if(temI) r.push(o['ipi'+a]); r.push(o['final'+a],o['liq'+a],o['fica'+a]); if(temC) r.push(o['custo'+a],o['lucro'+a]); if(temR) r.push(o['dec'+a],o['ficaDec'+a]); }); r.push(o.var33,o.sinal); ws.addRow(r); });
    ws.views=[{state:'frozen',xSplit:2,ySplit:1}]; ws.autoFilter={from:{row:1,column:1},to:{row:1,column:cols.length}};
    [12,40,14,20,10,10,11,11].forEach(function(w,i){ ws.getColumn(i+1).width=w; });
    var AN=ANOS.filter(function(a){return a>=2027;});
-   var e=wb.addWorksheet('Tabela_Precos_ERP'); var ec=['Codigo','Descricao','Preco_hoje'].concat(temV?['Preco_hoje_custo_novo']:[]).concat(AN.map(function(a){ return 'Preco_'+a; })).concat(temR?['Repasse_%'].concat(AN.map(function(a){ return 'Preco_calculado_'+a; })):[]).concat(AN.map(function(a){ return 'Liquido_PJ_'+a; }));
-   e.addRow(ec); e.getRow(1).eachCell(hdr); L.forEach(function(o){ e.addRow([o.cod,o.desc,o.hojeCli].concat(temV?[o.soCusto!=null?o.soCusto:o.hojeCli]:[]).concat(AN.map(function(a){ return o['dec'+a]; })).concat(temR?[o.repasse].concat(AN.map(function(a){ return o['final'+a]; })):[]).concat(AN.map(function(a){ return o['liq'+a]; }))); });
+   var e=wb.addWorksheet('Tabela_Precos_ERP'); var ec=['Codigo','Descricao','NCM_NBS','CST_IBS_CBS','cClassTrib','Preco_hoje'].concat(temV?['Preco_hoje_custo_novo']:[]).concat(AN.map(function(a){ return 'Preco_'+a; })).concat(temR?['Repasse_%'].concat(AN.map(function(a){ return 'Preco_calculado_'+a; })):[]).concat(AN.map(function(a){ return 'Liquido_PJ_'+a; }));
+   e.addRow(ec); e.getRow(1).eachCell(hdr); L.forEach(function(o){ e.addRow([o.cod,o.desc,o.ncm,o.cst,o.cclass,o.hojeCli].concat(temV?[o.soCusto!=null?o.soCusto:o.hojeCli]:[]).concat(AN.map(function(a){ return o['dec'+a]; })).concat(temR?[o.repasse].concat(AN.map(function(a){ return o['final'+a]; })):[]).concat(AN.map(function(a){ return o['liq'+a]; }))); });
    e.views=[{state:'frozen',ySplit:1}]; e.getColumn(2).width=40;
    var p=wb.addWorksheet('Nao_precificados',{properties:{tabColor:{argb:'FF7C1D2B'}}}); p.addRow(['Codigo','Descricao','NCM','Motivo']); p.getRow(1).eachCell(hdr);
    d.fora.forEach(function(f){ p.addRow([f.cod,f.desc,f.ncm,f.motivo]); }); p.getColumn(2).width=40; p.getColumn(4).width=50;

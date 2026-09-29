@@ -130,7 +130,7 @@ function rodar(html) {
 
     console.log('\n-- exportações --');
     ex('CSV traz Preco_hoje_custo_novo', /Preco_hoje_custo_novo/.test(r.csv.split('\n')[0]), r.csv.split('\n')[0]);
-    ex('CSV do leite: hoje 5,29 · hoje c/ custo novo 4,07 · 2033 3,62', /^1017;[^;]*;[^;]*;[^;]*;5,29;4,07;/.test(r.csv.split(/\r?\n/)[1]) && /;3,62;/.test(r.csv.split(/\r?\n/)[1]), r.csv.split(/\r?\n/)[1]);
+    ex('CSV do leite: hoje 5,29 · hoje c/ custo novo 4,07 · 2033 3,62', /^1017;[^;]*;[^;]*;[^;]*;200;200003;5,29;4,07;/.test(r.csv.split(/\r?\n/)[1]) && /;3,62;/.test(r.csv.split(/\r?\n/)[1]), r.csv.split(/\r?\n/)[1]);
     ex('Excel Precificacao com Grupo, Custo_novo, Var_custo_%, Preco_hoje_custo_novo, Preco_2033_so_imposto', !!r.xlHead && ['Grupo', 'Custo_novo', 'Var_custo_%', 'Preco_hoje_custo_novo', 'Preco_2033_so_imposto'].every((c) => r.xlHead.indexOf(c) >= 0), r.xlErro || (r.xlHead || []).join(','));
     ex('Excel leite: Custo_novo 3 · Var −26,29% · hoje c/ novo 4,07 · 2033 só imposto 4,66', !!r.xlLeite && perto(r.xlLeite.Custo_novo, 3) && perto(r.xlLeite['Var_custo_%'], -26.29) && perto(r.xlLeite.Preco_hoje_custo_novo, 4.07) && perto(r.xlLeite.Preco_2033_so_imposto, 4.66), JSON.stringify(r.xlLeite && { c: r.xlLeite.Custo_novo, v: r.xlLeite['Var_custo_%'], h: r.xlLeite.Preco_hoje_custo_novo, s: r.xlLeite.Preco_2033_so_imposto }));
     ex('Tabela_Precos_ERP com Preco_hoje_custo_novo', !!r.erpHead && r.erpHead.indexOf('Preco_hoje_custo_novo') >= 0, (r.erpHead || []).join(','));
