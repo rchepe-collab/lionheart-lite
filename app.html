@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v882';</script>
+<body><script>window.LH_VERSAO='v883';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -12157,8 +12157,9 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
       <h3>Um item — Formação de Preço 2027-33 <span style="font-weight:400;font-size:.8rem;color:var(--text2)">· o mesmo motor do catálogo, para um produto ou serviço</span></h3>
       <div class="input-grid-2">
         <div class="input-group"><label>NCM (produto) ou NBS (serviço)</label>
-          <input id="pmi_cod" placeholder="ex.: 73181500 · 1.0303.11.00 · vazio = regra geral 26,5%" onchange="lhPmItemClassifica()"><span class="lh-hint" data-hint="8 dígitos = NCM (mercadoria); com pontos no padrão 1.0303.11.00 = NBS (serviço). A alíquota nova vem do Classificador (mesma base da nota e do catálogo). Vazio: tributação integral." onclick="lhHint(event,this)">?</span></div>
-        <div class="input-group"><label>Descrição (ajuda a classificar)</label><input id="pmi_desc" placeholder="ex.: parafuso sextavado · hospedagem em quarto" onchange="lhPmItemClassifica()"></div>
+          <input id="pmi_cod" placeholder="ex.: 73181500 · 1.0303.11.00 · ou digite 4+ dígitos e escolha na lista" autocomplete="off" oninput="lhPmItemSugere('cod')" onchange="lhPmItemClassifica()"><span class="lh-hint" data-hint="8 dígitos = NCM (mercadoria); com pontos no padrão 1.0303.11.00 = NBS (serviço). A alíquota nova vem do Classificador (mesma base da nota e do catálogo). Vazio: tributação integral." onclick="lhHint(event,this)">?</span></div>
+        <div class="input-group"><label>Descrição (ajuda a classificar)</label><input id="pmi_desc" placeholder="ex.: farinha · compressor · hospedagem — a lista traz o NCM/NBS e o tratamento" autocomplete="off" oninput="lhPmItemSugere('desc')" onchange="lhPmItemClassifica()"></div>
+        <div class="input-group" id="pmi_sug_wrap" style="grid-column:1/-1;display:none"><div id="pmi_sug"></div></div>
         <div class="input-group"><label>Preço de venda hoje (R$)</label><input type="number" step="0.01" id="pmi_preco" placeholder="100,00"></div>
         <div class="input-group"><label>Custo de compra hoje (R$) — opcional</label><input type="number" step="0.01" id="pmi_custo" placeholder="liga margem %, markup e custo novo"></div>
         <div class="input-group"><label>ICMS (produto) ou ISS (serviço) por dentro (%)</label>
@@ -58884,6 +58885,53 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    }
    var el=document.getElementById('pmi_class'); if(el){ var mp2=(typeof cmCclassPorFonte==='function')?cmCclassPorFonte(out.trat,out.fonte):['','']; el.innerHTML=(cod?('<b style="color:'+(out.ok?'var(--gold)':'#e05a4d')+'">'+(CM_TRAT_LABEL[out.trat]||out.trat)+'</b> · '+pct(cmAliqAno(out.trat,2033))+' em 2033 · '+mp2[0]+' · '+String(mp2[1]).replace('*','')+' <span style="color:var(--text2)">— '+String(out.fonte).slice(0,160)+'</span>'):'Regime, estratégia, leitura da transição e tipo de cliente vêm do bloco "Como você vende", logo abaixo.'); }
    window._PMI_CLASS=out; return out;
+ };
+ /* ★ v883 · o motor de busca do Auditor de Cadastro dentro do cartão "Um item" (pedido do Ricardo, 30/09):
+    digita "farinha" ou "8414" e a lista traz NCM/NBS + tratamento na LC 214 (tabela oficial 10.515 + Anexos + NBS);
+    escolher preenche o código e a descrição e classifica. Mesmas funções do Auditor: lhBuscaOficial, lhVereditoNCM, lhBuscaNCM, lhBuscaNBS. */
+ window.lhPmItemSugere=function(origem){
+   clearTimeout(window._pmiT); window._pmiT=setTimeout(function(){ window.lhPmItemSugereAgora(origem); },220);
+ };
+ window.lhPmItemSugereAgora=function(origem){
+   var wrap=document.getElementById('pmi_sug_wrap'), box=document.getElementById('pmi_sug'); if(!wrap||!box) return;
+   var q=String((document.getElementById(origem==='cod'?'pmi_cod':'pmi_desc')||{}).value||'').trim();
+   var dig=q.replace(/\D/g,''); var porCod=(origem==='cod');
+   if((porCod && dig.length<4) || (!porCod && q.length<3)){ box.innerHTML=''; wrap.style.display='none'; window._PMI_SUG=[]; return; }
+   if(porCod && (dig.length>=8 || /^\d\.\d{4}/.test(q))){ box.innerHTML=''; wrap.style.display='none'; window._PMI_SUG=[]; return; }   /* código completo: classifica direto */
+   var res=[], vistos={};
+   var addNcm=function(ncm,desc,ctx){ if(/[^\d.]/.test(String(ncm))) return; var d=String(ncm).replace(/\D/g,''); if(d.length!==8||vistos['N'+d]) return; vistos['N'+d]=1;
+     var v=(typeof lhVereditoNCM==='function')?lhVereditoNCM(ncm):{tem:false,trat:'cheia'};
+     var trat=v.trat||'cheia'; var ctxT=String(ctx||'').split(' · ').filter(function(x){return x.trim();}).pop()||'';
+     res.push({tipo:'NCM',cod:d,codFmt:ncm,desc:String(desc||''),ctx:ctxT,trat:trat,tem:!!v.tem,via:v.viaPrefixo||'',fonte:v.fonte||'',armadilha:v.armadilha||''}); };
+   try{
+     if(typeof lhBuscaOficial==='function'){ (lhBuscaOficial(porCod?dig:q, porCod?8:6)||[]).forEach(function(x){ if(porCod && String(x.ncm).replace(/\D/g,'').indexOf(dig)!==0) return; addNcm(x.ncm,x.desc,x.ctx); }); }
+     if(!porCod && typeof lhBuscaNCM==='function'){ (lhBuscaNCM(q)||[]).forEach(function(x){ if(String(x.ncm).replace(/\D/g,'').length===8) addNcm(x.ncm,x.desc,''); }); }
+     if(!porCod && typeof lhBuscaNBS==='function'){ (lhBuscaNBS(q)||[]).slice(0,4).forEach(function(x){ if(!x.nbs||vistos['S'+x.nbs]) return; vistos['S'+x.nbs]=1;
+       var trat=x.trat, esp=false, art=''; try{ if(typeof SN_NBS_TRAT==='function'){ var r=SN_NBS_TRAT(x); trat=r.trat||trat; esp=!!r.especifico; art=String(r.art||''); } }catch(_e){}
+       if(!trat||trat==='nd') trat='cheia'; res.push({tipo:'NBS',cod:x.nbs,codFmt:x.nbs,desc:String(x.desc||''),ctx:'',trat:trat,tem:(trat!=='cheia'&&trat!=='cheia+IS'),via:art.slice(0,40),fonte:String(x.fonte||'').split(' · ')[0],esp:esp}); }); }
+   }catch(_e){}
+   var ord={zero:1,imune:1,'zero-cond':2,red60:3,red40:3,red30:4,difer:5,adrem:6,cheia:7,'cheia+IS':7};
+   res.sort(function(a,b){ return (ord[a.trat]||9)-(ord[b.trat]||9); }); res=res.slice(0,8);
+   window._PMI_SUG=res;
+   if(!res.length){ box.innerHTML='<div style="font-size:.78rem;color:var(--text2);padding:4px 0">Nada com "'+q.replace(/</g,'&lt;')+'" na tabela oficial, nos Anexos da LC 214 nem na NBS. Sem código, vale a regra geral: 26,5%.</div>'; wrap.style.display=''; return; }
+   var COR={zero:'#16c47c',imune:'#16c47c','zero-cond':'#16c47c',red60:'#5fa8e8',red40:'#5fa8e8',red30:'#b08cd8',cheia:'#9fb0c6','cheia+IS':'#e06c6c',adrem:'#e8b84b',difer:'#e8b84b'};
+   box.innerHTML='<div style="font-size:.72rem;color:var(--text2);margin-bottom:3px">Escolha o item — o código, a descrição e o tratamento entram sozinhos (mesma base do Auditor de Cadastro):</div>'
+     +res.map(function(x,i){ var c=COR[x.trat]||'var(--gold)'; var conf=x.esp?'regime específico — não se precifica pela alíquota geral':(x.tem?'✓ na LC 214'+(x.via?' — '+x.via:''):'regra geral (não consta dos anexos)');
+       return '<div onclick="lhPmItemEscolhe('+i+')" style="cursor:pointer;display:flex;justify-content:space-between;gap:10px;align-items:center;background:rgba(255,255,255,.03);border-left:3px solid '+c+';border-radius:0 8px 8px 0;padding:6px 10px;margin:4px 0">'
+         +'<div style="font-size:.8rem;min-width:0"><b style="color:'+c+'">'+x.codFmt+'</b> <span style="font-size:.7rem;color:var(--text2)">'+x.tipo+'</span> · '+x.desc.replace(/</g,'&lt;')+(x.ctx&&x.ctx!==x.desc?' <span style="color:var(--text2)">('+x.ctx.replace(/</g,'&lt;').slice(0,70)+')</span>':'')
+         +'<div style="font-size:.72rem"><b style="color:'+c+'">'+(CM_TRAT_LABEL[x.trat]||x.trat)+' · '+pct(cmAliqAno(x.trat,2033))+' em 2033</b> <span style="color:var(--text2)">· '+conf+(x.armadilha?' · ⚠ '+String(x.armadilha).slice(0,60):'')+'</span></div></div>'
+         +'<span style="font-size:.72rem;color:#9ec5f2;white-space:nowrap">usar →</span></div>'; }).join('')
+     +'<div style="text-align:right"><span onclick="document.getElementById(\'pmi_sug_wrap\').style.display=\'none\'" style="cursor:pointer;font-size:.72rem;color:var(--text2)">fechar ✕</span></div>';
+   wrap.style.display='';
+ };
+ window.lhPmItemEscolhe=function(i){
+   var x=(window._PMI_SUG||[])[i]; if(!x) return;
+   var S=function(id,v){ var e=document.getElementById(id); if(e) e.value=v; };
+   S('pmi_cod', x.cod);
+   var d=x.desc; if(x.ctx && x.ctx!==x.desc && (d.length<28 || /^(em|de|com|sem|para|do|da|dos|das|outr)/i.test(d))) d=x.ctx.slice(0,34)+' - '+d;
+   S('pmi_desc', d.slice(0,60));
+   var wrap=document.getElementById('pmi_sug_wrap'); if(wrap) wrap.style.display='none'; window._PMI_SUG=[];
+   lhPmItemClassifica();
  };
  window.lhPmItemUF=function(){ var uf=(document.getElementById('pmi_uf')||{}).value; if(uf && window.FP_UF_ICMS && FP_UF_ICMS[uf]) (document.getElementById('pmi_icms')||{}).value=FP_UF_ICMS[uf]; };
  window.lhPmItemExemplo=function(){ var S=function(id,v){ var e=document.getElementById(id); if(e) e.value=v; }; S('pmi_cod',''); S('pmi_desc','Exemplo do encontro Fecomércio-RS (R$ 100)'); S('pmi_preco',100); S('pmi_custo',''); S('pmi_icms',17); S('pmi_custonovo',''); S('pm_regime','presumido'); S('pm_estr','fica'); lhPmItemClassifica(); lhPmItem(); };

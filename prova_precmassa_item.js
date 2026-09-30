@@ -4,7 +4,9 @@
       sobre os 78,35 (art. 12 §2º V) e ICMS 18,71; 2033 = 99,11; conta aberta igual à do catálogo; os três caminhos;
    3. NBS de hospedagem → −40% (200 · 200048) e a descrição vem da base; combustível ad rem → recusa explicada;
    4. sem NCM → regra geral; o exemplo do encontro (R$ 100, ICMS 17) roda;
-   5. o cartão usa o que está em "Como você vende" (regime, estratégia, leitura): Simples → preço não muda; leitura PLP → 102,44.
+   5. o cartão usa o que está em "Como você vende" (regime, estratégia, leitura): Simples → preço não muda; leitura PLP → 102,44;
+   6. v883: a busca do Auditor de Cadastro no cartão — "farinha" lista 1101.00.10 ZERO (cesta básica) e escolher preenche código, descrição e
+      classifica; "hospedagem" traz o NBS 1.0303.11.00 (−40%); "8414" por código lista 8414.10.00; código completo não abre lista.
    Uso: npm i --no-save jsdom && node prova_precmassa_item.js */
 const { JSDOM, VirtualConsole } = require('jsdom');
 const fs = require('fs'), path = require('path');
@@ -34,6 +36,15 @@ function rodar(html) {
         S('pmi_cod', ''); S('pmi_desc', 'coisa qualquer'); out.semNcm = w.lhPmItemClassifica();
         S('pmi_cod', '10063021'); S('pmi_desc', 'ARROZ TIPO 1'); w.lhPmItemClassifica(); out.arroz = $('pmi_class').textContent;
         w.lhPmItemExemplo(); out.exemplo = kp();
+        /* v883 · busca no cartão */
+        const sug = () => [...$('pmi_sug').querySelectorAll('div[onclick]')].map((e) => e.textContent.replace(/\s+/g, ' ').trim());
+        S('pmi_cod', ''); S('pmi_desc', 'farinha'); w.lhPmItemSugereAgora('desc'); out.sugFarinha = sug(); out.sugVisivel = $('pmi_sug_wrap').style.display;
+        const iF = out.sugFarinha.findIndex((t) => /1101\.00\.10/.test(t)); if (iF >= 0) w.lhPmItemEscolhe(iF);
+        out.escolhido = { cod: $('pmi_cod').value, desc: $('pmi_desc').value, classe: $('pmi_class').textContent, fechado: $('pmi_sug_wrap').style.display };
+        S('pmi_desc', 'hospedagem'); w.lhPmItemSugereAgora('desc'); out.sugHotel = sug();
+        S('pmi_cod', '8414'); w.lhPmItemSugereAgora('cod'); out.sugCod = sug();
+        S('pmi_cod', '84141000'); w.lhPmItemSugereAgora('cod'); out.sugCompleto = $('pmi_sug_wrap').style.display;
+        S('pmi_desc', 'zzqxwv'); w.lhPmItemSugereAgora('desc'); out.sugNada = $('pmi_sug').textContent;
         w.abrirPagina('precmassa'); out.precmassaSoItem = $('page-precmassa').classList.contains('pm-so-item');
       } catch (e) { out.erro = e.message + ' ' + (e.stack || '').split('\n')[1]; }
       w.close(); ok(out);
@@ -63,6 +74,12 @@ function rodar(html) {
     ex('arroz (1006.30.21) → cesta básica, alíquota zero · 200 · 200003', /Alíquota ZERO/.test(r.arroz) && /200 · 200003/.test(r.arroz), r.arroz.slice(0, 100));
     ex('exemplo do encontro (R$ 100 · ICMS 17): roda, 2027 = 104,02', /104,02/.test(r.exemplo[1]), r.exemplo[1]);
     ex('abrir "Precificação em Massa" mostra a página inteira (sem o modo só-item)', r.precmassaSoItem === false, String(r.precmassaSoItem));
+    ex('v883 · "farinha" abre a lista com 1101.00.10 · Alíquota ZERO · ✓ na LC 214 (cesta básica primeiro)', r.sugVisivel === '' && /1101\.00\.10/.test(r.sugFarinha[0] || '') && /Alíquota ZERO/.test(r.sugFarinha[0] || '') && /na LC 214/.test(r.sugFarinha[0] || ''), (r.sugFarinha || []).slice(0, 2).join(' | '));
+    ex('escolher preenche 11010010 + descrição e classifica ZERO · 200 · 200003; lista fecha', r.escolhido.cod === '11010010' && /trigo/i.test(r.escolhido.desc) && /Alíquota ZERO/.test(r.escolhido.classe) && /200 · 200003/.test(r.escolhido.classe) && r.escolhido.fechado === 'none', JSON.stringify(r.escolhido).slice(0, 200));
+    ex('"hospedagem" traz o NBS 1.0303.11.00 · Redução 40%', r.sugHotel.some((t) => /1\.0303\.11\.00/.test(t) && /Redução 40%/.test(t)), r.sugHotel.slice(0, 2).join(' | '));
+    ex('"8414" no campo de código lista 8414.10.00 (tabela oficial, por prefixo)', r.sugCod.some((t) => /^8414\.10\.00/.test(t)) && r.sugCod.every((t) => /^8414/.test(t)), r.sugCod.slice(0, 3).join(' | '));
+    ex('código completo (84141000) não abre lista', r.sugCompleto === 'none', r.sugCompleto);
+    ex('sem correspondência → aviso de regra geral 26,5%', /regra geral: 26,5%/.test(r.sugNada), r.sugNada.slice(0, 80));
   }
   console.log('\n-- ao contrário --');
   const sab = async (nome, alvo, troca, teste) => {
@@ -73,6 +90,10 @@ function rodar(html) {
     (s) => !/Alíquota ZERO/.test(s.arroz || ''));
   await sab('o cartão deixa de usar o motor do catálogo (lhPmCalcular) → sem conta aberta → reprova', "var c=window.lhPmCalcular(f,cfg); if(!c.anos[2033])", "var c={anos:{}}; if(true)",
     (s) => !(s.linhas && s.linhas.length));
+  await sab('v883 · a busca deixa de consultar a tabela oficial → "8414" por código não lista nada → reprova', "(lhBuscaOficial(porCod?dig:q, porCod?8:6)||[])", "([])",
+    (s) => !(s.sugCod || []).length);
+  await sab('v883 · escolher deixa de preencher o código → classifica como regra geral → reprova', "S('pmi_cod', x.cod);", "S('pmi_cod', '');",
+    (s) => s.escolhido && s.escolhido.cod !== '11010010');
   await sab('"Formação de Preço" volta a abrir a página antiga → reprova', "if(id==='formpreco'){\n     var lib=true;", "if(false){\n     var lib=true;",
     (s) => s.ativa.join(',') !== 'page-precmassa');
   console.log(falhou ? '\nRESULTADO: ' + falhou + ' reprovada(s)' : '\nRESULTADO: tudo aprovado');
