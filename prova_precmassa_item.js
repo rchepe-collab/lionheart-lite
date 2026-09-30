@@ -45,6 +45,7 @@ function rodar(html) {
         S('pmi_cod', '8414'); w.lhPmItemSugereAgora('cod'); out.sugCod = sug();
         S('pmi_cod', '84141000'); w.lhPmItemSugereAgora('cod'); out.sugCompleto = $('pmi_sug_wrap').style.display;
         S('pmi_desc', 'zzqxwv'); w.lhPmItemSugereAgora('desc'); out.sugNada = $('pmi_sug').textContent;
+        S('pmi_desc', ''); S('pmi_cod', 'arro'); w.lhPmItemSugereAgora('cod'); out.sugCodTexto = sug(); S('pmi_cod', '');
         w.abrirPagina('precmassa'); out.precmassaSoItem = $('page-precmassa').classList.contains('pm-so-item');
       } catch (e) { out.erro = e.message + ' ' + (e.stack || '').split('\n')[1]; }
       w.close(); ok(out);
@@ -80,6 +81,7 @@ function rodar(html) {
     ex('"8414" no campo de código lista 8414.10.00 (tabela oficial, por prefixo)', r.sugCod.some((t) => /^8414\.10\.00/.test(t)) && r.sugCod.every((t) => /^8414/.test(t)), r.sugCod.slice(0, 3).join(' | '));
     ex('código completo (84141000) não abre lista', r.sugCompleto === 'none', r.sugCompleto);
     ex('sem correspondência → aviso de regra geral 26,5%', /regra geral: 26,5%/.test(r.sugNada), r.sugNada.slice(0, 80));
+    ex('v884 · letras no campo de código ("arro") também buscam por nome → arroz 1006 ZERO', (r.sugCodTexto || []).some((t) => /^1006\./.test(t) && /Alíquota ZERO/.test(t)), (r.sugCodTexto || []).slice(0, 2).join(' | '));
   }
   console.log('\n-- ao contrário --');
   const sab = async (nome, alvo, troca, teste) => {

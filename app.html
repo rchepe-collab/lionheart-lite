@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v883';</script>
+<body><script>window.LH_VERSAO='v884';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -12157,7 +12157,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
       <h3>Um item — Formação de Preço 2027-33 <span style="font-weight:400;font-size:.8rem;color:var(--text2)">· o mesmo motor do catálogo, para um produto ou serviço</span></h3>
       <div class="input-grid-2">
         <div class="input-group"><label>NCM (produto) ou NBS (serviço)</label>
-          <input id="pmi_cod" placeholder="ex.: 73181500 · 1.0303.11.00 · ou digite 4+ dígitos e escolha na lista" autocomplete="off" oninput="lhPmItemSugere('cod')" onchange="lhPmItemClassifica()"><span class="lh-hint" data-hint="8 dígitos = NCM (mercadoria); com pontos no padrão 1.0303.11.00 = NBS (serviço). A alíquota nova vem do Classificador (mesma base da nota e do catálogo). Vazio: tributação integral." onclick="lhHint(event,this)">?</span></div>
+          <input id="pmi_cod" placeholder="ex.: 73181500 · 1.0303.11.00 · ou digite arroz, 8414… e escolha na lista" autocomplete="off" oninput="lhPmItemSugere('cod')" onchange="lhPmItemClassifica()"><span class="lh-hint" data-hint="8 dígitos = NCM (mercadoria); com pontos no padrão 1.0303.11.00 = NBS (serviço). A alíquota nova vem do Classificador (mesma base da nota e do catálogo). Vazio: tributação integral." onclick="lhHint(event,this)">?</span></div>
         <div class="input-group"><label>Descrição (ajuda a classificar)</label><input id="pmi_desc" placeholder="ex.: farinha · compressor · hospedagem — a lista traz o NCM/NBS e o tratamento" autocomplete="off" oninput="lhPmItemSugere('desc')" onchange="lhPmItemClassifica()"></div>
         <div class="input-group" id="pmi_sug_wrap" style="grid-column:1/-1;display:none"><div id="pmi_sug"></div></div>
         <div class="input-group"><label>Preço de venda hoje (R$)</label><input type="number" step="0.01" id="pmi_preco" placeholder="100,00"></div>
@@ -58895,8 +58895,8 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
  window.lhPmItemSugereAgora=function(origem){
    var wrap=document.getElementById('pmi_sug_wrap'), box=document.getElementById('pmi_sug'); if(!wrap||!box) return;
    var q=String((document.getElementById(origem==='cod'?'pmi_cod':'pmi_desc')||{}).value||'').trim();
-   var dig=q.replace(/\D/g,''); var porCod=(origem==='cod');
-   if((porCod && dig.length<4) || (!porCod && q.length<3)){ box.innerHTML=''; wrap.style.display='none'; window._PMI_SUG=[]; return; }
+   var dig=q.replace(/\D/g,''); var porCod=(origem==='cod' && !/[a-zA-Z\u00C0-\u024F]/.test(q));   /* ★ v884 · letras no campo de código = busca por nome ("arro" → arroz) */
+   if((porCod && dig.length<4) || (!porCod && q.replace(/\d/g,'').trim().length<3)){ box.innerHTML=''; wrap.style.display='none'; window._PMI_SUG=[]; return; }
    if(porCod && (dig.length>=8 || /^\d\.\d{4}/.test(q))){ box.innerHTML=''; wrap.style.display='none'; window._PMI_SUG=[]; return; }   /* código completo: classifica direto */
    var res=[], vistos={};
    var addNcm=function(ncm,desc,ctx){ if(/[^\d.]/.test(String(ncm))) return; var d=String(ncm).replace(/\D/g,''); if(d.length!==8||vistos['N'+d]) return; vistos['N'+d]=1;
