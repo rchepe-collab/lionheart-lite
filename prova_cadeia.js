@@ -101,7 +101,7 @@ function rodar(html, pre) {
     (s) => s.g.saida.exportacao !== 10);
   await sab('crédito do Simples contado como integral → creditável 95% → reprova', "var credEnt=(reg+imp)*tFora + sn*tFora*0.20;", "var credEnt=(reg+imp+sn)*tFora;",
     (s) => !perto(s.c33.credEntradaPct, 22.0));
-  await sab('precificação ignora a cadeia → custo volta a 57,81 → reprova', "var fCred=(regime==='simples')?1:(1 - pisEmb*(1-fPis)*cred - stEmb*(1-fIcms));", "var fCred=(regime==='simples')?1:(1 - pisEmb*(1-fPis) - stEmb*(1-fIcms));",
+  await sab('precificação ignora a cadeia → custo volta a 57,81 → reprova', "var fCred=(regime==='simples')?1:(1 - pisEmb*(1-fPis)*cred - stEmb*(1-fIcms)*cred);", "var fCred=(regime==='simples')?1:(1 - pisEmb*(1-fPis) - stEmb*(1-fIcms));",
     (s) => !perto(s.preco.custo, 58.18));
   console.log(falhou ? '\nRESULTADO: ' + falhou + ' reprovada(s)' : '\nRESULTADO: tudo aprovado');
   process.exit(falhou ? 1 : 0);
