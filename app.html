@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v886';</script>
+<body><script>window.LH_VERSAO='v887';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -12165,7 +12165,8 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <div class="input-group"><label>ICMS (produto) ou ISS (serviço) por dentro (%)</label>
           <div style="display:flex;gap:8px;align-items:center"><input type="number" step="0.1" id="pmi_icms" placeholder="18" style="flex:1"><select id="pmi_uf" onchange="lhPmItemUF()" title="ICMS modal da UF (indicativo)" style="width:auto"><option value="">UF…</option></select></div></div>
         <div class="input-group"><label>Custo de compra novo (R$) — opcional</label><input type="number" step="0.01" id="pmi_custonovo" placeholder="o leite que custava 5 passou a 4"></div>
-        <div class="input-group" style="grid-column:1/-1"><label>ICMS-ST pago na compra (R$ por unidade) — opcional</label><input type="number" step="0.01" id="pmi_st" placeholder="bebida, cosmético, autopeça: o ST que veio na nota do fornecedor, por unidade"><span class="lh-hint" data-hint="Hoje o ICMS-ST pago na compra é custo morto (não gera crédito na revenda). Conforme o ICMS some (2029-32 a 1/10 ao ano, zero em 2033), o IBS que o substitui é creditável: o custo do ano cai. Vazio = neutro." onclick="lhHint(event,this)">?</span></div>
+        <div class="input-group"><label>% da compra com crédito — opcional</label><input type="number" step="5" min="0" max="100" id="pmi_cred" placeholder="regular 100 · Simples 20 · pessoa física 0"><span class="lh-hint" data-hint="De quem você compra este item. Fornecedor do regime regular ou importação: 100% da compra gera crédito. Do Simples: ~20%. Pessoa física / produtor rural PF: 0. Vazio = Cadeia de Crédito ou 100%." onclick="lhHint(event,this)">?</span></div>
+        <div class="input-group"><label>ICMS-ST pago na compra (R$ por unidade) — opcional</label><input type="number" step="0.01" id="pmi_st" placeholder="bebida, cosmético, autopeça: o ST que veio na nota do fornecedor, por unidade"><span class="lh-hint" data-hint="Hoje o ICMS-ST pago na compra é custo morto (não gera crédito na revenda). Conforme o ICMS some (2029-32 a 1/10 ao ano, zero em 2033), o IBS que o substitui é creditável: o custo do ano cai. Vazio = neutro." onclick="lhHint(event,this)">?</span></div>
         <div class="input-group" style="grid-column:1/-1"><div id="pmi_class" style="font-size:.82rem;color:var(--text2)">Regime, estratégia, leitura da transição e tipo de cliente vêm do bloco "Como você vende", logo abaixo.</div></div>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px"><button class="btn-calcular" onclick="lhPmItem()">◆ Calcular este item</button><button class="btn-secondary" onclick="lhPmItemExemplo()">▤ Exemplo (R$ 100 · ICMS 17 · Presumido)</button></div>
@@ -12198,6 +12199,15 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <div class="input-group" style="grid-column:1/-1"><div id="pm_cadeia_info" style="font-size:.8rem;color:var(--text2)">cadeia: sem leitura — <a href="#" onclick="abrirPagina('cadeia');return false" style="color:var(--gold)">Cadeia de Crédito</a> define a parcela das compras que gera crédito e a fatia PJ das vendas</div></div>
         <div class="input-group" id="pm_custo_box" style="display:none"><label>% do custo que hoje é imposto não recuperável (vira crédito na Reforma)</label>
           <input type="number" step="0.01" id="pm_pisemb" placeholder="3,65 (PIS/COFINS cumulativo)" oninput="this._tocado=true" onchange="lhPmRender()"><span class="lh-hint" data-hint="Presumido: PIS/COFINS cumulativo 3,65% embutido nas compras, que você não credita hoje e passa a creditar como IBS/CBS a partir de 2027. Lucro Real: 0 (já credita)." onclick="lhHint(event,this)">?</span></div>
+        <div class="input-group" id="pm_cred_box" style="display:none;grid-column:1/-1">
+          <label>De quem você compra? — % das compras que gera crédito <span id="pm_cred_n" style="font-weight:400;text-transform:none;color:var(--text2)"></span></label>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <input type="number" step="5" min="0" max="100" id="pm_cred" placeholder="vazio = Cadeia de Crédito (ou 100%)" style="max-width:320px" oninput="clearTimeout(window._pmT);window._pmT=setTimeout(lhPmRender,400)">
+            <span class="lh-hint" data-hint="O crédito de entrada (PIS/COFINS que vira CBS, ICMS-ST que vira IBS) só existe na compra de quem destaca o imposto. Fornecedor do regime regular ou importação: 100%. Fornecedor do Simples: ~20% (art. 47 — só o que ele recolheu, salvo opção pelo regime regular). Pessoa física / produtor rural PF / sem nota: 0%. Prioridade: coluna CRED_% da linha > coluna ORIGEM_COMPRA da linha (regular · simples · pf · importacao) > % do grupo > este % geral > Cadeia de Crédito." onclick="lhHint(event,this)">?</span>
+          </div>
+          <details id="pm_cred_grupos_box" style="margin-top:8px;display:none"><summary style="cursor:pointer;color:var(--gold);font-size:.85rem">crédito por grupo — vale sobre o % geral</summary><div id="pm_cred_grupos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px 14px;margin-top:8px;font-size:.82rem"></div></details>
+          <div style="font-size:.78rem;color:var(--text2);margin-top:6px">Na planilha: <code>ORIGEM_COMPRA</code> (regular · simples · pf · importacao) ou <code>CRED_%</code> por linha. Hortifrúti de produtor pessoa física e serviço de autônomo não trazem crédito: o custo deles não cai.</div>
+        </div>
         <div class="input-group" id="pm_var_box" style="display:none;grid-column:1/-1">
           <label>Custo de compra mudou? — variação do custo (%) para todo o catálogo <span id="pm_var_n" style="font-weight:400;text-transform:none;color:var(--text2)"></span></label>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
@@ -52756,6 +52766,9 @@ function cmProcessar(rows){
   /* ★ v886 · ICMS_ST pago na compra, por unidade (R$) — ou % do custo se o cabeçalho tiver "%" ou "pct". Vira crédito de IBS na curva. */
   var iSt=HN.findIndex(function(h){ return /^(icmsst|valorst|vlrst|stunit|stunitario|icmsstunit|icmsstrs|icmsstpct|stpct|st)$/.test(h) || (h.indexOf('icms')>=0 && h.indexOf('st')>=0 && h.indexOf('cst')<0 && h.indexOf('aliq')<0); });
   var stEhPct=(iSt>=0) && (/%|pct|percent/.test(String(head[iSt])));
+  /* ★ v887 · de quem você compra: ORIGEM_COMPRA (regular / simples / pf / importacao) ou CRED_% (% da compra que gera crédito) por linha */
+  var iOrigem=HN.findIndex(function(h){ return /^(origem|origemcompra|origemdacompra|fornecedor|regimefornecedor|regimedofornecedor|tipofornecedor)$/.test(h) || h.indexOf('origemcompra')===0 || h.indexOf('regimeforn')===0; });
+  var iCred=HN.findIndex(function(h){ return /^(cred|credpct|credito|creditopct|creditavel|creditavelpct|pctcred|pctcredito|comcredito)$/.test(h) || (h.indexOf('cred')===0 && h.indexOf('pct')>=0); });
   var iPrecos=[]; HN.forEach(function(h,i){ if(i!==iCusto && (h.indexOf('preco')>=0||h.indexOf('valorvenda')>=0||h.indexOf('vlrvenda')>=0||h.indexOf('tabela')>=0) && h.indexOf('custo')<0 && h.indexOf('compra')<0) iPrecos.push(i); });
   var iIcms=HN.findIndex(function(h){ return (h.indexOf('aliq')>=0 && (h.indexOf('icms')>=0||h.indexOf('iss')>=0)) || h==='icms' || h==='iss' || h==='aliquotaicms'; });
   var iCstIcms=HN.findIndex(function(h){ return (h.indexOf('cst')>=0 && h.indexOf('icms')>=0) || h.indexOf('csosn')>=0; });
@@ -52769,7 +52782,8 @@ function cmProcessar(rows){
     var _it={cod:iCod>=0?row[iCod]:('#'+r), desc:iDesc>=0?row[iDesc]:'', ncm:row[iNCM]};
     _it.x={preco:iPreco>=0?row[iPreco]:null, custo:iCusto>=0?row[iCusto]:null, ipi:iIPI>=0?row[iIPI]:null, icms:iIcms>=0?row[iIcms]:null, cstIcms:iCstIcms>=0?row[iCstIcms]:'', cstPis:iCstPis>=0?row[iCstPis]:'',
            custoNovo:iCustoNovo>=0?row[iCustoNovo]:null, varCusto:iVarCusto>=0?row[iVarCusto]:null, grupo:iGrupo>=0?String(row[iGrupo]==null?'':row[iGrupo]).trim():'',
-           icmsSt:(iSt>=0&&!stEhPct)?row[iSt]:null, icmsStPct:(iSt>=0&&stEhPct)?row[iSt]:null};
+           icmsSt:(iSt>=0&&!stEhPct)?row[iSt]:null, icmsStPct:(iSt>=0&&stEhPct)?row[iSt]:null,
+           origem:iOrigem>=0?String(row[iOrigem]==null?'':row[iOrigem]).trim():'', credPct:iCred>=0?row[iCred]:null};
     if(iPrecos.length>1){ _it.x.precos={}; iPrecos.forEach(function(i){ _it.x.precos[String(rows[0][i])]=row[i]; }); }
     if(iNBS>=0 && iNBS!==iNCM && row[iNBS] && !String(_it.ncm||'').replace(/\D/g,'')) { _it.nbs=String(row[iNBS]).trim(); _it.ncm=''; }
     else if(iNBS>=0 && iNBS===iNCM){ _it.nbs=String(row[iNBS]||'').trim(); _it.ncm=''; }
@@ -58600,7 +58614,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      var precoV=(cfgLista && x.precos && x.precos[cfgLista]!==undefined)?x.precos[cfgLista]:x.preco;
      var f={cod:it.cod, desc:it.desc, ncm:it.ncm||it.ncm_sug||'', nbs:it.nbs||'', tipo:it.tipo||(it.nbs?'S':'P'), trat:it.trat, status:s, fonte:it.fonte||'',
             preco:num(precoV), custo:num(x.custo), ipi:num(x.ipi), icms:num(x.icms), st:ehST(x.cstIcms), cstIcms:x.cstIcms||'', cstPis:x.cstPis||'',
-            custoNovo:num(x.custoNovo), varCusto:num(x.varCusto), grupo:x.grupo||'', icmsSt:num(x.icmsSt), icmsStPct:num(x.icmsStPct)};
+            custoNovo:num(x.custoNovo), varCusto:num(x.varCusto), grupo:x.grupo||'', icmsSt:num(x.icmsSt), icmsStPct:num(x.icmsStPct), origem:x.origem||'', credPct:num(x.credPct)};
      if(f.icmsSt>0 || f.icmsStPct>0) f.st=true;   /* v886: se a planilha traz o ST pago, o item é ST mesmo sem CST */
      var prontos={CONFIRMADO:1,REGRA_GERAL:1,BENEFICIO_IDENTIFICADO:1,SUGERIDO_DESCRICAO:1};
      /* bebida/cigarro: a base diz "adrem" por causa do IS, mas o IBS/CBS é percentual (integral) — precifica como cheia + IS marcado */
@@ -58625,6 +58639,8 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
            repasse:(function(){ var v=num(g('pm_repasse')); return (v==null)?100:Math.max(0,v); })(),
            repGrupo:(function(){ var m={}; var els=document.querySelectorAll('#pm_rep_grupos input.pm-rg'); for(var i=0;i<els.length;i++){ var v=num(els[i].value); if(v!=null) m[els[i].getAttribute('data-grupo')]=Math.max(0,v); } return m; })(),
            repLinha:window.lhPmRepLinha.ler(),
+           credGeral:num(g('pm_cred')),
+           credGrupo:(function(){ var m={}; var els=document.querySelectorAll('#pm_cred_grupos input.pm-cg'); for(var i=0;i<els.length;i++){ var v=num(els[i].value); if(v!=null) m[els[i].getAttribute('data-grupo')]=Math.max(0,Math.min(100,v)); } return m; })(),
            creditavel:(function(){ try{ var c=window.LH_CADEIA&&LH_CADEIA.calcular(2033); var e=LH_CADEIA.get().entrada; return (c && Object.keys(e).some(function(k){ return e[k]!=null; }))?c.creditavel:1; }catch(_e){ return 1; } })()};
  }
  /* ★ v875 · repasse por linha guardado no navegador (por código do item); a decisão sobrevive a recálculo e a troca de estratégia */
@@ -58640,6 +58656,20 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    if(cfg.repLinha && cfg.repLinha[String(f.cod)]!=null){ v=+cfg.repLinha[String(f.cod)]; origem='linha'; }
    else if(cfg.repGrupo && f.grupo && cfg.repGrupo[f.grupo]!=null){ v=+cfg.repGrupo[f.grupo]; origem='grupo'; }
    else { v=(cfg.repasse!=null)?+cfg.repasse:100; }
+   return {pct:v, fr:v/100, origem:origem};
+ };
+ /* ★ v887 · quanto da compra deste item gera crédito: CRED_% da linha > ORIGEM_COMPRA da linha > % do grupo > % geral
+    (campo da tela) > Cadeia de Crédito > 100%. Origem: regular/importação = 100 · simples = 20 (art. 47: só o que o
+    fornecedor do Simples efetivamente recolheu, salvo se ele optar pelo regime regular) · pf/produtor rural PF = 0. */
+ window.LH_PM_ORIGEM={regular:100, normal:100, lucroreal:100, lucropresumido:100, presumido:100, real:100, pj:100, importacao:100, import:100, exterior:100, simples:20, simplesnacional:20, sn:20, mei:20, pf:0, pessoafisica:0, produtorrural:0, produtor:0, autonomo:0, semnota:0, isento:100};
+ window.lhPmCred=function(f, cfg){
+   var v=null, origem='cadeia';
+   var o=String(f.origem||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z]/g,'');
+   if(f.credPct!=null && f.credPct>=0){ v=Math.min(100,+f.credPct); origem='linha'; }
+   else if(o && window.LH_PM_ORIGEM[o]!=null){ v=window.LH_PM_ORIGEM[o]; origem='origem: '+String(f.origem).trim(); }
+   else if(cfg.credGrupo && f.grupo && cfg.credGrupo[f.grupo]!=null){ v=Math.min(100,+cfg.credGrupo[f.grupo]); origem='grupo'; }
+   else if(cfg.credGeral!=null){ v=Math.min(100,+cfg.credGeral); origem='geral'; }
+   else { v=Math.round(((cfg.creditavel!=null)?+cfg.creditavel:1)*10000)/100; origem=(cfg.creditavel!=null && cfg.creditavel<0.9999)?'cadeia':'padrão (100%)'; }
    return {pct:v, fr:v/100, origem:origem};
  };
  /* ★ v871 · o custo novo de cada item: CUSTO_NOVO da linha > VAR_CUSTO da linha > % do grupo > % geral. Só quem tem custo
@@ -58658,6 +58688,8 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var out={anos:{}}; var item={trat:f.trat, preco:f.preco, icms:f.icms, st:f.st, pis:pisDoCST(f.cstPis,cfg.regime), ipi:f.ipi, custo:f.custo, icmsSt:f.icmsSt, icmsStPct:f.icmsStPct};
    if(item.pis==null && cfg.pisMedio!=null) item.pis=cfg.pisMedio;
    var cn=window.lhPmCustoNovo(f,cfg); item.custoNovo=cn; out.custoNovo=cn;
+   /* ★ v887 · crédito por item: a cfg deste item leva o % dele */
+   var cr=window.lhPmCred(f,cfg); out.cred=cr; var cfg0=cfg; cfg={}; for(var k in cfg0) cfg[k]=cfg0[k]; cfg.creditavel=cr.fr;
    ANOS.forEach(function(a){ out.anos[a]=window.lhPreco(item,a,cfg,cfg.estr); });
    /* ★ v875 · preço decidido = hoje + repasse × (calculado − hoje); a parte não repassada sai do que fica com você */
    var rp=window.lhPmRepasse(f,cfg); out.repasse=rp;
@@ -58690,6 +58722,9 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var gC={}, gR={}; if(d&&d.itens) d.itens.forEach(function(it){ if(!it.x||!it.x.grupo) return; gR[it.x.grupo]=(gR[it.x.grupo]||0)+1; if(temCusto&&num(it.x.custo)>0) gC[it.x.grupo]=(gC[it.x.grupo]||0)+1; });
    camposGrupo('pm_var_grupos_box','pm_var_grupos','pm-vg',gC,'itens com custo','0.1');
    camposGrupo('pm_rep_grupos_box','pm_rep_grupos','pm-rg',gR,'itens','5');   /* v875 */
+   var crb=document.getElementById('pm_cred_box'); if(crb) crb.style.display=(temCusto && cfg.regime!=='simples')?'':'none';   /* v887 */
+   camposGrupo('pm_cred_grupos_box','pm_cred_grupos','pm-cg',gC,'itens com custo','5');
+   var crn=document.getElementById('pm_cred_n'); if(crn){ var nO=0, nC=0; if(d&&d.itens) d.itens.forEach(function(it){ if(it.x&&it.x.origem) nO++; if(it.x&&num(it.x.credPct)!=null) nC++; }); crn.textContent=(nO||nC)?('— a planilha traz '+(nC?nC+' linhas com CRED_%':'')+(nC&&nO?' e ':'')+(nO?nO+' com ORIGEM_COMPRA':'')):''; }
    var se=document.getElementById('pm_estr'); if(se){ [].forEach.call(se.options,function(o){ if(o.value==='margem'||o.value==='markup'){ o.disabled=!temCusto; o.textContent=(o.value==='margem'?'Manter a margem % (com custo e crédito de compra)':'Manter o markup sobre o custo')+(temCusto?'':' — precisa de coluna CUSTO'); } }); }
    var pe=document.getElementById('pm_pisemb'); if(pe && !pe.value && !pe._tocado){ pe.placeholder=(cfg.regime==='real')?'0 (Lucro Real já credita)':'3,65 (PIS/COFINS cumulativo)'; }
  };
@@ -58708,7 +58743,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var n=rows.length, sobe=0, cai=0, neutro=0, somaHoje=0, soma33=0, somaFica=0, somaFica33=0, temPreco=0, estimados=0, st=0, nIS=0, nIPI=0, nCusto=0, podeBaixar=0, somaLucro=0, somaLucro33=0, nSt=0, somaStCred=0;
    rows.forEach(function(r){ var y=r.c.anos[2033]; if(y.stValor>0){ nSt++; somaStCred+=y.stCred||0; } if(y.sinal==='▲')sobe++; else if(y.sinal==='▼')cai++; else neutro++;
      if(r.f.preco!=null){temPreco++;} somaHoje+=y.hojeCli; soma33+=y.finalCli; somaFica+=y.ficaHoje; somaFica33+=y.fica; if(r.c.icmsEstimado)estimados++; if(r.f.st)st++; if(y.is)nIS++; if(y.ipiHoje>0)nIPI++;
-     if(y.custoHoje!=null){ nCusto++; somaLucro+=y.lucroHoje||0; somaLucro33+=y.lucro||0; var ym=window.lhPreco({trat:r.f.trat,preco:r.f.preco,icms:r.f.icms,st:r.f.st,pis:r.c.pisUsado,ipi:r.f.ipi,custo:r.f.custo,icmsSt:r.f.icmsSt,icmsStPct:r.f.icmsStPct},2033,cfg,'margem'); if(ym && ym.finalCli<y.hojeCli-0.005) podeBaixar++; } });
+     if(y.custoHoje!=null){ nCusto++; somaLucro+=y.lucroHoje||0; somaLucro33+=y.lucro||0; var _cfgI={}; for(var _k in cfg) _cfgI[_k]=cfg[_k]; _cfgI.creditavel=r.c.cred?r.c.cred.fr:cfg.creditavel; var ym=window.lhPreco({trat:r.f.trat,preco:r.f.preco,icms:r.f.icms,st:r.f.st,pis:r.c.pisUsado,ipi:r.f.ipi,custo:r.f.custo,icmsSt:r.f.icmsSt,icmsStPct:r.f.icmsStPct},2033,_cfgI,'margem'); if(ym && ym.finalCli<y.hojeCli-0.005) podeBaixar++; } });
    var var33=somaHoje?((soma33-somaHoje)/somaHoje*100):0, varFica=somaFica?((somaFica33-somaFica)/somaFica*100):0;
    /* ★ v875 · repasse: o que foi decidido × o que foi calculado */
    var somaDec33=0, nRepLinha=0, nRepGrupo=0, nRepParcial=0, somaAbs=0;
@@ -58741,7 +58776,8 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    if(nSt) h+='<div class="kpi-card"><div class="kpi-label">ICMS-ST que vira crédito de IBS em 2033</div><div class="kpi-value" style="color:#16c47c">'+nSt.toLocaleString('pt-BR')+' <span style="font-size:.7rem;color:var(--text2)">itens</span></div><div class="kpi-label" style="margin-top:4px">custo cai '+fmt(somaStCred)+' por unidade somando o catálogo (coluna ICMS_ST)</div></div>';
    if(nIPI) h+='<div class="kpi-card"><div class="kpi-label">Com IPI hoje'+(cfg.zfm?' (ZFM: mantido)':' (zera em 2027)')+'</div><div class="kpi-value">'+nIPI.toLocaleString('pt-BR')+'</div></div>';
    h+='</div>';
-   h+=window.lhPmPremissasHTML(cfg,{repasse:cfg.repasse, nSt:nSt});   /* v885 */
+   var _credTxt=(function(){ var m={}; rows.forEach(function(r){ var o=(r.c.cred||{}).origem||''; o=o.split(':')[0]; m[o]=(m[o]||0)+1; }); var ks=Object.keys(m); if(ks.length===1 && (ks[0]==='padrão (100%)'||ks[0]==='cadeia')) return null; return ks.map(function(k){ return m[k]+' itens por '+k; }).join(', '); })();
+   h+=window.lhPmPremissasHTML(cfg,{repasse:cfg.repasse, nSt:nSt, credTxt:_credTxt});   /* v885 */
    /* como ler — recolhível (v865) */
    var L=[['Como ler esta tabela','Cada linha mantém '+({fica:'o que fica com você depois do imposto (lucro unitário em R$)', preco:'o preço final ao cliente — o que muda é quanto sobra para você', pj:'o custo líquido do seu cliente PJ — ele recupera o IBS/CBS como crédito, então o preço final sobe só o imposto por fora', margem:'a sua margem % sobre o preço líquido — com o custo do ano (já com o crédito de compra), o preço que preserva a mesma margem', markup:'o seu markup sobre o custo — preço final = custo do ano × o multiplicador de hoje'}[cfg.estr]||'')+'. Preço por dentro = a parte que ainda carrega ICMS/ISS'+(cfg.regime==='real'?' e PIS/COFINS (até 2026)':'')+'; IBS/CBS vai destacado por fora e '+(cfg.b2b?'vira crédito do seu cliente':'entra no preço de prateleira')+'. '+(temCusto?'Custo, margem e crédito de compra entram nas estratégias 4 e 5; nas três primeiras só o imposto muda de lugar e de tamanho.':'Sem coluna de custo: só o imposto mudou de lugar e de tamanho (sem custo, sem margem, sem crédito de compra). Com CUSTO na planilha, as estratégias de margem e markup ligam.')],
      ['De onde vêm os números','Alíquota nova por item: do tratamento que o Classificador deu (coluna Classificação; o fundamento legal está no tooltip). Curva da transição: a mesma da nota simulada (CBS 8,7% + IBS 0,1% em 2027-28; IBS sobe 10 pontos ao ano de 2029 a 2032 enquanto ICMS/ISS caem 1/10; 26,5% de referência em 2033). Imposto velho: '+(cfg.regime==='simples'?'Simples Nacional, dentro do DAS.':('ICMS '+(estimados?'do próprio cadastro em '+(n-estimados)+' itens e a média informada ('+pct(cfg.icmsMedio)+') em '+estimados+' itens (marcados "est.")':'do próprio cadastro (coluna ALIQUOTA_ICMS)')+'; PIS/COFINS pelo CST do item ou pelo regime ('+pct(PIS_REGIME[cfg.regime])+')'+(st?'; '+st+' itens com ICMS-ST (CSOSN 500/CST 060): o ICMS foi pago na compra mas está dentro do preço — entra pelo cadastro ou pela média, marcado "ST"':'')+'.'))],
@@ -58799,7 +58835,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      h+='<tr data-i="'+ri+'"><td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);white-space:normal;min-width:220px"><span class="pm-abre" onclick="lhPmConta('+ri+',this)" title="abrir a conta ano a ano" style="cursor:pointer;color:var(--gold);font-weight:800;margin-right:6px">▸</span>'+String(r.f.desc||'').slice(0,60)+'<span style="display:block;font-size:.68rem;color:var(--text2);margin-left:18px">'+r.f.cod+' · '+(r.f.nbs?'NBS '+r.f.nbs:'NCM '+r.f.ncm)+(r.f.grupo?' · '+r.f.grupo:'')+'</span></td>';
      h+='<td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05)" title="'+String(r.f.fonte||'').replace(/"/g,'&quot;').slice(0,200)+'">'+(CM_TRAT_LABEL[r.f.trat]||r.f.trat)+(y33.is?' <span style="background:rgba(224,90,77,.18);color:#e05a4d;border:1px solid rgba(224,90,77,.4);padding:0 6px;border-radius:8px;font-size:.66rem;font-weight:800" title="Imposto Seletivo não somado — por produto/unidade; confira na calculadora do IS">+ IS</span>':'')+'<span style="display:block;font-family:ui-monospace,monospace;font-size:.68rem;color:var(--text2)">'+mp[0]+' · '+String(mp[1]).replace('*','')+' · '+pct(cmAliqAno(r.f.trat,2033))+' em 2033</span></td>';
      h+='<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05)">'+pct(r.c.icmsUsado)+(r.f.st?' <span style="font-size:.66rem;color:#9fc" title="ICMS-ST: pago na compra, dentro do preço">ST</span>':'')+(r.c.icmsEstimado?' <span style="font-size:.66rem;color:#e8b93a">est.</span>':'')+'</td>';
-     if(temCusto) h+='<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05)">'+(r.f.custoMaior?'<span style="background:rgba(224,90,77,.18);color:#e05a4d;border:1px solid rgba(224,90,77,.4);padding:0 6px;border-radius:8px;font-size:.66rem;font-weight:800;margin-right:4px" title="custo de compra maior que o preço de venda: erro de cadastro ou venda abaixo do custo">custo &gt; preço</span>':'')+(y33.custoHoje!=null?fmt(y33.custoHoje)+(r.c.custoNovo!=null?' → <b style="color:'+(r.c.custoNovo>y33.custoHoje?'#e05a4d':'#16c47c')+'">'+fmt(r.c.custoNovo)+'</b>':(temVar?' → <span style="color:var(--text2)">igual</span>':''))+' → '+fmt(y33.custo)+' <span style="font-size:.66rem;color:var(--text2)" title="custo líquido do crédito em 2033: a compra menos o PIS/COFINS que vira crédito de CBS">líq.</span>':'—')+'</td>';
+     if(temCusto) h+='<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05)">'+(r.f.custoMaior?'<span style="background:rgba(224,90,77,.18);color:#e05a4d;border:1px solid rgba(224,90,77,.4);padding:0 6px;border-radius:8px;font-size:.66rem;font-weight:800;margin-right:4px" title="custo de compra maior que o preço de venda: erro de cadastro ou venda abaixo do custo">custo &gt; preço</span>':'')+(y33.custoHoje!=null?fmt(y33.custoHoje)+(r.c.custoNovo!=null?' → <b style="color:'+(r.c.custoNovo>y33.custoHoje?'#e05a4d':'#16c47c')+'">'+fmt(r.c.custoNovo)+'</b>':(temVar?' → <span style="color:var(--text2)">igual</span>':''))+' → '+fmt(y33.custo)+' <span style="font-size:.66rem;color:var(--text2)" title="custo líquido do crédito em 2033: a compra menos o PIS/COFINS que vira crédito de CBS'+(y33.stValor>0?' e o ICMS-ST que vira IBS':'')+' · '+(r.c.cred?pct(r.c.cred.pct)+' da compra com crédito ('+r.c.cred.origem+')':'')+'">líq.'+(r.c.cred&&r.c.cred.pct<99.99?' <b style="color:#e0a83a">'+Math.round(r.c.cred.pct)+'%</b>':'')+'</span>':'—')+'</td>';
      var soC=function(){ if(!temVar) return ''; var o=r.c.soCusto; if(!o) return '<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);color:var(--text2)" title="custo não mudou neste item'+(r.f.tipo==='S'&&!(r.f.custo>0)?' — serviço puro, sem custo de compra na planilha':'')+'">'+fmt(y33.hojeCli)+'</td>'; var dc=o.finalCli-y33.hojeCli; return '<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);color:'+(dc>0.005?'#e0a83a':dc<-0.005?'#16c47c':'inherit')+'" title="preço de hoje reprecificado só pelo custo novo (imposto de hoje) · custo '+fmt(o.custoHoje)+' → '+fmt(o.custoNovo)+' · fica '+fmt(o.fica)+(o.lucro!=null?' · lucro '+fmt(o.lucro):'')+'">'+fmt(cfg.estr==='preco'?o.fica:o.finalCli)+'</td>'; };
      var soI=function(){ if(!temVar) return ''; var o=r.c.soImposto33; if(!o) return '<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);color:var(--text2)">'+fmt(cfg.estr==='preco'?y33.fica:y33.finalCli)+'</td>'; return '<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05)" title="2033 com o custo de hoje: só o imposto mudou · por dentro '+fmt(o.base)+' + IBS/CBS '+fmt(o.fora)+' = '+fmt(o.finalCli)+' · fica '+fmt(o.fica)+'">'+fmt(cfg.estr==='preco'?o.fica:o.finalCli)+'</td>'; };
      var fora=function(a){ var o=y[a]; return '<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);color:#e0a83a" title="IBS/CBS destacado por fora em '+a+' ('+pct(o.tFora*100)+' sobre '+fmt(o.fica)+' — sem ICMS/ISS na base, LC 214 art. 12 §2º V)'+(o.velho?' · ainda por dentro: ICMS/ISS '+fmt(o.velho)+(o.leitura==='fisco'?' (sobre o total, com o IBS/CBS)':' (sem o IBS/CBS na base)'):'')+'">'+fmt(o.fora)+'</td>'; };
@@ -58854,7 +58890,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      +li('<b>Alíquota nova por item</b>: o tratamento que o Classificador deu pelo NCM/NBS (integral, reduzida, zero), sobre a referência de <b>'+(selo?(selo.referencia*100).toFixed(2).replace('.',','):'26,50')+'%</b> em 2033'+(selo?' — '+selo.rotulo.toLowerCase()+' ('+selo.nome+')':'')+'. Sugestão de teste, não é lei: a definitiva sai por Resolução do Senado.')
      +li('<b>Curva da transição</b>: CBS 8,7% + IBS 0,1% em 2027-28; de 2029 a 2032 o IBS sobe 10 pontos ao ano da referência enquanto ICMS/ISS caem 1/10 ao ano; 2033 só IBS/CBS. PIS/COFINS acaba em 2027; IPI '+(cfg.zfm?'mantido (ZFM)':'zera em 2027 (art. 126 ADCT), exceto ZFM')+'.')
      +li('<b>Base do IBS/CBS</b> sem ICMS/ISS e PIS/COFINS (LC 214, art. 12 §2º V). '+(cfg.leitura==='plp'?'Leitura PLP 16/2025: o IBS/CBS também fica fora da base do ICMS/ISS.':'Leitura dos fiscos: o ICMS/ISS incide sobre o total, com o IBS/CBS (SP, CT 33.083/2026). Em disputa; troque em "leitura".'))
-     +li('<b>Crédito de entrada na mercadoria</b>: '+(cfg.regime==='simples'?'Simples Nacional: sem crédito e sem destaque — o custo não muda.':(cfg.regime==='real'?'Lucro Real: o PIS/COFINS da compra já é crédito hoje — o custo não cai por isso.':'Presumido: o PIS/COFINS embutido na compra ('+pct(pisEmb)+') é cumulativo hoje e vira crédito de CBS a partir de 2027 — o custo do ano cai isso'))+(cfg.regime!=='simples'?' × '+pct(cred*100)+' das compras com crédito'+(cred>=0.999?' (sem leitura da Cadeia: assume tudo)':' (Cadeia de Crédito)'):'')+'. O ICMS da compra é neutro: crédito hoje, crédito de IBS amanhã.')
+     +li('<b>Crédito de entrada na mercadoria</b>: '+(cfg.regime==='simples'?'Simples Nacional: sem crédito e sem destaque — o custo não muda.':(cfg.regime==='real'?'Lucro Real: o PIS/COFINS da compra já é crédito hoje — o custo não cai por isso.':'Presumido: o PIS/COFINS embutido na compra ('+pct(pisEmb)+') é cumulativo hoje e vira crédito de CBS a partir de 2027 — o custo do ano cai isso'))+(cfg.regime!=='simples'?' × a parcela da compra que gera crédito: '+(ctx.credTxt||(pct(cred*100)+(cred>=0.999?' (sem leitura da Cadeia nem ORIGEM_COMPRA: assume tudo)':' (Cadeia de Crédito)')))+' — fornecedor do Simples ~20%, pessoa física 0':'')+'. O ICMS da compra é neutro: crédito hoje, crédito de IBS amanhã.')
      +li('<b>Estratégia</b> "'+(ESTR[cfg.estr]||cfg.estr)+'"'+(ctx.repasse!=null&&Math.abs(ctx.repasse-100)>0.001?' e repasse de '+ctx.repasse+'%':'')+'; cliente '+(cfg.b2b?'empresa do regime regular (líquido PJ)':'consumidor final (prateleira)')+'.')
      +'</ul><b style="color:#e0a83a">Não entrou (de propósito)</b><ul style="margin:4px 0 8px 18px;padding:0">'
      +li('<b>ICMS-ST</b> sem valor informado: neutro (o ST já está por dentro do preço de venda). Com a coluna <code>ICMS_ST</code> na planilha (R$ por unidade, ou % do custo) ou o campo do item, o ST vira crédito de IBS na curva 2029-33 e o custo do ano cai'+(ctx.nSt?' — em '+ctx.nSt+' itens deste catálogo':'')+'.')
@@ -58913,7 +58949,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      +(cfg.leitura==='plp'?'Leitura PLP 16/2025: o IBS/CBS fica fora da base do ICMS/ISS. ':'Leitura dos fiscos: o ICMS/ISS incide sobre o total com o IBS/CBS (SP, CT 33.083/2026). ')
      +(temN?'Custo '+fmt(r.f.custo)+' → '+fmt(r.c.custoNovo)+': a diferença líquida já está aplicada desde 2026 — por isso "2026 (teste · custo novo)" difere de "hoje" mesmo sem imposto novo. ':'')
      +({fica:'Estratégia "manter o que fica": os '+fmt(hoje.ficaHoje)+' são fixos em todos os anos'+(temN?' (± a variação líquida do custo novo)':'')+'.', preco:'Estratégia "manter o preço": a prateleira é fixa; o que fica e o lucro absorvem a diferença.', pj:'Estratégia "manter o líquido PJ": o preço sem IBS/CBS é fixo.', margem:'Estratégia "manter a margem %": lucro ÷ o que fica é o de hoje em todos os anos.', markup:'Estratégia "manter o markup": prateleira = custo do ano × o multiplicador de hoje.'}[cfg.estr]||'')
-     +(temC?' Custo do ano = custo de hoje menos o PIS/COFINS cumulativo que vira crédito a partir de 2027'+((r.c.anos[2033].stValor>0)?' e menos o ICMS-ST de '+fmt(r.c.anos[2033].stValor)+' que vira crédito de IBS conforme o ICMS some (em 2033: '+fmt(r.c.anos[2033].stCred)+')':'')+'.':'')+(temR?' Decidido = hoje + '+r.c.repasse.pct+'% × (prateleira − hoje); o que não é repassado sai do que fica com você.':''));
+     +(temC?' Custo do ano = custo de hoje menos o PIS/COFINS cumulativo que vira crédito a partir de 2027'+((r.c.cred&&r.c.cred.pct<99.99)?' (sobre '+pct(r.c.cred.pct)+' da compra — '+r.c.cred.origem+')':'')+((r.c.anos[2033].stValor>0)?' e menos o ICMS-ST de '+fmt(r.c.anos[2033].stValor)+' que vira crédito de IBS conforme o ICMS some (em 2033: '+fmt(r.c.anos[2033].stCred)+')':'')+'.':'')+(temR?' Decidido = hoje + '+r.c.repasse.pct+'% × (prateleira − hoje); o que não é repassado sai do que fica com você.':''));
    return h;
  };
 
@@ -58998,7 +59034,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var cl=window._PMI_CLASS||window.lhPmItemClassifica();
    var cfg=cfgTela(); cfg.repLinha={}; cfg.repGrupo={};
    if(!cl.ok){ res.innerHTML='<div class="input-card" style="border-color:rgba(224,90,77,.4)"><b style="color:#e05a4d">Este item não se precifica pela alíquota geral.</b> <span style="color:var(--text2)">'+cl.fonte+'</span></div>'; return; }
-   var f={cod:'ITEM', desc:String((document.getElementById('pmi_desc')||{}).value||cl.ncm||cl.nbs||'item'), ncm:cl.ncm, nbs:cl.nbs, tipo:cl.tipo, trat:cl.trat, status:cl.status, fonte:cl.fonte, preco:preco, custo:g('pmi_custo'), ipi:null, icms:g('pmi_icms'), st:(g('pmi_st')>0), cstIcms:'', cstPis:'', custoNovo:g('pmi_custonovo'), varCusto:null, grupo:'', icmsSt:g('pmi_st')};
+   var f={cod:'ITEM', desc:String((document.getElementById('pmi_desc')||{}).value||cl.ncm||cl.nbs||'item'), ncm:cl.ncm, nbs:cl.nbs, tipo:cl.tipo, trat:cl.trat, status:cl.status, fonte:cl.fonte, preco:preco, custo:g('pmi_custo'), ipi:null, icms:g('pmi_icms'), st:(g('pmi_st')>0), cstIcms:'', cstPis:'', custoNovo:g('pmi_custonovo'), varCusto:null, grupo:'', icmsSt:g('pmi_st'), credPct:g('pmi_cred'), origem:''};
    var c=window.lhPmCalcular(f,cfg); if(!c.anos[2033]){ res.innerHTML='<div style="color:#e05a4d">Não foi possível precificar (ad rem).</div>'; return; }
    var r={f:f,c:c}, y33=c.anos[2033], y27=c.anos[2027];
    /* os três caminhos da Formação de Preço, com o motor: segurar = manter o preço; repassar = a estratégia escolhida; dividir = repasse 50% */
@@ -59028,7 +59064,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var d=window.PM_ULTIMO; if(!d) return [];
    return d.rows.map(function(r){ var y33=r.c.anos[2033]; var o={cod:r.f.cod, desc:r.f.desc, ncm:r.f.nbs?('NBS '+r.f.nbs):r.f.ncm, trat:(CM_TRAT_LABEL[r.f.trat]||r.f.trat)+(y33.is?' (+IS não somado)':''), icms:r.c.icmsUsado+(r.f.st?' ST':''), icmsEst:r.c.icmsEstimado, pis:r.c.pisUsado, ipi:y33.ipiHoje||0, hoje:y33.hoje, hojeCli:y33.hojeCli, fica:y33.ficaHoje, custoHoje:y33.custoHoje, lucroHoje:y33.lucroHoje, grupo:r.f.grupo||'',
        custoNovo:r.c.custoNovo, soCusto:(r.c.soCusto?r.c.soCusto.finalCli:null), soCustoFica:(r.c.soCusto?r.c.soCusto.fica:null), soImposto33:(r.c.soImposto33?r.c.soImposto33.finalCli:null)};
-     o.repasse=r.c.repasse.pct; o.repOrigem=r.c.repasse.origem;
+     o.repasse=r.c.repasse.pct; o.repOrigem=r.c.repasse.origem; o.credPct=r.c.cred?r.c.cred.pct:null; o.credOrigem=r.c.cred?r.c.cred.origem:''; o.stValor=y33.stValor||0;
      var _mp=(typeof cmCclassPorFonte==='function')?cmCclassPorFonte(r.f.trat,r.f.fonte):['','']; o.cst=String(_mp[0]||''); o.cclass=String(_mp[1]||'').replace('*','');   /* v876: CST e cClassTrib na mesma linha do preço */
      ANOS.forEach(function(a){ var y=r.c.anos[a]; o['base'+a]=y.base; o['fora'+a]=y.fora; o['ipi'+a]=y.ipi||0; o['final'+a]=y.finalCli; o['liq'+a]=y.liqPJ; o['fica'+a]=y.fica; o['custo'+a]=y.custo; o['lucro'+a]=y.lucro; o['dec'+a]=y.decidido; o['ficaDec'+a]=y.ficaDecidido; }); o.var33=y33.dFinal; o.sinal=y33.sinal; return o; });
  };
@@ -59054,11 +59090,14 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var temC=L.some(function(o){ return o.custoHoje!=null; }), temI=L.some(function(o){ return o.ipi>0; }), temV=L.some(function(o){ return o.custoNovo!=null; }), temG=L.some(function(o){ return !!o.grupo; }), temR=L.some(function(o){ return Math.abs(o.repasse-100)>0.001; });
    var cols=['Codigo','Descricao','NCM_NBS'].concat(temG?['Grupo']:[]).concat(['Tratamento','CST_IBS_CBS','cClassTrib','ICMS_ISS_%','PIS_COFINS_%']).concat(temI?['IPI_hoje_R$']:[]).concat(['Preco_hoje','Fica_hoje']).concat(temC?['Custo_hoje','Lucro_hoje']:[]).concat(temV?['Custo_novo','Var_custo_%','Preco_hoje_custo_novo','Preco_2033_so_imposto']:[]);
    if(temR) cols.push('Repasse_%','Repasse_origem');
+   var temCr=temC && L.some(function(o){ return o.credPct!=null && (o.credPct<99.99 || /linha|origem|grupo|geral/.test(o.credOrigem)); }), temSt=L.some(function(o){ return o.stValor>0; });   /* v887 */
+   if(temCr) cols.push('Credito_%','Credito_origem'); if(temSt) cols.push('ICMS_ST_R$');
    ANOS.forEach(function(a){ cols.push('Por_dentro_'+a,'IBS_CBS_'+a); if(temI) cols.push('IPI_'+a); cols.push('Preco_final_'+a,'Liquido_PJ_'+a,'Fica_'+a); if(temC) cols.push('Custo_'+a,'Lucro_'+a); if(temR) cols.push('Preco_decidido_'+a,'Fica_decidido_'+a); }); cols.push('Var_2033_R$','Sinal');
    ws.addRow(cols); ws.getRow(1).eachCell(hdr);
    L.forEach(function(o){ var r=[o.cod,o.desc,o.ncm]; if(temG) r.push(o.grupo); r.push(o.trat,o.cst,o.cclass,o.icms+(o.icmsEst?' (est.)':''),o.pis); if(temI) r.push(o.ipi); r.push(o.hojeCli,o.fica); if(temC) r.push(o.custoHoje,o.lucroHoje);
      if(temV) r.push(o.custoNovo!=null?o.custoNovo:null, (o.custoNovo!=null&&o.custoHoje)?Math.round((o.custoNovo/o.custoHoje-1)*10000)/100:null, o.soCusto!=null?o.soCusto:o.hojeCli, o.soImposto33!=null?o.soImposto33:o.final2033);
      if(temR) r.push(o.repasse,o.repOrigem);
+     if(temCr) r.push(o.credPct,o.credOrigem); if(temSt) r.push(o.stValor);
      ANOS.forEach(function(a){ r.push(o['base'+a],o['fora'+a]); if(temI) r.push(o['ipi'+a]); r.push(o['final'+a],o['liq'+a],o['fica'+a]); if(temC) r.push(o['custo'+a],o['lucro'+a]); if(temR) r.push(o['dec'+a],o['ficaDec'+a]); }); r.push(o.var33,o.sinal); ws.addRow(r); });
    ws.views=[{state:'frozen',xSplit:2,ySplit:1}]; ws.autoFilter={from:{row:1,column:1},to:{row:1,column:cols.length}};
    [12,40,14,20,10,10,11,11].forEach(function(w,i){ ws.getColumn(i+1).width=w; });
