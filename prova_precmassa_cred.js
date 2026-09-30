@@ -35,6 +35,11 @@ function rodar(html, rows, fn) {
             const by = {}; w.PM_ULTIMO.rows.forEach((r) => { by[r.f.desc] = { c33: r.c.anos[2033].custo, cred: r.c.cred }; });
             out.by = by; out.html = $('pm-result').innerHTML; out.credBox = $('pm_cred_box').style.display; out.credN = $('pm_cred_n').textContent;
             out.grupos = [...d.querySelectorAll('#pm_cred_grupos input.pm-cg')].map((e) => e.getAttribute('data-grupo'));
+            /* v890 · coluna CRÉDITO 2033 */
+            const ths = [...$('pm-result').querySelectorAll('table thead th')].map((e) => e.childNodes[0].textContent.trim());
+            const iCr = ths.indexOf('CRÉDITO 2033'); out.iCr = iCr; out.iCusto = ths.indexOf('CUSTO');
+            out.cel = {}; [...$('pm-result').querySelectorAll('tr[data-i]')].forEach((tr) => { const td = tr.querySelectorAll('td'); const desc = td[0].textContent; const k = ['PARAFUSO REGULAR', 'PARAFUSO SIMPLES', 'PARAFUSO PF', 'PARAFUSO CRED50', 'PARAFUSO GRUPO', 'PARAFUSO GERAL'].find((n) => desc.indexOf(n) >= 0) || desc; if (iCr >= 0) out.cel[k] = td[iCr].textContent.replace(/\s+/g, ' ').trim(); });
+            out.linhas = w.lhPmLinhas().map((o) => [o.desc, o.cred33]);
             /* cartão um item */
             w.abrirPagina('formpreco'); S('pmi_cod', '73181500'); S('pmi_desc', 'PARAFUSO'); S('pmi_preco', 100); S('pmi_custo', 60); S('pmi_icms', 18); S('pmi_cred', 20); S('pm_regime', 'presumido'); w.lhPmItemClassifica(); w.lhPmItem();
             out.itemLinhas = [...$('pmi_res').querySelectorAll('table tr')].filter((x) => x.querySelectorAll('td').length).map((x) => [...x.querySelectorAll('td')].map((c) => c.textContent.trim()));
@@ -61,6 +66,9 @@ function rodar(html, rows, fn) {
     ex('campos por grupo: FERRAGEM e HORTI', r.grupos.join(',') === 'FERRAGEM,HORTI', r.grupos.join(','));
     ex('tabela mostra o % de crédito ao lado de "líq." quando < 100', /líq\. <b style="color:#e0a83a">20%<\/b>/.test(r.html) && /líq\. <b style="color:#e0a83a">0%<\/b>/.test(r.html), '');
     ex('premissas contam os itens por origem do crédito', /itens por origem/.test(r.html) && /itens por linha/.test(r.html) && /itens por grupo/.test(r.html) && /itens por geral/.test(r.html), '');
+    ex('v890 · coluna "CRÉDITO 2033" logo depois de CUSTO', r.iCr > 0 && r.iCr === r.iCusto + 1, r.iCusto + ' / ' + r.iCr);
+    ex('v890 · regular 2,19 (100%) · Simples 0,44 (20%) · PF 0,00 (0% · sem crédito) · CRED50 1,09–1,10 (50%)', /^2,19\s*100%/.test(r.cel['PARAFUSO REGULAR'] || '') && /^0,44\s*20%/.test(r.cel['PARAFUSO SIMPLES'] || '') && /^0,00\s*0% · sem crédito/.test(r.cel['PARAFUSO PF'] || '') && /^1,(09|10)\s*50%/.test(r.cel['PARAFUSO CRED50'] || ''), JSON.stringify(r.cel));
+    ex('v890 · exportação leva Credito_2033_R$ (2,19 no regular)', r.linhas.some((l) => /REGULAR/.test(l[0]) && Math.abs(l[1] - 2.19) < 0.006), JSON.stringify(r.linhas.slice(0, 2)));
     const l33 = r.itemLinhas.find((l) => l[0] === '2033') || [];
     ex('cartão "um item" com 20% de crédito: custo 2033 = 59,56', l33[1] === '59,56', l33.join(' | '));
   }
