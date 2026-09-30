@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v887';</script>
+<body><script>window.LH_VERSAO='v888';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -12198,20 +12198,30 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <div class="input-group" style="grid-column:1/-1" id="pm_cenario_box"></div>
         <div class="input-group" style="grid-column:1/-1"><div id="pm_cadeia_info" style="font-size:.8rem;color:var(--text2)">cadeia: sem leitura — <a href="#" onclick="abrirPagina('cadeia');return false" style="color:var(--gold)">Cadeia de Crédito</a> define a parcela das compras que gera crédito e a fatia PJ das vendas</div></div>
         <div class="input-group" id="pm_custo_box" style="display:none"><label>% do custo que hoje é imposto não recuperável (vira crédito na Reforma)</label>
-          <input type="number" step="0.01" id="pm_pisemb" placeholder="3,65 (PIS/COFINS cumulativo)" oninput="this._tocado=true" onchange="lhPmRender()"><span class="lh-hint" data-hint="Presumido: PIS/COFINS cumulativo 3,65% embutido nas compras, que você não credita hoje e passa a creditar como IBS/CBS a partir de 2027. Lucro Real: 0 (já credita)." onclick="lhHint(event,this)">?</span></div>
+          <input type="number" step="0.01" id="pm_pisemb" placeholder="3,65 (PIS/COFINS cumulativo)" oninput="this._tocado=true" onchange="lhPmRender()"><span class="lh-hint" data-hint="Presumido: PIS/COFINS cumulativo 3,65% embutido nas compras, que você não credita hoje e passa a creditar como IBS/CBS a partir de 2027. Lucro Real: 0 (já credita). É um piso conservador: o resíduo real da cadeia é maior quando o fornecedor é Lucro Real (9,25% sobre o valor que ele agregou), mas o crédito que você ganha em 2027 é a CBS destacada, não o resíduo — por isso 3,65 é o número defensável. Ajuste por grupo abaixo quando souber o regime do fornecedor daquele grupo." onclick="lhHint(event,this)">?</span>
+          <details id="pm_pisemb_grupos_box" style="margin-top:8px;display:none"><summary style="cursor:pointer;color:var(--gold);font-size:.85rem">% embutido por grupo — vale sobre o % geral</summary><div id="pm_pisemb_grupos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px 14px;margin-top:8px;font-size:.82rem"></div></details></div>
         <div class="input-group" id="pm_cred_box" style="display:none;grid-column:1/-1">
           <label>De quem você compra? — % das compras que gera crédito <span id="pm_cred_n" style="font-weight:400;text-transform:none;color:var(--text2)"></span></label>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-            <input type="number" step="5" min="0" max="100" id="pm_cred" placeholder="vazio = Cadeia de Crédito (ou 100%)" style="max-width:320px" oninput="clearTimeout(window._pmT);window._pmT=setTimeout(lhPmRender,400)">
+            <input type="number" step="5" min="0" max="100" id="pm_cred" placeholder="vazio = Cadeia de Crédito (ou 100%)" style="flex:1;min-width:240px;max-width:420px" oninput="clearTimeout(window._pmT);window._pmT=setTimeout(lhPmRender,400)">
             <span class="lh-hint" data-hint="O crédito de entrada (PIS/COFINS que vira CBS, ICMS-ST que vira IBS) só existe na compra de quem destaca o imposto. Fornecedor do regime regular ou importação: 100%. Fornecedor do Simples: ~20% (art. 47 — só o que ele recolheu, salvo opção pelo regime regular). Pessoa física / produtor rural PF / sem nota: 0%. Prioridade: coluna CRED_% da linha > coluna ORIGEM_COMPRA da linha (regular · simples · pf · importacao) > % do grupo > este % geral > Cadeia de Crédito." onclick="lhHint(event,this)">?</span>
           </div>
           <details id="pm_cred_grupos_box" style="margin-top:8px;display:none"><summary style="cursor:pointer;color:var(--gold);font-size:.85rem">crédito por grupo — vale sobre o % geral</summary><div id="pm_cred_grupos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px 14px;margin-top:8px;font-size:.82rem"></div></details>
           <div style="font-size:.78rem;color:var(--text2);margin-top:6px">Na planilha: <code>ORIGEM_COMPRA</code> (regular · simples · pf · importacao) ou <code>CRED_%</code> por linha. Hortifrúti de produtor pessoa física e serviço de autônomo não trazem crédito: o custo deles não cai.</div>
         </div>
+        <div class="input-group" id="pm_desp_box" style="grid-column:1/-1">
+          <label>Despesas que passam a dar crédito (fora do preço dos itens) — opcional</label>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <input type="number" step="0.5" min="0" max="80" id="pm_desp" placeholder="% da receita: energia, aluguel, frete, serviços tomados" style="flex:1;min-width:240px;max-width:420px" oninput="clearTimeout(window._pmT);window._pmT=setTimeout(lhPmRender,400)">
+            <input type="number" step="0.05" min="0" max="20" id="pm_despemb" placeholder="imposto velho dentro delas: 8,65" style="flex:1;min-width:220px;max-width:320px" oninput="clearTimeout(window._pmT);window._pmT=setTimeout(lhPmRender,400)">
+            <span class="lh-hint" data-hint="Energia, aluguel, frete de terceiros, serviços tomados: hoje vêm com ISS e PIS/COFINS cumulativo dentro do preço e você não credita nada (Presumido). A partir de 2027 o fornecedor destaca IBS/CBS por fora e você credita: o custo efetivo dessas despesas cai o imposto velho que estava dentro (serviço: ISS 2-5% + 3,65% ≈ 8,65%; mercadoria/energia: ~3,65%). É crédito da EMPRESA, não do item — por isso não entra na linha do produto: vira um KPI à parte, para você saber quanto o catálogo cai além da soma das linhas. Estimativa: % da receita × imposto embutido, com a mesma curva do ICMS/ISS (2029-32) e o PIS/COFINS sumindo em 2027." onclick="lhHint(event,this)">?</span>
+          </div>
+          <div style="font-size:.78rem;color:var(--text2);margin-top:6px">Estimativa declarada: <b>não</b> entra no preço de nenhum item — aparece como KPI ("crédito de despesas") para mostrar o que o catálogo ganha além das linhas.</div>
+        </div>
         <div class="input-group" id="pm_var_box" style="display:none;grid-column:1/-1">
           <label>Custo de compra mudou? — variação do custo (%) para todo o catálogo <span id="pm_var_n" style="font-weight:400;text-transform:none;color:var(--text2)"></span></label>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-            <input type="number" step="0.1" id="pm_varcusto" placeholder="ex.: −20 (custava 5, passou a 4)" style="max-width:320px" oninput="clearTimeout(window._pmT);window._pmT=setTimeout(lhPmRender,400)">
+            <input type="number" step="0.1" id="pm_varcusto" placeholder="ex.: −20 (custava 5, passou a 4)" style="flex:1;min-width:240px;max-width:420px" oninput="clearTimeout(window._pmT);window._pmT=setTimeout(lhPmRender,400)">
             <span class="lh-hint" data-hint="Reprecifica pela variação do custo de compra, além do imposto. Prioridade: coluna CUSTO_NOVO (R$) da planilha > coluna VAR_CUSTO (%) da linha > % do grupo > este % geral. Vale para revenda e para serviço com insumo direto (frete, peça, tarifa repassada). Serviço puro (honorário, hora) não tem custo de compra na planilha e fica de fora — nele só o imposto muda." onclick="lhHint(event,this)">?</span>
           </div>
           <details id="pm_var_grupos_box" style="margin-top:8px;display:none"><summary style="cursor:pointer;color:var(--gold);font-size:.85rem">variação por grupo (a planilha tem coluna GRUPO) — vale sobre o % geral</summary><div id="pm_var_grupos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px 14px;margin-top:8px;font-size:.82rem"></div></details>
@@ -12220,7 +12230,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <div class="input-group" id="pm_rep_box" style="grid-column:1/-1">
           <label>Quanto do ajuste você repassa ao preço (%) <span id="pm_rep_n" style="font-weight:400;text-transform:none;color:var(--text2)"></span></label>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-            <input type="number" step="5" min="0" max="200" id="pm_repasse" placeholder="100 = repassa tudo · 50 = metade · 0 = segura o preço" style="max-width:320px" oninput="clearTimeout(window._pmT);window._pmT=setTimeout(lhPmRender,400)">
+            <input type="number" step="5" min="0" max="200" id="pm_repasse" placeholder="100 = repassa tudo · 50 = metade · 0 = segura o preço" style="flex:1;min-width:240px;max-width:420px" oninput="clearTimeout(window._pmT);window._pmT=setTimeout(lhPmRender,400)">
             <span class="lh-hint" data-hint="A ferramenta calcula o preço que mantém o que você escolheu na estratégia. O repasse é a sua decisão sobre esse cálculo: preço decidido = preço de hoje + repasse × (preço calculado − preço de hoje). 100% = a tabela calculada; 50% = você absorve metade; 0% = preço de hoje. Prioridade: linha (célula REPASSE na tabela) > grupo > geral. O CSV para o ERP sai com o preço decidido." onclick="lhHint(event,this)">?</span>
           </div>
           <details id="pm_rep_grupos_box" style="margin-top:8px;display:none"><summary style="cursor:pointer;color:var(--gold);font-size:.85rem">repasse por grupo — vale sobre o % geral</summary><div id="pm_rep_grupos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px 14px;margin-top:8px;font-size:.82rem"></div></details>
@@ -58640,6 +58650,8 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
            repGrupo:(function(){ var m={}; var els=document.querySelectorAll('#pm_rep_grupos input.pm-rg'); for(var i=0;i<els.length;i++){ var v=num(els[i].value); if(v!=null) m[els[i].getAttribute('data-grupo')]=Math.max(0,v); } return m; })(),
            repLinha:window.lhPmRepLinha.ler(),
            credGeral:num(g('pm_cred')),
+           pisEmbGrupo:(function(){ var m={}; var els=document.querySelectorAll('#pm_pisemb_grupos input.pm-pg'); for(var i=0;i<els.length;i++){ var v=num(els[i].value); if(v!=null) m[els[i].getAttribute('data-grupo')]=Math.max(0,Math.min(30,v)); } return m; })(),
+           despPct:num(g('pm_desp')), despEmb:num(g('pm_despemb')),
            credGrupo:(function(){ var m={}; var els=document.querySelectorAll('#pm_cred_grupos input.pm-cg'); for(var i=0;i<els.length;i++){ var v=num(els[i].value); if(v!=null) m[els[i].getAttribute('data-grupo')]=Math.max(0,Math.min(100,v)); } return m; })(),
            creditavel:(function(){ try{ var c=window.LH_CADEIA&&LH_CADEIA.calcular(2033); var e=LH_CADEIA.get().entrada; return (c && Object.keys(e).some(function(k){ return e[k]!=null; }))?c.creditavel:1; }catch(_e){ return 1; } })()};
  }
@@ -58690,6 +58702,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var cn=window.lhPmCustoNovo(f,cfg); item.custoNovo=cn; out.custoNovo=cn;
    /* ★ v887 · crédito por item: a cfg deste item leva o % dele */
    var cr=window.lhPmCred(f,cfg); out.cred=cr; var cfg0=cfg; cfg={}; for(var k in cfg0) cfg[k]=cfg0[k]; cfg.creditavel=cr.fr;
+   if(cfg.pisEmbGrupo && f.grupo && cfg.pisEmbGrupo[f.grupo]!=null){ cfg.pisEmb=cfg.pisEmbGrupo[f.grupo]; out.pisEmbGrupo=cfg.pisEmb; }   /* v888 */
    ANOS.forEach(function(a){ out.anos[a]=window.lhPreco(item,a,cfg,cfg.estr); });
    /* ★ v875 · preço decidido = hoje + repasse × (calculado − hoje); a parte não repassada sai do que fica com você */
    var rp=window.lhPmRepasse(f,cfg); out.repasse=rp;
@@ -58724,6 +58737,8 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    camposGrupo('pm_rep_grupos_box','pm_rep_grupos','pm-rg',gR,'itens','5');   /* v875 */
    var crb=document.getElementById('pm_cred_box'); if(crb) crb.style.display=(temCusto && cfg.regime!=='simples')?'':'none';   /* v887 */
    camposGrupo('pm_cred_grupos_box','pm_cred_grupos','pm-cg',gC,'itens com custo','5');
+   camposGrupo('pm_pisemb_grupos_box','pm_pisemb_grupos','pm-pg',(cfg.regime==='simples')?{}:gC,'itens com custo','0.01');   /* v888 */
+   var db=document.getElementById('pm_desp_box'); if(db) db.style.display=(cfg.regime!=='simples')?'':'none';
    var crn=document.getElementById('pm_cred_n'); if(crn){ var nO=0, nC=0; if(d&&d.itens) d.itens.forEach(function(it){ if(it.x&&it.x.origem) nO++; if(it.x&&num(it.x.credPct)!=null) nC++; }); crn.textContent=(nO||nC)?('— a planilha traz '+(nC?nC+' linhas com CRED_%':'')+(nC&&nO?' e ':'')+(nO?nO+' com ORIGEM_COMPRA':'')):''; }
    var se=document.getElementById('pm_estr'); if(se){ [].forEach.call(se.options,function(o){ if(o.value==='margem'||o.value==='markup'){ o.disabled=!temCusto; o.textContent=(o.value==='margem'?'Manter a margem % (com custo e crédito de compra)':'Manter o markup sobre o custo')+(temCusto?'':' — precisa de coluna CUSTO'); } }); }
    var pe=document.getElementById('pm_pisemb'); if(pe && !pe.value && !pe._tocado){ pe.placeholder=(cfg.regime==='real')?'0 (Lucro Real já credita)':'3,65 (PIS/COFINS cumulativo)'; }
@@ -58773,6 +58788,10 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      '<div class="kpi-card"><div class="kpi-label">Preço hoje só pelo custo novo (imposto de hoje)</div><div class="kpi-value" style="color:'+(varSoCusto>0?'#e0a83a':'#16c47c')+'">'+(varSoCusto>0?'+':'')+pct(varSoCusto)+'</div><div class="kpi-label" style="margin-top:4px">nesses '+nVar.toLocaleString('pt-BR')+' itens · '+ESTR[cfg.estr].toLowerCase()+'</div></div>';
    if(nCusto) h+='<div class="kpi-card"><div class="kpi-label">Podem baixar o preço em 2033 mantendo a margem</div><div class="kpi-value" style="color:#16c47c">'+podeBaixar.toLocaleString('pt-BR')+'</div><div class="kpi-label" style="margin-top:4px">de '+nCusto.toLocaleString('pt-BR')+' com custo · crédito de compra estimado</div></div>';
    if(nIS) h+='<div class="kpi-card"><div class="kpi-label">Com Imposto Seletivo (não somado)</div><div class="kpi-value" style="color:#e05a4d">'+nIS.toLocaleString('pt-BR')+'</div></div>';
+   if(cfg.despPct>0 && cfg.regime!=='simples'){ var dEmb=(cfg.despEmb!=null)?cfg.despEmb:8.65; var _A27=(typeof getAliq==='function')?getAliq(2027):null, _A33=(typeof getAliq==='function')?getAliq(2033):null;
+     var _g=function(A){ var fI=(A&&typeof A.pcVelhoEstadual==='number')?A.pcVelhoEstadual:1, fP=(A&&typeof A.pcPisCofins==='number')?A.pcPisCofins:0; var iss=Math.max(0,dEmb-3.65); return cfg.despPct/100*(3.65*(1-fP)+iss*(1-fI)); };
+     var g27=_g(_A27), g33=_g(_A33);
+     h+='<div class="kpi-card" style="border-color:rgba(62,207,142,.45)"><div class="kpi-label">Crédito de despesas (fora das linhas)</div><div class="kpi-value" style="color:#16c47c">+'+pct(g33)+' <span style="font-size:.7rem;color:var(--text2)">da receita em 2033</span></div><div class="kpi-label" style="margin-top:4px">'+pct(cfg.despPct)+' da receita em despesas × '+pct(dEmb)+' de imposto velho dentro: +'+pct(g27)+' em 2027, +'+pct(g33)+' em 2033 — ganho da empresa, não do item</div></div>'; }
    if(nSt) h+='<div class="kpi-card"><div class="kpi-label">ICMS-ST que vira crédito de IBS em 2033</div><div class="kpi-value" style="color:#16c47c">'+nSt.toLocaleString('pt-BR')+' <span style="font-size:.7rem;color:var(--text2)">itens</span></div><div class="kpi-label" style="margin-top:4px">custo cai '+fmt(somaStCred)+' por unidade somando o catálogo (coluna ICMS_ST)</div></div>';
    if(nIPI) h+='<div class="kpi-card"><div class="kpi-label">Com IPI hoje'+(cfg.zfm?' (ZFM: mantido)':' (zera em 2027)')+'</div><div class="kpi-value">'+nIPI.toLocaleString('pt-BR')+'</div></div>';
    h+='</div>';
@@ -58894,7 +58913,8 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      +li('<b>Estratégia</b> "'+(ESTR[cfg.estr]||cfg.estr)+'"'+(ctx.repasse!=null&&Math.abs(ctx.repasse-100)>0.001?' e repasse de '+ctx.repasse+'%':'')+'; cliente '+(cfg.b2b?'empresa do regime regular (líquido PJ)':'consumidor final (prateleira)')+'.')
      +'</ul><b style="color:#e0a83a">Não entrou (de propósito)</b><ul style="margin:4px 0 8px 18px;padding:0">'
      +li('<b>ICMS-ST</b> sem valor informado: neutro (o ST já está por dentro do preço de venda). Com a coluna <code>ICMS_ST</code> na planilha (R$ por unidade, ou % do custo) ou o campo do item, o ST vira crédito de IBS na curva 2029-33 e o custo do ano cai'+(ctx.nSt?' — em '+ctx.nSt+' itens deste catálogo':'')+'.')
-     +li('<b>Crédito de despesas</b> (energia, aluguel, frete de terceiros, serviços tomados): é da empresa, não do item — está na Cadeia de Crédito e no Regime Ótimo. O catálogo cai um pouco mais do que a soma das linhas.')
+     +li('<b>Crédito de despesas</b> (energia, aluguel, frete de terceiros, serviços tomados): é da empresa, não do item — não entra no preço de nenhuma linha. '+((cfg.despPct>0&&cfg.regime!=='simples')?'Informado: '+pct(cfg.despPct)+' da receita com '+pct((cfg.despEmb!=null)?cfg.despEmb:8.65)+' de imposto velho dentro → KPI "crédito de despesas".':'Informe "% da receita em despesas" para ver o KPI; sem isso, o catálogo cai um pouco mais do que a soma das linhas.'))
+     +li('<b>PIS/COFINS embutido na compra</b>: '+pct((cfg.pisEmb!=null)?cfg.pisEmb:((cfg.regime==='real')?0:3.65))+' geral'+(cfg.pisEmbGrupo&&Object.keys(cfg.pisEmbGrupo).length?' e por grupo ('+Object.keys(cfg.pisEmbGrupo).map(function(k){ return k+' '+pct(cfg.pisEmbGrupo[k]); }).join(', ')+')':'')+' — piso conservador; o resíduo real da cadeia pode ser maior, mas o crédito que você ganha é a CBS destacada.')
      +li('<b>O que o fornecedor vai fazer com o preço dele</b>: não é estimado. Se ele mudar, é o campo "custo novo" (decisão sua).')
      +li('<b>Imposto Seletivo</b>: por unidade, não somado — calculadora própria. <b>Regimes específicos</b> (combustível, financeiro, imóveis): ficam fora, com o motivo na lista de não precificados.')
      +'</ul><span style="color:var(--text2)">Confira a classificação de cada item com o responsável fiscal antes de publicar a tabela. Versão '+(window.LH_VERSAO||'')+'.</span>';
