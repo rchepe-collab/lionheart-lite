@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v884';</script>
+<body><script>window.LH_VERSAO='v885';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -12193,6 +12193,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <div class="input-group"><label>IPI (indústria)</label>
           <label style="display:flex;align-items:center;gap:8px;font-weight:400;text-transform:none;cursor:pointer"><input type="checkbox" id="pm_zfm" onchange="lhPmRender()" style="width:auto"> Zona Franca de Manaus — o IPI continua depois de 2027</label>
           <span class="lh-hint" data-hint="Se a planilha tiver coluna IPI (%), ele entra por fora hoje e zera em 2027 (art. 126 ADCT). Marque ZFM para mantê-lo." onclick="lhHint(event,this)">?</span></div>
+        <div class="input-group" style="grid-column:1/-1" id="pm_cenario_box"></div>
         <div class="input-group" style="grid-column:1/-1"><div id="pm_cadeia_info" style="font-size:.8rem;color:var(--text2)">cadeia: sem leitura — <a href="#" onclick="abrirPagina('cadeia');return false" style="color:var(--gold)">Cadeia de Crédito</a> define a parcela das compras que gera crédito e a fatia PJ das vendas</div></div>
         <div class="input-group" id="pm_custo_box" style="display:none"><label>% do custo que hoje é imposto não recuperável (vira crédito na Reforma)</label>
           <input type="number" step="0.01" id="pm_pisemb" placeholder="3,65 (PIS/COFINS cumulativo)" oninput="this._tocado=true" onchange="lhPmRender()"><span class="lh-hint" data-hint="Presumido: PIS/COFINS cumulativo 3,65% embutido nas compras, que você não credita hoje e passa a creditar como IBS/CBS a partir de 2027. Lucro Real: 0 (já credita)." onclick="lhHint(event,this)">?</span></div>
@@ -58726,6 +58727,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    if(nIS) h+='<div class="kpi-card"><div class="kpi-label">Com Imposto Seletivo (não somado)</div><div class="kpi-value" style="color:#e05a4d">'+nIS.toLocaleString('pt-BR')+'</div></div>';
    if(nIPI) h+='<div class="kpi-card"><div class="kpi-label">Com IPI hoje'+(cfg.zfm?' (ZFM: mantido)':' (zera em 2027)')+'</div><div class="kpi-value">'+nIPI.toLocaleString('pt-BR')+'</div></div>';
    h+='</div>';
+   h+=window.lhPmPremissasHTML(cfg,{repasse:cfg.repasse});   /* v885 */
    /* como ler — recolhível (v865) */
    var L=[['Como ler esta tabela','Cada linha mantém '+({fica:'o que fica com você depois do imposto (lucro unitário em R$)', preco:'o preço final ao cliente — o que muda é quanto sobra para você', pj:'o custo líquido do seu cliente PJ — ele recupera o IBS/CBS como crédito, então o preço final sobe só o imposto por fora', margem:'a sua margem % sobre o preço líquido — com o custo do ano (já com o crédito de compra), o preço que preserva a mesma margem', markup:'o seu markup sobre o custo — preço final = custo do ano × o multiplicador de hoje'}[cfg.estr]||'')+'. Preço por dentro = a parte que ainda carrega ICMS/ISS'+(cfg.regime==='real'?' e PIS/COFINS (até 2026)':'')+'; IBS/CBS vai destacado por fora e '+(cfg.b2b?'vira crédito do seu cliente':'entra no preço de prateleira')+'. '+(temCusto?'Custo, margem e crédito de compra entram nas estratégias 4 e 5; nas três primeiras só o imposto muda de lugar e de tamanho.':'Sem coluna de custo: só o imposto mudou de lugar e de tamanho (sem custo, sem margem, sem crédito de compra). Com CUSTO na planilha, as estratégias de margem e markup ligam.')],
      ['De onde vêm os números','Alíquota nova por item: do tratamento que o Classificador deu (coluna Classificação; o fundamento legal está no tooltip). Curva da transição: a mesma da nota simulada (CBS 8,7% + IBS 0,1% em 2027-28; IBS sobe 10 pontos ao ano de 2029 a 2032 enquanto ICMS/ISS caem 1/10; 26,5% de referência em 2033). Imposto velho: '+(cfg.regime==='simples'?'Simples Nacional, dentro do DAS.':('ICMS '+(estimados?'do próprio cadastro em '+(n-estimados)+' itens e a média informada ('+pct(cfg.icmsMedio)+') em '+estimados+' itens (marcados "est.")':'do próprio cadastro (coluna ALIQUOTA_ICMS)')+'; PIS/COFINS pelo CST do item ou pelo regime ('+pct(PIS_REGIME[cfg.regime])+')'+(st?'; '+st+' itens com ICMS-ST (CSOSN 500/CST 060): o ICMS foi pago na compra mas está dentro do preço — entra pelo cadastro ou pela média, marcado "ST"':'')+'.'))],
@@ -58808,6 +58810,46 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
  (function(){ var el=document.getElementById('pm-result'); if(!el||typeof MutationObserver==='undefined') return;
    new MutationObserver(function(){ if(!el.innerHTML.trim()){ var up=document.getElementById('pm-upload-card'); if(up){ up.style.display=''; up.classList.remove('pm-compacto'); } window.PM_ULTIMO=null; var n=document.getElementById('pm-n'); if(n) n.style.display='none'; el.style.display=''; } }).observe(el,{childList:true}); })();
 
+ /* ★ v885 · a alíquota de referência como SUGESTÃO DE TESTE, dentro da Precificação (pedido do Ricardo, 30/09): os mesmos
+    trilhos do resto da plataforma (LH_ALIQ_REF · cenarios_aliquota) — 26,5% teto · 27,91% CGIBS · 28% estresse — com o selo
+    dizendo que nenhuma é lei. Trocar recalcula o catálogo e o item. */
+ window.lhPmCenarioUI=function(){
+   var box=document.getElementById('pm_cenario_box'); if(!box||box._ok) return; box._ok=true;
+   var B=[[26.5,'26,5% · teto legal'],[27.91,'27,91% · CGIBS'],[28,'28% · estresse']];
+   box.innerHTML='<label>Alíquota de referência em 2033 <span style="font-weight:400;text-transform:none;color:#e0a83a">— sugestão de teste: nenhuma é lei ainda; a definitiva sai por Resolução do Senado (art. 349)</span></label>'
+     +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+B.map(function(b){ return '<button type="button" class="lh-ref-btn pm-ref-btn" data-v="'+b[0]+'" style="background:transparent;color:#8a97a8;border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:4px 12px;font-size:.74rem;cursor:pointer">'+b[1]+'</button>'; }).join('')
+     +'</div><div class="lh-selo-cenario" style="margin-top:6px;font-size:.72rem;color:#8a97a8;line-height:1.45"></div>';
+   box.querySelectorAll('.pm-ref-btn').forEach(function(b){ b.addEventListener('click',function(){ window.LH_ALIQ_REF=parseFloat(b.dataset.v); try{ window.LH_pintarSelo(); }catch(_e){} window.lhPmRecalcTudo(); }); });
+   try{ window.LH_pintarSelo(); }catch(_e){}
+ };
+ window.lhPmRecalcTudo=function(){
+   try{ if(window.PM_ULTIMO || (window.CM_ULTIMO && document.getElementById('pm-result') && document.getElementById('pm-result').innerHTML.trim())) lhPmRender(); }catch(_e){}
+   try{ var r=document.getElementById('pmi_res'); if(r && r.innerHTML.trim() && num((document.getElementById('pmi_preco')||{}).value)>0) lhPmItem(); }catch(_e){}
+ };
+ window.addEventListener('lh:cenario',function(){ try{ window.LH_pintarSelo(); }catch(_e){} var pg=document.querySelector('.page.active'); if(pg && pg.id==='page-precmassa') window.lhPmRecalcTudo(); });
+ setTimeout(window.lhPmCenarioUI,1500); setTimeout(window.lhPmCenarioUI,4000);
+ (function(){ var _ap=window.abrirPagina; if(typeof _ap==='function'){ window.abrirPagina=function(id){ var r=_ap.apply(this,arguments); if(id==='precmassa'||id==='formpreco') setTimeout(window.lhPmCenarioUI,80); return r; }; } })();
+
+ /* ★ v885 · PREMISSAS DESTA CONTA — o que entrou, o que não entrou, o que é premissa legal. Dobrado numa linha. */
+ window.lhPmPremissasHTML=function(cfg, ctx){
+   ctx=ctx||{}; var selo=null; try{ selo=window.LIONHEART_TABELAS.cenarios_aliquota.selo(); }catch(_e){}
+   var pisEmb=(cfg.pisEmb!=null)?+cfg.pisEmb:((cfg.regime==='real')?0:3.65);
+   var cred=(cfg.creditavel!=null)?+cfg.creditavel:1;
+   var li=function(t){ return '<li style="margin:2px 0">'+t+'</li>'; };
+   var h='<b style="color:var(--gold)">Entrou na conta</b><ul style="margin:4px 0 8px 18px;padding:0">'
+     +li('<b>Alíquota nova por item</b>: o tratamento que o Classificador deu pelo NCM/NBS (integral, reduzida, zero), sobre a referência de <b>'+(selo?(selo.referencia*100).toFixed(2).replace('.',','):'26,50')+'%</b> em 2033'+(selo?' — '+selo.rotulo.toLowerCase()+' ('+selo.nome+')':'')+'. Sugestão de teste, não é lei: a definitiva sai por Resolução do Senado.')
+     +li('<b>Curva da transição</b>: CBS 8,7% + IBS 0,1% em 2027-28; de 2029 a 2032 o IBS sobe 10 pontos ao ano da referência enquanto ICMS/ISS caem 1/10 ao ano; 2033 só IBS/CBS. PIS/COFINS acaba em 2027; IPI '+(cfg.zfm?'mantido (ZFM)':'zera em 2027 (art. 126 ADCT), exceto ZFM')+'.')
+     +li('<b>Base do IBS/CBS</b> sem ICMS/ISS e PIS/COFINS (LC 214, art. 12 §2º V). '+(cfg.leitura==='plp'?'Leitura PLP 16/2025: o IBS/CBS também fica fora da base do ICMS/ISS.':'Leitura dos fiscos: o ICMS/ISS incide sobre o total, com o IBS/CBS (SP, CT 33.083/2026). Em disputa; troque em "leitura".'))
+     +li('<b>Crédito de entrada na mercadoria</b>: '+(cfg.regime==='simples'?'Simples Nacional: sem crédito e sem destaque — o custo não muda.':(cfg.regime==='real'?'Lucro Real: o PIS/COFINS da compra já é crédito hoje — o custo não cai por isso.':'Presumido: o PIS/COFINS embutido na compra ('+pct(pisEmb)+') é cumulativo hoje e vira crédito de CBS a partir de 2027 — o custo do ano cai isso'))+(cfg.regime!=='simples'?' × '+pct(cred*100)+' das compras com crédito'+(cred>=0.999?' (sem leitura da Cadeia: assume tudo)':' (Cadeia de Crédito)'):'')+'. O ICMS da compra é neutro: crédito hoje, crédito de IBS amanhã.')
+     +li('<b>Estratégia</b> "'+(ESTR[cfg.estr]||cfg.estr)+'"'+(ctx.repasse!=null&&Math.abs(ctx.repasse-100)>0.001?' e repasse de '+ctx.repasse+'%':'')+'; cliente '+(cfg.b2b?'empresa do regime regular (líquido PJ)':'consumidor final (prateleira)')+'.')
+     +'</ul><b style="color:#e0a83a">Não entrou (de propósito)</b><ul style="margin:4px 0 8px 18px;padding:0">'
+     +li('<b>ICMS-ST</b>: hoje o ST pago na compra não é descontado do custo (já está por dentro do preço de venda); o crédito de IBS que ele vira em 2033 ainda não é estimado aqui. Itens com ST podem cair mais do que a tela mostra.')
+     +li('<b>Crédito de despesas</b> (energia, aluguel, frete de terceiros, serviços tomados): é da empresa, não do item — está na Cadeia de Crédito e no Regime Ótimo. O catálogo cai um pouco mais do que a soma das linhas.')
+     +li('<b>O que o fornecedor vai fazer com o preço dele</b>: não é estimado. Se ele mudar, é o campo "custo novo" (decisão sua).')
+     +li('<b>Imposto Seletivo</b>: por unidade, não somado — calculadora própria. <b>Regimes específicos</b> (combustível, financeiro, imóveis): ficam fora, com o motivo na lista de não precificados.')
+     +'</ul><span style="color:var(--text2)">Confira a classificação de cada item com o responsável fiscal antes de publicar a tabela. Versão '+(window.LH_VERSAO||'')+'.</span>';
+   return window.lhPmDobra('Premissas desta conta — o que entrou, o que não entrou, o que é sugestão de teste', h);
+ };
  /* ★ v882 · explicação dobrada numa linha só: "▸ Como ler …" abre o texto inteiro (pedido do Ricardo, 29/09) */
  window.lhPmDobra=function(titulo, corpo, aberto){
    return '<div class="pm-dobra'+(aberto?' aberto':'')+'" style="margin-top:10px;font-size:.78rem;white-space:normal"><div onclick="var d=this.parentNode;d.classList.toggle(\'aberto\');this.firstChild.textContent=d.classList.contains(\'aberto\')?\'▾ \':\'▸ \'" style="cursor:pointer;color:var(--gold);font-weight:700;user-select:none"><span>'+(aberto?'▾ ':'▸ ')+'</span>'+titulo+'</div><div class="pm-dobra-x" style="color:var(--text2);margin-top:6px;line-height:1.45">'+corpo+'</div></div>';
@@ -58962,6 +59004,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    h+=cam('3 · Dividir (repasse 50%)', 'var(--gold2,#e0b93a)', 'Preço em <b>'+fmt(r2(y33.hojeCli+0.5*(y33.finalCli-y33.hojeCli)))+'</b>: metade da diferença vai ao cliente, metade fica com você. Na tabela do catálogo isso é o campo "repasse".');
    h+='</div>';
    h+='<div style="margin-top:12px;overflow-x:auto">'+window.lhPmContaHTML(r,cfg)+'</div>';
+   h+=window.lhPmPremissasHTML(cfg,{});   /* v885 */
    res.innerHTML=h;
  };
  (function(){ var sel=document.getElementById('pmi_uf'); if(sel && window.FP_UF_ICMS){ Object.keys(FP_UF_ICMS).forEach(function(uf){ var o=document.createElement('option'); o.value=uf; o.textContent=uf+' · '+FP_UF_ICMS[uf]+'%'; sel.appendChild(o); }); } })();

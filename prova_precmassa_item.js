@@ -36,6 +36,13 @@ function rodar(html) {
         S('pmi_cod', ''); S('pmi_desc', 'coisa qualquer'); out.semNcm = w.lhPmItemClassifica();
         S('pmi_cod', '10063021'); S('pmi_desc', 'ARROZ TIPO 1'); w.lhPmItemClassifica(); out.arroz = $('pmi_class').textContent;
         w.lhPmItemExemplo(); out.exemplo = kp();
+        /* v885 · premissas + cenário de teste */
+        S('pmi_cod', '73181500'); S('pmi_desc', 'PARAFUSO'); S('pmi_preco', 100); S('pmi_custo', 60); S('pmi_icms', 18); S('pm_regime', 'presumido'); S('pm_estr', 'fica'); w.lhPmItemClassifica(); w.lhPmItem();
+        out.prem = [...$('pmi_res').querySelectorAll('.pm-dobra')].map((e) => e.textContent.replace(/\s+/g, ' ')).find((t) => /Premissas desta conta/.test(t)) || '';
+        w.lhPmCenarioUI(); const btn28 = d.querySelector('#pm_cenario_box .pm-ref-btn[data-v="28"]'), btn265 = d.querySelector('#pm_cenario_box .pm-ref-btn[data-v="26.5"]');
+        out.temCenario = !!(btn28 && btn265) && /nenhuma é lei/.test($('pm_cenario_box').textContent);
+        if (btn28) { btn28.click(); out.kpi28 = kp(); out.prem28 = ($('pmi_res').textContent.match(/referência de [\d,]+%/) || [''])[0]; }
+        if (btn265) { btn265.click(); out.kpi265 = kp(); }
         /* v883 · busca no cartão */
         const sug = () => [...$('pmi_sug').querySelectorAll('div[onclick]')].map((e) => e.textContent.replace(/\s+/g, ' ').trim());
         S('pmi_cod', ''); S('pmi_desc', 'farinha'); w.lhPmItemSugereAgora('desc'); out.sugFarinha = sug(); out.sugVisivel = $('pmi_sug_wrap').style.display;
@@ -81,6 +88,10 @@ function rodar(html) {
     ex('"8414" no campo de código lista 8414.10.00 (tabela oficial, por prefixo)', r.sugCod.some((t) => /^8414\.10\.00/.test(t)) && r.sugCod.every((t) => /^8414/.test(t)), r.sugCod.slice(0, 3).join(' | '));
     ex('código completo (84141000) não abre lista', r.sugCompleto === 'none', r.sugCompleto);
     ex('sem correspondência → aviso de regra geral 26,5%', /regra geral: 26,5%/.test(r.sugNada), r.sugNada.slice(0, 80));
+    ex('v885 · "Premissas desta conta" no resultado do item: entrou / não entrou / sugestão de teste', /Entrou na conta/.test(r.prem) && /Não entrou/.test(r.prem) && /ICMS-ST/.test(r.prem) && /Crédito de despesas/.test(r.prem) && /não é lei/.test(r.prem), r.prem.slice(0, 120));
+    ex('v885 · seletor de referência na Precificação, rotulado como sugestão de teste', r.temCenario === true, String(r.temCenario));
+    ex('v885 · 28% de estresse recalcula o item: 2033 = 100,29 (78,35 × 1,28) e as premissas dizem 28,00%', /100,29/.test((r.kpi28 || [])[2] || '') && /28,00%/.test(r.prem28 || ''), ((r.kpi28 || [])[2] || '') + ' | ' + r.prem28);
+    ex('v885 · voltar a 26,5% devolve 99,11', /99,11/.test((r.kpi265 || [])[2] || ''), (r.kpi265 || [])[2]);
     ex('v884 · letras no campo de código ("arro") também buscam por nome → arroz 1006 ZERO', (r.sugCodTexto || []).some((t) => /^1006\./.test(t) && /Alíquota ZERO/.test(t)), (r.sugCodTexto || []).slice(0, 2).join(' | '));
   }
   console.log('\n-- ao contrário --');
