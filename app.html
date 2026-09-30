@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v888';</script>
+<body><script>window.LH_VERSAO='v889';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -12177,7 +12177,19 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
       <h3>Como você vende</h3>
       <div class="input-grid-2">
         <div class="input-group"><label>Regime tributário</label>
-          <select id="pm_regime" onchange="lhPmRender()"><option value="presumido">Lucro Presumido</option><option value="real">Lucro Real</option><option value="simples">Simples Nacional</option></select></div>
+          <select id="pm_regime" onchange="lhPmRender()"><option value="presumido">Lucro Presumido</option><option value="real">Lucro Real</option><option value="simples">Simples Nacional (dentro do DAS)</option><option value="hibrido">Simples Nacional híbrido (IBS/CBS por fora — art. 41)</option></select>
+          <div id="pm_c05_info" style="font-size:.78rem;color:var(--text2);margin-top:4px"></div></div>
+        <div class="input-group" id="pm_hib_box" style="display:none;grid-column:1/-1;background:rgba(201,162,39,.05);border:1px solid rgba(201,162,39,.25);border-radius:10px;padding:10px 12px">
+          <label>Híbrido: o que sai do DAS e vira IBS/CBS por fora <span style="font-weight:400;text-transform:none;color:var(--text2)">— mesma tabela do Dentro × Híbrido (LC 214 arts. 501/519)</span></label>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <select id="pm_hib_anexo" onchange="lhPmRender()" style="width:auto"><option value="">Anexo…</option><option value="I">Anexo I — comércio</option><option value="II">Anexo II — indústria</option><option value="III">Anexo III — serviços</option><option value="IV">Anexo IV — serviços (CPP fora)</option><option value="V">Anexo V — serviços</option></select>
+            <input type="number" step="1000" id="pm_hib_rbt" placeholder="RBT12 (R$ 12 meses)" style="flex:1;min-width:180px;max-width:240px" onchange="lhPmRender()">
+            <input type="number" step="0.001" id="pm_hib_aliq" placeholder="alíquota efetiva do DAS (%) — ex.: 8,825" style="flex:1;min-width:220px;max-width:300px" onchange="lhPmRender()">
+            <button type="button" class="btn-secondary" onclick="lhPmHibDoDxh()" style="font-size:.78rem;padding:6px 10px" title="copia Anexo, RBT12 e alíquota efetiva da tela Simples 2027: Dentro × Híbrido">⇐ puxar do Dentro × Híbrido</button>
+            <span class="lh-hint" data-hint="No híbrido a empresa do Simples continua no DAS, mas a fatia do DAS que corresponde a PIS/COFINS (sai em 2027) e a ICMS/ISS (sai de 2029 a 2033, 1/10 ao ano) é substituída pelo IBS/CBS destacado por fora, na alíquota do item — e a empresa passa a creditar as compras. Para o preço: o que fica com você inclui o DAS residual; o imposto velho por dentro é só a fatia que sai; o IBS/CBS entra por fora como no regime regular. O cliente PJ recupera o IBS/CBS — é o argumento do Dentro × Híbrido, item a item." onclick="lhHint(event,this)">?</span>
+          </div>
+          <div id="pm_hib_info" style="font-size:.78rem;color:var(--text2);margin-top:6px"></div>
+        </div>
         <div class="input-group"><label>Para quem vende</label>
           <select id="pm_cliente" onchange="lhPmRender()"><option value="pf">Consumidor final (preço de prateleira)</option><option value="pj">Empresa do regime regular (recupera IBS/CBS)</option></select></div>
         <div class="input-group"><label>Estratégia</label>
@@ -58557,6 +58569,12 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var icms=(item.icms!=null && +item.icms>0)?+item.icms:(+cfg.icmsMedio||0);
    var pis=(item.pis!=null)?+item.pis:(PIS_REGIME[regime]!=null?PIS_REGIME[regime]:3.65);
    if(regime==='simples'){ icms=0; pis=0; }
+   /* ★ v889 · Simples híbrido (art. 41): o imposto velho por dentro é a fatia do DAS que sai — federal (PIS/COFINS, some em 2027)
+      e base (ICMS/ISS, migra 1/10 ao ano de 2029 a 2033) — pela mesma tabela do Dentro × Híbrido (LH_fatiaDAS). O resto do DAS
+      fica dentro do "que fica com você". IBS/CBS por fora e crédito de compra como no regime regular. */
+   var hibInfo=null;
+   if(regime==='hibrido'){ var hb=cfg.hib||{}; var fat=(typeof LH_fatiaDAS==='function' && hb.anexo)?LH_fatiaDAS(hb.anexo, hb.rbt||0, 2033):null; var al=(hb.aliq!=null && hb.aliq>0)?+hb.aliq:0;
+     if(fat && al>0){ pis=al*fat.federal/100; icms=al*fat.base/100; hibInfo={aliq:al, pis:pis, icms:icms, faixa:fat.faixa, anexo:hb.anexo}; } else { icms=0; pis=0; hibInfo={aliq:0, pis:0, icms:0, faltando:true}; } }
    icms=icms/100; pis=pis/100;
    var ipiHoje=(item.ipi!=null && +item.ipi>0)?P*(+item.ipi/100):0;
    var ipiAno=(ano<=2026 || cfg.zfm)?ipiHoje:0;                                 /* IPI ~zerado em 2027 (art. 126 ADCT), exceto ZFM */
@@ -58583,7 +58601,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var lucroHoje=(custoHoje!=null)?R-custoHoje:null;
    var neutro=(regime==='simples' || ano<=2026);                              /* Simples: DAS, sem destaque · 2026: teste compensável */
    if(neutro) tFora=0;                                                          /* sem IBS/CBS por fora: só o custo pode mover o preço */
-   var o={ano:ano, hoje:P, hojeCli:r2(P+ipiHoje), ipiHoje:r2(ipiHoje), ipi:r2(ipiAno), velhoHoje:r2(velhoHoje), ficaHoje:r2(R), estr:estr, tFora:tFora, tDentro:icms*fIcms+pis*fPis,
+   var o={ano:ano, hoje:P, hojeCli:r2(P+ipiHoje), ipiHoje:r2(ipiHoje), ipi:r2(ipiAno), velhoHoje:r2(velhoHoje), ficaHoje:r2(R), estr:estr, tFora:tFora, tDentro:icms*fIcms+pis*fPis, hib:hibInfo,
           is:(item.trat==='cheia+IS'), custoHoje:custoHoje, custoNovo:custoNovo, dCusto:r2(dCusto), custo:(custoAno!=null)?r2(custoAno):null, lucroHoje:(lucroHoje!=null)?r2(lucroHoje):null,
           stValor:r2(stValor), stCred:r2(stValor*(1-fIcms)*cred)};
    var tD=o.tDentro, base, fora, fin, velho, fica;
@@ -58652,6 +58670,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
            credGeral:num(g('pm_cred')),
            pisEmbGrupo:(function(){ var m={}; var els=document.querySelectorAll('#pm_pisemb_grupos input.pm-pg'); for(var i=0;i<els.length;i++){ var v=num(els[i].value); if(v!=null) m[els[i].getAttribute('data-grupo')]=Math.max(0,Math.min(30,v)); } return m; })(),
            despPct:num(g('pm_desp')), despEmb:num(g('pm_despemb')),
+           hib:{anexo:g('pm_hib_anexo')||'', rbt:num(g('pm_hib_rbt')), aliq:num(g('pm_hib_aliq'))},
            credGrupo:(function(){ var m={}; var els=document.querySelectorAll('#pm_cred_grupos input.pm-cg'); for(var i=0;i<els.length;i++){ var v=num(els[i].value); if(v!=null) m[els[i].getAttribute('data-grupo')]=Math.max(0,Math.min(100,v)); } return m; })(),
            creditavel:(function(){ try{ var c=window.LH_CADEIA&&LH_CADEIA.calcular(2033); var e=LH_CADEIA.get().entrada; return (c && Object.keys(e).some(function(k){ return e[k]!=null; }))?c.creditavel:1; }catch(_e){ return 1; } })()};
  }
@@ -58704,6 +58723,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var cr=window.lhPmCred(f,cfg); out.cred=cr; var cfg0=cfg; cfg={}; for(var k in cfg0) cfg[k]=cfg0[k]; cfg.creditavel=cr.fr;
    if(cfg.pisEmbGrupo && f.grupo && cfg.pisEmbGrupo[f.grupo]!=null){ cfg.pisEmb=cfg.pisEmbGrupo[f.grupo]; out.pisEmbGrupo=cfg.pisEmb; }   /* v888 */
    ANOS.forEach(function(a){ out.anos[a]=window.lhPreco(item,a,cfg,cfg.estr); });
+   if(cfg.regime==='hibrido' && out.anos[2033] && out.anos[2033].hib){ out.hib=out.anos[2033].hib; }   /* v889 */
    /* ★ v875 · preço decidido = hoje + repasse × (calculado − hoje); a parte não repassada sai do que fica com você */
    var rp=window.lhPmRepasse(f,cfg); out.repasse=rp;
    ANOS.forEach(function(a){ var o=out.anos[a]; if(!o) return; o.decidido=r2(o.hojeCli+rp.fr*(o.finalCli-o.hojeCli)); o.absorvido=r2(o.finalCli-o.decidido);
@@ -58712,6 +58732,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    if(cn!=null){ var semNovo={}; for(var k in item) semNovo[k]=item[k]; semNovo.custoNovo=null; out.soImposto33=window.lhPreco(semNovo,2033,cfg,cfg.estr); out.soCusto=out.anos[2026]; }
    out.icmsUsado=(f.icms!=null && +f.icms>0)?+f.icms:cfg.icmsMedio; out.icmsEstimado=!(f.icms!=null && +f.icms>0);
    out.pisUsado=(cfg.regime==='simples')?0:((item.pis!=null)?item.pis:(PIS_REGIME[cfg.regime]!=null?PIS_REGIME[cfg.regime]:3.65));   /* v881: o que o motor usou de fato (antes ficava null quando vinha do regime) */
+   if(cfg.regime==='hibrido' && out.hib){ out.icmsUsado=Math.round(out.hib.icms*100)/100; out.pisUsado=Math.round(out.hib.pis*100)/100; out.icmsEstimado=false; }   /* v889: a fatia do DAS, não o ICMS do cadastro */
    return out;
  };
 
@@ -58739,6 +58760,13 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    camposGrupo('pm_cred_grupos_box','pm_cred_grupos','pm-cg',gC,'itens com custo','5');
    camposGrupo('pm_pisemb_grupos_box','pm_pisemb_grupos','pm-pg',(cfg.regime==='simples')?{}:gC,'itens com custo','0.01');   /* v888 */
    var db=document.getElementById('pm_desp_box'); if(db) db.style.display=(cfg.regime!=='simples')?'':'none';
+   /* ★ v889 · híbrido */
+   var hbx=document.getElementById('pm_hib_box'); if(hbx) hbx.style.display=(cfg.regime==='hibrido')?'':'none';
+   var hbi=document.getElementById('pm_hib_info'); if(hbi && cfg.regime==='hibrido'){ var hb=cfg.hib||{}; var fat=(typeof LH_fatiaDAS==='function' && hb.anexo)?LH_fatiaDAS(hb.anexo, hb.rbt||0, 2033):null;
+     if(fat && hb.aliq>0){ var pF=hb.aliq*fat.federal/100, iF=hb.aliq*fat.base/100; hbi.innerHTML='<b style="color:#16c47c">✓</b> Anexo '+hb.anexo+', faixa '+fat.faixa+': do DAS de '+pct(hb.aliq)+' saem <b>'+pct(pF)+'</b> (PIS/COFINS, em 2027) e <b>'+pct(iF)+'</b> ('+fat.tributo+', de 2029 a 2033); ficam '+pct(hb.aliq-pF-iF)+' no DAS residual (IRPJ/CSLL/CPP), dentro do que fica com você.'+(fat.seisFaixa?' <span style="color:#e0a83a">Faixa 6 / acima do sublimite: o ICMS/ISS já é apurado por fora — confira no Dentro × Híbrido.</span>':''); }
+     else hbi.innerHTML='<span style="color:#e0a83a">Preencha Anexo, RBT12 e alíquota efetiva (ou puxe do Dentro × Híbrido). Sem isso o híbrido é calculado sem imposto velho por dentro.</span>'; }
+   var c5=document.getElementById('pm_c05_info'); if(c5){ try{ var R=window._C05_REGIMES; if(R && R.length){ var best=R.slice().sort(function(a,b){ return a.total-b.total; })[0]; var mapa=function(n){ n=String(n).toLowerCase(); return /h[ií]brido/.test(n)?'hibrido':/simples/.test(n)?'simples':/presumido/.test(n)?'presumido':/real/.test(n)?'real':''; }; var v=mapa(best.nome);
+       c5.innerHTML='Regime Ótimo apontou <b style="color:var(--gold)">'+best.nome+'</b> (R$ '+(+best.total).toLocaleString('pt-BR')+'/ano)'+(v&&v!==cfg.regime?' — <a href="#" onclick="document.getElementById(\'pm_regime\').value=\''+v+'\';lhPmRender();return false" style="color:var(--gold)">precificar nesse regime</a>':(v===cfg.regime?' — é o regime desta tabela':'')); } else c5.innerHTML=''; }catch(_e){ c5.innerHTML=''; } }
    var crn=document.getElementById('pm_cred_n'); if(crn){ var nO=0, nC=0; if(d&&d.itens) d.itens.forEach(function(it){ if(it.x&&it.x.origem) nO++; if(it.x&&num(it.x.credPct)!=null) nC++; }); crn.textContent=(nO||nC)?('— a planilha traz '+(nC?nC+' linhas com CRED_%':'')+(nC&&nO?' e ':'')+(nO?nO+' com ORIGEM_COMPRA':'')):''; }
    var se=document.getElementById('pm_estr'); if(se){ [].forEach.call(se.options,function(o){ if(o.value==='margem'||o.value==='markup'){ o.disabled=!temCusto; o.textContent=(o.value==='margem'?'Manter a margem % (com custo e crédito de compra)':'Manter o markup sobre o custo')+(temCusto?'':' — precisa de coluna CUSTO'); } }); }
    var pe=document.getElementById('pm_pisemb'); if(pe && !pe.value && !pe._tocado){ pe.placeholder=(cfg.regime==='real')?'0 (Lucro Real já credita)':'3,65 (PIS/COFINS cumulativo)'; }
@@ -58775,7 +58803,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var varCustoMed=somaCH?((somaCN-somaCH)/somaCH*100):0, varSoCusto=somaHojeVar?((somaSoCusto-somaHojeVar)/somaHojeVar*100):0;
    var _vn=document.getElementById('pm_var_n'); if(_vn) _vn.textContent=(temVar?('— '+nVar.toLocaleString('pt-BR')+' itens com custo novo'+(servPuro?' · '+servPuro+' serviço'+(servPuro===1?'':'s')+' puro'+(servPuro===1?'':'s')+' fora (sem custo)':'')):(pediuVar&&servPuro?'— '+servPuro+' serviço'+(servPuro===1?'':'s')+' puro'+(servPuro===1?'':'s')+' fora (sem custo)':''))+(nInv?' · '+nInv+' custo'+(nInv===1?'':'s')+' novo'+(nInv===1?'':'s')+' inválido'+(nInv===1?'':'s')+' (≤ 0 ou variação ≤ −100%) ignorado'+(nInv===1?'':'s'):'');
    var h='<div class="input-card"><h3 style="color:var(--gold)">Tabela de preços 2027-33 — '+ESTR[cfg.estr]+'</h3>';
-   h+='<div style="color:var(--text2);font-size:.88rem;margin-bottom:12px">'+n.toLocaleString('pt-BR')+' itens precificados · regime '+({presumido:'Lucro Presumido',real:'Lucro Real',simples:'Simples Nacional'}[cfg.regime]||cfg.regime)+' · '+(cfg.b2b?'vende para PJ':'vende para consumidor')+(temPreco?'':' · <b>sem coluna de preço: resultado por R$ 100</b>')+'</div>';
+   h+='<div style="color:var(--text2);font-size:.88rem;margin-bottom:12px">'+n.toLocaleString('pt-BR')+' itens precificados · regime '+({presumido:'Lucro Presumido',real:'Lucro Real',hibrido:'Simples híbrido (IBS/CBS por fora)',simples:'Simples Nacional'}[cfg.regime]||cfg.regime)+' · '+(cfg.b2b?'vende para PJ':'vende para consumidor')+(temPreco?'':' · <b>sem coluna de preço: resultado por R$ 100</b>')+'</div>';
    h+='<div class="kpi-grid">';
    h+='<div class="kpi-card kpi-hero"><div class="kpi-label">Itens precificados</div><div class="kpi-value">'+n.toLocaleString('pt-BR')+'</div></div>';
    h+='<div class="kpi-card"><div class="kpi-label">Sobem em 2033</div><div class="kpi-value" style="color:#e05a4d">'+sobe.toLocaleString('pt-BR')+'</div></div>';
@@ -58891,6 +58919,11 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    box.querySelectorAll('.pm-ref-btn').forEach(function(b){ b.addEventListener('click',function(){ window.LH_ALIQ_REF=parseFloat(b.dataset.v); try{ window.LH_pintarSelo(); }catch(_e){} window.lhPmRecalcTudo(); }); });
    try{ window.LH_pintarSelo(); }catch(_e){}
  };
+ window.lhPmHibDoDxh=function(){
+   var g=function(id){ var e=document.getElementById(id); return e?e.value:''; }, S=function(id,v){ var e=document.getElementById(id); if(e && v!=='' && v!=null) e.value=v; };
+   if(!g('dxh_anexo') && !g('dxh_aliq')){ if(typeof mostrarToast==='function') mostrarToast('Preencha primeiro a tela Simples 2027: Dentro × Híbrido (Anexo, RBT12, alíquota efetiva)','error'); return; }
+   S('pm_hib_anexo', g('dxh_anexo')); S('pm_hib_rbt', g('dxh_rbt12')); S('pm_hib_aliq', g('dxh_aliq')); lhPmRender();
+ };
  window.lhPmRecalcTudo=function(){
    try{ if(window.PM_ULTIMO || (window.CM_ULTIMO && document.getElementById('pm-result') && document.getElementById('pm-result').innerHTML.trim())) lhPmRender(); }catch(_e){}
    try{ var r=document.getElementById('pmi_res'); if(r && r.innerHTML.trim() && num((document.getElementById('pmi_preco')||{}).value)>0) lhPmItem(); }catch(_e){}
@@ -58909,6 +58942,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      +li('<b>Alíquota nova por item</b>: o tratamento que o Classificador deu pelo NCM/NBS (integral, reduzida, zero), sobre a referência de <b>'+(selo?(selo.referencia*100).toFixed(2).replace('.',','):'26,50')+'%</b> em 2033'+(selo?' — '+selo.rotulo.toLowerCase()+' ('+selo.nome+')':'')+'. Sugestão de teste, não é lei: a definitiva sai por Resolução do Senado.')
      +li('<b>Curva da transição</b>: CBS 8,7% + IBS 0,1% em 2027-28; de 2029 a 2032 o IBS sobe 10 pontos ao ano da referência enquanto ICMS/ISS caem 1/10 ao ano; 2033 só IBS/CBS. PIS/COFINS acaba em 2027; IPI '+(cfg.zfm?'mantido (ZFM)':'zera em 2027 (art. 126 ADCT), exceto ZFM')+'.')
      +li('<b>Base do IBS/CBS</b> sem ICMS/ISS e PIS/COFINS (LC 214, art. 12 §2º V). '+(cfg.leitura==='plp'?'Leitura PLP 16/2025: o IBS/CBS também fica fora da base do ICMS/ISS.':'Leitura dos fiscos: o ICMS/ISS incide sobre o total, com o IBS/CBS (SP, CT 33.083/2026). Em disputa; troque em "leitura".'))
+     +(cfg.regime==='hibrido'?li('<b>Simples híbrido (art. 41)</b>: o imposto velho por dentro é só a fatia do DAS que sai (PIS/COFINS em 2027; ICMS/ISS de 2029 a 2033, pela tabela do Dentro × Híbrido'+(cfg.hib&&cfg.hib.anexo?', Anexo '+cfg.hib.anexo+', DAS '+pct(cfg.hib.aliq||0):', <b style="color:#e0a83a">Anexo/RBT12/alíquota não informados</b>')+'); o DAS residual fica dentro do que fica com você; IBS/CBS por fora na alíquota do item; a empresa passa a creditar as compras. Opção pelo híbrido: Res. CGSN 186/2026 (janelas semestrais).'):'')
      +li('<b>Crédito de entrada na mercadoria</b>: '+(cfg.regime==='simples'?'Simples Nacional: sem crédito e sem destaque — o custo não muda.':(cfg.regime==='real'?'Lucro Real: o PIS/COFINS da compra já é crédito hoje — o custo não cai por isso.':'Presumido: o PIS/COFINS embutido na compra ('+pct(pisEmb)+') é cumulativo hoje e vira crédito de CBS a partir de 2027 — o custo do ano cai isso'))+(cfg.regime!=='simples'?' × a parcela da compra que gera crédito: '+(ctx.credTxt||(pct(cred*100)+(cred>=0.999?' (sem leitura da Cadeia nem ORIGEM_COMPRA: assume tudo)':' (Cadeia de Crédito)')))+' — fornecedor do Simples ~20%, pessoa física 0':'')+'. O ICMS da compra é neutro: crédito hoje, crédito de IBS amanhã.')
      +li('<b>Estratégia</b> "'+(ESTR[cfg.estr]||cfg.estr)+'"'+(ctx.repasse!=null&&Math.abs(ctx.repasse-100)>0.001?' e repasse de '+ctx.repasse+'%':'')+'; cliente '+(cfg.b2b?'empresa do regime regular (líquido PJ)':'consumidor final (prateleira)')+'.')
      +'</ul><b style="color:#e0a83a">Não entrou (de propósito)</b><ul style="margin:4px 0 8px 18px;padding:0">'
@@ -58939,14 +58973,14 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
       por dentro → PIS/COFINS → IBS/CBS por fora → IPI → prateleira. Tudo em R$, o % pequeno embaixo onde é imposto. */
    var th=function(t,sub){ return '<th style="text-align:right;padding:5px 6px;color:var(--gold);font-size:.68rem;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.12);vertical-align:bottom">'+t+(sub?'<span style="display:block;font-size:.6rem;color:var(--text2);text-transform:none;font-weight:400">'+sub+'</span>':'')+'</th>'; };
    var td=function(v,sub,extra){ return '<td style="text-align:right;padding:4px 6px;border-bottom:1px solid rgba(255,255,255,.05);'+(extra||'')+'">'+v+(sub?'<span style="display:block;font-size:.62rem;color:var(--text2);font-weight:400">'+sub+'</span>':'')+'</td>'; };
-   var temC=r.f.custo!=null && r.f.custo>0, temI=!!(r.c.anos[2026].ipiHoje), temR=Math.abs(r.c.repasse.pct-100)>0.001, servico=r.f.tipo==='S', sn=(cfg.regime==='simples');
+   var temC=r.f.custo!=null && r.f.custo>0, temI=!!(r.c.anos[2026].ipiHoje), temR=Math.abs(r.c.repasse.pct-100)>0.001, servico=r.f.tipo==='S', sn=(cfg.regime==='simples'), hib=(cfg.regime==='hibrido');
    var temN=r.c.custoNovo!=null;
    var A=(typeof getAliq==='function')?getAliq:null;
    var h='';
    h+='<div style="font-size:.82rem;color:var(--text2);margin-bottom:6px"><b style="color:var(--gold)">Conta aberta — '+String(r.f.desc||'').slice(0,70)+'</b> · '+(CM_TRAT_LABEL[r.f.trat]||r.f.trat)+' ('+pct(cmAliqAno(r.f.trat,2033))+' em 2033) · estratégia: '+ESTR[cfg.estr]+(temR?' · repasse '+r.c.repasse.pct+'% ('+r.c.repasse.origem+')':'')+'</div>';
    h+='<table style="border-collapse:collapse;font-size:.78rem;white-space:nowrap"><thead><tr><th style="text-align:left;padding:5px 6px;color:var(--gold);font-size:.68rem;border-bottom:1px solid rgba(255,255,255,.12);vertical-align:bottom">ANO</th>'
      +(temC?th('CUSTO',(temN?'hoje → novo, líq. do crédito':'líq. do crédito')+((r.c.anos[2033].stValor>0)?' (+ ST)':''))+th('+ LUCRO',''):'')+th('= FICA C/ VOCÊ','custo + lucro')
-     +th('+ '+(servico?'ISS':'ICMS')+' DENTRO',sn?'no DAS':'')+th('+ PIS/COFINS',sn?'no DAS':'')+th('+ IBS/CBS FORA','sobre o que fica')+(temI?th('+ IPI',''):'')+th('= PRATELEIRA','')+(temR?th('DECIDIDO','repasse')+th('FICA DEC.',''):'')+'</tr></thead><tbody>';
+     +th('+ '+(servico?'ISS':'ICMS')+' DENTRO',sn?'no DAS':(hib?'fatia do DAS que sai':''))+th('+ PIS/COFINS',sn?'no DAS':(hib?'fatia do DAS que sai':''))+th('+ IBS/CBS FORA','sobre o que fica')+(temI?th('+ IPI',''):'')+th('= PRATELEIRA','')+(temR?th('DECIDIDO','repasse')+th('FICA DEC.',''):'')+'</tr></thead><tbody>';
    var icmsPct=r.c.icmsUsado, pisPct=r.c.pisUsado||0, hoje=r.c.anos[2026];
    var linha=function(rot,o,custo,lucro,fica,icmsV,icmsS,pisV,pisS,foraV,foraS,ipiV,prat,dest,extra){
      return '<tr'+(dest?' style="font-weight:700"':'')+'><td style="padding:4px 8px;border-bottom:1px solid rgba(255,255,255,.05)">'+rot+'</td>'
