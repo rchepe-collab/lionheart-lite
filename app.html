@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v899';</script>
+<body><script>window.LH_VERSAO='v900';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -37528,6 +37528,79 @@ function buildPaginaPlanoAcao(scoreData, motorState, config, paleta, paginaNum) 
   return html;
 }
 
+/* ★ v900 · Relatório PDF — DRE 2026–2033 e Fluxo de Caixa da Inteligência Financeira (TR08).
+   Lê LH_FIN.dre() / LH_FIN.fluxo() — o mesmo motor da tela. Entra no modo "completo" quando os Dados Estratégicos têm faturamento. */
+function pdfFinDisponivel(){ try{ return !!(window.LH_FIN && (LH_FIN.get().dados||{}).fat>0); }catch(_e){ return false; } }
+function buildPaginasFin(config, paleta, paginaNum){
+  if(!pdfFinDisponivel()) return { html:'', paginas:0 };
+  var S, X, A, D; try{ S=LH_FIN.dre(); X=LH_FIN.fluxo(); A=LH_FIN.afluentes(); D=LH_FIN.get().dados; }catch(_e){ return { html:'', paginas:0 }; }
+  if(!S||S.length!==8) return { html:'', paginas:0 };
+  var R=function(v){ return 'R$ '+Math.round(+v||0).toLocaleString('pt-BR'); }, P=function(v,d){ return (+v||0).toLocaleString('pt-BR',{minimumFractionDigits:(d==null?1:d),maximumFractionDigits:(d==null?1:d)})+'%'; };
+  var anos=S.map(function(y){ return y.ano; });
+  var th=function(t,al){ return '<th style="text-align:'+(al||'right')+';padding:5px 6px;font-size:8.5px;color:'+paleta.primaria+';border-bottom:1.5px solid '+paleta.primaria+';white-space:nowrap">'+t+'</th>'; };
+  var linha=function(rot,f,st,de){ var cor=(st&&st.indexOf('g')>=0)?'#6b7280':'#111827'; return '<tr><td style="padding:4px 6px;font-size:9px;border-bottom:1px solid #e5e7eb;color:'+cor+';'+(st&&st.indexOf('b')>=0?'font-weight:700;':'')+'">'+rot+(de?'<div style="font-size:7px;color:#9ca3af;font-weight:400">'+de+'</div>':'')+'</td>'+S.map(function(y,i){ var v=f(y,i); return '<td style="text-align:right;padding:4px 6px;font-size:9px;border-bottom:1px solid #e5e7eb;white-space:nowrap;color:'+((typeof v==='number'&&v<0)?'#b91c1c':cor)+';'+(st&&st.indexOf('b')>=0?'font-weight:700;':'')+'">'+(typeof v==='number'?R(v):v)+'</td>'; }).join('')+'</tr>'; };
+  var kpi=function(rot,val,sub){ return '<div style="flex:1;background:#f8f9fb;border-radius:6px;padding:10px 12px;border-left:3px solid '+paleta.primaria+'"><div style="font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em">'+rot+'</div><div style="font-size:15px;font-weight:700;color:'+paleta.textoEscuro+';margin-top:2px">'+val+'</div>'+(sub?'<div style="font-size:8px;color:#6b7280;margin-top:2px">'+sub+'</div>':'')+'</div>'; };
+  var y26=S[0], y33=S[7], f26=X[0], f33=X[7]; var pior=X[0]; X.forEach(function(y){ if(y.saldo<pior.saldo) pior=y; });
+  var regimeTxt=({presumido:'Lucro Presumido',real:'Lucro Real',simples:'Simples Nacional',hibrido:'Simples híbrido'}[D.regime]||D.regime||'—');
+  var fontes=y33.imp?y33.imp.fontes:{};
+  var ligadas=Object.keys(A||{}).map(function(k){ return A[k].nome; }).filter(function(v,i,a){ return a.indexOf(v)===i; });
+  /* ── página 1 · DRE ── */
+  var h='<div class="pdf-page" style="width:794px;min-height:1123px;background:#fff;color:'+paleta.textoEscuro+';padding:40px 48px;font-family:Arial,sans-serif;page-break-after:always;position:relative;">';
+  h+=buildHeaderPaginaInterna(paginaNum, 'DRE Projetado 2026–2033', config, paleta);
+  h+='<div style="font-size:9.5px;color:#4b5563;line-height:1.5;margin-bottom:12px">Demonstração de resultado projetada pela transição da reforma tributária. A linha de imposto sobre o consumo vem do Identificador de Créditos (ICMS/ISS e PIS/COFINS derretendo pela curva legal; IBS/CBS por fora, líquido do crédito das compras, despesas, ST e investimentos). Regime: <b>'+regimeTxt+'</b>. Cenário de referência 2033: <b>'+P(fontes.aliqRef||26.5,2)+'</b> (projeção — a alíquota definitiva sai por Resolução do Senado).</div>';
+  h+='<div style="display:flex;gap:8px;margin-bottom:14px">'+kpi('Lucro líquido 2033',R(y33.lucro),'hoje '+R(y26.lucro))+kpi('Margem líquida',P(y26.margemPct)+' → '+P(y33.margemPct),'lucro ÷ receita')+kpi('Imposto sobre o consumo',P(y26.receita>0?y26.impostos/y26.receita*100:0)+' → '+P(y33.receita>0?y33.impostos/y33.receita*100:0),'% da receita')+kpi('Ponto de equilíbrio 2033',(y33.pe!=null?R(y33.pe):'—'),'receita que cobre os fixos')+'</div>';
+  h+='<table style="width:100%;border-collapse:collapse"><thead><tr>'+th('conta · R$ por ano','left')+anos.map(function(a){ return th(a); }).join('')+'</tr></thead><tbody>';
+  h+=linha('Receita bruta', function(y){ return y.receita; }, 'b', 'Dados'+(A.reprec?' · reprecificação (Precificação em Massa)':'')+(A.contrato?' · contratos (c02)':''));
+  h+=linha('(−) Imposto sobre o consumo', function(y){ return y.impostos; }, '', 'Identificador de Créditos');
+  if(D.cartao>0) h+=linha('(−) Taxas de cartão', function(y){ return y.cartao; }, 'g');
+  h+=linha('= Receita líquida', function(y){ return y.recLiq; }, 'b');
+  h+=linha('(−) Custo da mercadoria / insumos', function(y){ return y.cmv; }, '', 'crédito da compra já descontado na linha de imposto');
+  h+=linha('= Margem de contribuição', function(y){ return y.margem; }, 'b');
+  h+=linha('(−) Custos fixos', function(y){ return y.fixos; }, '', 'pessoal + pró-labore + ocupação + administrativo');
+  if(D.despMkt>0) h+=linha('(−) Marketing e comercial', function(y){ return y.mkt; }, 'g');
+  if(D.recFin>0) h+=linha('(+) Receita financeira', function(y){ return y.recFin; }, 'g');
+  h+=linha('= Lucro antes do IR', function(y){ return y.lair; }, 'b');
+  h+=linha('(−) IRPJ / CSLL', function(y){ return y.irpj; }, '', y33.irpjDe);
+  h+=linha('= Lucro líquido', function(y){ return y.lucro; }, 'b');
+  h+=linha('Margem líquida', function(y){ return P(y.margemPct); }, 'g');
+  h+='</tbody></table>';
+  h+='<div style="margin-top:14px;background:#f8f9fb;border-radius:6px;padding:10px 12px;font-size:8.5px;color:#4b5563;line-height:1.6"><b style="color:'+paleta.primaria+'">De onde veio.</b> Alíquota de saída: '+(fontes.mix||'—')+'. Alíquota das compras: '+(fontes.compras||'—')+'. Crédito das compras: '+(fontes.cadeia||'—')+'. '+(ligadas.length?'Análises ligadas: '+ligadas.join(', ')+'.':'Nenhuma análise estratégica ligada — valores dos Dados Estratégicos.')+'</div>';
+  h+=buildFooterPaginaInterna(paginaNum, config, paleta);
+  h+='</div>';
+  /* ── página 2 · Fluxo ── */
+  h+='<div class="pdf-page" style="width:794px;min-height:1123px;background:#fff;color:'+paleta.textoEscuro+';padding:40px 48px;font-family:Arial,sans-serif;page-break-after:always;position:relative;">';
+  h+=buildHeaderPaginaInterna(paginaNum+1, 'Fluxo de Caixa Projetado 2026–2033', config, paleta);
+  h+='<div style="font-size:9.5px;color:#4b5563;line-height:1.5;margin-bottom:12px">O caixa a partir do DRE: entradas (receita menos inadimplência), saídas, variação do capital de giro — prazos, o que o split payment retém e o saldo credor de IBS/CBS parado até o ressarcimento — investimentos, amortização e distribuição aos sócios. O "pior saldo" diz em que ano o caixa aperta e quanto falta.</div>';
+  h+='<div style="display:flex;gap:8px;margin-bottom:14px">'+kpi('Saldo acumulado 2033',R(f33.saldo),'caixa inicial '+R(D.caixa0||0))+kpi('Pior saldo',pior.ano+' · '+R(pior.saldo),pior.saldo<0?'precisa de capital antes desse ano':'o caixa aguenta a transição')+kpi('Capital de giro',Math.round(f26.dias)+' → '+Math.round(f33.dias)+' dias',R(f26.ncg)+' → '+R(f33.ncg))+kpi('Caixa retido no saldo credor',R(f33.retido),'saldo credor × '+(D.ressarc||60)+' dias')+'</div>';
+  /* barras */
+  var mx=Math.max.apply(null,X.map(function(y){ return Math.abs(y.caixa); }))||1;
+  h+='<div style="display:flex;gap:6px;align-items:flex-end;height:90px;margin:4px 0 14px">'+X.map(function(y){ var hh=Math.max(2,Math.round(Math.abs(y.caixa)/mx*70)); return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%"><div style="font-size:7.5px;color:'+(y.caixa<0?'#b91c1c':'#047857')+'">'+Math.round(y.caixa/1000)+'k</div><div style="width:70%;height:'+hh+'px;background:'+(y.caixa<0?'#dc2626':'#10b981')+';border-radius:3px 3px 0 0"></div><div style="font-size:8px;color:#6b7280">'+y.ano+'</div></div>'; }).join('')+'</div>';
+  var S0=S; S=X;   /* reaproveita linha() com o fluxo */
+  h+='<table style="width:100%;border-collapse:collapse"><thead><tr>'+th('conta · R$ por ano','left')+anos.map(function(a){ return th(a); }).join('')+'</tr></thead><tbody>';
+  h+=linha('Entradas', function(y){ return y.entradas; }, 'b', 'receita − inadimplência '+P(D.inad||0)+(D.recFin>0?' + receita financeira':''));
+  h+=linha('(−) Imposto sobre o consumo', function(y){ return y.impostos; }, '');
+  h+=linha('(−) Mercadoria / insumos', function(y){ return y.cmv; }, '');
+  h+=linha('(−) Fixos e comercial', function(y){ return y.fixos; }, '');
+  if(D.cartao>0) h+=linha('(−) Cartão', function(y){ return y.cartao; }, 'g');
+  h+=linha('(−) IRPJ / CSLL', function(y){ return y.irpj; }, 'g');
+  h+=linha('= Saídas', function(y){ return y.saidas; }, 'b');
+  h+=linha('Capital de giro (NCG)', function(y){ return R(y.ncg)+' <span style="color:#9ca3af">'+Math.round(y.dias)+'d</span>'; }, 'g', 'receber '+(D.pRec||0)+'d × (1 − '+P(D.vista||0,0)+' à vista) − pagar '+(D.pPag||0)+'d'+(D.estoque?' + estoque '+D.estoque+'d':'')+(f33.ncgSplitDe?' + '+f33.ncgSplitDe:''));
+  if(X.some(function(y){ return y.ncgSplit>0; })) h+=linha('↳ retido no split payment', function(y){ return y.ncgSplit||'—'; }, 'g');
+  if(X.some(function(y){ return y.retido>0; })) h+=linha('↳ saldo credor IBS/CBS parado', function(y){ return y.retido||'—'; }, 'g');
+  h+=linha('(−) Variação do giro', function(y){ return y.dNcg; }, '');
+  if(D.capex>0) h+=linha('(−) Investimentos (CAPEX)', function(y){ return y.capex; }, '');
+  if(D.amort>0) h+=linha('(−) Amortização de empréstimos', function(y){ return y.amort; }, '');
+  if(D.distrib>0) h+=linha('(−) Distribuição aos sócios', function(y){ return y.dist||'—'; }, '');
+  h+=linha('= Caixa operacional', function(y){ return y.caixa; }, 'b');
+  h+=linha('Saldo acumulado', function(y){ return y.saldo; }, 'b');
+  h+='</tbody></table>';
+  S=S0;
+  h+='<div style="margin-top:14px;background:#fff8e1;border:1px solid #c9a22744;border-radius:6px;padding:10px 12px;font-size:8.5px;color:#4b5563;line-height:1.6"><b style="color:'+paleta.primaria+'">Premissas.</b> Receita, compras, fixos e prazos dos Dados Estratégicos (lidos da Central de Documentos ou informados). Imposto sobre o consumo pelo Identificador de Créditos: curva da transição da LC 214 (ICMS/ISS 90-80-70-60% de 2029 a 2032; PIS/COFINS e IPI extintos em 2027), IBS/CBS sobre o que fica, crédito pela Cadeia de Crédito. 26,5% em 2033 é projeção, não lei. Fluxo anual: não considera sazonalidade dentro do ano. Toda projeção deve ser validada pelo contador responsável.</div>';
+  h+=buildFooterPaginaInterna(paginaNum+1, config, paleta);
+  h+='</div>';
+  return { html:h, paginas:2 };
+}
+
 function buildPaginaPremissas(config, paleta, paginaNum) {
   var html = '<div class="pdf-page" style="width:794px;min-height:1123px;background:#fff;color:'+paleta.textoEscuro+';padding:40px 48px;font-family:Arial,sans-serif;page-break-after:always;position:relative;">';
   html += buildHeaderPaginaInterna(paginaNum, 'Premissas e Disclaimer', config, paleta);
@@ -37590,7 +37663,8 @@ async function gerarPDF(modo) {
   var motorState = window._motorState || {};
   var nCalcs = Object.keys(motorState).length;
   var avisoEl = document.getElementById('pdf-aviso-dados');
-  if(nCalcs < 2) {
+  var temFin = (typeof pdfFinDisponivel==='function') && pdfFinDisponivel();   /* v900: DRE/Fluxo da Inteligência Financeira também é relatório */
+  if(nCalcs < 2 && !temFin) {
     if(avisoEl) {
       avisoEl.style.display = 'flex';
     }
@@ -37680,7 +37754,9 @@ async function gerarPDF(modo) {
     if(scoreData) html += buildPaginaScoreDetalhado(scoreData, config, paleta);
     html += buildPaginaAnalises(motorState, config, paleta, scoreData ? 4 : 3);
     html += buildPaginaPlanoAcao(scoreData, motorState, config, paleta, scoreData ? 5 : 4);
-    html += buildPaginaPremissas(config, paleta, scoreData ? 6 : 5);
+    var _fin = buildPaginasFin(config, paleta, scoreData ? 6 : 5);   /* v900 */
+    html += _fin.html;
+    html += buildPaginaPremissas(config, paleta, (scoreData ? 6 : 5) + _fin.paginas);
   }
 
   renderArea.innerHTML = html;
