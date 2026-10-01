@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v891';</script>
+<body><script>window.LH_VERSAO='v892';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4114,6 +4114,7 @@ window.LH_PONTE = (function(){
       return true;
     },
     _voo: {}, _seq: {},
+    ultimo: {},   /* ★ v892 · último resultado estruturado por função — a Inteligência Financeira (TR08) lê daqui, nunca do texto da tela */
     _disparar: function(nomeFn, m, ent, seq){
       var promessa = Array.isArray(ent)
         ? Promise.all(ent.map(function(e){ return chamar(m.calc, e); })).then(function(lista){
@@ -4131,6 +4132,7 @@ window.LH_PONTE = (function(){
            sobrava pendurado embaixo do resultado — apareceu na passada de fumaça de 07/09. */
         try { document.querySelectorAll('[data-lh-espera]').forEach(function(el){
                 var p = el.parentNode; if (p) p.removeChild(el); }); } catch(_l){}
+        try { LH_PONTE.ultimo[nomeFn] = { resultado: res.resultado, ent: ent, quando: new Date().toISOString() }; } catch(_u){}   /* v892 */
         try { m.render(res.resultado, ent, null); } catch(e){ try { console.error('[LH_PONTE] render falhou em '+nomeFn, e); } catch(_e){} }
         registrar({ quando:new Date().toISOString(), tela:nomeFn, calc:m.calc, entradas:ent, status:'servidor' });
       });
@@ -6359,6 +6361,14 @@ function lhTrocarSenha(){
       <span class="ni-pill" style="background:rgba(201,162,39,.15);color:#c9a227">novo</span>
     </div>
 
+<div class="nav-group-title" style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);color:#C9A227">INTELIGÊNCIA FINANCEIRA</div>
+    <div class="nav-item" onclick="abrirPagina('fin_dados',this)" title="os números da empresa que alimentam o Identificador de Créditos, o DRE e o Fluxo de Caixa 2026–2033; pré-preenchidos pela Central de Documentos e pelas telas que você já rodou">
+      <span class="ni-icon">▣</span><span class="ni-label">Dados Estratégicos</span>
+    </div>
+    <div class="nav-item" onclick="abrirPagina('fin_cred',this)" title="débito de IBS/CBS por fora × crédito das compras, das despesas e do ST, ano a ano; o que você deixa na mesa comprando de quem não destaca; e as decisões que o saldo aponta">
+      <span class="ni-icon">⚖</span><span class="ni-label">Identificador de Créditos · débito × crédito × saldo</span>
+      <span class="ni-pill" style="background:rgba(201,162,39,.15);color:#c9a227">novo</span>
+    </div>
 <div class="nav-group-title">⚖ CONTENCIOSO</div>
     <div class="nav-group-items">
       <div class="nav-item nav-super" onclick="abrirPagina('transacao',this)">
@@ -10874,6 +10884,88 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
       </div>
     </div>
     <div id="cad-result"></div>
+  </div>
+  <!-- ★ v892 · INTELIGÊNCIA FINANCEIRA (TR08) — Dados Estratégicos + Identificador de Créditos. Tela no espírito do ITFE, motor do CORE:
+       a linha de imposto lê a curva do Mestre (getAliq), o mix do catálogo (PM_ULTIMO), a Cadeia de Crédito (LH_CADEIA), o DAS do
+       Dentro × Híbrido (LH_fatiaDAS) e o Regime Ótimo (_C05_REGIMES). Um conceito, um escritor: aqui só se lê. -->
+  <div class="page" id="page-fin_dados">
+    <div class="calc-page-header">
+      <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.16),rgba(62,207,142,0.12));">▣</div>
+      <div>
+        <h2>Dados Estratégicos · a empresa em 28 números</h2>
+        <p>É daqui que o Identificador de Créditos, o DRE e o Fluxo de Caixa 2026–2033 leem a empresa. Cada campo diz de onde veio: lido da Central de Documentos (PGDAS, eSocial, ECD, XML), herdado de uma tela que você já rodou (Regime Ótimo, Precificação, Cadeia) ou digitado. O que você digita vence o que foi importado. Guardado por empresa, como a Cadeia de Crédito.</p>
+      </div>
+    </div>
+    <div class="input-card">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+        <button class="btn-secondary" onclick="LH_FIN.sugerir(true)">⇣ Preencher pela Central e pelas telas já rodadas</button>
+        <button class="btn-secondary" onclick="abrirPagina('importxml')">Central de Documentos</button>
+        <button class="btn-secondary" onclick="abrirPagina('fin_cred')">→ Identificador de Créditos</button>
+        <span id="fin_dados_info" style="font-size:.78rem;color:var(--text2)"></span>
+      </div>
+      <h3 style="color:var(--gold)">Receita e regime</h3>
+      <div class="input-grid-2">
+        <div class="input-group"><label>Faturamento anual (R$) <span class="fin-selo" data-f="fat"></span></label><input type="number" id="fin_fat" placeholder="ex: 1.200.000"></div>
+        <div class="input-group"><label>Crescimento real ao ano (%) <span class="fin-selo" data-f="cresc"></span></label><input type="number" step="0.5" id="fin_cresc" placeholder="ex: 3"></div>
+        <div class="input-group"><label>Regime hoje <span class="fin-selo" data-f="regime"></span></label><select id="fin_regime"><option value="presumido">Lucro Presumido</option><option value="real">Lucro Real</option><option value="simples">Simples Nacional (dentro do DAS)</option><option value="hibrido">Simples híbrido (IBS/CBS por fora — art. 41)</option></select></div>
+        <div class="input-group"><label>Atividade principal <span class="fin-selo" data-f="tipo"></span></label><select id="fin_tipo"><option value="comercio">Comércio / indústria (ICMS)</option><option value="servico">Serviço (ISS)</option></select></div>
+        <div class="input-group"><label>Alíquota de ICMS ou ISS hoje (%) <span class="fin-selo" data-f="icms"></span><span class="lh-hint" data-hint="Comércio: ICMS interno do estado (17/18/19%). Serviço: ISS do município (2 a 5%). No Simples o campo não entra (vai pelo DAS)." onclick="lhHint(event,this)">?</span></label><input type="number" step="0.1" id="fin_icms" placeholder="ex: 18"></div>
+        <div class="input-group"><label>Tratamento de IBS/CBS do que você vende <span class="fin-selo" data-f="trat"></span><span class="lh-hint" data-hint="Usado só quando não há catálogo precificado. Com a Precificação em Massa rodada, o mix real do catálogo vale no lugar deste campo." onclick="lhHint(event,this)">?</span></label><select id="fin_trat"><option value="cheia">Alíquota cheia</option><option value="red60">Redução de 60% (saúde, educação, alimentos…)</option><option value="red40">Redução de 40%</option><option value="red30">Redução de 30% (profissões regulamentadas)</option><option value="zero">Alíquota zero / imune</option></select></div>
+        <div class="input-group"><label>Receita que é exportação (%) <span class="fin-selo" data-f="recExp"></span></label><input type="number" step="1" min="0" max="100" id="fin_recExp" placeholder="ex: 0"></div>
+        <div class="input-group" id="fin_das_box"><label>Alíquota efetiva do DAS (%) <span class="fin-selo" data-f="aliqDas"></span></label><input type="number" step="0.01" id="fin_aliqDas" placeholder="ex: 8,5 (PGDAS)"></div>
+        <div class="input-group" id="fin_hib_box1"><label>Anexo do Simples (híbrido) <span class="fin-selo" data-f="hibAnexo"></span></label><select id="fin_hibAnexo"><option value="">—</option><option value="I">I</option><option value="II">II</option><option value="III">III</option><option value="IV">IV</option><option value="V">V</option></select></div>
+        <div class="input-group" id="fin_hib_box2"><label>RBT12 (R$) — híbrido <span class="fin-selo" data-f="hibRbt"></span></label><input type="number" id="fin_hibRbt" placeholder="ex: 1.200.000"></div>
+      </div>
+      <h3 style="color:#3ecf8e;margin-top:14px">Compras e despesas</h3>
+      <div class="input-grid-2">
+        <div class="input-group"><label>Compras anuais de mercadoria / insumo (R$) <span class="fin-selo" data-f="compras"></span></label><input type="number" id="fin_compras" placeholder="ex: 660.000"></div>
+        <div class="input-group"><label>Tratamento de IBS/CBS do que você compra <span class="fin-selo" data-f="comprasTrat"></span></label><select id="fin_comprasTrat"><option value="cheia">Alíquota cheia</option><option value="red60">Redução de 60%</option><option value="red40">Redução de 40%</option><option value="zero">Alíquota zero</option></select></div>
+        <div class="input-group"><label>Despesas com IBS/CBS destacado (% da receita) <span class="fin-selo" data-f="desp"></span><span class="lh-hint" data-hint="Energia, aluguel, frete, serviços tomados, software: tudo que vier com IBS/CBS na nota gera crédito pleno (art. 47). Hoje, no Presumido, isso não credita nada." onclick="lhHint(event,this)">?</span></label><input type="number" step="0.5" id="fin_desp" placeholder="ex: 8"></div>
+        <div class="input-group"><label>ICMS-ST pago nas compras por ano (R$) — opcional <span class="fin-selo" data-f="st"></span></label><input type="number" id="fin_st" placeholder="ex: 0"></div>
+        <div class="input-group"><label>Taxa de cartão / adquirência (% da receita) <span class="fin-selo" data-f="cartao"></span></label><input type="number" step="0.1" id="fin_cartao" placeholder="ex: 2"></div>
+        <div class="input-group"><label>Marketing e comercial (% da receita) <span class="fin-selo" data-f="despMkt"></span></label><input type="number" step="0.5" id="fin_despMkt" placeholder="ex: 2"></div>
+      </div>
+      <h3 style="color:#4a9eff;margin-top:14px">Custos fixos (R$ por ano)</h3>
+      <div class="input-grid-2">
+        <div class="input-group"><label>Pessoal com encargos <span class="fin-selo" data-f="pessoal"></span></label><input type="number" id="fin_pessoal" placeholder="ex: 240.000"></div>
+        <div class="input-group"><label>Pró-labore dos sócios <span class="fin-selo" data-f="prolab"></span></label><input type="number" id="fin_prolab" placeholder="ex: 96.000"></div>
+        <div class="input-group"><label>Ocupação (aluguel, condomínio, energia) <span class="fin-selo" data-f="ocup"></span></label><input type="number" id="fin_ocup" placeholder="ex: 60.000"></div>
+        <div class="input-group"><label>Administrativo e outros <span class="fin-selo" data-f="adm"></span></label><input type="number" id="fin_adm" placeholder="ex: 36.000"></div>
+        <div class="input-group"><label>Inflação dos custos ao ano (%) <span class="fin-selo" data-f="infl"></span></label><input type="number" step="0.5" id="fin_infl" placeholder="ex: 4"></div>
+        <div class="input-group"><label>Receita financeira anual (R$) <span class="fin-selo" data-f="recFin"></span></label><input type="number" id="fin_recFin" placeholder="ex: 0"></div>
+      </div>
+      <h3 style="color:#e8b93a;margin-top:14px">Prazos e caixa (para o Fluxo)</h3>
+      <div class="input-grid-2">
+        <div class="input-group"><label>Prazo médio de recebimento (dias) <span class="fin-selo" data-f="pRec"></span></label><input type="number" id="fin_pRec" placeholder="ex: 30"></div>
+        <div class="input-group"><label>Prazo médio de pagamento (dias) <span class="fin-selo" data-f="pPag"></span></label><input type="number" id="fin_pPag" placeholder="ex: 20"></div>
+        <div class="input-group"><label>Vendas à vista (%) <span class="fin-selo" data-f="vista"></span></label><input type="number" step="1" min="0" max="100" id="fin_vista" placeholder="ex: 40"></div>
+        <div class="input-group"><label>Inadimplência (% da receita) <span class="fin-selo" data-f="inad"></span></label><input type="number" step="0.1" id="fin_inad" placeholder="ex: 2"></div>
+        <div class="input-group"><label>Caixa inicial (R$) <span class="fin-selo" data-f="caixa0"></span></label><input type="number" id="fin_caixa0" placeholder="ex: 50.000"></div>
+        <div class="input-group"><label>Prazo de ressarcimento do saldo credor (dias) <span class="fin-selo" data-f="ressarc"></span><span class="lh-hint" data-hint="LC 214, art. 39: até 60 dias para quem está no programa de conformidade, até 180 nos demais. Saldo credor parado é caixa retido — entra no Fluxo." onclick="lhHint(event,this)">?</span></label><input type="number" id="fin_ressarc" placeholder="ex: 60"></div>
+      </div>
+      <div id="fin_dados_resumo" style="margin-top:12px;font-size:.82rem;color:var(--text2)"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-fin_cred">
+    <div class="calc-page-header">
+      <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.16),rgba(62,207,142,0.12));">⚖</div>
+      <div>
+        <h2>Identificador de Créditos · débito × crédito × saldo, ano a ano</h2>
+        <p>O coração da conta: quanto de IBS/CBS a empresa vai dever por fora, quanto recupera das compras, das despesas e do ST, e o que sobra — a pagar ou a ressarcir. Ao lado, o imposto velho que derrete (ICMS/ISS, PIS/COFINS) e o que você deixa na mesa comprando de quem não destaca. É a linha de imposto do DRE 2026–2033. Lê a curva da transição, o mix do seu catálogo precificado, a Cadeia de Crédito e o Regime Ótimo — nada é digitado duas vezes.</p>
+      </div>
+    </div>
+    <div class="input-card">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="btn-calcular" onclick="LH_FIN.renderCred()">Calcular</button>
+        <button class="btn-secondary" onclick="abrirPagina('fin_dados')">▣ Dados Estratégicos</button>
+        <button class="btn-secondary" onclick="abrirPagina('cadeia')">⛓ Cadeia de Crédito</button>
+        <button class="btn-secondary" onclick="abrirPagina('precmassa')">◆ Precificação em Massa</button>
+        <div id="fin_cenario_box" style="margin-left:auto"></div>
+      </div>
+      <div id="fin_cred_fontes" style="margin-top:10px;font-size:.8rem;color:var(--text2)"></div>
+    </div>
+    <div id="fin_cred_result"></div>
   </div>
   <div class="page" id="page-cr04">
     <div class="calc-page-header">
@@ -31493,6 +31585,9 @@ function aplicarBenchmarkSetorial() {
    e a dúvida é o que a pessoa realmente tem na cabeça. */
 window.BUSCA_INDEX = [{"tipo":"aba","id":"perguntas","nome":"Perguntas que a ferramenta responde","cat":"Encontre pela dúvida","atalho":"perguntas"},{"tipo":"calc","id":"c01","nome":"Quanto de caixa o Split Payment vai tirar do meu cliente?","cat":"Pergunta · O caixa do meu cliente","atalho":"Split Payment Cash Gap"},{"tipo":"calc","id":"n33","nome":"Ele vai precisar de mais capital de giro? Quanto?","cat":"Pergunta · O caixa do meu cliente","atalho":"NCG Split Payment"},{"tipo":"calc","id":"c11","nome":"Em que mês exato o caixa dele aperta?","cat":"Pergunta · O caixa do meu cliente","atalho":"Split por Operação"},{"tipo":"calc","id":"c01","nome":"A empresa aguenta a transição sem tomar empréstimo?","cat":"Pergunta · O caixa do meu cliente","atalho":"Split Payment Cash Gap"},{"tipo":"calc","id":"antecip","nome":"Pagamento antecipado muda alguma coisa para ele?","cat":"Pergunta · O caixa do meu cliente","atalho":"Pagamentos Antecipados"},{"tipo":"calc","id":"formpreco","nome":"Ele vai ter que aumentar o preço? Em quanto?","cat":"Pergunta · Preço e margem","atalho":"Formação de Preço 2027-33"},{"tipo":"calc","id":"formpreco","nome":"Se segurar o preço, quanto perde de margem?","cat":"Pergunta · Preço e margem","atalho":"Formação de Preço 2027-33"},{"tipo":"calc","id":"c02","nome":"Os contratos antigos vão dar prejuízo?","cat":"Pergunta · Preço e margem","atalho":"Reprecificação de Contratos"},{"tipo":"calc","id":"formpreco","nome":"Ele cobra o mesmo de empresa e de pessoa física?","cat":"Pergunta · Preço e margem","atalho":"Formação de Preço 2027-33"},{"tipo":"calc","id":"calc03","nome":"O concorrente vai poder cobrar menos que ele?","cat":"Pergunta · Preço e margem","atalho":"Risco Fornecedor SN"},{"tipo":"calc","id":"c02","nome":"Como reajustar contrato de prazo longo sem perder o cliente?","cat":"Pergunta · Preço e margem","atalho":"Reprecificação de Contratos"},{"tipo":"calc","id":"c04","nome":"Ele vai pagar mais ou menos imposto do que hoje?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"classif","nome":"Qual é a alíquota de verdade, produto por produto?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Produto (Mix)"},{"tipo":"calc","id":"raiox360","nome":"O produto dele tem desconto de 60%? De 40%? Zero?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Raio-X 360° do Produto"},{"tipo":"calc","id":"c04","nome":"Quanto muda em cada ano da transição?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"seletivo","nome":"O Imposto Seletivo pega o produto dele?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Imposto Seletivo (IS)"},{"tipo":"calc","id":"classif","nome":"Qual a alíquota efetiva considerando o mix inteiro?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Produto (Mix)"},{"tipo":"calc","id":"aliqref","nome":"E se a alíquota de referência subir? Qual o risco?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota de Referência · risco"},{"tipo":"calc","id":"c05","nome":"Ele está no regime certo? Quanto economiza mudando?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Regime Ótimo (Simples/LP/LR)"},{"tipo":"calc","id":"c07","nome":"Vale continuar no Simples depois da reforma?","cat":"Pergunta · Regime: continuar ou sair","atalho":"PF vs PJ — Pejotização"},{"tipo":"calc","id":"dxh","nome":"Dentro ou híbrido: qual custa menos para ele?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"fatorR","nome":"O fator R joga ele no Anexo III ou no V?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Fator R · III vs V"},{"tipo":"calc","id":"sublimite","nome":"Ele está perto de estourar o sublimite?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Sublimite Simples"},{"tipo":"calc","id":"c07","nome":"Compensa abrir PJ ou continuar como pessoa física?","cat":"Pergunta · Regime: continuar ou sair","atalho":"PF vs PJ — Pejotização"},{"tipo":"calc","id":"art127","nome":"Profissão regulamentada muda a conta? (art. 127)","cat":"Pergunta · Regime: continuar ou sair","atalho":"Profissões Regulamentadas · art. 127"},{"tipo":"calc","id":"dxh","nome":"Se ele sair do Simples, o que acontece com o crédito da cadeia?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"dxh","nome":"O cliente dele vai deixar de comprar por causa do crédito?","cat":"Pergunta · Fornecedores e clientes","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"n04","nome":"Fornecedor no Simples vira problema para ele?","cat":"Pergunta · Fornecedores e clientes","atalho":"SN → Regime Regular"},{"tipo":"calc","id":"dxh","nome":"Vale trocar de fornecedor? Quanto isso rende?","cat":"Pergunta · Fornecedores e clientes","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"difal","nome":"Ele vende para outro estado — o DIFAL muda?","cat":"Pergunta · Fornecedores e clientes","atalho":"DIFAL · Interestadual"},{"tipo":"calc","id":"calc03","nome":"Vender para consumidor final ou para empresa: o que muda?","cat":"Pergunta · Fornecedores e clientes","atalho":"Risco Fornecedor SN"},{"tipo":"calc","id":"central-c5","nome":"Ele tem crédito para recuperar? Quanto?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":""},{"tipo":"calc","id":"cr01","nome":"ICMS na base do PIS/COFINS — cabe no caso dele? (Tema 69)","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Tema 69 · ICMS na base PIS/COFINS"},{"tipo":"calc","id":"icmsst1125","nome":"E o ICMS-ST? (Tema 1125)","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"ICMS-ST na base PIS/COFINS · Tema 1125"},{"tipo":"calc","id":"monofasico","nome":"Pagou a maior em produto monofásico?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Monofásico · PIS/COFINS revenda"},{"tipo":"calc","id":"ins","nome":"Tem crédito de INSS ou de ISS parado?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Insumos PIS/COFINS · Tema 779"},{"tipo":"calc","id":"s962","nome":"Existe saldo credor acumulado que ninguém pediu?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"IRPJ/CSLL sobre Selic · Tema 962"},{"tipo":"calc","id":"dup","nome":"Pagou alguma guia em duplicidade?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Pagamento em Duplicidade · scanner"},{"tipo":"calc","id":"ret","nome":"Retenção na fonte que nunca foi compensada?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Retenções na Fonte · não aproveitadas"},{"tipo":"calc","id":"credpresumido","nome":"Crédito presumido do setor dele está sendo usado?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Crédito Presumido · Agroindústria"},{"tipo":"calc","id":"capex","nome":"CAPEX: o investimento gera crédito?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"CAPEX · Crédito de Investimentos"},{"tipo":"calc","id":"c06","nome":"Pró-labore ou distribuição: o que sai mais barato?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Tributação de Dividendos"},{"tipo":"calc","id":"c08","nome":"A tributação de dividendos de 2026 pega ele?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Pró-labore Ótimo"},{"tipo":"calc","id":"c06","nome":"Quanto ele deve retirar por mês, considerando tudo?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Tributação de Dividendos"},{"tipo":"calc","id":"stockoptions","nome":"Stock options fazem sentido no caso dele?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Stock Options · Tema 1.226"},{"tipo":"calc","id":"aluguelpfpj","nome":"Aluguel do imóvel: pessoa física ou jurídica?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Aluguel PF vs PJ"},{"tipo":"calc","id":"n15","nome":"Vale montar uma holding para a família dele?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Holding Patrimonial 2026"},{"tipo":"calc","id":"sucessorio","nome":"Quanto custa não planejar a sucessão?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Sucessório Completo"},{"tipo":"calc","id":"n16","nome":"O ITCMD progressivo do estado dele muda a conta?","cat":"Pergunta · Patrimônio e sucessão","atalho":"ITCMD Progressivo por Estado"},{"tipo":"calc","id":"valuation","nome":"Quanto vale a empresa dele hoje?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Valuation Empresarial"},{"tipo":"calc","id":"offshore","nome":"Estrutura no exterior faz sentido ou é só custo?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Offshores & Fundos"},{"tipo":"calc","id":"ma","nome":"Reorganização societária: quanto economiza?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Custo Tributário de M&A"},{"tipo":"calc","id":"decisor","nome":"Ele foi autuado — discute ou paga?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Decisor · discutir, transacionar ou pagar"},{"tipo":"calc","id":"multajuros","nome":"Quanto é a multa e o juros de verdade?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Multas & Juros · custo do débito"},{"tipo":"calc","id":"prescricao","nome":"Essa dívida já prescreveu?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Prescrição & Decadência"},{"tipo":"calc","id":"transacao","nome":"A transação da PGFN vale a pena para ele?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Transação PGFN 6/2026 · prazo 30/09"},{"tipo":"calc","id":"compensacao","nome":"Dá para compensar em vez de pagar?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Compensação · PER/DCOMP"},{"tipo":"calc","id":"cp02","nome":"Denúncia espontânea sai mais barato que a autuação?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Denúncia Espontânea × Autuação"},{"tipo":"calc","id":"cp01","nome":"Qual o custo de não se adequar a tempo?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Custo do Descumprimento"},{"tipo":"calc","id":"auditorcad","nome":"O cadastro dele está pronto para 2026?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Auditor de Cadastro (cClassTrib)"},{"tipo":"calc","id":"classmassa","nome":"Como classificar mil itens sem fazer no olho?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Classificador em Massa CBS/IBS"},{"tipo":"calc","id":"cadeia","nome":"De quem eu compro e para quem eu vendo: quanto da compra gera crédito?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Cadeia de Crédito · entradas × saídas"},{"tipo":"calc","id":"simnotas","nome":"A nota fiscal dele já sai no leiaute novo?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Simulador de Notas (emissor)"},{"tipo":"calc","id":"contrato","nome":"O que o contrato dele precisa prever?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Analisador de Contrato"},{"tipo":"calc","id":"matrizdoc","nome":"De onde vem cada informação que a ferramenta pede?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Matriz de Inputs Automáticos"},{"tipo":"calc","id":"agro01","nome":"Ele é do agro — o Funrural muda com a reforma?","cat":"Pergunta · O ramo do meu cliente","atalho":""},{"tipo":"calc","id":"coop","nome":"Cooperativa: o regime específico compensa?","cat":"Pergunta · O ramo do meu cliente","atalho":"Cooperativas (Regime Específico)"},{"tipo":"calc","id":"agro03","nome":"Produtor rural: vale se registrar como PJ?","cat":"Pergunta · O ramo do meu cliente","atalho":"Produtor PF × PJ Rural"},{"tipo":"calc","id":"agro02","nome":"Barter: insumo trocado por safra, como fica?","cat":"Pergunta · O ramo do meu cliente","atalho":"Barter — Insumo × Safra"},{"tipo":"calc","id":"ind01","nome":"Indústria: o crédito de estoque na virada?","cat":"Pergunta · O ramo do meu cliente","atalho":"Crédito de Estoque na Virada"},{"tipo":"calc","id":"ind04","nome":"Subvenção de ICMS ainda vale para ele?","cat":"Pergunta · O ramo do meu cliente","atalho":"Lei do Bem — P&D"},{"tipo":"calc","id":"bares","nome":"Bar ou restaurante: a cesta básica salva?","cat":"Pergunta · O ramo do meu cliente","atalho":"Bares & Restaurantes"},{"tipo":"calc","id":"hotel","nome":"Hotel e turismo têm regime próprio?","cat":"Pergunta · O ramo do meu cliente","atalho":"Hotelaria & Parques"},{"tipo":"calc","id":"psaude","nome":"Clínica ou consultório: como fica?","cat":"Pergunta · O ramo do meu cliente","atalho":"Planos de Saúde (Operadoras)"},{"tipo":"calc","id":"logcarga","nome":"Transporte de carga: o crédito do frete?","cat":"Pergunta · O ramo do meu cliente","atalho":"Logística & Cargas"},{"tipo":"calc","id":"transpax","nome":"Transporte de passageiros muda?","cat":"Pergunta · O ramo do meu cliente","atalho":"Transporte de Passageiros"},{"tipo":"calc","id":"combustivel","nome":"Posto de combustível: monofásico continua?","cat":"Pergunta · O ramo do meu cliente","atalho":"Combustíveis (Monofásico)"},{"tipo":"calc","id":"medicamento","nome":"Farmácia e medicamento: alíquota reduzida?","cat":"Pergunta · O ramo do meu cliente","atalho":"Medicamentos & Dispositivos"},{"tipo":"calc","id":"telecom","nome":"Telecom e tecnologia: o que muda?","cat":"Pergunta · O ramo do meu cliente","atalho":"Telecom & Energia"},{"tipo":"calc","id":"apostas","nome":"Casa de apostas: o Seletivo pega?","cat":"Pergunta · O ramo do meu cliente","atalho":"Apostas / Prognósticos + SAF"},{"tipo":"calc","id":"financeiro","nome":"Instituição financeira: regime específico?","cat":"Pergunta · O ramo do meu cliente","atalho":"Serviços Financeiros (Spread)"},{"tipo":"calc","id":"agviagem","nome":"Agência de viagem: base reduzida continua?","cat":"Pergunta · O ramo do meu cliente","atalho":"Agências de Viagem & Turismo"},{"tipo":"calc","id":"imob_ret","nome":"Construção e incorporação: o RET sobrevive?","cat":"Pergunta · O ramo do meu cliente","atalho":"Incorporação / RET"},{"tipo":"calc","id":"imobref","nome":"Aluguel de imóvel: como fica na reforma?","cat":"Pergunta · O ramo do meu cliente","atalho":"Regime Imobiliário da Reforma"},{"tipo":"calc","id":"import","nome":"Importar vai ficar mais caro para ele?","cat":"Pergunta · Importação e exportação","atalho":"Importação & Regimes"},{"tipo":"calc","id":"export","nome":"Exportador acumula crédito — como recupera?","cat":"Pergunta · Importação e exportação","atalho":"Exportação & Saldo Credor"},{"tipo":"calc","id":"drawback","nome":"Drawback continua valendo?","cat":"Pergunta · Importação e exportação","atalho":"Drawback & Aduaneiros"},{"tipo":"calc","id":"portos","nome":"Operação por porto de outro estado muda algo?","cat":"Pergunta · Importação e exportação","atalho":"Portos & Regimes Aduaneiros"},{"tipo":"calc","id":"jornada","nome":"Quais clientes da minha carteira dão mais trabalho até 2033?","cat":"Pergunta · O meu escritório","atalho":"Jornada do Cliente"},{"tipo":"calc","id":"ltv_carteira","nome":"Quanto cada cliente me rende de verdade?","cat":"Pergunta · O meu escritório","atalho":"LTV de Carteira"},{"tipo":"calc","id":"motor360","nome":"Onde está a oportunidade de honorário na minha base?","cat":"Pergunta · O meu escritório","atalho":"Motor 360°"},{"tipo":"calc","id":"proposta","nome":"Como faço uma proposta com o número na mão?","cat":"Pergunta · O meu escritório","atalho":"Proposta Comercial"},{"tipo":"calc","id":"c10","nome":"Quanto cobrar pela rotina de BPO que já entrego?","cat":"Pergunta · O meu escritório","atalho":"Precificação de Honorários"},{"tipo":"calc","id":"pdf","nome":"Como entrego isso com a minha marca?","cat":"Pergunta · O meu escritório","atalho":"Relatório PDF"},{"tipo":"calc","id":"c09","nome":"Por onde começo com um cliente novo?","cat":"Pergunta · O meu escritório","atalho":"Rentabilidade por Cliente"},{"tipo":"calc","id":"central-c1","nome":"O que muda já em 2026?","cat":"Pergunta · O que vence, e quando","atalho":""},{"tipo":"calc","id":"c04","nome":"Quando PIS e COFINS acabam de verdade?","cat":"Pergunta · O que vence, e quando","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"c04","nome":"Em que ano o ICMS e o ISS somem?","cat":"Pergunta · O que vence, e quando","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"cp03","nome":"O que meu cliente precisa fazer ainda este ano?","cat":"Pergunta · O que vence, e quando","atalho":"Compliance da Reforma 2026"}].concat([
   // Calculadoras
+  {tipo:'calc',id:'fin_dados',nome:'Dados Estratégicos — a empresa em 28 números (DRE e Fluxo 2026–2033)',cat:'Inteligência Financeira',atalho:'fin_dados'},
+  {tipo:'calc',id:'fin_cred',nome:'Identificador de Créditos — quanto de IBS/CBS vou dever, quanto recupero, o que sobra',cat:'Inteligência Financeira',atalho:'fin_cred'},
+  {tipo:'calc',id:'fin_cred',nome:'Quanto de crédito eu perco comprando de Simples ou pessoa física?',cat:'Pergunta · Crédito e dinheiro de volta',atalho:'Identificador de Créditos'},
   {tipo:'calc',id:'c01',nome:'Split Payment Cash Gap',cat:'Reforma Tributária',atalho:'c01'},
   {tipo:'calc',id:'c02',nome:'Reprecificação de Contratos',cat:'Reforma Tributária',atalho:'c02'},
   {tipo:'calc',id:'c04',nome:'Alíquota Efetiva por Setor / Atividade',cat:'Reforma Tributária',atalho:'c04'},
@@ -59365,6 +59460,206 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
  var _ap=window.abrirPagina;
  window.abrirPagina=function(id){ var r=_ap.apply(this,arguments); try{ carregar(); ligar(); if(id==='cadeia'||id==='c05'||id==='dxh'){ setTimeout(function(){ ligar(); adotar(); escrever('entrada'); escrever('saida'); render(); },300); } }catch(_e){} return r; };
  function boot(){ carregar(); ligar(); setTimeout(function(){ ligar(); adotar(); render(); },1500); }
+ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
+<script>
+/* ★ v892 · LH_FIN — INTELIGÊNCIA FINANCEIRA (TR08). Dados Estratégicos + Identificador de Créditos.
+   Tela no espírito do ITFE (DRE e fluxo de 8 anos onde as análises desembocam), motor do CORE:
+   · curva da transição = getAliq (Mestre, cenário ativo)        · alíquota de saída = mix do catálogo (PM_ULTIMO) ou setor (cmAliqAno)
+   · parcela creditável das compras = LH_CADEIA.calcular(ano)    · DAS do híbrido = LH_fatiaDAS (Dentro × Híbrido)
+   · regime e DAS = _C05_REGIMES / PGDAS                          · ST → IBS creditável = mesma regra do v886 (Precificação)
+   Nada aqui recalcula o que outra tela já calcula: um conceito, um escritor. O DRE (v893) e o Fluxo (v894) leem daqui. */
+(function(){
+ var CH='LH_FIN::', ANOS=[2026,2027,2028,2029,2030,2031,2032,2033];
+ var CAMPOS=['fat','cresc','infl','regime','tipo','icms','trat','recExp','aliqDas','hibAnexo','hibRbt','compras','comprasTrat','desp','st','cartao','despMkt','pessoal','prolab','ocup','adm','recFin','pRec','pPag','vista','inad','caixa0','ressarc'];
+ var TEXTO={regime:1,tipo:1,trat:1,comprasTrat:1,hibAnexo:1};
+ var estado={dados:{}, origem:{}, afluentes:{}, premissas:{}};
+ function eid(){ try{ return (window.LH_PERSIST && LH_PERSIST.entidade)? LH_PERSIST.entidade() : (window.LH_EMP_CNPJ||'geral'); }catch(_e){ return 'geral'; } }
+ function num(v){ if(v==null||v==='') return null; var n=parseFloat(String(v).replace(',','.')); return isFinite(n)?n:null; }
+ function hoje(){ return new Date().toISOString().slice(0,10); }
+ function salvar(){ try{ localStorage.setItem(CH+eid(), JSON.stringify(estado)); }catch(_e){} }
+ function carregar(){ try{ var s=localStorage.getItem(CH+eid()); if(s){ var o=JSON.parse(s); if(o&&o.dados){ estado=o; estado.origem=estado.origem||{}; estado.afluentes=estado.afluentes||{}; estado.premissas=estado.premissas||{}; } } }catch(_e){} }
+ function el(k){ return document.getElementById('fin_'+k); }
+ function fmt(x){ return 'R$ '+(+x||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }
+ function pct(x,d){ return (+x||0).toLocaleString('pt-BR',{minimumFractionDigits:(d==null?1:d),maximumFractionDigits:(d==null?1:d)})+'%'; }
+ /* ── estado ⇄ tela ── */
+ var mudo=false;
+ function escrever(){ mudo=true; try{ CAMPOS.forEach(function(k){ var e=el(k); if(!e) return; var v=estado.dados[k]; e.value=(v==null)?'':String(v); }); }finally{ mudo=false; } selos(); ajustaTela(); }
+ function lerCampo(k){ var e=el(k); if(!e) return; var v=TEXTO[k]?(e.value||''):num(e.value); estado.dados[k]=v; estado.origem[k]={tipo:'digitado', detalhe:'digitado', quando:hoje()}; salvar(); selos(); ajustaTela(); resumo(); }
+ function ligar(){ CAMPOS.forEach(function(k){ var e=el(k); if(!e||e._fin) return; e._fin=true; e.addEventListener('input',function(){ if(!mudo) lerCampo(k); }); e.addEventListener('change',function(){ if(!mudo) lerCampo(k); }); }); }
+ function ajustaTela(){ var r=estado.dados.regime||'presumido'; var sh=function(id,on){ var b=document.getElementById(id); if(b) b.style.display=on?'':'none'; }; sh('fin_das_box', r==='simples'||r==='hibrido'); sh('fin_hib_box1', r==='hibrido'); sh('fin_hib_box2', r==='hibrido'); }
+ function selos(){ document.querySelectorAll('.fin-selo').forEach(function(s){ var k=s.getAttribute('data-f'), o=estado.origem[k]; if(!o || estado.dados[k]==null || estado.dados[k]===''){ s.innerHTML=''; return; }
+   var cor=(o.tipo==='central')?'#16c47c':(o.tipo==='tela')?'#e8b93a':'#8a97a8'; s.innerHTML='<span style="font-weight:400;text-transform:none;font-size:.7rem;color:'+cor+'" title="'+(o.quando||'')+'">● '+(o.tipo==='central'?'Central · ':o.tipo==='tela'?'tela · ':'')+(o.detalhe||'')+'</span>'; }); }
+ function resumo(){ var b=document.getElementById('fin_dados_resumo'); if(!b) return; var d=estado.dados; var n=CAMPOS.filter(function(k){ return d[k]!=null && d[k]!==''; }).length;
+   var nC=0,nT=0,nD=0; CAMPOS.forEach(function(k){ var o=estado.origem[k]; if(!o||d[k]==null||d[k]==='') return; if(o.tipo==='central') nC++; else if(o.tipo==='tela') nT++; else nD++; });
+   b.innerHTML=(d.fat>0?'<b style="color:var(--gold)">'+n+' de '+CAMPOS.length+' campos</b> — '+nC+' lidos da Central, '+nT+' herdados de telas, '+nD+' digitados. Guardado por empresa ('+eid()+'). ':'<span style="color:#e0a83a">Informe ao menos o faturamento anual para o Identificador rodar.</span> ')
+     +'O que você digita vence o importado; o botão "Preencher" só completa o que está vazio.'; }
+ /* ── sugestões: Central de Documentos e telas já rodadas ── */
+ function g(id){ var e=document.getElementById(id); return e?num(e.value):null; }
+ function sugestoes(){
+   var S=[]; var add=function(k,v,tipo,det){ if(v==null||v===''||(typeof v==='number'&&!(v>0)&&k!=='recExp'&&k!=='st')) return; S.push({k:k,v:v,tipo:tipo,det:det}); };
+   var ecd=window.LH_IMPORT_ECD, pg=window.LH_IMPORT_PGDAS, es=window.LH_IMPORT_ESOCIAL, xml=window.LH_IMPORT_XML, cli=window.LH_IMPORT_CLI;
+   if(ecd&&ecd.ok&&ecd.receitaLiquida>0) add('fat',Math.round(ecd.receitaLiquida),'central','ECD · receita líquida');
+   if(pg&&pg.ok&&pg.rbt12>0) add('fat',Math.round(pg.rbt12),'central','PGDAS · RBT12');
+   if(xml&&xml.vNFSaida>0) add('fat',Math.round(xml.vNFSaida),'central','XML de venda · soma das notas');
+   add('fat',g('c05_fat'),'tela','Regime Ótimo'); add('fat',g('cad_fat'),'tela','Cadeia de Crédito'); add('fat',g('dxh_fat'),'tela','Dentro × Híbrido');
+   var c1=g('c01_faturamento'); if(c1>0) add('fat',Math.round(c1*12),'tela','Split Cash Gap · mensal × 12');
+   add('cresc',g('c01_crescimento'),'tela','Split Cash Gap');
+   if(pg&&pg.ok){ add('regime','simples','central','PGDAS'); if(pg.aliqEfetiva>0) add('aliqDas',Math.round(pg.aliqEfetiva*10000)/100,'central','PGDAS · alíquota efetiva'); }
+   try{ var R=window._C05_REGIMES; if(R&&R.length){ var best=R.slice().sort(function(a,b){ return a.total-b.total; })[0]; var n=String(best.nome).toLowerCase(); var v=/h[ií]brido/.test(n)?'hibrido':/simples/.test(n)?'simples':/presumido/.test(n)?'presumido':/real/.test(n)?'real':''; if(v) add('regime',v,'tela','Regime Ótimo · melhor regime'); } }catch(_e){}
+   try{ var sn=window._C05_ALIQ_SN_INFO; if(sn&&sn.usada>0) add('aliqDas',Math.round(sn.usada*100)/100,'tela','Regime Ótimo'); }catch(_e){}
+   var ha=(document.getElementById('pm_hib_anexo')||{}).value; if(ha) add('hibAnexo',ha,'tela','Precificação · híbrido'); add('hibRbt',g('pm_hib_rbt'),'tela','Precificação · híbrido'); add('hibRbt',g('dxh_rbt12'),'tela','Dentro × Híbrido');
+   add('icms',g('pm_icms'),'tela','Precificação'); add('icms',g('c05_icms_aliq'),'tela','Regime Ótimo');
+   if(es&&es.ok&&es.folhaTotal>0) add('pessoal',Math.round(es.folhaTotal*12),'central','eSocial · folha × 12');
+   var fo=g('c05_folha'); if(fo>0) add('pessoal',Math.round(fo*12),'tela','Regime Ótimo · folha mensal × 12');
+   if(es&&es.ok&&es.proLabore>0) add('prolab',Math.round(es.proLabore*12),'central','eSocial · pró-labore × 12');
+   var pl=g('c05_prolabore'); if(pl>0) add('prolab',Math.round(pl*12*(g('c05_socios')||1)),'tela','Regime Ótimo · pró-labore × sócios × 12');
+   if(xml&&xml.vNF>0) add('compras',Math.round(xml.vNF),'central','XML de compra · soma das notas'); add('compras',g('cad_compras'),'tela','Cadeia de Crédito');
+   add('desp',g('pm_desp'),'tela','Precificação');
+   try{ var cs=window.LH_CADEIA&&LH_CADEIA.get().saida; if(cs&&cs.exportacao!=null) add('recExp',cs.exportacao,'tela','Cadeia de Crédito · exportação'); }catch(_e){}
+   if(cli&&cli.ok&&cli.pExp!=null) add('recExp',Math.round(cli.pExp*10)/10,'central','XML de venda · exterior');
+   add('pRec',g('c01_prazo_recolhimento'),'tela','Split Cash Gap');
+   return S;
+ }
+ function sugerir(aviso){
+   var S=sugestoes(), n=0, usados={};
+   S.forEach(function(s){ if(usados[s.k]) return; var o=estado.origem[s.k]; var tem=(estado.dados[s.k]!=null && estado.dados[s.k]!=='');
+     if(tem && o && o.tipo==='digitado') return;            /* digitado vence o importado */
+     if(tem && o && o.tipo==='central' && s.tipo!=='central') return;   /* Central vence tela */
+     usados[s.k]=1; if(estado.dados[s.k]===s.v) return; estado.dados[s.k]=s.v; estado.origem[s.k]={tipo:s.tipo, detalhe:s.det, quando:hoje()}; n++; });
+   if(n){ salvar(); escrever(); } resumo();
+   if(aviso && typeof mostrarToast==='function') mostrarToast(n?('✓ '+n+' campo(s) preenchido(s) pela Central e pelas telas'):'Nada novo para preencher — importe documentos na Central ou rode o Regime Ótimo / Precificação primeiro', n?'success':'info');
+   return n;
+ }
+ /* ── MOTOR · impostos sobre o consumo por ano ──
+    regular (Presumido/Real): velho = ICMS/ISS líquido × fIcms + PIS/COFINS líquido × fPis (curva do Mestre);
+      débito IBS/CBS = R × (1 − exportação) × alíquota de saída do ano; crédito = compras × creditável × alíq. das compras + despesas × alíq. + ST × (1 − fIcms) × creditável;
+      saldo = débito − crédito (negativo = saldo credor, ressarcível — não abate outro tributo).
+    Simples puro: tudo no DAS (R × alíquota efetiva); sem débito/crédito por fora.
+    Híbrido (art. 41): DAS perde a fatia federal (2027) e a fatia ICMS/ISS (1/10 ao ano, 2029–33) — LH_fatiaDAS —, e o IBS/CBS vai por fora como no regular.
+    2026: ano-teste (CBS 0,9% + IBS 0,1% compensáveis com PIS/COFINS) — débito e crédito zerados, como na Precificação. */
+ function mixAno(ano){
+   var d=estado.dados; var P=window.PM_ULTIMO;
+   if(P && P.rows && P.rows.length && P.cfg && P.cfg.regime!=='simples'){ var sp=0, st=0, n=0; P.rows.forEach(function(r){ var y=r.c&&r.c.anos&&r.c.anos[ano]; if(!y) return; var w=(y.hojeCli>0)?y.hojeCli:1; sp+=w; st+=w*(y.tFora||0); n++; }); if(sp>0) return {t:st/sp, origem:'mix do catálogo precificado ('+n+' itens, ponderado pelo preço)', fonte:'catalogo'}; }
+   var t=(typeof cmAliqAno==='function')?cmAliqAno(d.trat||'cheia',ano):null; return {t:(t==null?0:t/100), origem:'tratamento do setor ('+(d.trat||'cheia')+') — rode a Precificação em Massa para usar o mix real do catálogo', fonte:'setor'};
+ }
+ function cadeiaAno(ano){
+   try{ var c=window.LH_CADEIA&&LH_CADEIA.calcular(ano); var e=LH_CADEIA.get().entrada; var tem=c && Object.keys(e).some(function(k){ return e[k]!=null; });
+     if(tem){ var sn=(e.simples||0)/100, pf=(e.pf||0)/100; return {cred:c.creditavel, perdido:sn*0.8+pf, snPct:e.simples||0, pfPct:e.pf||0, origem:'Cadeia de Crédito ('+Math.round(c.creditavel*1000)/10+'% das compras geram crédito)', tem:true}; } }catch(_e){}
+   return {cred:1, perdido:0, snPct:0, pfPct:0, origem:'sem Cadeia de Crédito lida — 100% das compras creditáveis (padrão)', tem:false};
+ }
+ function impostos(ano, d){
+   d=d||estado.dados; ano=+ano||2033; var i=ano-2026;
+   var A=(typeof getAliq==='function')?getAliq(ano):null; if(!A) return null;
+   var fI=(typeof A.pcVelhoEstadual==='number')?A.pcVelhoEstadual:1, fP=(typeof A.pcPisCofins==='number')?A.pcPisCofins:0, tFull=+A.total||0;
+   var fC=Math.pow(1+(+d.cresc||0)/100,i);
+   var R=(+d.fat||0)*fC, compras=(+d.compras||0)*fC, desp=R*((+d.desp||0)/100), st=(+d.st||0)*fC, exp=Math.min(1,Math.max(0,(+d.recExp||0)/100));
+   var regime=d.regime||'presumido', icmsA=(+d.icms||0)/100, servico=(d.tipo==='servico');
+   var mix=mixAno(ano), cad=cadeiaAno(ano);
+   var tComp=(typeof cmAliqAno==='function')?cmAliqAno(d.comprasTrat||'cheia',ano):null; tComp=(tComp==null)?0:tComp/100;
+   var teste=(ano<=2026);
+   var o={ano:ano, receita:R, compras:compras, despesas:desp, fIcms:fI, fPis:fP, tFull:tFull, tMix:mix.t, tCompras:tComp, cred:cad.cred, regime:regime,
+          icmsLiq:0, pisLiq:0, das:0, debito:0, credCompras:0, credDesp:0, credST:0, credTotal:0, saldo:0, aPagar:0, credor:0, perdido:0, total:0};
+   if(regime==='simples'){ o.das=R*((+d.aliqDas||0)/100); }
+   else {
+     if(regime==='hibrido'){ var al=(+d.aliqDas||0), fat=(typeof LH_fatiaDAS==='function' && d.hibAnexo)?LH_fatiaDAS(d.hibAnexo, +d.hibRbt||0, 2033):null;
+       if(fat && al>0){ var pisH=al*fat.federal/100, icmsH=al*fat.base/100; o.das=R*(al-pisH*(1-fP)-icmsH*(1-fI))/100; o.hib={aliq:al,pis:pisH,icms:icmsH,faixa:fat.faixa}; }
+       else { o.das=R*al/100; o.hib={faltando:true}; } }
+     else {
+       var icmsOut=R*(1-exp)*icmsA, icmsIn=servico?0:compras*icmsA*cad.cred;   /* ICMS da compra credita (não-cumulativo); ISS não */
+       o.icmsLiq=Math.max(0,icmsOut-icmsIn)*fI;
+       var pis=(regime==='real')?Math.max(0,R*(1-exp)-compras-desp)*0.0925:R*(1-exp)*0.0365;   /* Real: não-cumulativo; Presumido: cumulativo sem crédito */
+       o.pisLiq=pis*fP; }
+     if(!teste){
+       o.debito=R*(1-exp)*mix.t;
+       o.credCompras=compras*cad.cred*tComp; o.credDesp=desp*tFull; o.credST=st*(1-fI)*cad.cred;
+       o.credTotal=o.credCompras+o.credDesp+o.credST; o.saldo=o.debito-o.credTotal; o.aPagar=Math.max(0,o.saldo); o.credor=Math.max(0,-o.saldo);
+       o.perdido=compras*tComp*cad.perdido; } }
+   o.total=o.icmsLiq+o.pisLiq+o.das+o.aPagar; o.pctRec=R>0?o.total/R*100:0;
+   o.fontes={mix:mix.origem, mixFonte:mix.fonte, cadeia:cad.origem, cadeiaTem:cad.tem, curva:(A.cenario||'curva do Mestre'), aliqRef:(typeof window.LH_ALIQ_REF==='number'&&window.LH_ALIQ_REF>0)?window.LH_ALIQ_REF:26.5};
+   return o;
+ }
+ function serie(d){ return ANOS.map(function(a){ return impostos(a,d); }); }
+ /* ── decisões que o saldo aponta ── */
+ function decisoes(S){
+   var d=estado.dados, y=S[7], y27=S[1], L=[];
+   var link=function(id,txt){ return '<a href="#" onclick="abrirPagina(\''+id+'\');return false" style="color:var(--gold)">'+txt+'</a>'; };
+   if(y.credor>0) L.push({cor:'#16c47c', t:'Saldo credor de <b>'+fmt(y.credor)+'/ano</b> em 2033'+(y27.credor>0?' (já '+fmt(y27.credor)+' em 2027)':'')+': o crédito supera o débito — exportação, alíquota reduzida na venda ou compras cheias. Não abate outro tributo; é ressarcível em até '+(d.ressarc||60)+' dias (art. 39) e, parado, é caixa retido. '+link('export','Exportação & Saldo Credor')+' · o Fluxo (v894) desconta o caixa retido.'});
+   if(y.perdido>0 && y.compras>0 && y.perdido/y.compras>0.005) L.push({cor:'#e05a4d', t:'<b>'+fmt(y.perdido)+'/ano</b> de crédito ficam na mesa em 2033 comprando de Simples/MEI e pessoa física ('+pct(y.perdido/y.compras*100)+' das compras). Trocar ou renegociar fornecedor para o regime regular (ou híbrido) recupera isso. '+link('cadeia','Cadeia de Crédito')+' · '+link('calc03','Risco Fornecedor SN')});
+   if(d.regime==='simples' && y.receita>0 && y.compras/y.receita>0.35) L.push({cor:'#e8b93a', t:'No Simples puro você não credita nada das compras ('+pct(y.compras/y.receita*100,0)+' da receita) e seu cliente PJ só recupera ~20% do que paga a você. Compare com o híbrido, que credita por fora. '+link('dxh','Dentro × Híbrido')+' · '+link('c05','Regime Ótimo')});
+   if(d.regime!=='simples' && !(d.desp>0)) L.push({cor:'#e8b93a', t:'Despesas com IBS/CBS destacado (energia, aluguel, frete, serviços tomados) geram crédito pleno a partir de 2027 — hoje, no Presumido, não creditam. Informe o % em '+link('fin_dados','Dados Estratégicos')+' ou rode '+link('cr04','Créditos Plenos')+'.'});
+   if(d.st>0) L.push({cor:'#4a9eff', t:'ICMS-ST de <b>'+fmt(d.st)+'/ano</b> é custo morto hoje; conforme o ICMS some (2029–2032) o que entra no lugar é IBS creditável — '+fmt(y.credST)+' de crédito em 2033. Para o passado: '+link('icmsst1125','ICMS-ST na base do PIS/COFINS · Tema 1125')});
+   if(d.regime!=='simples' && y.fontes.mixFonte!=='catalogo') L.push({cor:'#8a97a8', t:'A alíquota de saída está vindo do setor ('+(d.trat||'cheia')+'). Suba o catálogo na '+link('precmassa','Precificação em Massa')+' para usar o mix real, item a item — e levar o débito por fora ao preço.'});
+   if(d.regime!=='simples' && y.debito>0) L.push({cor:'var(--gold)', t:'O débito por fora de '+fmt(y.debito)+' em 2033 só não vira perda de margem se for ao preço: '+link('precmassa','Precificação em Massa')+' (estratégia "manter o que fica")'+(y.receita>0&&(+d.recExp||0)<100?' · contratos antigos: '+link('c02','Reprecificação de Contratos'):'')});
+   if(!y.fontes.cadeiaTem) L.push({cor:'#8a97a8', t:'Sem a Cadeia de Crédito lida, 100% das compras foram tratadas como creditáveis — otimista se há fornecedor Simples ou produtor PF. '+link('cadeia','Ler a Cadeia dos documentos')});
+   return L;
+ }
+ /* ── a aba Identificador ── */
+ function renderCred(){
+   var box=document.getElementById('fin_cred_result'); if(!box) return; carregar(); var d=estado.dados;
+   var fontes=document.getElementById('fin_cred_fontes');
+   if(!(d.fat>0)){ box.innerHTML='<div class="input-card"><h3 style="color:var(--gold)">Faltam os Dados Estratégicos</h3><div style="color:var(--text2);font-size:.9rem">Informe ao menos o faturamento anual, o regime e as compras em <a href="#" onclick="abrirPagina(\'fin_dados\');return false" style="color:var(--gold)">Dados Estratégicos</a> — ou clique em "Preencher pela Central" lá.</div></div>'; if(fontes) fontes.innerHTML=''; return; }
+   var S=serie(d), y33=S[7], y26=S[0], y27=S[1];
+   if(fontes){ fontes.innerHTML='<b style="color:var(--gold)">De onde veio:</b> alíquota de saída — '+y33.fontes.mix+' · crédito das compras — '+y33.fontes.cadeia+' · curva da transição — cenário '+y33.fontes.curva+', referência '+pct(y33.fontes.aliqRef,2)+' em 2033 · regime — '+({presumido:'Lucro Presumido',real:'Lucro Real',simples:'Simples Nacional',hibrido:'Simples híbrido'}[d.regime]||d.regime)+(estado.origem.regime?' ('+estado.origem.regime.detalhe+')':''); }
+   var cb=document.getElementById('fin_cenario_box'); if(cb) cb.innerHTML='<span style="font-size:.74rem;color:#8a97a8">cenário 2033: <b style="color:#e0b93a">'+pct(y33.fontes.aliqRef,2)+'</b> — mude no seletor de cenário (topo)</span>';
+   var h='<div class="input-card"><h3 style="color:var(--gold)">O saldo em 2033 <span style="font-weight:400;font-size:.8rem;color:var(--text2)">— regime pleno, ICMS/ISS e PIS/COFINS já extintos</span></h3><div class="kpi-grid">';
+   var simples=(d.regime==='simples');
+   if(!simples){
+     h+='<div class="kpi-card kpi-hero"><div class="kpi-label">IBS/CBS a pagar (saldo)</div><div class="kpi-value">'+fmt(y33.aPagar)+'</div><div class="kpi-label" style="margin-top:4px">débito '+fmt(y33.debito)+' − crédito '+fmt(y33.credTotal)+'</div></div>';
+     if(y33.credor>0) h+='<div class="kpi-card"><div class="kpi-label">Saldo credor (a ressarcir)</div><div class="kpi-value" style="color:#16c47c">'+fmt(y33.credor)+'</div><div class="kpi-label" style="margin-top:4px">por ano · caixa retido até o ressarcimento</div></div>';
+     h+='<div class="kpi-card"><div class="kpi-label">Crédito recuperado</div><div class="kpi-value" style="color:#16c47c">'+fmt(y33.credTotal)+'</div><div class="kpi-label" style="margin-top:4px">compras '+fmt(y33.credCompras)+(y33.credDesp?' · despesas '+fmt(y33.credDesp):'')+(y33.credST?' · ST '+fmt(y33.credST):'')+'</div></div>';
+     h+='<div class="kpi-card"><div class="kpi-label">Crédito perdido na cadeia</div><div class="kpi-value" style="color:'+(y33.perdido>0?'#e05a4d':'var(--text2)')+'">'+fmt(y33.perdido)+'</div><div class="kpi-label" style="margin-top:4px">compras de Simples/MEI (80% perdido) e PF (100%)</div></div>';
+   } else {
+     h+='<div class="kpi-card kpi-hero"><div class="kpi-label">DAS (tudo dentro)</div><div class="kpi-value">'+fmt(y33.das)+'</div><div class="kpi-label" style="margin-top:4px">'+pct(d.aliqDas||0,2)+' da receita · sem débito nem crédito por fora</div></div>';
+     h+='<div class="kpi-card"><div class="kpi-label">Crédito que o Simples não dá</div><div class="kpi-value" style="color:#e05a4d">'+fmt(y33.compras*y33.cred*y33.tCompras)+'</div><div class="kpi-label" style="margin-top:4px">o que as mesmas compras creditariam no regular/híbrido</div></div>';
+   }
+   h+='<div class="kpi-card"><div class="kpi-label">Imposto sobre o consumo: hoje → 2033</div><div class="kpi-value">'+pct(y26.pctRec)+' → '+pct(y33.pctRec)+'</div><div class="kpi-label" style="margin-top:4px">'+fmt(y26.total)+' → '+fmt(y33.total)+' por ano · % da receita</div></div>';
+   h+='</div>';
+   /* tabela ano a ano */
+   var th=function(t,al){ return '<th style="text-align:'+(al||'right')+';padding:7px 9px;color:var(--gold);font-size:.72rem;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.12);white-space:nowrap">'+t+'</th>'; };
+   var td=function(v,st){ return '<td style="text-align:right;padding:6px 9px;border-bottom:1px solid rgba(255,255,255,.06);white-space:nowrap;'+(st||'')+'">'+v+'</td>'; };
+   var linha=function(rot,f,st,tit){ h+='<tr><td style="padding:6px 9px;border-bottom:1px solid rgba(255,255,255,.06);'+(st||'')+'" title="'+(tit||'')+'">'+rot+'</td>'+S.map(function(y){ return td(f(y),st); }).join('')+'</tr>'; };
+   h+='<div style="overflow-x:auto;margin-top:14px"><table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead><tr>'+th('conta · R$ por ano','left')+ANOS.map(function(a){ return th(a); }).join('')+'</tr></thead><tbody>';
+   linha('Receita bruta', function(y){ return fmt(y.receita); }, 'font-weight:700');
+   if(!simples){
+     if(d.regime!=='hibrido'){ linha('ICMS/ISS líquido (velho, derrete 2029–33)', function(y){ return fmt(y.icmsLiq); }, 'color:#8a97a8', 'débito − crédito de ICMS das compras, × fatia ainda vigente do ano');
+       linha('PIS/COFINS (velho, some em 2027)', function(y){ return fmt(y.pisLiq); }, 'color:#8a97a8', (d.regime==='real'?'não-cumulativo: 9,25% sobre receita − compras − despesas':'cumulativo: 3,65% da receita, sem crédito')); }
+     else linha('DAS (fatias federal e ICMS/ISS saem — art. 41)', function(y){ return fmt(y.das); }, 'color:#8a97a8');
+     linha('IBS/CBS débito (por fora)', function(y){ return fmt(y.debito); }, '', 'receita × (1 − exportação) × alíquota de saída do ano');
+     linha('(−) crédito das compras', function(y){ return y.credCompras?'− '+fmt(y.credCompras):'—'; }, 'color:#16c47c', 'compras × parcela creditável (Cadeia) × alíquota do ano');
+     linha('(−) crédito das despesas', function(y){ return y.credDesp?'− '+fmt(y.credDesp):'—'; }, 'color:#16c47c', 'despesas com IBS/CBS destacado × alíquota cheia do ano');
+     if(d.st>0) linha('(−) ST que vira IBS creditável', function(y){ return y.credST?'− '+fmt(y.credST):'—'; }, 'color:#16c47c');
+     linha('= IBS/CBS a pagar', function(y){ return fmt(y.aPagar); }, 'font-weight:700');
+     linha('saldo credor (a ressarcir)', function(y){ return y.credor>0?'<span style="color:#16c47c">'+fmt(y.credor)+'</span>':'—'; }, 'color:#8a97a8');
+   } else linha('DAS (Simples Nacional)', function(y){ return fmt(y.das); });
+   linha('= Imposto sobre o consumo', function(y){ return fmt(y.total); }, 'font-weight:700;color:var(--gold)');
+   linha('% da receita', function(y){ return pct(y.pctRec); }, 'color:#8a97a8');
+   if(!simples) linha('Crédito perdido na cadeia (Simples/PF)', function(y){ return y.perdido>0?'<span style="color:#e05a4d">'+fmt(y.perdido)+'</span>':'—'; }, 'color:#8a97a8', 'compras × alíquota do ano × (80% da fatia Simples + 100% da fatia PF)');
+   h+='</tbody></table></div>';
+   /* decisões */
+   var L=decisoes(S);
+   if(L.length){ h+='<h3 style="color:var(--gold);margin-top:16px">O que o saldo aponta</h3>'; L.forEach(function(x){ h+='<div style="border-left:3px solid '+x.cor+';padding:8px 12px;margin:6px 0;font-size:.85rem;color:#e6e0cc;line-height:1.55;background:rgba(255,255,255,.02)">'+x.t+'</div>'; }); }
+   /* como ler + premissas */
+   var dobra=window.lhPmDobra||function(t,c){ return '<div style="margin-top:10px;font-size:.78rem"><b>'+t+'</b><div>'+c+'</div></div>'; };
+   h+=dobra('Como ler esta conta', '<b>Débito</b> é o IBS/CBS que sai na sua nota de venda (por fora do preço, a partir de 2027). <b>Crédito</b> é o que veio destacado nas suas compras e despesas — e só existe se o fornecedor destacou (regime regular e importação: integral; Simples: ~20%; pessoa física: zero). <b>Saldo</b> é a diferença: positivo você paga; negativo é crédito acumulado, que não abate outro imposto — é ressarcido em dinheiro (art. 39). O <b>imposto velho</b> (ICMS/ISS, PIS/COFINS) aparece ao lado porque é ele que derrete: PIS/COFINS some em 2027; ICMS/ISS cai 1/10 ao ano de 2029 a 2032 e zera em 2033. <b>Crédito perdido</b> é o que você deixaria de recuperar comprando de quem não destaca — o número que decide trocar de fornecedor.');
+   h+=dobra('Premissas desta conta — o que entrou, o que não entrou', '<ul style="margin:4px 0 0 16px;padding:0"><li>Curva da transição: cenário '+y33.fontes.curva+' (getAliq, a mesma de todas as telas); referência '+pct(y33.fontes.aliqRef,2)+' em 2033 — sugestão de teste, nenhuma é lei ainda.</li><li>Alíquota de saída: '+y33.fontes.mix+'.</li><li>Parcela creditável das compras: '+y33.fontes.cadeia+'.</li><li>2026 é ano-teste (CBS 0,9% + IBS 0,1% compensáveis com PIS/COFINS): débito e crédito zerados, como na Precificação.</li><li>Crescimento de '+pct(d.cresc||0)+' ao ano aplicado à receita, às compras e ao ST; despesas como % da receita.</li><li>ICMS da compra credita pela mesma parcela da Cadeia (fornecedor Simples destaca pouco); ISS não credita. Lucro Real: PIS/COFINS 9,25% sobre receita − compras − despesas; Presumido: 3,65% sem crédito. Não entram aqui IRPJ/CSLL/INSS (vão ao DRE pelo Regime Ótimo, v893).</li><li>Exportação: '+pct(d.recExp||0,0)+' da receita, imune na saída e com crédito mantido na entrada (art. 8º) — é daí que nasce saldo credor.</li><li>Crédito presumido de produtor rural PF (art. 168), regimes específicos e Imposto Seletivo não entram: cada um tem sua tela.</li></ul>');
+   h+='</div>';
+   box.innerHTML=h;
+ }
+ /* ── público ── */
+ window.LH_FIN={
+   get:function(){ carregar(); return JSON.parse(JSON.stringify(estado)); },
+   set:function(dados, origem){ carregar(); Object.keys(dados||{}).forEach(function(k){ if(CAMPOS.indexOf(k)<0) return; estado.dados[k]=TEXTO[k]?String(dados[k]||''):num(dados[k]); estado.origem[k]=origem||{tipo:'digitado',detalhe:'informado',quando:hoje()}; }); salvar(); escrever(); resumo(); },
+   impostos:function(ano, d){ if(!d) carregar(); return impostos(ano, d); },
+   serie:function(d){ if(!d) carregar(); return serie(d); },
+   sugerir:sugerir, sugestoes:sugestoes, renderCred:renderCred, campos:CAMPOS.slice(), anos:ANOS.slice(),
+   eid:eid
+ };
+ var _ap=window.abrirPagina;
+ window.abrirPagina=function(id){ var r=_ap.apply(this,arguments); try{ if(id==='fin_dados'){ carregar(); ligar(); escrever(); sugerir(false); resumo(); } else if(id==='fin_cred'){ setTimeout(renderCred,50); } }catch(_e){} return r; };
+ window.addEventListener('lh:cenario',function(){ try{ var pg=document.querySelector('.page.active'); if(pg && pg.id==='page-fin_cred') renderCred(); }catch(_e){} });
+ function boot(){ carregar(); ligar(); escrever(); resumo(); }
  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
 })();
 </script>
