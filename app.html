@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v898';</script>
+<body><script>window.LH_VERSAO='v899';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -10910,6 +10910,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <button class="btn-secondary" onclick="abrirPagina('importxml')">Central de Documentos</button>
         <button class="btn-secondary" onclick="abrirPagina('fin_cred')">→ Identificador de Créditos</button>
         <span id="fin_dados_info" style="font-size:.78rem;color:var(--text2)"></span>
+        <span id="fin_nuvem" style="margin-left:auto;font-size:.74rem;color:#8a97a8" title="Dados, afluentes e origem guardados no servidor Lionheart, por escritório e por empresa (a empresa é identificada por um hash — o CNPJ não sai do navegador)"></span>
       </div>
       <h3 style="color:var(--gold)">Receita e regime</h3>
       <div class="input-grid-2">
@@ -59544,9 +59545,32 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
  function eid(){ try{ return (window.LH_PERSIST && LH_PERSIST.entidade)? LH_PERSIST.entidade() : (window.LH_EMP_CNPJ||'geral'); }catch(_e){ return 'geral'; } }
  function num(v){ if(v==null||v==='') return null; var n=parseFloat(String(v).replace(',','.')); return isFinite(n)?n:null; }
  function hoje(){ return new Date().toISOString().slice(0,10); }
- function salvar(){ try{ localStorage.setItem(CH+eid(), JSON.stringify(estado)); }catch(_e){} }
- function carregar(){ try{ var s=localStorage.getItem(CH+eid()); if(s){ var o=JSON.parse(s); if(o&&o.dados){ estado=o; estado.origem=estado.origem||{}; estado.afluentes=estado.afluentes||{}; estado.premissas=estado.premissas||{}; } } }catch(_e){} }
+ function salvar(){ estado.quando=new Date().toISOString(); try{ localStorage.setItem(CH+eid(), JSON.stringify(estado)); }catch(_e){} nuvemAgendar(); }
+ var _carregadoDe=null;
+ function carregar(){ try{ var k=CH+eid(); var s=localStorage.getItem(k); if(s){ var o=JSON.parse(s); if(o&&o.dados){ estado=o; estado.origem=estado.origem||{}; estado.afluentes=estado.afluentes||{}; estado.premissas=estado.premissas||{}; _carregadoDe=k; return; } }
+   /* v899: sem nada guardado para esta empresa, o estado começa vazio — o da empresa anterior não vaza para a nova (salvar() sempre grava, então memória sem storage só existe quando o storage falha — e aí o catch mantém o que há) */
+   estado={dados:{}, origem:{}, afluentes:{}, premissas:{}}; _carregadoDe=k; }catch(_e){} }
  function el(k){ return document.getElementById('fin_'+k); }
+ /* ★ v899 · NUVEM — tv_fin no Supabase, por escritório e por empresa. A empresa vai como hash (P1: o CNPJ não sai do
+    navegador); dados são números e rótulos. Regra de conflito: o mais recente vence (quando ISO, local × servidor). */
+ var _nuvemT=null, _nuvemHash=null, _nuvemHashDe=null, _nuvemCarregado={};
+ function fnv(str,seed){ var h=seed>>>0; for(var i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619)>>>0; } return ('00000000'+h.toString(16)).slice(-8); }
+ function hashEid(){ var e=String(eid()||'geral'); if(_nuvemHash && _nuvemHashDe===e) return _nuvemHash; _nuvemHashDe=e; _nuvemHash='h'+fnv(e,2166136261)+fnv('lh|'+e,0x9747b28c)+fnv(e+'|fin',0x5bd1e995); return _nuvemHash; }
+ function nuvemOk(){ try{ return !!(window.LH_PONTE && typeof LH_PONTE.modo==='function' && LH_PONTE.modo()==='servidor' && typeof LH_PONTE.chamar==='function'); }catch(_e){ return false; } }
+ function nuvemSelo(txt,cor){ var b=document.getElementById('fin_nuvem'); if(b){ b.textContent=txt; b.style.color=cor||'#8a97a8'; } }
+ function nuvemAgendar(){ if(!nuvemOk()) { nuvemSelo('○ só neste navegador'); return; } clearTimeout(_nuvemT); _nuvemT=setTimeout(nuvemSalvar,1200); }
+ function nuvemSalvar(){ if(!nuvemOk()) return Promise.resolve(false); var h=hashEid(); nuvemSelo('☁ salvando…');
+   return LH_PONTE.chamar('fin-salvar',{entidade:h, dados:estado.dados||{}, afluentes:estado.afluentes||{}, origem:estado.origem||{}}).then(function(res){
+     if(res&&res.ok&&res.resultado&&res.resultado.ok){ estado.nuvem={quando:res.resultado.quando||new Date().toISOString()}; try{ localStorage.setItem(CH+eid(), JSON.stringify(estado)); }catch(_e){} nuvemSelo('☁ salvo no servidor · '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),'#16c47c'); return true; }
+     var m=(res&&(res.motivo||(res.resultado&&res.resultado.motivo)))||'sem resposta'; nuvemSelo((res&&res.recusa==='plano')?'🔒 nuvem: '+m:'○ só neste navegador ('+m+')','#e0a83a'); return false; }).catch(function(){ nuvemSelo('○ só neste navegador'); return false; }); }
+ function nuvemCarregar(force){ if(!nuvemOk()) return Promise.resolve(false); var h=hashEid(); if(_nuvemCarregado[h] && !force) return Promise.resolve(false); _nuvemCarregado[h]=true;
+   return LH_PONTE.chamar('fin-carregar',{entidade:h}).then(function(res){
+     var r=res&&res.ok&&res.resultado; if(!r||!r.ok){ if(res&&res.recusa==='plano') nuvemSelo('🔒 nuvem: '+(res.motivo||''),'#e0a83a'); return false; }
+     if(r.vazio){ if(estado.dados && Object.keys(estado.dados).some(function(k){ return estado.dados[k]!=null&&estado.dados[k]!==''; })) nuvemSalvar(); else nuvemSelo('☁ nada guardado ainda'); return false; }
+     var local=estado.quando||'', remoto=r.quando||''; var adotar=!local || (remoto && remoto>local);
+     if(adotar){ estado.dados=r.dados||{}; estado.afluentes=r.afluentes||{}; estado.origem=r.origem||{}; estado.quando=remoto; estado.nuvem={quando:remoto}; try{ localStorage.setItem(CH+eid(), JSON.stringify(estado)); }catch(_e){} escrever(); resumo(); try{ var pg=document.querySelector('.page.active'); if(pg&&pg.id==='page-fin_cred') renderCred(); if(pg&&pg.id==='page-fin_dre') renderDre(); if(pg&&pg.id==='page-fin_fluxo') renderFluxo(); }catch(_e){}
+       nuvemSelo('☁ carregado do servidor · '+String(remoto).slice(0,10),'#16c47c'); return true; }
+     nuvemSelo('☁ salvo no servidor · '+String(r.quando||'').slice(0,10),'#16c47c'); return false; }).catch(function(){ return false; }); }
  function fmt(x){ return 'R$ '+(+x||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }
  function pct(x,d){ return (+x||0).toLocaleString('pt-BR',{minimumFractionDigits:(d==null?1:d),maximumFractionDigits:(d==null?1:d)})+'%'; }
  /* ── estado ⇄ tela ── */
@@ -60012,10 +60036,10 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    sugerir:sugerir, sugestoes:sugestoes, renderCred:renderCred, campos:CAMPOS.slice(), anos:ANOS.slice(),
    dre:function(d){ if(!d) carregar(); return dre(d); }, afluente:afluente, removerAfluente:removerAfluente, renderDre:renderDre,
    fluxo:function(d){ if(!d) carregar(); return fluxo(d); }, renderFluxo:renderFluxo, afluentes:function(){ carregar(); return JSON.parse(JSON.stringify(estado.afluentes||{})); },
-   eid:eid
+   eid:eid, hashEid:hashEid, nuvemSalvar:nuvemSalvar, nuvemCarregar:function(f){ carregar(); return nuvemCarregar(f); }
  };
  var _ap=window.abrirPagina;
- window.abrirPagina=function(id){ var r=_ap.apply(this,arguments); try{ if(id==='fin_dados'){ carregar(); ligar(); escrever(); sugerir(false); resumo(); } else if(id==='fin_cred'){ setTimeout(renderCred,50); } else if(id==='fin_dre'){ setTimeout(renderDre,50); } else if(id==='fin_fluxo'){ setTimeout(renderFluxo,50); } }catch(_e){} return r; };
+ window.abrirPagina=function(id){ var r=_ap.apply(this,arguments); try{ if(/^fin_/.test(String(id))){ carregar(); nuvemCarregar(); } if(id==='fin_dados'){ carregar(); ligar(); escrever(); sugerir(false); resumo(); } else if(id==='fin_cred'){ setTimeout(renderCred,50); } else if(id==='fin_dre'){ setTimeout(renderDre,50); } else if(id==='fin_fluxo'){ setTimeout(renderFluxo,50); } }catch(_e){} return r; };
  window.addEventListener('lh:cenario',function(){ try{ var pg=document.querySelector('.page.active'); if(pg && pg.id==='page-fin_cred') renderCred(); if(pg && pg.id==='page-fin_dre') renderDre(); if(pg && pg.id==='page-fin_fluxo') renderFluxo(); }catch(_e){} });
  function boot(){ carregar(); ligar(); escrever(); resumo(); }
  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();

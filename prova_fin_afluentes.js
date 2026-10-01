@@ -16,6 +16,7 @@ setTimeout(() => {
   ex('botão "→ Usar no meu DRE / Fluxo" nas 9 análises (+ c02 e dxh)', JSON.stringify(de) === JSON.stringify(['c01', 'c02', 'c05', 'c11', 'cadeia', 'cr04', 'dxh', 'n33', 'precmassa']), de.join(','));
   ex('os botões de c02 e dxh estão nas páginas certas', !!d.querySelector('#page-c02 .lh-fin-btn') && !!d.querySelector('#page-dxh .lh-fin-btn'));
 
+  w.LH_EMP_CNPJ = '11111111000191';   /* v899: a chave do estado é a empresa — fixa antes de tudo */
   w.localStorage.removeItem('LH_FIN::' + F.eid());
   F.set({ fat: 1200000, cresc: 0, infl: 0, regime: 'presumido', tipo: 'comercio', icms: 18, recExp: 0, compras: 660000, comprasTrat: 'cheia', desp: 8, st: 0, cartao: 2, despMkt: 0, pessoal: 180000, prolab: 60000, ocup: 40000, adm: 20000, recFin: 0, pRec: 30, pPag: 20, vista: 40, inad: 2, caixa0: 50000, ressarc: 60, estoque: 0, capex: 0, amort: 0, distrib: 0 }, O);
   w.abrirPagina('fin_dados');
@@ -51,7 +52,6 @@ setTimeout(() => {
 
   /* mix de compras pelos XMLs vence o campo */
   const semXml = F.impostos(2033);
-  w.LH_EMP_CNPJ = '11111111000191';
   w._LH_XML_NOTAS = [
     { destCNPJ: '11111111000191', emitCNPJ: '22222222000100', tpNF: '0', itens: [{ ncm: '10063021', vProd: 300 }, { ncm: '84143011', vProd: 700 }] },   /* arroz (cesta básica, zero) + compressor (cheia) */
     { destCNPJ: '33333333000100', emitCNPJ: '11111111000191', tpNF: '1', itens: [{ ncm: '84143011', vProd: 5000 }] } ];   /* venda: não entra */
@@ -60,7 +60,7 @@ setTimeout(() => {
   ex('alíquota das compras passa a vir dos XMLs (arroz zero + compressor cheia, ponderado): ' + (esperado * 100).toFixed(2) + '%', perto(comXml.tCompras, esperado, 0.0005) && comXml.fontes.comprasXML === true && /XMLs de compra/.test(comXml.fontes.compras), JSON.stringify([comXml.tCompras, esperado]));
   ex('e o crédito das compras cai na proporção (campo "cheia" ignorado)', comXml.credCompras < semXml.credCompras && perto(comXml.credCompras, 660000 * esperado));
   ex('a nota de venda não entra no mix de compras', comXml.fontes.compras.indexOf('1 notas') >= 0);
-  w._LH_XML_NOTAS = null; w.LH_EMP_CNPJ = '';
+  w._LH_XML_NOTAS = null;
 
   /* afluente c02: reajuste de contratos a partir do ano */
   w.LH_PONTE.ultimo = w.LH_PONTE.ultimo || {};
