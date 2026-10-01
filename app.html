@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v892';</script>
+<body><script>window.LH_VERSAO='v893';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -6369,6 +6369,10 @@ function lhTrocarSenha(){
       <span class="ni-icon">⚖</span><span class="ni-label">Identificador de Créditos · débito × crédito × saldo</span>
       <span class="ni-pill" style="background:rgba(201,162,39,.15);color:#c9a227">novo</span>
     </div>
+    <div class="nav-item" onclick="abrirPagina('fin_dre',this)" title="demonstração de resultado projetada 2026–2033: receita, imposto sobre o consumo (Identificador), custo, fixos, IRPJ/CSLL e lucro, com a origem de cada linha; recebe o Regime Ótimo, a Precificação em Massa e a Cadeia">
+      <span class="ni-icon">▦</span><span class="ni-label">DRE 2026–2033</span>
+      <span class="ni-pill" style="background:rgba(201,162,39,.15);color:#c9a227">novo</span>
+    </div>
 <div class="nav-group-title">⚖ CONTENCIOSO</div>
     <div class="nav-group-items">
       <div class="nav-item nav-super" onclick="abrirPagina('transacao',this)">
@@ -9398,7 +9402,7 @@ function lhTrocarSenha(){
       </div>
     </div>
 
-    <button class="btn-calcular" onclick="calcularC05()">Calcular Regime Ótimo</button><button type="button" onclick="try{LH_diagC05()}catch(e){alert(e.message)}" style="margin-left:10px;background:transparent;border:1px solid rgba(148,163,184,.5);color:#94a3b8;padding:10px 15px;border-radius:10px;cursor:pointer;font-size:.85em" title="Mostra em que etapa o cálculo parou e copia o resultado">🔎 Diagnóstico</button>
+    <button class="btn-calcular" onclick="calcularC05()">Calcular Regime Ótimo</button><button type="button" class="lh-fin-btn" onclick="LH_FIN.afluente('c05')" title="leva esta análise ao DRE e ao Fluxo de Caixa 2026–2033 (Inteligência Financeira)" style="margin-left:10px;background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.5);color:#3ecf8e;padding:10px 15px;border-radius:10px;cursor:pointer;font-size:.85em;font-weight:700">→ Usar no meu DRE / Fluxo (8 anos)</button><button type="button" onclick="try{LH_diagC05()}catch(e){alert(e.message)}" style="margin-left:10px;background:transparent;border:1px solid rgba(148,163,184,.5);color:#94a3b8;padding:10px 15px;border-radius:10px;cursor:pointer;font-size:.85em" title="Mostra em que etapa o cálculo parou e copia o resultado">🔎 Diagnóstico</button>
 
     <!-- v30.11.88 — Comparar Segregação de CNAE (empresa única vs CNAEs separados) -->
     <div class="input-card" style="margin-top:18px;border:1px solid rgba(201,162,39,0.25);">
@@ -10862,7 +10866,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <button class="btn-secondary" onclick="LH_CADEIA.lerDocumentos()">📄 Ler dos documentos importados</button>
         <button class="btn-secondary" onclick="lhCarteiraAbrir('forn')">＋ montar pela carteira de fornecedores</button>
         <button class="btn-secondary" onclick="lhCarteiraAbrir('cli')">＋ montar pela carteira de clientes</button>
-        <button class="btn-secondary" onclick="abrirPagina('importxml')">Central de Documentos</button>
+        <button class="btn-secondary" onclick="abrirPagina('importxml')">Central de Documentos</button><button type="button" class="lh-fin-btn" onclick="LH_FIN.afluente('cadeia')" title="leva esta análise ao DRE e ao Fluxo de Caixa 2026–2033 (Inteligência Financeira)" style="margin-left:0;background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.5);color:#3ecf8e;padding:10px 15px;border-radius:10px;cursor:pointer;font-size:.85em;font-weight:700">→ Usar no meu DRE / Fluxo (8 anos)</button>
       </div>
       <h3 style="color:#3ecf8e">Entrada — de quem eu compro <span id="cad_origem_entrada"></span></h3>
       <div class="input-grid-2">
@@ -10966,6 +10970,25 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
       <div id="fin_cred_fontes" style="margin-top:10px;font-size:.8rem;color:var(--text2)"></div>
     </div>
     <div id="fin_cred_result"></div>
+  </div>
+  <div class="page" id="page-fin_dre">
+    <div class="calc-page-header">
+      <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.16),rgba(62,207,142,0.12));">▦</div>
+      <div>
+        <h2>DRE 2026–2033 · o resultado da empresa, ano a ano</h2>
+        <p>A demonstração de resultado projetada pela transição: receita, imposto sobre o consumo (do Identificador de Créditos), cartão, custo da mercadoria, fixos, IRPJ/CSLL e lucro — oito anos, uma linha por conta, e cada linha diz de onde veio. As análises estratégicas desembocam aqui: Regime Ótimo (regime e carga), Precificação em Massa (alíquota de saída e reprecificação da receita) e Cadeia de Crédito (parcela creditável). Nada é digitado duas vezes.</p>
+      </div>
+    </div>
+    <div class="input-card">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="btn-calcular" onclick="LH_FIN.renderDre()">Calcular</button>
+        <button class="btn-secondary" onclick="abrirPagina('fin_dados')">▣ Dados Estratégicos</button>
+        <button class="btn-secondary" onclick="abrirPagina('fin_cred')">⚖ Identificador de Créditos</button>
+        <div id="fin_dre_cenario" style="margin-left:auto"></div>
+      </div>
+      <div id="fin_dre_afluentes" style="margin-top:10px;font-size:.8rem;color:var(--text2)"></div>
+    </div>
+    <div id="fin_dre_result"></div>
   </div>
   <div class="page" id="page-cr04">
     <div class="calc-page-header">
@@ -12270,7 +12293,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
       <div class="input-grid-2">
         <div class="input-group"><label>Regime tributário</label>
           <select id="pm_regime" onchange="lhPmRender()"><option value="presumido">Lucro Presumido</option><option value="real">Lucro Real</option><option value="simples">Simples Nacional (dentro do DAS)</option><option value="hibrido">Simples Nacional híbrido (IBS/CBS por fora — art. 41)</option></select>
-          <div id="pm_c05_info" style="font-size:.78rem;color:var(--text2);margin-top:4px"></div></div>
+          <div id="pm_c05_info" style="font-size:.78rem;color:var(--text2);margin-top:4px"></div><div style="margin-top:8px"><button type="button" class="lh-fin-btn" onclick="LH_FIN.afluente('precmassa')" title="leva esta análise ao DRE e ao Fluxo de Caixa 2026–2033 (Inteligência Financeira)" style="background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.5);color:#3ecf8e;padding:10px 15px;border-radius:10px;cursor:pointer;font-size:.85em;font-weight:700">→ Usar no meu DRE / Fluxo (8 anos)</button> <span style="font-size:.74rem;color:var(--text2)">leva ao DRE a reprecificação decidida (preço decidido ÷ hoje) e o mix de alíquota do catálogo</span></div></div>
         <div class="input-group" id="pm_hib_box" style="display:none;grid-column:1/-1;background:rgba(201,162,39,.05);border:1px solid rgba(201,162,39,.25);border-radius:10px;padding:10px 12px">
           <label>Híbrido: o que sai do DAS e vira IBS/CBS por fora <span style="font-weight:400;text-transform:none;color:var(--text2)">— mesma tabela do Dentro × Híbrido (LC 214 arts. 501/519)</span></label>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
@@ -31588,6 +31611,8 @@ window.BUSCA_INDEX = [{"tipo":"aba","id":"perguntas","nome":"Perguntas que a fer
   {tipo:'calc',id:'fin_dados',nome:'Dados Estratégicos — a empresa em 28 números (DRE e Fluxo 2026–2033)',cat:'Inteligência Financeira',atalho:'fin_dados'},
   {tipo:'calc',id:'fin_cred',nome:'Identificador de Créditos — quanto de IBS/CBS vou dever, quanto recupero, o que sobra',cat:'Inteligência Financeira',atalho:'fin_cred'},
   {tipo:'calc',id:'fin_cred',nome:'Quanto de crédito eu perco comprando de Simples ou pessoa física?',cat:'Pergunta · Crédito e dinheiro de volta',atalho:'Identificador de Créditos'},
+  {tipo:'calc',id:'fin_dre',nome:'DRE 2026–2033 — lucro e margem ano a ano com a reforma',cat:'Inteligência Financeira',atalho:'fin_dre'},
+  {tipo:'calc',id:'fin_dre',nome:'Quanto meu cliente vai lucrar em 2027? E em 2033?',cat:'Pergunta · Quanto imposto vai pagar',atalho:'DRE 2026–2033'},
   {tipo:'calc',id:'c01',nome:'Split Payment Cash Gap',cat:'Reforma Tributária',atalho:'c01'},
   {tipo:'calc',id:'c02',nome:'Reprecificação de Contratos',cat:'Reforma Tributária',atalho:'c02'},
   {tipo:'calc',id:'c04',nome:'Alíquota Efetiva por Setor / Atividade',cat:'Reforma Tributária',atalho:'c04'},
@@ -59647,6 +59672,112 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    h+='</div>';
    box.innerHTML=h;
  }
+ /* ═══ v893 · DRE 2026–2033 e afluentes ═══
+    Linha de imposto sobre o consumo = Identificador (impostos(ano)). IRPJ/CSLL: do Regime Ótimo quando o afluente foi usado
+    (irpjCsll do regime escolhido, escalado pela receita do ano); sem ele, estimativa pela presunção (comércio 8% · serviço 32%,
+    IRPJ 15% + adicional 10% + CSLL 9%) no Presumido, 34% do lucro no Real; no Simples e no híbrido já está no DAS.
+    Receita do ano = fat × crescimento × (1 + reprecificação[ano]) — a reprecificação vem da Precificação em Massa
+    (preço decidido ÷ preço de hoje, ponderado pelo preço), só quando o contador clicou "Usar no meu DRE". */
+ var PRES={comercio:{ir:0.08,csll:0.12}, servico:{ir:0.32,csll:0.32}};
+ function afl(k){ return (estado.afluentes||{})[k]||null; }
+ function reprecAno(ano){ var a=afl('reprec'); if(!a||!a.anos) return 0; var v=a.anos[ano]; return (typeof v==='number')?v:0; }
+ function irpjCsll(ano, R, lair, d){
+   var regime=d.regime||'presumido'; if(regime==='simples'||regime==='hibrido') return {v:0, de:'dentro do DAS'};
+   var a=afl('regime');
+   if(a && a.regimes && a.regimes.length && a.fat>0){ var nome=({presumido:/presumido/i, real:/real/i})[regime]; var r=null; a.regimes.forEach(function(x){ if(!r && nome && nome.test(String(x.nome))) r=x; });
+     if(r && r.irpjCsll!=null){ return {v:(+r.irpjCsll)*(R/a.fat), de:'Regime Ótimo · '+r.nome+' (escalado pela receita do ano)'}; } }
+   if(regime==='real'){ return {v:Math.max(0,lair)*0.34, de:'estimativa: 34% do lucro antes do IR (Lucro Real)'}; }
+   var p=PRES[d.tipo==='servico'?'servico':'comercio']; var baseIR=R*p.ir, baseCS=R*p.csll;
+   var ir=baseIR*0.15+Math.max(0,baseIR-240000)*0.10, cs=baseCS*0.09;
+   return {v:ir+cs, de:'estimativa: presunção '+(p.ir*100)+'% (IRPJ 15% + adicional) e '+(p.csll*100)+'% (CSLL 9%) — rode o Regime Ótimo para o número real'};
+ }
+ function dre(d){
+   d=d||estado.dados; var out=[]; var regAfl=afl('regime'), repAfl=afl('reprec');
+   ANOS.forEach(function(ano){
+     var i=ano-2026, fC=Math.pow(1+(+d.cresc||0)/100,i), fI=Math.pow(1+(+d.infl||0)/100,i);
+     var rep=reprecAno(ano); var dd={}; for(var k in d) dd[k]=d[k];
+     var R=(+d.fat||0)*fC*(1+rep); dd.fat=(+d.fat||0)*(1+rep);   /* o Identificador recebe o faturamento já reprecificado; compras não mudam com o preço */
+     var imp=impostos(ano, dd); var compras=(+d.compras||0)*fC;
+     var cartao=R*((+d.cartao||0)/100), impostos_=imp?imp.total:0, recLiq=R-impostos_-cartao;
+     var cmv=compras, margem=recLiq-cmv;
+     var fixos=((+d.pessoal||0)+(+d.prolab||0)+(+d.ocup||0)+(+d.adm||0))*fI, mkt=R*((+d.despMkt||0)/100), recFin=(+d.recFin||0);
+     var lair=margem-fixos-mkt+recFin; var ir=irpjCsll(ano,R,lair,d); var lucro=lair-ir.v;
+     out.push({ano:ano, receita:R, reprec:rep, impostos:impostos_, cartao:cartao, recLiq:recLiq, cmv:cmv, margem:margem, fixos:fixos, mkt:mkt, recFin:recFin, lair:lair, irpj:ir.v, irpjDe:ir.de, lucro:lucro, margemPct:R>0?lucro/R*100:0, mcPct:R>0?margem/R*100:0, imp:imp});
+   });
+   return out;
+ }
+ /* ── afluentes: o botão "→ Usar no meu DRE / Fluxo" nas análises estratégicas ── */
+ function afluente(de){
+   carregar(); var ok=false, msg='';
+   if(de==='c05'){ var R=window._C05_REGIMES, R2=window._LH_C05_REGIMES; if(!R||!R.length){ msg='Rode o Regime Ótimo primeiro.'; }
+     else { var best=R.slice().sort(function(a,b){ return a.total-b.total; })[0]; var fat=g('c05_fat')||0;
+       var regs=R.map(function(r){ var x=(R2||[]).filter(function(y){ return y.nome===r.nome; })[0]; return {nome:r.nome, total:r.total, irpjCsll:x?x.irpjCsll:null, hibrido:!!r.hibrido}; });
+       estado.afluentes.regime={de:'c05', nome:'Regime Ótimo', quando:hoje(), fat:fat, melhor:best.nome, regimes:regs, cargaPct:fat>0?best.total/fat*100:null};
+       var n=String(best.nome).toLowerCase(); var v=/h[ií]brido/.test(n)?'hibrido':/simples/.test(n)?'simples':/presumido/.test(n)?'presumido':/real/.test(n)?'real':'';
+       if(v && (!estado.dados.regime || (estado.origem.regime||{}).tipo!=='digitado')){ estado.dados.regime=v; estado.origem.regime={tipo:'tela', detalhe:'Regime Ótimo · '+best.nome, quando:hoje()}; }
+       if(fat>0 && !(estado.dados.fat>0)){ estado.dados.fat=fat; estado.origem.fat={tipo:'tela', detalhe:'Regime Ótimo', quando:hoje()}; }
+       try{ var sn=window._C05_ALIQ_SN_INFO; if(sn&&sn.usada>0 && (v==='simples'||v==='hibrido') && (estado.origem.aliqDas||{}).tipo!=='digitado'){ estado.dados.aliqDas=Math.round(sn.usada*100)/100; estado.origem.aliqDas={tipo:'tela', detalhe:'Regime Ótimo', quando:hoje()}; } }catch(_e){}
+       ok=true; msg='Regime Ótimo levado ao DRE: '+best.nome+' ('+fmt(best.total)+'/ano)'+(regs.some(function(r){ return r.irpjCsll!=null; })?' — IRPJ/CSLL passa a vir de lá':''); } }
+   else if(de==='precmassa'){ var P=window.PM_ULTIMO; if(!P||!P.rows||!P.rows.length){ msg='Rode a Precificação em Massa primeiro.'; }
+     else { var anos={}, n=0; ANOS.forEach(function(a){ var sh=0, sd=0; P.rows.forEach(function(r){ var y=r.c&&r.c.anos&&r.c.anos[a]; if(!y||!(y.hojeCli>0)) return; sh+=y.hojeCli; sd+=(y.decidido!=null?y.decidido:y.finalCli); }); anos[a]=sh>0?(sd/sh-1):0; }); n=P.rows.length;
+       estado.afluentes.reprec={de:'precmassa', nome:'Precificação em Massa', quando:hoje(), anos:anos, itens:n, estr:(P.cfg||{}).estr||'fica', regime:(P.cfg||{}).regime||''};
+       estado.afluentes.mix={de:'precmassa', nome:'Precificação em Massa', quando:hoje(), itens:n};
+       if(P.cfg && P.cfg.regime && (estado.origem.regime||{}).tipo!=='digitado'){ estado.dados.regime=P.cfg.regime; estado.origem.regime={tipo:'tela', detalhe:'Precificação em Massa', quando:hoje()}; }
+       ok=true; msg='Precificação levada ao DRE: '+n+' itens, receita '+(anos[2033]>=0?'+':'')+pct(anos[2033]*100)+' em 2033 (preço decidido ÷ preço de hoje)'; } }
+   else if(de==='cadeia'){ var c=cadeiaAno(2033); if(!c.tem){ msg='Leia ou informe a Cadeia de Crédito primeiro.'; } else { estado.afluentes.cred={de:'cadeia', nome:'Cadeia de Crédito', quando:hoje(), creditavel:c.cred}; ok=true; msg='Cadeia levada ao DRE: '+pct(c.cred*100)+' das compras geram crédito (a Cadeia já era lida; agora fica registrado)'; } }
+   if(ok){ salvar(); try{ if(typeof mostrarToast==='function') mostrarToast('✓ '+msg,'success'); }catch(_e){} abrirPagina('fin_dre'); }
+   else { try{ if(typeof mostrarToast==='function') mostrarToast(msg,'info'); else alert(msg); }catch(_e){ alert(msg); } }
+   return ok;
+ }
+ function removerAfluente(k){ carregar(); delete estado.afluentes[k]; salvar(); renderDre(); }
+ function afluentesHTML(){
+   var A=estado.afluentes||{}, ks=Object.keys(A); var h='<b style="color:var(--gold)">Análises ligadas a este DRE:</b> ';
+   if(!ks.length) return h+'<span>nenhuma ainda — rode o <a href="#" onclick="abrirPagina(\'c05\');return false" style="color:var(--gold)">Regime Ótimo</a>, a <a href="#" onclick="abrirPagina(\'precmassa\');return false" style="color:var(--gold)">Precificação em Massa</a> ou a <a href="#" onclick="abrirPagina(\'cadeia\');return false" style="color:var(--gold)">Cadeia de Crédito</a> e clique em "→ Usar no meu DRE / Fluxo". A Cadeia e o mix do catálogo já são lidos ao vivo; o botão registra a decisão.</span>';
+   h+=ks.map(function(k){ var a=A[k]; var det=(k==='regime')?('melhor: '+a.melhor):(k==='reprec')?(a.itens+' itens · receita '+(a.anos[2033]>=0?'+':'')+pct((a.anos[2033]||0)*100)+' em 2033'):(k==='cred')?(pct(a.creditavel*100)+' creditável'):(k==='mix')?(a.itens+' itens'):'';
+     return '<span style="display:inline-block;margin:3px 6px 3px 0;padding:3px 9px;border:1px solid rgba(201,162,39,.35);border-radius:14px;background:rgba(201,162,39,.07)"><b>'+a.nome+'</b> → '+({regime:'regime e IRPJ/CSLL',reprec:'receita (reprecificação)',cred:'crédito das compras',mix:'alíquota de saída'}[k]||k)+' · '+det+' · '+a.quando+' <a href="#" onclick="LH_FIN.removerAfluente(\''+k+'\');return false" title="desligar" style="color:#e05a4d;text-decoration:none">×</a></span>'; }).join('');
+   return h;
+ }
+ function renderDre(){
+   var box=document.getElementById('fin_dre_result'); if(!box) return; carregar(); var d=estado.dados;
+   var af=document.getElementById('fin_dre_afluentes'); if(af) af.innerHTML=afluentesHTML();
+   if(!(d.fat>0)){ box.innerHTML='<div class="input-card"><h3 style="color:var(--gold)">Faltam os Dados Estratégicos</h3><div style="color:var(--text2);font-size:.9rem">Informe ao menos faturamento, regime, compras e custos fixos em <a href="#" onclick="abrirPagina(\'fin_dados\');return false" style="color:var(--gold)">Dados Estratégicos</a>.</div></div>'; return; }
+   var S=dre(d), y26=S[0], y33=S[7], y27=S[1]; var simples=(d.regime==='simples'||d.regime==='hibrido');
+   var cb=document.getElementById('fin_dre_cenario'); if(cb && y33.imp) cb.innerHTML='<span style="font-size:.74rem;color:#8a97a8">cenário 2033: <b style="color:#e0b93a">'+pct(y33.imp.fontes.aliqRef,2)+'</b></span>';
+   var cor=function(v){ return v<0?'color:#e05a4d':''; };
+   var h='<div class="input-card"><h3 style="color:var(--gold)">Hoje → 2033</h3><div class="kpi-grid">';
+   h+='<div class="kpi-card kpi-hero"><div class="kpi-label">Lucro líquido 2033</div><div class="kpi-value" style="'+cor(y33.lucro)+'">'+fmt(y33.lucro)+'</div><div class="kpi-label" style="margin-top:4px">hoje '+fmt(y26.lucro)+' · '+(y26.lucro!==0?((y33.lucro-y26.lucro)>=0?'+':'')+pct((y33.lucro-y26.lucro)/Math.abs(y26.lucro)*100):'')+'</div></div>';
+   h+='<div class="kpi-card"><div class="kpi-label">Margem líquida</div><div class="kpi-value">'+pct(y26.margemPct)+' → '+pct(y33.margemPct)+'</div><div class="kpi-label" style="margin-top:4px">lucro ÷ receita bruta</div></div>';
+   h+='<div class="kpi-card"><div class="kpi-label">Imposto sobre o consumo</div><div class="kpi-value">'+pct(y26.receita>0?y26.impostos/y26.receita*100:0)+' → '+pct(y33.receita>0?y33.impostos/y33.receita*100:0)+'</div><div class="kpi-label" style="margin-top:4px">'+fmt(y26.impostos)+' → '+fmt(y33.impostos)+' (Identificador)</div></div>';
+   h+='<div class="kpi-card"><div class="kpi-label">Receita bruta 2033</div><div class="kpi-value">'+fmt(y33.receita)+'</div><div class="kpi-label" style="margin-top:4px">'+(y33.reprec?('reprecificação '+(y33.reprec>=0?'+':'')+pct(y33.reprec*100)+' · '):'')+'crescimento '+pct(d.cresc||0)+' a.a.</div></div>';
+   h+='<div class="kpi-card"><div class="kpi-label">Pior ano de lucro</div><div class="kpi-value">'+(function(){ var m=S[0]; S.forEach(function(y){ if(y.lucro<m.lucro) m=y; }); return m.ano+' · '+fmt(m.lucro); })()+'</div><div class="kpi-label" style="margin-top:4px">a transição não é linear — confira ano a ano</div></div>';
+   h+='</div>';
+   var th=function(t,al){ return '<th style="text-align:'+(al||'right')+';padding:7px 9px;color:var(--gold);font-size:.72rem;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.12);white-space:nowrap">'+t+'</th>'; };
+   var td=function(v,st){ return '<td style="text-align:right;padding:6px 9px;border-bottom:1px solid rgba(255,255,255,.06);white-space:nowrap;'+(st||'')+'">'+v+'</td>'; };
+   var linha=function(rot,f,st,de){ h+='<tr><td style="padding:6px 9px;border-bottom:1px solid rgba(255,255,255,.06);'+(st||'')+'">'+rot+(de?'<div style="font-size:.68rem;color:#8a97a8;font-weight:400">'+de+'</div>':'')+'</td>'+S.map(function(y){ return td(f(y),st); }).join('')+'</tr>'; };
+   var A=estado.afluentes||{};
+   var deImp='Identificador de Créditos · '+(y33.imp?y33.imp.fontes.mix.split(' —')[0]:'')+(A.cred?' · Cadeia':'');
+   var deRec='Dados'+(A.reprec?' · reprecificação da Precificação ('+A.reprec.itens+' itens)':'')+(d.cresc?' · crescimento '+pct(d.cresc)+' a.a.':'');
+   h+='<div style="overflow-x:auto;margin-top:14px"><table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead><tr>'+th('conta · R$ por ano · de onde veio','left')+ANOS.map(function(a){ return th(a); }).join('')+'</tr></thead><tbody>';
+   linha('Receita bruta', function(y){ return fmt(y.receita); }, 'font-weight:700', deRec);
+   linha('(−) Imposto sobre o consumo', function(y){ return fmt(y.impostos); }, '', deImp);
+   if(d.cartao>0) linha('(−) Taxas de cartão', function(y){ return fmt(y.cartao); }, 'color:#8a97a8', 'Dados · '+pct(d.cartao)+' da receita');
+   linha('= Receita líquida', function(y){ return fmt(y.recLiq); }, 'font-weight:700');
+   linha('(−) Custo da mercadoria / insumos', function(y){ return fmt(y.cmv); }, '', 'Dados · compras × crescimento (o crédito da compra está na linha de imposto, não aqui)');
+   linha('= Margem de contribuição', function(y){ return fmt(y.margem)+' <span style="color:#8a97a8;font-size:.72rem">'+pct(y.mcPct)+'</span>'; }, 'font-weight:700');
+   linha('(−) Custos fixos', function(y){ return fmt(y.fixos); }, '', 'Dados · pessoal + pró-labore + ocupação + administrativo × inflação '+pct(d.infl||0)+' a.a.');
+   if(d.despMkt>0) linha('(−) Marketing e comercial', function(y){ return fmt(y.mkt); }, 'color:#8a97a8', 'Dados · '+pct(d.despMkt)+' da receita');
+   if(d.recFin>0) linha('(+) Receita financeira', function(y){ return fmt(y.recFin); }, 'color:#8a97a8', 'Dados');
+   linha('= Lucro antes do IR', function(y){ return fmt(y.lair); }, 'font-weight:700');
+   linha('(−) IRPJ / CSLL', function(y){ return y.irpj?fmt(y.irpj):'—'; }, '', y33.irpjDe);
+   linha('= Lucro líquido', function(y){ return '<span style="'+cor(y.lucro)+'">'+fmt(y.lucro)+'</span>'; }, 'font-weight:700;color:var(--gold)');
+   linha('Margem líquida', function(y){ return pct(y.margemPct); }, 'color:#8a97a8');
+   h+='</tbody></table></div>';
+   var dobra=window.lhPmDobra||function(t,c){ return '<div><b>'+t+'</b><div>'+c+'</div></div>'; };
+   h+=dobra('Como ler este DRE', 'É um DRE gerencial de 8 anos, com o <b>mesmo motor de imposto da Precificação e do Identificador</b>: ICMS/ISS e PIS/COFINS derretem pela curva da transição e o IBS/CBS entra por fora, líquido do crédito das compras, das despesas e do ST. A linha "Imposto sobre o consumo" é o total do Identificador; o <b>crédito já está descontado nela</b>, por isso o custo da mercadoria aparece cheio (não contar duas vezes). IRPJ/CSLL vem do Regime Ótimo quando ele foi ligado; sem ele, é estimativa pela presunção e diz isso na linha. Receita bruta sobe pelo crescimento informado e, se a Precificação foi ligada, pela reprecificação decidida item a item (preço decidido ÷ preço de hoje, ponderado pelo preço). Olhe o pior ano: a transição não é linear. Com crédito de compra, o imposto costuma cair já em 2027; sem crédito (serviço, compra de Simples ou PF), 2027 pode ser o ano do aperto.');
+   h+=dobra('Premissas desta conta — o que entrou, o que não entrou', '<ul style="margin:4px 0 0 16px;padding:0"><li>Receita, compras, fixos e despesas: Dados Estratégicos ('+Object.keys(estado.origem).filter(function(k){ return (estado.origem[k]||{}).tipo==='central'; }).length+' campos lidos da Central).</li><li>Imposto sobre o consumo: Identificador de Créditos — '+(y33.imp?('alíquota de saída '+y33.imp.fontes.mix+'; crédito das compras '+y33.imp.fontes.cadeia+'; curva cenário '+y33.imp.fontes.curva+', referência '+pct(y33.imp.fontes.aliqRef,2)):'')+'.</li><li>Compras crescem com a receita, não com o preço: a reprecificação altera a receita, o custo da mercadoria não.</li><li>IRPJ/CSLL: '+y33.irpjDe+'.</li><li>Não entram: INSS patronal fora da folha informada, depreciação, resultado não operacional, dividendos do sócio (Tributação de Dividendos tem tela própria) e capital de giro — o Fluxo de Caixa (v894) é a próxima aba.</li><li>'+(A.reprec?'Reprecificação ligada em '+A.reprec.quando+' ('+A.reprec.itens+' itens, estratégia "'+A.reprec.estr+'").':'Sem reprecificação ligada: a receita não muda com o preço. Rode a Precificação em Massa e clique em "Usar no meu DRE".')+'</li></ul>');
+   h+='</div>';
+   box.innerHTML=h;
+ }
  /* ── público ── */
  window.LH_FIN={
    get:function(){ carregar(); return JSON.parse(JSON.stringify(estado)); },
@@ -59654,11 +59785,12 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    impostos:function(ano, d){ if(!d) carregar(); return impostos(ano, d); },
    serie:function(d){ if(!d) carregar(); return serie(d); },
    sugerir:sugerir, sugestoes:sugestoes, renderCred:renderCred, campos:CAMPOS.slice(), anos:ANOS.slice(),
+   dre:function(d){ if(!d) carregar(); return dre(d); }, afluente:afluente, removerAfluente:removerAfluente, renderDre:renderDre, afluentes:function(){ carregar(); return JSON.parse(JSON.stringify(estado.afluentes||{})); },
    eid:eid
  };
  var _ap=window.abrirPagina;
- window.abrirPagina=function(id){ var r=_ap.apply(this,arguments); try{ if(id==='fin_dados'){ carregar(); ligar(); escrever(); sugerir(false); resumo(); } else if(id==='fin_cred'){ setTimeout(renderCred,50); } }catch(_e){} return r; };
- window.addEventListener('lh:cenario',function(){ try{ var pg=document.querySelector('.page.active'); if(pg && pg.id==='page-fin_cred') renderCred(); }catch(_e){} });
+ window.abrirPagina=function(id){ var r=_ap.apply(this,arguments); try{ if(id==='fin_dados'){ carregar(); ligar(); escrever(); sugerir(false); resumo(); } else if(id==='fin_cred'){ setTimeout(renderCred,50); } else if(id==='fin_dre'){ setTimeout(renderDre,50); } }catch(_e){} return r; };
+ window.addEventListener('lh:cenario',function(){ try{ var pg=document.querySelector('.page.active'); if(pg && pg.id==='page-fin_cred') renderCred(); if(pg && pg.id==='page-fin_dre') renderDre(); }catch(_e){} });
  function boot(){ carregar(); ligar(); escrever(); resumo(); }
  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
 })();
