@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v895';</script>
+<body><script>window.LH_VERSAO='v896';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -10956,6 +10956,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <div class="input-group"><label>Prazo de ressarcimento do saldo credor (dias) <span class="fin-selo" data-f="ressarc"></span><span class="lh-hint" data-hint="LC 214, art. 39: até 60 dias para quem está no programa de conformidade, até 180 nos demais. Saldo credor parado é caixa retido — entra no Fluxo." onclick="lhHint(event,this)">?</span></label><input type="number" id="fin_ressarc" placeholder="ex: 60"></div>
       </div>
       <div id="fin_dados_resumo" style="margin-top:12px;font-size:.82rem;color:var(--text2)"></div>
+      <div id="fin_dados_docs"></div>
     </div>
   </div>
 
@@ -59545,7 +59546,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
  function ajustaTela(){ var r=estado.dados.regime||'presumido'; var sh=function(id,on){ var b=document.getElementById(id); if(b) b.style.display=on?'':'none'; }; sh('fin_das_box', r==='simples'||r==='hibrido'); sh('fin_hib_box1', r==='hibrido'); sh('fin_hib_box2', r==='hibrido'); }
  function selos(){ document.querySelectorAll('.fin-selo').forEach(function(s){ var k=s.getAttribute('data-f'), o=estado.origem[k]; if(!o || estado.dados[k]==null || estado.dados[k]===''){ s.innerHTML=''; return; }
    var cor=(o.tipo==='central')?'#16c47c':(o.tipo==='tela')?'#e8b93a':'#8a97a8'; s.innerHTML='<span style="font-weight:400;text-transform:none;font-size:.7rem;color:'+cor+'" title="'+(o.quando||'')+'">● '+(o.tipo==='central'?'Central · ':o.tipo==='tela'?'tela · ':'')+(o.detalhe||'')+'</span>'; }); }
- function resumo(){ var b=document.getElementById('fin_dados_resumo'); if(!b) return; var d=estado.dados; var n=CAMPOS.filter(function(k){ return d[k]!=null && d[k]!==''; }).length;
+ function resumo(){ try{ docs(); }catch(_e){} var b=document.getElementById('fin_dados_resumo'); if(!b) return; var d=estado.dados; var n=CAMPOS.filter(function(k){ return d[k]!=null && d[k]!==''; }).length;
    var nC=0,nT=0,nD=0; CAMPOS.forEach(function(k){ var o=estado.origem[k]; if(!o||d[k]==null||d[k]==='') return; if(o.tipo==='central') nC++; else if(o.tipo==='tela') nT++; else nD++; });
    b.innerHTML=(d.fat>0?'<b style="color:var(--gold)">'+n+' de '+CAMPOS.length+' campos</b> — '+nC+' lidos da Central, '+nT+' herdados de telas, '+nD+' digitados. Guardado por empresa ('+eid()+'). ':'<span style="color:#e0a83a">Informe ao menos o faturamento anual para o Identificador rodar.</span> ')
      +'O que você digita vence o importado; o botão "Preencher" só completa o que está vazio.'; }
@@ -59574,8 +59575,37 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    try{ var cs=window.LH_CADEIA&&LH_CADEIA.get().saida; if(cs&&cs.exportacao!=null) add('recExp',cs.exportacao,'tela','Cadeia de Crédito · exportação'); }catch(_e){}
    if(cli&&cli.ok&&cli.pExp!=null) add('recExp',Math.round(cli.pExp*10)/10,'central','XML de venda · exterior');
    add('pRec',g('c01_prazo_recolhimento'),'tela','Split Cash Gap');
+   /* ★ v896 · mais documentos da Central */
+   var efd=window.LH_IMPORT_EFD, spf=window.LH_IMPORT_SPEDFISCAL, bal=window.LH_IMPORT_BALANCETE, nfs=window.LH_IMPORT_NFSE, cte=window.LH_IMPORT_CTE;
+   if(efd&&efd.receitaBruta>0){ var mE=(+efd.meses||1); add('fat',Math.round(efd.receitaBruta*12/mE),'central','EFD-Contribuições · receita bruta ('+mE+' mês'+(mE>1?'es':'')+' × 12/'+mE+')'); }
+   if(spf&&spf.ok!==false&&spf.totIcmsST>0){ var mS=1; try{ var a=String(spf.dtIni||''), b=String(spf.dtFin||''); var pa=a.match(/(\d{2})\/(\d{2})\/(\d{4})|(\d{4})-(\d{2})/), pb=b.match(/(\d{2})\/(\d{2})\/(\d{4})|(\d{4})-(\d{2})/); if(pa&&pb){ var ma=pa[2]?(+pa[3]*12+ +pa[2]):(+pa[4]*12+ +pa[5]), mb=pb[2]?(+pb[3]*12+ +pb[2]):(+pb[4]*12+ +pb[5]); mS=Math.max(1,mb-ma+1); } }catch(_e){} add('st',Math.round(spf.totIcmsST*12/mS),'central','SPED Fiscal · ICMS-ST ('+mS+' mês'+(mS>1?'es':'')+' × 12/'+mS+')'); }
+   if(spf&&spf.ok!==false&&spf.totBcIcms>0&&spf.totIcmsProprio>0){ var al=Math.round(spf.totIcmsProprio/spf.totBcIcms*1000)/10; if(al>0&&al<=30) add('icms',al,'central','SPED Fiscal · ICMS ÷ base'); }
+   if(nfs&&nfs.ok&&nfs.base>0&&nfs.iss>0){ var ai=Math.round(nfs.iss/nfs.base*1000)/10; if(ai>0&&ai<=5.5){ add('icms',ai,'central','NFS-e · ISS ÷ base'); add('tipo','servico','central','NFS-e'); } }
+   if(bal&&bal.ok&&bal.receita>0&&bal.cred>0) add('desp',Math.round(bal.cred/bal.receita*1000)/10,'central','Balancete · despesas que creditam ÷ receita');
+   if(cte&&cte.ok&&cte.frete>0&&!(bal&&bal.ok&&bal.cred>0)){ var fatB=(estado.dados.fat>0)?estado.dados.fat:0; if(fatB>0) add('desp',Math.round(cte.frete*12/Math.max(1,(cte.competencias||[]).length)/fatB*1000)/10,'central','CT-e · fretes tomados ÷ faturamento'); }
    return S;
  }
+ /* ★ v896 · que documentos alimentam os Dados — e quais já foram lidos */
+ var DOCS=[
+   {doc:'XML de NF-e (compras e vendas)', lido:function(){ return !!((window._LH_XML_NOTAS||window.LH_XML_NOTAS||[]).length||(window.LH_IMPORT_XML&&window.LH_IMPORT_XML.vNF>0)); }, campos:'faturamento · compras · tratamento das compras (NCM, automático) · exportação · Cadeia de Crédito (de quem compra, para quem vende)', como:'Central de Documentos → NF-e (XML)'},
+   {doc:'PGDAS-D (extrato do Simples)', lido:function(){ return !!(window.LH_IMPORT_PGDAS&&window.LH_IMPORT_PGDAS.ok); }, campos:'faturamento (RBT12) · regime Simples · alíquota efetiva do DAS', como:'Central → PGDAS'},
+   {doc:'eSocial (folha)', lido:function(){ return !!(window.LH_IMPORT_ESOCIAL&&window.LH_IMPORT_ESOCIAL.ok); }, campos:'pessoal com encargos · pró-labore', como:'Central → eSocial (XML)'},
+   {doc:'ECD (escrituração contábil)', lido:function(){ return !!(window.LH_IMPORT_ECD&&window.LH_IMPORT_ECD.ok); }, campos:'faturamento (receita líquida)', como:'Central → SPED ECD (.txt)'},
+   {doc:'EFD-Contribuições', lido:function(){ return !!(window.LH_IMPORT_EFD&&window.LH_IMPORT_EFD.receitaBruta>0); }, campos:'faturamento (receita bruta, anualizada)', como:'Central → EFD-Contribuições (.txt)'},
+   {doc:'SPED Fiscal (EFD ICMS/IPI)', lido:function(){ return !!(window.LH_IMPORT_SPEDFISCAL&&window.LH_IMPORT_SPEDFISCAL.ok!==false&&(window.LH_IMPORT_SPEDFISCAL.totIcmsST>0||window.LH_IMPORT_SPEDFISCAL.totIcmsProprio>0)); }, campos:'ICMS-ST pago nas compras (anualizado) · alíquota de ICMS', como:'Central → SPED Fiscal (.txt)'},
+   {doc:'NFS-e (serviços prestados)', lido:function(){ return !!(window.LH_IMPORT_NFSE&&window.LH_IMPORT_NFSE.ok&&window.LH_IMPORT_NFSE.base>0); }, campos:'alíquota de ISS · atividade = serviço', como:'Central → NFS-e'},
+   {doc:'Balancete', lido:function(){ return !!(window.LH_IMPORT_BALANCETE&&window.LH_IMPORT_BALANCETE.ok); }, campos:'despesas com crédito (% da receita)', como:'Central → Balancete'},
+   {doc:'CT-e (fretes tomados)', lido:function(){ return !!(window.LH_IMPORT_CTE&&window.LH_IMPORT_CTE.ok&&window.LH_IMPORT_CTE.frete>0); }, campos:'despesas com crédito (fretes), quando não há balancete', como:'Central → CT-e (XML)'},
+   {doc:'Telas já rodadas', lido:function(){ return !!(window._C05_REGIMES||window.PM_ULTIMO||(window.LH_CADEIA&&Object.keys(LH_CADEIA.get().entrada).some(function(k){ return LH_CADEIA.get().entrada[k]!=null; }))); }, campos:'Regime Ótimo → regime, DAS, folha, pró-labore · Precificação → ICMS, despesas, híbrido · Cadeia → compras, exportação · Split → crescimento, prazo', como:'rode a tela e clique "→ Usar no meu DRE / Fluxo"'}
+ ];
+ var SO_MANUAL='crescimento · inflação · cartão · marketing · ocupação · administrativo · receita financeira · prazos de receber e pagar · % à vista · inadimplência · caixa inicial · estoque em dias · investimento · amortização · % distribuído · prazo de ressarcimento';
+ function docsHTML(){
+   var h='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.8rem"><thead><tr>'+['documento','preenche','onde importar','lido?'].map(function(t){ return '<th style="text-align:left;padding:6px 8px;color:var(--gold);font-size:.7rem;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.12)">'+t+'</th>'; }).join('')+'</tr></thead><tbody>';
+   DOCS.forEach(function(x){ var ok=false; try{ ok=!!x.lido(); }catch(_e){} h+='<tr><td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06);white-space:nowrap"><b>'+x.doc+'</b></td><td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06)">'+x.campos+'</td><td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06);color:var(--text2)">'+x.como+'</td><td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06);white-space:nowrap;color:'+(ok?'#16c47c':'#8a97a8')+'">'+(ok?'● lido':'○ não')+'</td></tr>'; });
+   h+='</tbody></table></div><div style="margin-top:8px;color:var(--text2)">Só manuais (nenhum documento da Central os traz): '+SO_MANUAL+'. O balancete e a ECD podem trazer alguns deles no futuro; hoje é digitação.</div>';
+   return h;
+ }
+ function docs(){ var b=document.getElementById('fin_dados_docs'); if(!b) return; var n=0; DOCS.forEach(function(x){ try{ if(x.lido()) n++; }catch(_e){} }); var dobra=window.lhPmDobra||function(t,c){ return '<div><b>'+t+'</b>'+c+'</div>'; }; b.innerHTML=dobra('Que documentos preenchem estes campos — '+n+' de '+DOCS.length+' fontes lidas', docsHTML(), n===0); }
  function sugerir(aviso){
    var S=sugestoes(), n=0, usados={};
    S.forEach(function(s){ if(usados[s.k]) return; var o=estado.origem[s.k]; var tem=(estado.dados[s.k]!=null && estado.dados[s.k]!=='');
