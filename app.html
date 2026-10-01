@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v897';</script>
+<body><script>window.LH_VERSAO='v898';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -46588,6 +46588,8 @@ window.LH_SAUDE = (function(){
                                              nota:'cada plano inclui tudo dos anteriores' },
           'Regime & PJ':                   { rot:'Consultoria',  plano:'consultoria' },
           'Serviços · Comércio · Turismo': { rot:'Especialista', plano:'especialista' },
+          /* ★ v898 · quarto degrau da escada, mesmo plano: as ferramentas DO escritório (Painel + Inteligência Financeira) */
+          'Painel do Escritório':          { rot:'Especialista · Inteligência Estratégica', plano:'especialista' },
           'Privacidade':                   { rot:'Sua Conta' }
         };
         for(var _k in _secoes){
@@ -63328,8 +63330,9 @@ function lhBuscaCNAE(q){
       return /nav-cat-wrap/.test((c.className||'').toString()) && re.test(_txt(c)); });
   }
   function achaSuper(sec,re){
+    /* ★ v898 · separador de plano (data-lh-plano) não é supercategoria antiga — não entra aqui */
     return [...sec.children].find(function(c){
-      return /nav-secao-js/.test((c.className||'').toString()) && re.test(_txt(c)); });
+      return /nav-secao-js/.test((c.className||'').toString()) && !c.getAttribute('data-lh-plano') && re.test(_txt(c)); });
   }
   function reestruturar(){
     var sec=document.querySelector('.nav-section');
@@ -63340,6 +63343,7 @@ function lhBuscaCNAE(q){
     var comex= achaCat(sec,/COM[ÉE]RCIO EXTERIOR/i);
     var intel= achaSuper(sec,/INTELIG[ÊE]NCIA ESTRAT/i);
     var painel=achaCat(sec,/PAINEL DO ESCRITÓRIO/i);
+    var fin  = achaCat(sec,/INTELIG[ÊE]NCIA FINANCEIRA/i);   /* v898 */
     var esc  = achaSuper(sec,/SEU ESCRIT[ÓO]RIO/i);
     var bpo  = achaCat(sec,/GEST[ÃA]O BPO/i);
     var priv = achaCat(sec,/PRIVACIDADE/i);
@@ -63373,7 +63377,7 @@ function lhBuscaCNAE(q){
     cur = depois(cur, reg);    cur = depois(cur, soc);   cur = depois(cur, cred);
     cur = depois(cur, patr);   cur = depois(cur, imob);  cur = depois(cur, cont);  cur = depois(cur, comex);
     cur = depois(cur, c2);     cur = depois(cur, agro);  cur = depois(cur, ind);
-    cur = depois(cur, painel); cur = depois(cur, bpo);
+    cur = depois(cur, painel); cur = depois(cur, fin); cur = depois(cur, bpo);   /* v898: Inteligência Financeira junto do Painel */
 
     /* ★ v794 · 3 — os separadores de plano não viajam com os blocos (foram inseridos antes,
        nas posições estáticas). Reposiciona cada um na frente da sua primeira categoria. */
@@ -63383,12 +63387,13 @@ function lhBuscaCNAE(q){
       /* ★ v805 · o rótulo virou Adequação; o /PREPARA/ fica como rede para arquivo
          antigo em cache. E o super-pilar viaja colado no primeiro separador da escada,
          senão ele fica órfão no topo e não cerca nada. */
-      var _prep = _acha(/ADEQUA[ÇC][ÃA]O|PREPARA[ÇC][ÃA]O/i), _cons = _acha(/CONSULTORIA/i), _espec = _acha(/ESPECIALISTA/i);
+      var _prep = _acha(/ADEQUA[ÇC][ÃA]O|PREPARA[ÇC][ÃA]O/i), _cons = _acha(/CONSULTORIA/i), _espec = _seps.find(function(el){ return /ESPECIALISTA/i.test(el.textContent||'') && !/ESTRAT/i.test(el.textContent||''); }), _intel = _acha(/ESPECIALISTA\s*·\s*INTELIG[ÊE]NCIA ESTRAT/i);
       var _sup  = sec.querySelector('.nav-super-js');
       if(_prep && refo) refo.insertAdjacentElement('beforebegin', _prep);
       if(_sup  && _prep) _prep.insertAdjacentElement('beforebegin', _sup);
       if(_cons && reg)  reg.insertAdjacentElement('beforebegin', _cons);
       if(_espec && c2)  c2.insertAdjacentElement('beforebegin', _espec);
+      if(_intel && painel) painel.insertAdjacentElement('beforebegin', _intel);   /* v898 */
     }catch(_e){}
 
     /* ★ v801 · COERÊNCIA ENTRE SELO E CADEADO.
@@ -63426,6 +63431,7 @@ function lhBuscaCNAE(q){
     /* as supercategorias antigas somem: viraram os planos */
     [intel, esc].forEach(function(el){ try{ if(el && el.parentNode) el.parentNode.removeChild(el); }catch(_e){} });
     try{ Array.prototype.slice.call(sec.querySelectorAll('.nav-secao-js')).forEach(function(el){
+           if(el.getAttribute('data-lh-plano')) return;   /* v898: degrau da escada fica */
            if(/Centrais de An[áa]lises|Regimes Espec[íi]ficos|Intelig[êe]ncia Estrat|Seu Escrit[óo]rio/i.test(el.textContent||''))
              el.parentNode.removeChild(el); }); }catch(_e){}
 
