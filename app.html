@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v893';</script>
+<body><script>window.LH_VERSAO='v894';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -6373,6 +6373,10 @@ function lhTrocarSenha(){
       <span class="ni-icon">▦</span><span class="ni-label">DRE 2026–2033</span>
       <span class="ni-pill" style="background:rgba(201,162,39,.15);color:#c9a227">novo</span>
     </div>
+    <div class="nav-item" onclick="abrirPagina('fin_fluxo',this)" title="caixa projetado 2026–2033 a partir do DRE: entradas, saídas, capital de giro (prazos, split payment, saldo credor retido) e saldo acumulado; recebe Split Cash Gap, Split por Operação, NCG ao Split e Créditos Plenos">
+      <span class="ni-icon">≋</span><span class="ni-label">Fluxo de Caixa 2026–2033</span>
+      <span class="ni-pill" style="background:rgba(201,162,39,.15);color:#c9a227">novo</span>
+    </div>
 <div class="nav-group-title">⚖ CONTENCIOSO</div>
     <div class="nav-group-items">
       <div class="nav-item nav-super" onclick="abrirPagina('transacao',this)">
@@ -7611,7 +7615,7 @@ function lhTrocarSenha(){
         </div>
       </div>
     </div>
-    <button class="btn-calcular" onclick="calcularC01()">Calcular Split Payment Cash Gap</button>
+    <button class="btn-calcular" onclick="calcularC01()">Calcular Split Payment Cash Gap</button><button type="button" class="lh-fin-btn" onclick="LH_FIN.afluente('c01')" title="leva esta análise ao DRE e ao Fluxo de Caixa 2026–2033 (Inteligência Financeira)" style="margin-left:10px;background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.5);color:#3ecf8e;padding:10px 15px;border-radius:10px;cursor:pointer;font-size:.85em;font-weight:700">→ Usar no meu DRE / Fluxo (8 anos)</button>
     <div class="resultado-section" id="res-c01">
       <div class="kpi-grid" id="kpi-c01"></div><div class="chart-card">
         <h4>Capital de Giro Perdido por Ano (R$) — Transição 2026–2033</h4>
@@ -8899,7 +8903,7 @@ function lhTrocarSenha(){
       </div>
 
       <div style="margin-top:14px;">
-        <button class="btn-calcular" onclick="calcularN33()">Calcular NCG Ajustada ao Split Payment</button>
+        <button class="btn-calcular" onclick="calcularN33()">Calcular NCG Ajustada ao Split Payment</button><button type="button" class="lh-fin-btn" onclick="LH_FIN.afluente('n33')" title="leva esta análise ao DRE e ao Fluxo de Caixa 2026–2033 (Inteligência Financeira)" style="margin-left:10px;background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.5);color:#3ecf8e;padding:10px 15px;border-radius:10px;cursor:pointer;font-size:.85em;font-weight:700">→ Usar no meu DRE / Fluxo (8 anos)</button>
       </div>
     </div>
 
@@ -10990,6 +10994,25 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
     </div>
     <div id="fin_dre_result"></div>
   </div>
+  <div class="page" id="page-fin_fluxo">
+    <div class="calc-page-header">
+      <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.16),rgba(62,207,142,0.12));">≋</div>
+      <div>
+        <h2>Fluxo de Caixa 2026–2033 · o que entra, o que sai, o que fica preso</h2>
+        <p>O caixa projetado pela transição, a partir do DRE: entradas (receita menos inadimplência), saídas (imposto, cartão, mercadoria, fixos, IRPJ/CSLL), a variação do capital de giro — prazos de receber e pagar, o que o split payment retém e o saldo credor de IBS/CBS parado até o ressarcimento — e o saldo acumulado. As análises de caixa desembocam aqui: Split Payment Cash Gap, Split por Operação, NCG ao Split e Créditos Plenos.</p>
+      </div>
+    </div>
+    <div class="input-card">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="btn-calcular" onclick="LH_FIN.renderFluxo()">Calcular</button>
+        <button class="btn-secondary" onclick="abrirPagina('fin_dados')">▣ Dados Estratégicos</button>
+        <button class="btn-secondary" onclick="abrirPagina('fin_dre')">▦ DRE 2026–2033</button>
+        <div id="fin_fluxo_cenario" style="margin-left:auto"></div>
+      </div>
+      <div id="fin_fluxo_afluentes" style="margin-top:10px;font-size:.8rem;color:var(--text2)"></div>
+    </div>
+    <div id="fin_fluxo_result"></div>
+  </div>
   <div class="page" id="page-cr04">
     <div class="calc-page-header">
       <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.18),rgba(234,179,8,0.10));"></div>
@@ -11144,7 +11167,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
       </div>
     </div>
 
-    <button class="btn-calcular" onclick="calcularCR04()">Calcular Crédito Pleno CBS/IBS</button>
+    <button class="btn-calcular" onclick="calcularCR04()">Calcular Crédito Pleno CBS/IBS</button><button type="button" class="lh-fin-btn" onclick="LH_FIN.afluente('cr04')" title="leva esta análise ao DRE e ao Fluxo de Caixa 2026–2033 (Inteligência Financeira)" style="margin-left:10px;background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.5);color:#3ecf8e;padding:10px 15px;border-radius:10px;cursor:pointer;font-size:.85em;font-weight:700">→ Usar no meu DRE / Fluxo (8 anos)</button>
 
     <div class="resultado-section" id="res-cr04" style="display:none;">
       <div class="kpi-grid" id="kpi-cr04"></div><div id="recs-cr04"></div>
@@ -11266,7 +11289,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
       </div>
     </div>
 
-    <button class="btn-calcular" onclick="window.calcularC11()" style="margin:16px 0;padding:12px 28px;background:linear-gradient(135deg,#c9a227,#eab308);color:#0a0a0a;border:none;border-radius:8px;font-weight:700;font-size:0.95em;cursor:pointer;">Calcular Impacto do Split</button>
+    <button class="btn-calcular" onclick="window.calcularC11()" style="margin:16px 0;padding:12px 28px;background:linear-gradient(135deg,#c9a227,#eab308);color:#0a0a0a;border:none;border-radius:8px;font-weight:700;font-size:0.95em;cursor:pointer;">Calcular Impacto do Split</button><button type="button" class="lh-fin-btn" onclick="LH_FIN.afluente('c11')" title="leva esta análise ao DRE e ao Fluxo de Caixa 2026–2033 (Inteligência Financeira)" style="margin-left:10px;background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.5);color:#3ecf8e;padding:10px 15px;border-radius:10px;cursor:pointer;font-size:.85em;font-weight:700">→ Usar no meu DRE / Fluxo (8 anos)</button>
 
     <div id="res-c11" style="display:none;">
       <div id="kpi-c11" class="kpi-grid"></div>
@@ -31613,6 +31636,8 @@ window.BUSCA_INDEX = [{"tipo":"aba","id":"perguntas","nome":"Perguntas que a fer
   {tipo:'calc',id:'fin_cred',nome:'Quanto de crédito eu perco comprando de Simples ou pessoa física?',cat:'Pergunta · Crédito e dinheiro de volta',atalho:'Identificador de Créditos'},
   {tipo:'calc',id:'fin_dre',nome:'DRE 2026–2033 — lucro e margem ano a ano com a reforma',cat:'Inteligência Financeira',atalho:'fin_dre'},
   {tipo:'calc',id:'fin_dre',nome:'Quanto meu cliente vai lucrar em 2027? E em 2033?',cat:'Pergunta · Quanto imposto vai pagar',atalho:'DRE 2026–2033'},
+  {tipo:'calc',id:'fin_fluxo',nome:'Fluxo de Caixa 2026–2033 — entradas, saídas, giro e saldo acumulado',cat:'Inteligência Financeira',atalho:'fin_fluxo'},
+  {tipo:'calc',id:'fin_fluxo',nome:'Em que ano o caixa do meu cliente aperta na transição?',cat:'Pergunta · O caixa do meu cliente',atalho:'Fluxo de Caixa 2026–2033'},
   {tipo:'calc',id:'c01',nome:'Split Payment Cash Gap',cat:'Reforma Tributária',atalho:'c01'},
   {tipo:'calc',id:'c02',nome:'Reprecificação de Contratos',cat:'Reforma Tributária',atalho:'c02'},
   {tipo:'calc',id:'c04',nome:'Alíquota Efetiva por Setor / Atividade',cat:'Reforma Tributária',atalho:'c04'},
@@ -59599,6 +59624,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      if(!teste){
        o.debito=R*(1-exp)*mix.t;
        o.credCompras=compras*cad.cred*tComp; o.credDesp=desp*tFull; o.credST=st*(1-fI)*cad.cred;
+       try{ var ad=afl('credDesp'); if(ad && ad.credito>0 && ad.tRef>0){ o.credDesp=ad.credito*(tFull/ad.tRef)*fC; o.credDespDe='Créditos Plenos (cr04)'; } }catch(_a){}   /* v894 */
        o.credTotal=o.credCompras+o.credDesp+o.credST; o.saldo=o.debito-o.credTotal; o.aPagar=Math.max(0,o.saldo); o.credor=Math.max(0,-o.saldo);
        o.perdido=compras*tComp*cad.perdido; } }
    o.total=o.icmsLiq+o.pisLiq+o.das+o.aPagar; o.pctRec=R>0?o.total/R*100:0;
@@ -59709,6 +59735,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
  /* ── afluentes: o botão "→ Usar no meu DRE / Fluxo" nas análises estratégicas ── */
  function afluente(de){
    carregar(); var ok=false, msg='';
+   if(['c01','c11','n33','cr04'].indexOf(de)>=0) return afluenteCaixa(de);   /* v894 */
    if(de==='c05'){ var R=window._C05_REGIMES, R2=window._LH_C05_REGIMES; if(!R||!R.length){ msg='Rode o Regime Ótimo primeiro.'; }
      else { var best=R.slice().sort(function(a,b){ return a.total-b.total; })[0]; var fat=g('c05_fat')||0;
        var regs=R.map(function(r){ var x=(R2||[]).filter(function(y){ return y.nome===r.nome; })[0]; return {nome:r.nome, total:r.total, irpjCsll:x?x.irpjCsll:null, hibrido:!!r.hibrido}; });
@@ -59778,6 +59805,97 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    h+='</div>';
    box.innerHTML=h;
  }
+ /* ═══ v894 · FLUXO DE CAIXA 2026–2033 e afluentes de caixa ═══
+    entradas = receita × (1 − inadimplência) + receita financeira
+    saídas   = imposto sobre o consumo + cartão + mercadoria + fixos + marketing + IRPJ/CSLL   (as linhas do DRE)
+    NCG      = receita/360 × (prazo de receber × (1 − à vista) − prazo de pagar)  +  caixa retido no split  +  saldo credor × prazo de ressarcimento/360
+    caixa operacional = entradas − saídas − ΔNCG;  saldo acumulado = caixa inicial + Σ.
+    Split: UMA fonte por vez (NCG ao Split > Cash Gap > Split por Operação) — são três leituras do mesmo fenômeno; usar duas conta duas vezes.
+    Créditos Plenos (cr04): substitui o crédito de despesas "% da receita" do Identificador pelo R$ calculado, escalado pela curva. */
+ function splitNCG(ano, R){
+   var n=afl('ncg'), c=afl('split'), o=afl('splitop');
+   if(n && n.camada33!=null){ var i=ano-2027; if(ano<2027) return {v:0, de:'NCG ao Split'}; var f=Math.min(1, Math.max(0,(i+1)/7)); return {v:n.camada33*f*(n.fat>0?R/n.fat:1), de:'NCG ao Split (n33) · camada do split em 2033 '+fmt(n.camada33)+', escalada 2027→2033'}; }
+   if(c && c.anos){ var g=c.anos[ano]; if(g==null){ var ks=Object.keys(c.anos).map(Number).filter(function(a){ return a<=ano; }).sort(); g=ks.length?c.anos[ks[ks.length-1]]:0; } return {v:(ano<2027?0:g)*(c.fat>0?R/c.fat:1), de:'Split Cash Gap (c01) · gap de caixa mensal do ano'}; }
+   if(o && o.retido!=null){ return {v:(ano<2027?0:o.retido)*(o.fat>0?R/o.fat:1), de:'Split por Operação (c11) · retido no split por mês'}; }
+   return {v:0, de:null};
+ }
+ function fluxo(d){
+   d=d||estado.dados; var S=dre(d), out=[], prev=null, saldo=(+d.caixa0||0);
+   var pRec=(+d.pRec||0), pPag=(+d.pPag||0), vista=Math.min(1,Math.max(0,(+d.vista||0)/100)), inad=Math.min(1,Math.max(0,(+d.inad||0)/100)), ressarc=(+d.ressarc||60);
+   var dias=pRec*(1-vista)-pPag;
+   S.forEach(function(y){
+     var R=y.receita; var entradas=R*(1-inad)+y.recFin; var saidas=y.impostos+y.cartao+y.cmv+y.fixos+y.mkt+y.irpj;
+     var ncgBase=R/360*dias; var sp=splitNCG(y.ano,R); var credor=(y.imp&&y.imp.credor)||0; var retido=credor*ressarc/360;
+     var ncg=ncgBase+sp.v+retido; var dNcg=(prev==null)?0:(ncg-prev); prev=ncg;
+     var caixa=entradas-saidas-dNcg; saldo+=caixa;
+     out.push({ano:y.ano, receita:R, entradas:entradas, saidas:saidas, impostos:y.impostos, cmv:y.cmv, fixos:y.fixos+y.mkt, irpj:y.irpj, cartao:y.cartao, inad:R*inad,
+               ncgBase:ncgBase, ncgSplit:sp.v, ncgSplitDe:sp.de, retido:retido, credor:credor, ncg:ncg, dNcg:dNcg, dias:R>0?ncg/(R/360):0, caixa:caixa, saldo:saldo, lucro:y.lucro});
+   });
+   return out;
+ }
+ function afluenteCaixa(de){
+   var U=(window.LH_PONTE&&LH_PONTE.ultimo)||{}; var ok=false, msg='';
+   if(de==='c01'){ var u=U.calcularC01; var r=u&&u.resultado; if(!r||!r.projecao){ msg='Rode o Split Payment Cash Gap primeiro.'; }
+     else { var anos={}; (r.projecao||[]).forEach(function(p){ if(p&&p.ano!=null) anos[+p.ano]=+(p.gap_de_caixa_mensal||0); }); var fat=((u.ent&&u.ent.faturamento_mensal)||0)*12;
+       estado.afluentes.split={de:'c01', nome:'Split Cash Gap', quando:hoje(), anos:anos, fat:fat, floatAtual:+(r.float_atual_mensal||0)}; delete estado.afluentes.ncg; delete estado.afluentes.splitop;
+       ok=true; msg='Split Cash Gap levado ao Fluxo: gap de caixa mensal por ano ('+(anos[2027]!=null?fmt(anos[2027])+' em 2027':'')+')'; } }
+   else if(de==='c11'){ var u2=U.calcularC11; var r2=u2&&u2.resultado; if(!r2||r2.retido_no_split==null){ msg='Rode o Split por Operação primeiro.'; }
+     else { estado.afluentes.splitop={de:'c11', nome:'Split por Operação', quando:hoje(), retido:+r2.retido_no_split, fat:((u2.ent&&u2.ent.faturamento_mensal)||0)*12, impacto:+(r2.impacto_total_ano||0)}; delete estado.afluentes.ncg; delete estado.afluentes.split;
+       ok=true; msg='Split por Operação levado ao Fluxo: '+fmt(r2.retido_no_split)+' retidos por mês'; } }
+   else if(de==='n33'){ var u3=U.calcularN33; var r3=u3&&u3.resultado; if(!r3||r3.camada_split_2033==null){ msg='Rode a NCG ao Split Payment primeiro.'; }
+     else { estado.afluentes.ncg={de:'n33', nome:'NCG ao Split', quando:hoje(), camada33:+r3.camada_split_2033, ncg26:+(r3.ncg_2026||0), ncg33:+(r3.ncg_2033||0), aumento:+(r3.aumento_da_ncg||0), fat:((u3.ent&&u3.ent.faturamento_mensal)||0)*12}; delete estado.afluentes.split; delete estado.afluentes.splitop;
+       ok=true; msg='NCG ao Split levada ao Fluxo: camada do split de '+fmt(r3.camada_split_2033)+' em 2033'; } }
+   else if(de==='cr04'){ var u4=U.calcularCR04; var r4=u4&&u4.resultado; if(!r4||r4.credito_anual==null){ msg='Rode os Créditos Plenos primeiro.'; }
+     else { var anoRef=(u4.ent&&u4.ent.ano)||2029; var A=(typeof getAliq==='function')?getAliq(anoRef):null; estado.afluentes.credDesp={de:'cr04', nome:'Créditos Plenos', quando:hoje(), credito:+r4.credito_anual, anoRef:anoRef, tRef:(A&&A.total)||0.265};
+       ok=true; msg='Créditos Plenos levados ao Identificador e ao Fluxo: '+fmt(r4.credito_anual)+'/ano em '+anoRef+' (escalado pela curva nos outros anos)'; } }
+   if(ok){ salvar(); try{ if(typeof mostrarToast==='function') mostrarToast('✓ '+msg,'success'); }catch(_e){} abrirPagina('fin_fluxo'); }
+   else { try{ if(typeof mostrarToast==='function') mostrarToast(msg,'info'); else alert(msg); }catch(_e){ alert(msg); } }
+   return ok;
+ }
+ function renderFluxo(){
+   var box=document.getElementById('fin_fluxo_result'); if(!box) return; carregar(); var d=estado.dados;
+   var af=document.getElementById('fin_fluxo_afluentes'); if(af){ var A=estado.afluentes||{}; var ks=['split','splitop','ncg','credDesp'].filter(function(k){ return A[k]; });
+     af.innerHTML='<b style="color:var(--gold)">Análises de caixa ligadas:</b> '+(ks.length?ks.map(function(k){ var a=A[k]; return '<span style="display:inline-block;margin:3px 6px 3px 0;padding:3px 9px;border:1px solid rgba(201,162,39,.35);border-radius:14px;background:rgba(201,162,39,.07)"><b>'+a.nome+'</b> → '+({split:'capital de giro retido no split',splitop:'capital de giro retido no split',ncg:'capital de giro (camada do split)',credDesp:'crédito de despesas (R$)'}[k])+' · '+a.quando+' <a href="#" onclick="LH_FIN.removerAfluente(\''+k+'\');LH_FIN.renderFluxo();return false" style="color:#e05a4d;text-decoration:none">×</a></span>'; }).join('')
+       :'nenhuma — rode <a href="#" onclick="abrirPagina(\'c01\');return false" style="color:var(--gold)">Split Cash Gap</a>, <a href="#" onclick="abrirPagina(\'c11\');return false" style="color:var(--gold)">Split por Operação</a>, <a href="#" onclick="abrirPagina(\'n33\');return false" style="color:var(--gold)">NCG ao Split</a> ou <a href="#" onclick="abrirPagina(\'cr04\');return false" style="color:var(--gold)">Créditos Plenos</a> e clique em "→ Usar no meu DRE / Fluxo". Sem elas, o giro usa só os prazos dos Dados.')
+       +(ks.filter(function(k){ return k!=='credDesp'; }).length>1?' <span style="color:#e0a83a">(duas leituras do split ligadas — só a de maior prioridade entra: NCG ao Split > Cash Gap > por Operação)</span>':''); }
+   if(!(d.fat>0)){ box.innerHTML='<div class="input-card"><h3 style="color:var(--gold)">Faltam os Dados Estratégicos</h3><div style="color:var(--text2);font-size:.9rem">Informe faturamento, compras, custos fixos e os prazos (receber, pagar, à vista) em <a href="#" onclick="abrirPagina(\'fin_dados\');return false" style="color:var(--gold)">Dados Estratégicos</a>.</div></div>'; return; }
+   var S=fluxo(d), y26=S[0], y33=S[7]; var pior=S[0]; S.forEach(function(y){ if(y.saldo<pior.saldo) pior=y; });
+   var dias=(+d.pRec||0)*(1-Math.min(1,Math.max(0,(+d.vista||0)/100)))-(+d.pPag||0);
+   var cor=function(v){ return v<0?'color:#e05a4d':''; };
+   var h='<div class="input-card"><h3 style="color:var(--gold)">O caixa, hoje → 2033</h3><div class="kpi-grid">';
+   h+='<div class="kpi-card kpi-hero"><div class="kpi-label">Saldo acumulado em 2033</div><div class="kpi-value" style="'+cor(y33.saldo)+'">'+fmt(y33.saldo)+'</div><div class="kpi-label" style="margin-top:4px">caixa inicial '+fmt(d.caixa0||0)+' + 8 anos de caixa operacional</div></div>';
+   h+='<div class="kpi-card"><div class="kpi-label">Pior saldo</div><div class="kpi-value" style="'+cor(pior.saldo)+'">'+pior.ano+' · '+fmt(pior.saldo)+'</div><div class="kpi-label" style="margin-top:4px">'+(pior.saldo<0?'precisa de capital antes desse ano':'o caixa aguenta a transição')+'</div></div>';
+   h+='<div class="kpi-card"><div class="kpi-label">Capital de giro (NCG)</div><div class="kpi-value">'+Math.round(y26.dias)+' → '+Math.round(y33.dias)+' dias</div><div class="kpi-label" style="margin-top:4px">'+fmt(y26.ncg)+' → '+fmt(y33.ncg)+(y33.ncgSplit?' · split '+fmt(y33.ncgSplit):'')+'</div></div>';
+   h+='<div class="kpi-card"><div class="kpi-label">Caixa retido no saldo credor</div><div class="kpi-value" style="color:'+(y33.retido>0?'#e0a83a':'var(--text2)')+'">'+fmt(y33.retido)+'</div><div class="kpi-label" style="margin-top:4px">saldo credor '+fmt(y33.credor)+'/ano × '+(d.ressarc||60)+' dias de ressarcimento</div></div>';
+   h+='</div>';
+   /* barras: caixa operacional por ano */
+   var mx=Math.max.apply(null,S.map(function(y){ return Math.abs(y.caixa); }))||1;
+   h+='<div style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:14px;align-items:end;height:120px">'+S.map(function(y){ var hh=Math.max(3,Math.round(Math.abs(y.caixa)/mx*90)); return '<div style="display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font-size:.68rem;color:#8a97a8" title="'+y.ano+': caixa operacional '+fmt(y.caixa)+'"><span style="font-family:ui-monospace,monospace;font-size:.66rem;color:'+(y.caixa<0?'#e05a4d':'#16c47c')+'">'+Math.round(y.caixa/1000)+'k</span><div style="width:70%;height:'+hh+'px;border-radius:4px 4px 0 0;background:'+(y.caixa<0?'#e05a4d':'#16c47c')+'"></div><span>'+y.ano+'</span></div>'; }).join('')+'</div><div style="font-size:.72rem;color:#8a97a8;margin-top:4px">caixa operacional por ano (entradas − saídas − variação do giro)</div>';
+   var th=function(t,al){ return '<th style="text-align:'+(al||'right')+';padding:7px 9px;color:var(--gold);font-size:.72rem;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.12);white-space:nowrap">'+t+'</th>'; };
+   var td=function(v,st){ return '<td style="text-align:right;padding:6px 9px;border-bottom:1px solid rgba(255,255,255,.06);white-space:nowrap;'+(st||'')+'">'+v+'</td>'; };
+   var linha=function(rot,f,st,de){ h+='<tr><td style="padding:6px 9px;border-bottom:1px solid rgba(255,255,255,.06);'+(st||'')+'">'+rot+(de?'<div style="font-size:.68rem;color:#8a97a8;font-weight:400">'+de+'</div>':'')+'</td>'+S.map(function(y){ return td(f(y),st); }).join('')+'</tr>'; };
+   h+='<div style="overflow-x:auto;margin-top:14px"><table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead><tr>'+th('conta · R$ por ano · de onde veio','left')+ANOS.map(function(a){ return th(a); }).join('')+'</tr></thead><tbody>';
+   linha('Entradas', function(y){ return fmt(y.entradas); }, 'font-weight:700', 'DRE · receita − inadimplência '+pct(d.inad||0)+(d.recFin>0?' + receita financeira':''));
+   linha('(−) Imposto sobre o consumo', function(y){ return fmt(y.impostos); }, '', 'Identificador de Créditos');
+   linha('(−) Mercadoria / insumos', function(y){ return fmt(y.cmv); }, '', 'DRE');
+   linha('(−) Fixos e comercial', function(y){ return fmt(y.fixos); }, '', 'DRE');
+   if(d.cartao>0) linha('(−) Cartão', function(y){ return fmt(y.cartao); }, 'color:#8a97a8', 'DRE');
+   linha('(−) IRPJ / CSLL', function(y){ return y.irpj?fmt(y.irpj):'—'; }, 'color:#8a97a8', 'DRE');
+   linha('= Saídas', function(y){ return fmt(y.saidas); }, 'font-weight:700');
+   linha('Capital de giro (NCG)', function(y){ return fmt(y.ncg)+' <span style="color:#8a97a8;font-size:.72rem">'+Math.round(y.dias)+'d</span>'; }, 'color:#8a97a8', 'prazos dos Dados: receber '+(d.pRec||0)+'d × (1 − '+pct(d.vista||0,0)+' à vista) − pagar '+(d.pPag||0)+'d'+(y33.ncgSplitDe?' · + '+y33.ncgSplitDe:'')+(y33.retido>0?' · + saldo credor retido':''));
+   if(S.some(function(y){ return y.ncgSplit>0; })) linha('↳ retido no split payment', function(y){ return y.ncgSplit?fmt(y.ncgSplit):'—'; }, 'color:#8a97a8', y33.ncgSplitDe||'');
+   if(S.some(function(y){ return y.retido>0; })) linha('↳ saldo credor IBS/CBS parado', function(y){ return y.retido?fmt(y.retido):'—'; }, 'color:#8a97a8', 'Identificador · saldo credor × '+(d.ressarc||60)+'/360');
+   linha('(−) Variação do giro', function(y){ return (y.dNcg>=0?'':'+ ')+fmt(Math.abs(y.dNcg)); }, '', 'NCG do ano − NCG do ano anterior (negativo libera caixa)');
+   linha('= Caixa operacional', function(y){ return '<span style="'+cor(y.caixa)+'">'+fmt(y.caixa)+'</span>'; }, 'font-weight:700;color:var(--gold)');
+   linha('Saldo acumulado', function(y){ return '<span style="'+cor(y.saldo)+'">'+fmt(y.saldo)+'</span>'; }, 'font-weight:700', 'caixa inicial '+fmt(d.caixa0||0));
+   h+='</tbody></table></div>';
+   var dobra=window.lhPmDobra||function(t,c){ return '<div><b>'+t+'</b><div>'+c+'</div></div>'; };
+   h+=dobra('Como ler este fluxo', 'As entradas e saídas vêm do DRE (regime de competência) e viram caixa pela <b>variação do capital de giro</b>: quando a NCG sobe, o dinheiro fica preso em clientes e estoque e sai do caixa; quando cai, volta. Três coisas sobem a NCG na reforma e aparecem separadas: o <b>split payment</b> (o imposto sai na liquidação do pagamento, não no dia 20 do mês seguinte — some o float), o <b>saldo credor</b> de IBS/CBS (crédito maior que débito só vira dinheiro depois do ressarcimento) e os prazos de sempre. O "pior saldo" é a pergunta de banco: em que ano o caixa aperta e quanto falta.');
+   h+=dobra('Premissas desta conta — o que entrou, o que não entrou', '<ul style="margin:4px 0 0 16px;padding:0"><li>Entradas = receita × (1 − inadimplência '+pct(d.inad||0)+'); vendas à vista '+pct(d.vista||0,0)+' não entram no prazo de receber.</li><li>NCG base = receita/360 × '+Math.round(dias)+' dias (receber '+(d.pRec||0)+' × (1 − à vista) − pagar '+(d.pPag||0)+'). Estoque em dias não é informado — entra pelo prazo de pagar.</li><li>Split payment: '+(y33.ncgSplitDe?y33.ncgSplitDe+' — uma leitura só, para não contar duas vezes':'sem análise de split ligada; o giro não inclui o imposto retido na liquidação')+'.</li><li>Saldo credor: '+(y33.credor>0?fmt(y33.credor)+'/ano em 2033 × '+(d.ressarc||60)+' dias (art. 39 da LC 214)':'não há saldo credor nesta empresa')+'.</li><li>Não entram: amortização de empréstimos, investimento (CAPEX), distribuição de lucros, variação de estoque e sazonalidade dentro do ano — o fluxo é anual.</li><li>Tudo o que o DRE assume (curva, mix, Cadeia, IRPJ/CSLL) vale aqui.</li></ul>');
+   h+='</div>';
+   box.innerHTML=h;
+   var cb=document.getElementById('fin_fluxo_cenario'); if(cb && y33 && S[7]) { try{ cb.innerHTML='<span style="font-size:.74rem;color:#8a97a8">cenário 2033: <b style="color:#e0b93a">'+pct(((typeof window.LH_ALIQ_REF==='number'&&window.LH_ALIQ_REF>0)?window.LH_ALIQ_REF:26.5),2)+'</b></span>'; }catch(_e){} }
+ }
  /* ── público ── */
  window.LH_FIN={
    get:function(){ carregar(); return JSON.parse(JSON.stringify(estado)); },
@@ -59785,12 +59903,13 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    impostos:function(ano, d){ if(!d) carregar(); return impostos(ano, d); },
    serie:function(d){ if(!d) carregar(); return serie(d); },
    sugerir:sugerir, sugestoes:sugestoes, renderCred:renderCred, campos:CAMPOS.slice(), anos:ANOS.slice(),
-   dre:function(d){ if(!d) carregar(); return dre(d); }, afluente:afluente, removerAfluente:removerAfluente, renderDre:renderDre, afluentes:function(){ carregar(); return JSON.parse(JSON.stringify(estado.afluentes||{})); },
+   dre:function(d){ if(!d) carregar(); return dre(d); }, afluente:afluente, removerAfluente:removerAfluente, renderDre:renderDre,
+   fluxo:function(d){ if(!d) carregar(); return fluxo(d); }, renderFluxo:renderFluxo, afluentes:function(){ carregar(); return JSON.parse(JSON.stringify(estado.afluentes||{})); },
    eid:eid
  };
  var _ap=window.abrirPagina;
- window.abrirPagina=function(id){ var r=_ap.apply(this,arguments); try{ if(id==='fin_dados'){ carregar(); ligar(); escrever(); sugerir(false); resumo(); } else if(id==='fin_cred'){ setTimeout(renderCred,50); } else if(id==='fin_dre'){ setTimeout(renderDre,50); } }catch(_e){} return r; };
- window.addEventListener('lh:cenario',function(){ try{ var pg=document.querySelector('.page.active'); if(pg && pg.id==='page-fin_cred') renderCred(); if(pg && pg.id==='page-fin_dre') renderDre(); }catch(_e){} });
+ window.abrirPagina=function(id){ var r=_ap.apply(this,arguments); try{ if(id==='fin_dados'){ carregar(); ligar(); escrever(); sugerir(false); resumo(); } else if(id==='fin_cred'){ setTimeout(renderCred,50); } else if(id==='fin_dre'){ setTimeout(renderDre,50); } else if(id==='fin_fluxo'){ setTimeout(renderFluxo,50); } }catch(_e){} return r; };
+ window.addEventListener('lh:cenario',function(){ try{ var pg=document.querySelector('.page.active'); if(pg && pg.id==='page-fin_cred') renderCred(); if(pg && pg.id==='page-fin_dre') renderDre(); if(pg && pg.id==='page-fin_fluxo') renderFluxo(); }catch(_e){} });
  function boot(){ carregar(); ligar(); escrever(); resumo(); }
  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
 })();

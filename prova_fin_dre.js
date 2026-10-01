@@ -13,7 +13,7 @@ setTimeout(() => {
   ex('LH_FIN.dre / afluente / renderDre existem', ['dre', 'afluente', 'removerAfluente', 'renderDre', 'afluentes'].every((k) => typeof F[k] === 'function'));
   const ids = [...d.querySelectorAll('.nav-item[onclick]')].map((e) => (e.getAttribute('onclick').match(/abrirPagina\('([^']+)'/) || [])[1]);
   ex('aba DRE 2026–2033 no menu, logo depois do Identificador', ids.indexOf('fin_dre') === ids.indexOf('fin_cred') + 1 && !!d.getElementById('page-fin_dre'));
-  ex('botão "→ Usar no meu DRE / Fluxo" só nas três análises desta versão (c05, precmassa, cadeia)', (() => { const b = [...d.querySelectorAll('.lh-fin-btn')]; const de = b.map((x) => (x.getAttribute('onclick').match(/afluente\('([^']+)'/) || [])[1]).sort(); return JSON.stringify(de) === JSON.stringify(['c05', 'cadeia', 'precmassa']); })(), [...d.querySelectorAll('.lh-fin-btn')].length);
+  ex('botão "→ Usar no meu DRE / Fluxo" nas três análises do DRE (c05, precmassa, cadeia)', (() => { const b = [...d.querySelectorAll('.lh-fin-btn')]; const de = b.map((x) => (x.getAttribute('onclick').match(/afluente\('([^']+)'/) || [])[1]); return ['c05', 'cadeia', 'precmassa'].every((k) => de.indexOf(k) >= 0) && de.length === new Set(de).size; })(), [...d.querySelectorAll('.lh-fin-btn')].length);
   ex('o botão do c05 está na página do Regime Ótimo, o da cadeia na Cadeia, o da precmassa na Precificação', !!d.querySelector('#page-c05 .lh-fin-btn') && !!d.querySelector('#page-cadeia .lh-fin-btn') && !!d.querySelector('#page-precmassa .lh-fin-btn'));
 
   /* empresa-base: Presumido comércio, fat 1,2 mi, compras 660 mil, fixos 300 mil, cartão 2%, sem crescimento */
