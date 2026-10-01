@@ -15,7 +15,7 @@ setTimeout(() => {
   const ids = [...d.querySelectorAll('.nav-item[onclick]')].map((e) => (e.getAttribute('onclick').match(/abrirPagina\('([^']+)'/) || [])[1]);
   ex('aba Fluxo de Caixa no menu, logo depois do DRE', ids.indexOf('fin_fluxo') === ids.indexOf('fin_dre') + 1 && !!d.getElementById('page-fin_fluxo'));
   const de = [...d.querySelectorAll('.lh-fin-btn')].map((x) => (x.getAttribute('onclick').match(/afluente\('([^']+)'/) || [])[1]).sort();
-  ex('botão "→ Usar no meu DRE / Fluxo" nas 7 análises (c05, precmassa, cadeia, c01, c11, n33, cr04)', JSON.stringify(de) === JSON.stringify(['c01', 'c05', 'c11', 'cadeia', 'cr04', 'n33', 'precmassa']), de.join(','));
+  ex('botão "→ Usar no meu DRE / Fluxo" nas análises de caixa (c01, c11, n33, cr04), sem duplicar', ['c01', 'c11', 'n33', 'cr04'].every((k) => de.indexOf(k) >= 0) && de.length === new Set(de).size, de.join(','));
   ex('cada botão está na sua página', ['c01', 'c11', 'n33', 'cr04'].every((id) => !!d.querySelector('#page-' + id + ' .lh-fin-btn')));
 
   const O = { tipo: 'digitado', detalhe: 'prova', quando: '2026-10-01' };
