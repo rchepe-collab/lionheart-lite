@@ -78,7 +78,7 @@ setTimeout(() => {
 
   /* a aba desenha */
   w.abrirPagina('fin_dre'); F.renderDre(); const box = d.getElementById('fin_dre_result');
-  ex('tabela com 8 anos, linhas de receita, imposto, margem de contribuição e lucro líquido', box.querySelectorAll('thead th').length === 9 && /Receita bruta/.test(box.textContent) && /Imposto sobre o consumo/.test(box.textContent) && /Margem de contribuição/.test(box.textContent) && /Lucro líquido/.test(box.textContent));
+  ex('tabela com 8 anos, linhas de receita, imposto, margem de contribuição e lucro líquido', box.querySelector('thead').querySelectorAll('th').length === 9 && /Receita bruta/.test(box.textContent) && /Imposto sobre o consumo/.test(box.textContent) && /Margem de contribuição/.test(box.textContent) && /Lucro líquido/.test(box.textContent));
   ex('"de onde veio" aparece por linha (Identificador, Dados, Regime Ótimo)', /Identificador de Créditos/.test(box.textContent) && /Regime Ótimo/.test(box.textContent) && /Dados ·/.test(box.textContent));
   ex('o painel de afluentes lista o Regime Ótimo e a Cadeia ligados', /Regime Ótimo/.test(d.getElementById('fin_dre_afluentes').textContent) && /Cadeia de Crédito/.test(d.getElementById('fin_dre_afluentes').textContent));
   ex('KPI "Pior ano de lucro" e Premissas carimbam a conta', /Pior ano de lucro/.test(box.textContent) && /Premissas desta conta/.test(box.textContent));

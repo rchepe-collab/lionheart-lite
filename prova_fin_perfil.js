@@ -17,7 +17,7 @@ setTimeout(() => {
 
   /* ── o bug do id duplicado ── */
   ex('os Dados não têm mais um select fin_tipo (o único fin_tipo é o da calculadora de serviços financeiros)', !d.querySelector('#page-fin_dados #fin_tipo') && !!d.querySelector('#page-fin #fin_tipo, #fin_tipo'));
-  ex('o seletor de perfil existe, com 6 perfis + automático, e os 3 campos novos estão em LH_FIN.campos (35)', d.querySelectorAll('#fin_perfil option').length === 7 && ['perfil', 'comissao', 'opVar'].every((k) => F.campos.indexOf(k) >= 0) && F.campos.length === 35 && !!d.getElementById('fin_comissao') && !!d.getElementById('fin_opVar'));
+  ex('o seletor de perfil existe, com 6 perfis + automático, e os 3 campos novos estão em LH_FIN.campos (37 com os da v902)', d.querySelectorAll('#fin_perfil option').length === 7 && ['perfil', 'comissao', 'opVar'].every((k) => F.campos.indexOf(k) >= 0) && F.campos.length === 37 && !!d.getElementById('fin_comissao') && !!d.getElementById('fin_opVar'));
   const PS = F.perfis();
   ex('seis perfis: comércio, indústria, serviços, agro, alimentação, turismo — turismo e serviços são ISS, os outros ICMS', Object.keys(PS).length === 6 && PS.turismo.tipo === 'servico' && PS.servico.tipo === 'servico' && PS.alimentacao.tipo === 'comercio' && PS.agro.tipo === 'comercio' && PS.industria.tipo === 'comercio');
 

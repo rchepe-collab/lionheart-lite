@@ -11,8 +11,8 @@ const w = new JSDOM(APP, { runScripts: 'dangerously', pretendToBeVisual: true, u
 w.fetch = () => new Promise(() => {}); w.HTMLElement.prototype.scrollIntoView = function () {}; w.scrollTo = function () {}; w.alert = () => {};
 setTimeout(() => {
   const d = w.document, F = w.LH_FIN; w.LH_ALIQ_REF = 26.5; const O = { tipo: 'digitado', detalhe: 'prova', quando: '2026-10-01' };
-  ex('os 4 campos novos existem nos Dados e em LH_FIN.campos', ['estoque', 'capex', 'amort', 'distrib'].every((k) => !!d.getElementById('fin_' + k) && F.campos.indexOf(k) >= 0) && F.campos.length === 35);   /* v901: 35 */
-  const de = [...d.querySelectorAll('.lh-fin-btn')].map((x) => (x.getAttribute('onclick').match(/afluente\('([^']+)'/) || [])[1]).sort();
+  ex('os 4 campos novos existem nos Dados e em LH_FIN.campos', ['estoque', 'capex', 'amort', 'distrib'].every((k) => !!d.getElementById('fin_' + k) && F.campos.indexOf(k) >= 0) && F.campos.length === 37);   /* v902: 37 */
+  const de = [...d.querySelectorAll('.lh-fin-btn')].map((x) => (x.getAttribute('onclick').match(/afluente\('([^']+)'/) || [])[1]).filter((x) => !/^setor:/.test(x)).sort();   /* v902: os setoriais têm prova própria */
   ex('botão "→ Usar no meu DRE / Fluxo" nas 9 análises (+ c02 e dxh)', JSON.stringify(de) === JSON.stringify(['c01', 'c02', 'c05', 'c11', 'cadeia', 'cr04', 'dxh', 'n33', 'precmassa']), de.join(','));
   ex('os botões de c02 e dxh estão nas páginas certas', !!d.querySelector('#page-c02 .lh-fin-btn') && !!d.querySelector('#page-dxh .lh-fin-btn'));
 
