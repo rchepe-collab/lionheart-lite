@@ -13,7 +13,7 @@ setTimeout(() => {
   ex('sem Dados, as páginas financeiras não entram no PDF', w.pdfFinDisponivel() === false && w.buildPaginasFin(config, paleta, 5).paginas === 0);
   F.set({ fat: 1200000, cresc: 3, infl: 4, regime: 'presumido', tipo: 'comercio', icms: 18, compras: 660000, desp: 8, cartao: 2, pessoal: 150000, prolab: 48000, ocup: 30000, adm: 12000, pRec: 30, pPag: 20, vista: 40, inad: 2, caixa0: 50000, ressarc: 60, estoque: 20, capex: 30000, amort: 12000, distrib: 50 }, O);
   const r = w.buildPaginasFin(config, paleta, 5);
-  ex('com Dados, entram 2 páginas (DRE + Fluxo)', r.paginas === 2 && (r.html.match(/class="pdf-page"/g) || []).length === 2);
+  ex('com Dados, entram 3 páginas (DRE + Fluxo + mês a mês/cenários)', r.paginas === 3 && (r.html.match(/class="pdf-page"/g) || []).length === 3);
   const box = d.createElement('div'); box.innerHTML = r.html; const pags = box.querySelectorAll('.pdf-page');
   ex('página DRE: título, 9 colunas (conta + 8 anos), linhas de receita, imposto, margem e lucro, bloco "De onde veio"', /DRE Projetado 2026–2033/.test(pags[0].textContent) && pags[0].querySelectorAll('thead th').length === 9 && /Receita bruta/.test(pags[0].textContent) && /Lucro líquido/.test(pags[0].textContent) && /De onde veio/.test(pags[0].textContent));
   const D = F.dre();

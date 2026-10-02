@@ -36,7 +36,7 @@ setTimeout(() => {
   ex('tudo com selo "Central · ECD"', ['ocup', 'adm', 'estoque', 'amort', 'caixa0', 'pRec'].every((k) => Og[k].tipo === 'central' && /ECD/.test(Og[k].detalhe)));
   w.abrirPagina('fin_dados');
   ex('a tabela de documentos lista a ECD como fonte de ocupação, estoque, prazos, caixa e amortização', /ECD/.test(d.getElementById('fin_dados_docs').textContent) && /estoque em dias/.test(d.getElementById('fin_dados_docs').textContent) && /amortização/.test(d.getElementById('fin_dados_docs').textContent));
-  ex('a lista do "só manual" encolheu para 13 (… + caixa mínimo e custo do capital)', (d.getElementById('fin_dados_docs').textContent.match(/Só manuais[^:]*:([^.]*)/) || ['', ''])[1].split('·').length === 13);   /* v904: 13 */
+  ex('a lista do "só manual" encolheu para 12 (sazonalidade agora vem do PGDAS/XML)', (d.getElementById('fin_dados_docs').textContent.match(/Só manuais[^:]*:([^.]*)/) || ['', ''])[1].split('·').length === 12);   /* v905: 12 */
   ex('com a ECD lida, o DRE e o Fluxo rodam sem nenhum campo digitado', F.dre().length === 8 && F.fluxo()[7].saldo !== undefined && F.dre()[0].fixos === 300000);
 
   /* Balancete: por nome, como % da receita do balancete × faturamento */
