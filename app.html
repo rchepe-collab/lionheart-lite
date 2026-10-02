@@ -10870,7 +10870,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <button class="btn-secondary" onclick="LH_CADEIA.lerDocumentos()">📄 Ler dos documentos importados</button>
         <button class="btn-secondary" onclick="lhCarteiraAbrir('forn')">＋ montar pela carteira de fornecedores</button>
         <button class="btn-secondary" onclick="lhCarteiraAbrir('cli')">＋ montar pela carteira de clientes</button>
-        <button class="btn-secondary" onclick="abrirPagina('importxml')">Central de Documentos</button><button type="button" class="lh-fin-btn" onclick="LH_FIN.afluente('cadeia')" title="leva esta análise ao DRE e ao Fluxo de Caixa 2026–2033 (Inteligência Financeira)" style="margin-left:0;background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.5);color:#3ecf8e;padding:10px 15px;border-radius:10px;cursor:pointer;font-size:.85em;font-weight:700">→ Usar no meu DRE / Fluxo (8 anos)</button>
+        <button class="btn-secondary" onclick="abrirPagina('importsped')">Central de Documentos</button><button type="button" class="lh-fin-btn" onclick="LH_FIN.afluente('cadeia')" title="leva esta análise ao DRE e ao Fluxo de Caixa 2026–2033 (Inteligência Financeira)" style="margin-left:0;background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.5);color:#3ecf8e;padding:10px 15px;border-radius:10px;cursor:pointer;font-size:.85em;font-weight:700">→ Usar no meu DRE / Fluxo (8 anos)</button>
       </div>
       <h3 style="color:#3ecf8e">Entrada — de quem eu compro <span id="cad_origem_entrada"></span></h3>
       <div class="input-grid-2">
@@ -10907,7 +10907,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
     <div class="input-card">
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
         <button class="btn-secondary" onclick="LH_FIN.sugerir(true)">⇣ Preencher pela Central e pelas telas já rodadas</button>
-        <button class="btn-secondary" onclick="abrirPagina('importxml')">Central de Documentos</button>
+        <button class="btn-secondary" onclick="abrirPagina('importsped')">Central de Documentos</button>
         <button class="btn-secondary" onclick="abrirPagina('fin_cred')">→ Identificador de Créditos</button>
         <span id="fin_dados_info" style="font-size:.78rem;color:var(--text2)"></span>
         <span id="fin_nuvem" style="margin-left:auto;font-size:.74rem;color:#8a97a8" title="Dados, afluentes e origem guardados no servidor Lionheart, por escritório e por empresa (a empresa é identificada por um hash — o CNPJ não sai do navegador)"></span>
@@ -70335,6 +70335,11 @@ window.LH_PORTEIRO={
               + (_ehPdf ? ' · leitura de PDF indisponível (sem acesso à biblioteca externa) — digite os valores à mão ou envie o arquivo em outro formato' : '')});
           try{ if(typeof mostrarToast==='function') mostrarToast('\u26a0 '+grupos.ERRO.length+' arquivo(s) não puderam ser lidos'+(_ehPdf?' — a leitura de PDF não está disponível agora':'')+'. Os campos correspondentes NÃO foram preenchidos.','error'); }catch(_e){}
         }
+
+        /* ★ v906 · ECD solta na Central: o Porteiro detectava (detectarTipo → 'ECD') e não tinha ramo — o arquivo sumia calado.
+           Mesmo caminho do botão SPED da página: parseECD → LH_IMPORT_ECD → LH_aplicarECDNasCalcs (não sobrescreve campo preenchido). */
+        if(grupos.ECD){ var _ecdOk=false; grupos.ECD.forEach(function(l){ try{ var _e=window.parseECD(l.texto); if(_e&&_e.ok){ window.LH_IMPORT_ECD=_e; _ecdOk=true; aplicados++; var _nn=(window.LH_aplicarECDNasCalcs?window.LH_aplicarECDNasCalcs(_e):0); try{ if(window.lhImportECD_render) window.lhImportECD_render(_e,_nn); }catch(_r){} } }catch(e){} });
+          resumo.push({t:'ECD (contábil)', n:grupos.ECD.length, ok:_ecdOk}); }
 
         /* EFD Contribuições */
         if(grupos.EFD){ window.LH_EFD_SERIE=[]; var _efdAcc={ok:false,files:0,cnpj:'',empresa:'',dtIni:'',dtFin:'',receitaBruta:0,pisApurado:0,cofinsApurado:0,credPIS:0,credCOFINS:0,credTotal:0,basePIS:0,saidasTotal:0,monoSaidas:0,stSaidas:0,zeroSaidas:0,exportSaidas:0,icmsSaidas:0,devolEntradas:0,saldoCredDisp:0,_sdLast:0,_dtFinMax:'',regimeInc:''};
