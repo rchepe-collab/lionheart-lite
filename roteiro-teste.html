@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Roteiro de teste da Central de Documentos do Lionheart para escritórios parceiros.">
+<meta name="robots" content="noindex">
+<title>Roteiro de Teste Lionheart</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: caderno de conferência de campo — uma coluna, exercício = ficha com documento → telas → o que conferir → registro */
+:root{
+  --bg:#f5f6f8; --paper:#ffffff; --ink:#18212f; --muted:#5b6678; --line:#dde2ea;
+  --gold:#a8790f; --gold-soft:#f6edd6; --ok:#1d7a4f; --ok-soft:#e3f3ea; --bad:#b42f2a; --bad-soft:#fbe7e5; --chip:#eef1f6;
+  --display:"Archivo",system-ui,sans-serif; --body:"Source Sans 3",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#10151d; --paper:#18202b; --ink:#e8ecf2; --muted:#9aa6b8; --line:#2a3443;
+  --gold:#e0b44a; --gold-soft:#2c2614; --ok:#4cc38a; --ok-soft:#14291f; --bad:#f07a73; --bad-soft:#331a19; --chip:#222c39; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10151d; --paper:#18202b; --ink:#e8ecf2; --muted:#9aa6b8; --line:#2a3443;
+  --gold:#e0b44a; --gold-soft:#2c2614; --ok:#4cc38a; --ok-soft:#14291f; --bad:#f07a73; --bad-soft:#331a19; --chip:#222c39; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;margin:0}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:20px 80px;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:1.75rem;font-weight:800;letter-spacing:-.01em}
+h2{font-size:1.2rem;font-weight:700}
+h3{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:.74rem;color:var(--gold);letter-spacing:.06em;text-transform:uppercase}
+.lead{color:var(--muted);max-width:62ch}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.note{background:var(--gold-soft);border:1px solid color-mix(in srgb,var(--gold) 35%,transparent);border-radius:10px;padding:12px 14px;font-size:.93rem}
+ol.steps,ul.plain{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.progress{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
+.bar{flex:1;height:8px;background:var(--chip);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .3s}
+.progress span{font-family:var(--mono);font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.toc{display:flex;flex-wrap:wrap;gap:6px}
+.toc a{font-size:.82rem;text-decoration:none;color:var(--ink);background:var(--chip);border-radius:99px;padding:4px 10px;border:1px solid transparent}
+.toc a.done{background:var(--ok-soft);color:var(--ok)}
+.toc a.prob{background:var(--bad-soft);color:var(--bad)}
+.ex{scroll-margin-top:60px}
+.ex header{display:flex;flex-direction:column;gap:4px}
+.doc{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.9rem;color:var(--muted)}
+.doc b{color:var(--ink);font-weight:600}
+.check{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
+.check:first-of-type{border-top:0}
+.check input{width:22px;height:22px;margin-top:2px;accent-color:var(--ok)}
+.check .t{min-width:0}
+.check .where{font-family:var(--display);font-weight:700;font-size:.95rem}
+.check .what{font-size:.93rem}
+.check .how{font-size:.84rem;color:var(--muted);margin-top:2px}
+code,.mono{font-family:var(--mono);font-size:.82em;background:var(--chip);padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
+.verdict{display:flex;gap:8px;flex-wrap:wrap}
+.verdict button{flex:1;min-width:120px;font:600 .9rem var(--body);padding:10px;border-radius:10px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.verdict button[aria-pressed="true"].ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.verdict button[aria-pressed="true"].bad{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.verdict button[aria-pressed="true"].na{background:var(--chip);border-color:var(--muted)}
+textarea,input[type=text]{width:100%;font:inherit;font-size:.93rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px}
+button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.perigo{font:700 1rem var(--display);padding:12px;border-radius:12px;border:1.5px solid var(--bad);background:var(--paper);color:var(--bad);cursor:pointer;width:100%}
+.confirma{background:var(--bad-soft);border:1px solid var(--bad);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.primary{font:700 1rem var(--display);padding:14px;border-radius:12px;border:0;background:var(--gold);color:#fff;cursor:pointer;width:100%}
+#relatorio{font-family:var(--mono);font-size:.78rem;white-space:pre-wrap;min-height:160px}
+.small{font-size:.84rem;color:var(--muted)}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:520px}
+.tbl th,.tbl td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{font-family:var(--display);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+@media print{
+  :root{--bg:#fff;--paper:#fff;--ink:#111;--muted:#444;--line:#ccc;--chip:#f1f1f1;color-scheme:light}
+  .progress,#relatorio,#gerar,#salvarArq,#salvo,#zerarBox,#copiado,.toc,nav[aria-label],.verdict button{display:none!important}
+  .verdict::after{content:"(  ) Tudo bateu     (  ) Achei divergência     (  ) Não tenho o documento";font-size:.9rem}
+  textarea{min-height:56px;height:56px;border:1px solid #999}
+  textarea::placeholder{color:transparent}
+  .box{border-color:#bbb}
+  .box:not(.ex){break-inside:avoid-page}
+  .ex h3,.verdict,.ex label.small,.ex textarea{break-inside:avoid;break-after:avoid}
+  .ex{break-before:page}
+  .check{break-inside:avoid}
+  .wrap{padding-block:0;max-width:none}
+  body{font-size:13.5px;line-height:1.45}
+  .check{padding:5px 0}
+  .box{padding:12px;gap:8px}
+  section.box:last-of-type .small:first-of-type::after{content:" No PDF: anote à mão e mande uma foto ou use a versão online."}
+}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="box" style="gap:10px">
+    <div class="eyebrow">Lionheart · teste de campo com escritórios parceiros</div>
+    <h1>Roteiro de teste: documentos → calculadoras</h1>
+    <p class="lead">Você vai importar documentos reais de um cliente na Central de Documentos e conferir, tela por tela, se cada número chegou certo. Cada exercício diz qual documento usar, onde olhar e qual valor deve aparecer. Marque o que conferiu, anote o que estranhou e, no fim, copie o relatório e mande para o Ricardo.</p>
+    <div class="row" style="display:flex;flex-direction:column;gap:6px">
+      <label for="testador" class="small">Seu nome e escritório (vai no relatório)</label>
+      <input type="text" id="testador" placeholder="ex: Ana Souza · Souza Contabilidade">
+    </div>
+  </header>
+
+  <div id="semJS" style="background:#7a1f1b;color:#fff;border-radius:10px;padding:12px 14px;font-size:.95rem;line-height:1.45"><b>O simulador não está funcionando neste visualizador.</b> Você abriu o arquivo numa pré-visualização (WhatsApp, Arquivos, Drive ou e-mail), que mostra a página mas não executa os botões. Toque em "Abrir com" ou no ícone de compartilhar e escolha <b>Chrome</b> ou <b>Safari</b>.</div>
+  <div class="progress" aria-live="polite"><div class="bar"><i id="barra"></i></div><span id="contagem">0 de 0 conferências</span></div>
+
+  <section class="box">
+    <h2>Antes de começar</h2>
+    <ol class="steps">
+      <li><b>Escolha um cliente real</b> que tenha a maior parte destes documentos dos últimos 12 meses: PGDAS (ou EFD-Contribuições), XMLs de NF-e de compra e de venda, eSocial, ECD ou balancete. Quanto mais documentos, mais exercícios você consegue fazer.</li>
+      <li><b>Separe os números de conferência</b> antes de importar: RBT12 e receita do último PGDAS, valor do DAS, folha e pró-labore do mês, receita líquida e lucro da ECD. É contra eles que você vai comparar.</li>
+      <li><b>Entre no Lionheart</b> e selecione o cliente (CNPJ). Tudo o que você importar fica guardado nesse cliente, no seu navegador.</li>
+      <li><b>Abra a Central de Documentos.</b> Arraste os arquivos para a área de importação. Pode ser arquivo solto, um .zip ou a pasta inteira. A Central reconhece o tipo pelo conteúdo, não pelo nome.</li>
+      <li><b>Leia o resumo da importação.</b> Ele lista cada tipo reconhecido (NF-e, PGDAS, eSocial…) e quantos arquivos. Se aparecer "Não foi possível ler", anote quais.</li>
+      <li><b>Clique em "⚡ Aplicar tudo aos cálculos".</b> Os campos preenchidos pela importação ganham uma etiqueta dourada dizendo de qual documento vieram.</li>
+    </ol>
+    <div class="note"><b>Regra que vale em todo o teste:</b> o que você digita vence o que veio do documento. Se um campo já tinha valor digitado, a importação não mexe nele. Para testar a importação, comece com o cliente sem nada digitado.</div>
+  </section>
+
+  <nav class="box" aria-label="Exercícios">
+    <h3>Exercícios</h3>
+    <div class="toc" id="toc"></div>
+  </nav>
+
+  <div id="exercicios" style="display:flex;flex-direction:column;gap:18px"></div>
+
+  <section class="box" id="mapa">
+    <h2>Mapa rápido: documento → onde aparece</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Documento</th><th>Telas que recebem</th></tr></thead>
+      <tbody>
+        <tr><td>PGDAS-D</td><td>Regime Ótimo · Dentro × Híbrido · Sublimite · Fator R · Split (Cash Gap, por Operação, NCG) · SN → Regime Regular · Alíquota por Setor · telas setoriais · Dados Estratégicos</td></tr>
+        <tr><td>NF-e (XML)</td><td>Dentro × Híbrido · Regime Ótimo (fornecedores) · SN → Regime Regular (% B2B) · Split por Operação (prazos) · CAPEX · Cadeia de Crédito · Monofásico · ICMS-ST · Tema 69 · Exportação · Dados Estratégicos</td></tr>
+        <tr><td>eSocial</td><td>Regime Ótimo · Fator R · SN → Regime Regular · Recuperação Previdenciária · Funrural · Dentro × Híbrido · Dados Estratégicos</td></tr>
+        <tr><td>EFD-Contribuições</td><td>Saldo Credor PIS/COFINS · Exportação · ISS (Tema 118) · telas setoriais (PIS/COFINS efetivos) · Dados Estratégicos</td></tr>
+        <tr><td>SPED Fiscal</td><td>ICMS-ST (Tema 1125) · Ressarcimento ST (Tema 201) · Preço Industrial · Dados Estratégicos</td></tr>
+        <tr><td>ECD</td><td>Regime Ótimo · Dividendos · JCP × Dividendos · ITCMD · Doação × Herança · Valuation · Dados Estratégicos (fixos, estoque, prazos, caixa)</td></tr>
+        <tr><td>Balancete</td><td>Insumos (Tema 779) · Energia · Créditos Plenos · JCP × Dividendos · Dados Estratégicos</td></tr>
+        <tr><td>NFS-e</td><td>SN → Regime Regular · ISS · Construção · Dados Estratégicos (perfil serviço)</td></tr>
+        <tr><td>CT-e</td><td>Dados Estratégicos (fretes como despesa com crédito)</td></tr>
+        <tr><td>EFD-Reinf</td><td>Retenções na Fonte (IRRF, CSRF, INSS)</td></tr>
+        <tr><td>ECF</td><td>Valuation · M&amp;A (lucro líquido)</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="box">
+    <h2>Seu relatório</h2>
+    <p class="small">Gera um texto com tudo o que você marcou e anotou. Copie e mande para o Ricardo pelo WhatsApp. Seu progresso fica salvo neste aparelho enquanto você testa.</p>
+    <button class="primary" id="salvarArq" type="button">Salvar roteiro preenchido (arquivo)</button>
+    <p class="small">Gera um arquivo .html com tudo o que você marcou e escreveu. Mande esse arquivo para o Ricardo pelo WhatsApp ou e-mail. Quem abrir o arquivo vê o roteiro exatamente como você deixou, e você também pode abrir de novo e continuar de onde parou.</p>
+    <p class="small" id="salvo" aria-live="polite"></p>
+    <button class="primary" id="gerar" type="button" style="background:var(--ink)">Gerar e copiar relatório em texto</button>
+    <textarea id="relatorio" readonly aria-label="Relatório gerado"></textarea>
+    <p class="small" id="copiado" aria-live="polite"></p>
+  </section>
+
+  <section class="box" id="zerarBox">
+    <h2>Zerar o roteiro</h2>
+    <p class="small">Apaga todas as respostas: caixas marcadas, vereditos, anotações e o nome do testador. Vale para o que está salvo neste navegador e para as respostas que vieram dentro de um arquivo devolvido. Depois de zerar, use "Salvar roteiro preenchido (arquivo)" para gerar um arquivo em branco e mandar para o próximo testador.</p>
+    <button type="button" id="zerar" class="perigo">Zerar todas as respostas</button>
+    <div id="zerarConf" class="confirma" hidden>
+      <p><b>Isso apaga tudo e não tem volta.</b> Se quiser guardar as respostas, salve o arquivo antes.</p>
+      <div class="verdict"><button type="button" id="zerarSim" class="bad" aria-pressed="true">Sim, zerar tudo</button><button type="button" id="zerarNao">Cancelar</button></div>
+    </div>
+    <p class="small" id="zerado" aria-live="polite"></p>
+  </section>
+</div>
+
+<script>
+try{ document.getElementById("semJS").hidden=true; }catch(e){}
+const EX=[
+ {id:'pgdas',t:'PGDAS-D: faturamento, alíquota e anexo',doc:'PGDAS-D dos últimos 12 meses (PDF ou texto)',ref:'RBT12, receita do mês (RPA), valor do DAS e anexo do último PGDAS',
+  c:[
+   ['Central de Documentos','O resumo mostra "PGDAS-D" com a quantidade de meses lidos.','Se um PDF não abrir, anote. A leitura de PDF depende de a rede do escritório liberar o leitor.'],
+   ['Regime Ótimo','Faturamento anual = RBT12 do último PGDAS.','Compare com o RBT12 impresso no PGDAS. Etiqueta dourada: PGDAS.'],
+   ['Simples 2027: Dentro × Híbrido','RBT12, faturamento do mês e alíquota efetiva preenchidos.','Alíquota efetiva = valor do DAS ÷ receita do mês. Faça a conta na calculadora do celular.'],
+   ['Sublimite do Simples','RBT12 e faturamento do mês.','O resultado deve dizer se a empresa passa de R$ 3,6 milhões, e quando.'],
+   ['Fator R · Anexo III vs V','Receita dos 12 meses.','Fica completo depois do exercício do eSocial.'],
+   ['Split Payment — Cash Gap · Split por Operação · NCG ao Split','Faturamento mensal ≈ RBT12 ÷ 12.','Os três devem ter o mesmo valor.'],
+   ['SN → Regime Regular CBS/IBS','Faturamento e anexo.','O anexo deve bater com o do PGDAS.'],
+   ['Dados Estratégicos (Inteligência Financeira)','Faturamento = RBT12, regime = Simples Nacional, alíquota efetiva do DAS.','Cada campo mostra um selo verde "Central · PGDAS".']
+  ]},
+ {id:'esocial',t:'eSocial: folha, pró-labore e Fator R',doc:'XMLs do eSocial (S-1200 / remuneração) de um mês ou mais',ref:'total da folha do mês com encargos, pró-labore e número de sócios',
+  c:[
+   ['Central de Documentos','O resumo mostra "eSocial".',''],
+   ['Regime Ótimo','Folha mensal, pró-labore e número de sócios.','Compare com a folha que você fechou no mês.'],
+   ['Fator R · Anexo III vs V','Salários e pró-labore preenchidos; o Fator R aparece.','Fator R = (folha + pró-labore dos 12 meses) ÷ receita dos 12 meses. Acima de 28% é Anexo III.'],
+   ['SN → Regime Regular · Recuperação Previdenciária · Funrural','Folha preenchida.','O Funrural só se aplica a cliente rural.'],
+   ['Dados Estratégicos','Pessoal com encargos = folha × 12; pró-labore = pró-labore × 12.','Selo "Central · eSocial · folha × 12".']
+  ]},
+ {id:'nfe',t:'NF-e: vendas, compras, fornecedores e clientes',doc:'XMLs de NF-e de VENDA e de COMPRA do mesmo período (o ideal é 3 a 12 meses)',ref:'total vendido e total comprado no período (pelo seu sistema ou relatório do ERP)',
+  c:[
+   ['Central de Documentos','O resumo mostra "NF-e: X venda(s) · Y compra(s)".','A separação depende do CNPJ do cliente selecionado. Se vier tudo como venda ou tudo como compra, anote.'],
+   ['Simples 2027: Dentro × Híbrido','% de compras de fornecedores do regime regular e do Simples, % de clientes PJ e consumidor final, % de exportação.','Pense no cliente real: ele vende mais para empresa ou para consumidor? O número faz sentido?'],
+   ['Regime Ótimo','Fornecedores regulares × Simples.','Mesmo % que aparece no Dentro × Híbrido.'],
+   ['SN → Regime Regular CBS/IBS','% das vendas para PJ (B2B).',''],
+   ['Split por Operação','Prazos médios de recebimento e pagamento.','Compare com os prazos que o cliente pratica.'],
+   ['CAPEX — Crédito sobre Investimentos','Valor de bens de capital, se houver compra de máquina ou veículo.','Só aparece se houver nota de bem do ativo.'],
+   ['Cadeia de Crédito','Clique em "📄 Ler dos documentos importados".','Quanto das compras vem de regular, Simples, importação e pessoa física; quanto das vendas vai para cada tipo de cliente.'],
+   ['Dados Estratégicos','Faturamento (se não houver PGDAS), compras, exportação. Perfil detectado: CFOP 5101/6101 = indústria; 5102/6102 = comércio.','No Identificador de Créditos, "alíquota das compras" deve dizer "NCM dos XMLs de compra (N itens em M notas)".']
+  ]},
+ {id:'efd',t:'EFD-Contribuições: PIS/COFINS e saldo credor',doc:'EFD-Contribuições (.txt) de um ou mais meses',ref:'receita bruta, PIS e COFINS apurados e saldo credor do período',
+  c:[
+   ['Central de Documentos','O resumo mostra "EFD Contribuições".',''],
+   ['Saldo Credor PIS/COFINS','Saldo credor preenchido.','Compare com o saldo do bloco M da EFD.'],
+   ['Exportação & Saldo Credor','Saldo credor PIS/COFINS de hoje.',''],
+   ['Telas setoriais (Hotelaria, Bares, Logística…)','PIS e COFINS efetivos preenchidos.','Teste só a tela do setor do seu cliente.'],
+   ['Dados Estratégicos','Faturamento = receita bruta × 12 ÷ número de meses (quando não há PGDAS).','O selo diz "EFD-Contribuições · receita bruta (N meses × 12/N)".']
+  ]},
+ {id:'spedf',t:'SPED Fiscal: ICMS, ICMS-ST e IPI',doc:'SPED Fiscal / EFD ICMS-IPI (.txt)',ref:'ICMS-ST nas entradas, ICMS próprio, base do ICMS e IPI do período',
+  c:[
+   ['Central de Documentos','O resumo mostra "SPED Fiscal".',''],
+   ['ICMS-ST na base de PIS/COFINS · Tema 1125','Valor do ICMS-ST preenchido.','Compare com o ICMS-ST de entrada do período.'],
+   ['ICMS-ST — Ressarcimento (Tema 201)','Compras sujeitas à ST.','Só para indústria e atacado com ST.'],
+   ['Dados Estratégicos','ICMS-ST anualizado e alíquota de ICMS = ICMS próprio ÷ base.','Uma alíquota acima de 30% ou zerada é sinal de erro de leitura: anote.']
+  ]},
+ {id:'ecd',t:'ECD: resultado, balanço e DRE sem digitar',doc:'ECD (.txt do SPED Contábil) do último exercício',ref:'receita líquida, CMV, despesas com pessoal, lucro líquido, patrimônio líquido, caixa, estoque, clientes, fornecedores e empréstimos',
+  c:[
+   ['Central de Documentos','O resumo mostra "ECD (contábil)".','Se a ECD não aparecer no resumo, a versão do sistema ainda é anterior à correção de 02/10: avise o Ricardo.'],
+   ['Tributação de Dividendos · JCP × Dividendos','Lucro e patrimônio líquido preenchidos.','Compare com o balanço.'],
+   ['ITCMD · Doação × Herança · Valuation','Valor (patrimônio líquido / receita) preenchido.',''],
+   ['Dados Estratégicos: fixos','Ocupação = aluguel + energia + condomínio; administrativo; pessoal; pró-labore; marketing.','Compare com as contas da DRE contábil.'],
+   ['Dados Estratégicos: giro e caixa','Estoque em dias = estoque ÷ CMV × 360; prazo de receber = clientes ÷ receita × 360; prazo de pagar = fornecedores ÷ CMV × 360; caixa inicial; amortização = empréstimos de curto prazo + longo prazo ÷ 5.','Faça uma das contas à mão. Esse é o teste mais revelador.'],
+   ['DRE 2026–2033','Roda sem nenhum campo digitado.','O lucro de 2026 deve ficar perto do lucro da ECD. Diferença grande: anote os dois números.']
+  ]},
+ {id:'balancete',t:'Balancete: insumos, energia e despesas',doc:'Balancete do mês ou do ano (texto ou CSV com conta; descrição; saldo)',ref:'saldos de energia, aluguel, fretes, comissões, salários e receita do período',
+  c:[
+   ['Central de Documentos','O resumo mostra "Balancete" com o número de contas lidas.',''],
+   ['Créditos de Insumos · Tema 779','Até 12 campos preenchidos (energia, fretes, EPIs, comissões…).','Cada um deve bater com a conta do balancete.'],
+   ['Crédito sobre Energia · Créditos Plenos','Consumo de energia preenchido.',''],
+   ['Dados Estratégicos','Despesas com crédito (% da receita); ocupação, administrativo, pessoal, marketing e comissões, proporcionais ao faturamento.','Os campos de R$ só preenchem se o faturamento já estiver nos Dados. Importe o PGDAS antes.']
+  ]},
+ {id:'nfse',t:'NFS-e: ISS e perfil de serviços',doc:'XMLs de NFS-e emitidas (padrão nacional ou municipal)',ref:'base de cálculo e ISS do período',
+  c:[
+   ['Central de Documentos','O resumo mostra "NFS-e" com o número de notas.',''],
+   ['SN → Regime Regular · ISS (Tema 118) · Construção','Alíquota de ISS preenchida.','ISS ÷ base deve ficar entre 2% e 5%.'],
+   ['Dados Estratégicos','Perfil = Serviços (se as NFS-e superam as NF-e de venda); alíquota de ICMS/ISS = ISS.','O selo do perfil diz "NFS-e prestadas".']
+  ]},
+ {id:'cte',t:'CT-e e EFD-Reinf: fretes e retenções',doc:'XMLs de CT-e (fretes tomados) e/ou EFD-Reinf',ref:'total de fretes do período; IRRF, CSRF e INSS retidos',
+  c:[
+   ['Central de Documentos','O resumo mostra "CT-e" e/ou "EFD-Reinf".',''],
+   ['Retenções na Fonte','IRRF, CSRF e INSS retidos.','Compare com o que o cliente sofreu de retenção.'],
+   ['Dados Estratégicos','Sem balancete, as despesas com crédito trazem os fretes como % do faturamento.','O selo diz "CT-e · fretes tomados".']
+  ]},
+ {id:'agro',t:'Agro: produtor, agroindústria e cooperativa',doc:'PGDAS ou EFD, eSocial e XMLs de NF-e de compra (insumos) e de venda de um cliente rural ou agroindústria',ref:'receita da safra, folha, total de insumos (sementes, defensivos, fertilizantes, ração) e compras de produtor pessoa física',
+  c:[
+   ['Funrural — Receita × Folha','Receita bruta da comercialização (PGDAS/EFD) e folha (eSocial).','O resultado compara contribuir pela receita ou pela folha. Os dois valores precisam estar preenchidos.'],
+   ['Decisor do Produtor — vale ser contribuinte?','Receita anual; compra de insumos (NF-e de entrada pelos NCM do Anexo IX); % da venda para quem credita; % exportação.','Os insumos são só os itens do Anexo IX. Compare com o total de defensivos, sementes e fertilizantes comprados.'],
+   ['Crédito Presumido do Produtor · LC 224 · Agroindústria & Subrogação','Compras de produtor rural pessoa física, vindas das NF-e de entrada.','Notas de compra emitidas para CPF ou nota de produtor. Se o cliente compra de PF e o campo veio zerado, anote.'],
+   ['Defensivos & Fertilizantes · Mapa do Diferimento · Venda a Alíquota Zero','Gasto com defensivos e fertilizantes; compras com diferimento.','Todos leem as mesmas notas de entrada pelos NCM do Anexo IX.'],
+   ['Ciclo de Caixa da Safra · Barter','Compra de insumos e receita da safra.',''],
+   ['Exportação de Grão — o Crédito que Sangra','Crédito acumulado por ano (EFD-Contribuições, registros 1100 e 1500).','Só para quem exporta.'],
+   ['Insumos Agro & Produtor Rural · Cooperativas','Faturamento, carga atual (soma automática), % de insumos com crédito (balancete), IPI e ISS.','A carga atual é a soma de PIS, COFINS, ICMS, ISS e IPI efetivos. Confira se faz sentido para o cliente.'],
+   ['Dados Estratégicos','Perfil = Agro (se rodou uma tela do agro); compras; exportação. Abaixo de R$ 3,6 milhões, a leitura do DRE compara ficar dentro ou fora do IBS/CBS.','']
+  ]},
+ {id:'industria',t:'Indústria: IPI, ICMS-ST, estoque e exportação',doc:'SPED Fiscal, EFD-Contribuições e XMLs de NF-e de venda e de compra de uma indústria',ref:'IPI do período, ICMS-ST nas entradas, alíquota interna de ICMS, vendas com IPI destacado e vendas para o exterior (CFOP 7xxx)',
+  c:[
+   ['IPI na Transição & Zona Franca','Faturamento anual dos produtos com IPI destacado (NF-e de venda).','Compare com o total das notas de venda que têm IPI.'],
+   ['Preço Industrial — a Virada do Por Fora','ICMS por dentro (SPED Fiscal), PIS/COFINS por dentro (EFD), IPI por fora (SPED Fiscal C190).','Os três em %. Compare com a apuração do mês.'],
+   ['ICMS-ST — Ressarcimento (Tema 201)','Alíquota interna do ICMS e compras mensais sujeitas à ST (SPED Fiscal).',''],
+   ['Reintegra — o Resíduo que Fica no Exportador','Receita de exportação, das NF-e com CFOP 7xxx.','Só para quem exporta.'],
+   ['Split & Ciclo Longo','Faturamento mensal e insumos mensais com crédito (NF-e de entrada).',''],
+   ['Energia — as Teses do Eletrointensivo','ICMS sobre energia no estado.',''],
+   ['Crédito de Estoque na Virada','Regime de PIS/COFINS (PGDAS ou EFD 0110).','O valor do estoque é digitado; o regime vem do documento.'],
+   ['Dados Estratégicos','Perfil = Indústria (CFOP 5101/6101 ou IPI nas notas de venda); caixas de IPI e Imposto Seletivo aparecem.','O selo do perfil diz "XML de venda · X% com CFOP de produção própria".']
+  ]},
+ {id:'setores',t:'Setores: serviços, comércio e regimes específicos',doc:'PGDAS ou EFD, SPED Fiscal, NFS-e, balancete e NF-e de venda de um cliente do setor (abra só a tela do setor dele)',ref:'faturamento, PIS e COFINS do período, ICMS e ISS pagos, IPI se houver',
+  c:[
+   ['A tela do setor do cliente','Hotelaria, Bares, Logística, Transporte de Passageiros, Construção, Telecom, Medicamentos, Planos de Saúde, Agências, Portos, Serviços Financeiros ou Apostas: faturamento preenchido (PGDAS, EFD ou balancete).','Etiqueta dourada em cada campo preenchido.'],
+   ['Mesma tela: tributos de hoje','PIS e COFINS (EFD M200/M600), ICMS (SPED Fiscal E110/C190), ISS (NFS-e), IPI (SPED Fiscal C190), cada um como % da receita.','Some os % à mão: a "Carga atual efetiva" deve ser essa soma.'],
+   ['Mesma tela: crédito de insumos','% de insumos com crédito, vindo do balancete.','Na Logística: diesel, pedágio e manutenção. No Transporte: diesel e peças.'],
+   ['Hotel × Eventos','% do faturamento vendido a PJ (NF-e de saída).',''],
+   ['Construção & Empreitada','% do faturamento em materiais creditáveis e outros insumos (balancete); PIS, COFINS, ICMS, ISS e IPI efetivos.',''],
+   ['Profissões Regulamentadas · Fator R','Faturamento dos serviços da profissão; atividade (anexo do PGDAS).',''],
+   ['Clicar "→ Usar no meu DRE / Fluxo" na tela do setor','O DRE abre com o perfil do setor; faturamento e repasses (agência) vão para os Dados se estavam vazios.','A mensagem diz o que foi levado.']
+  ]},
+ {id:'teses',t:'Teses de recuperação: o que vem dos documentos',doc:'EFD-Contribuições, SPED Fiscal, balancete, eSocial, NF-e e EFD-Reinf dos últimos 5 anos (ou o que houver)',ref:'faturamento médio, alíquota média de ICMS, ICMS-ST de entrada, conta de energia, folha anual e retenções sofridas',
+  c:[
+   ['Tema 69 · ICMS na base de PIS/COFINS','Faturamento médio anual, alíquota média de ICMS (SPED Fiscal) e regime.',''],
+   ['Tema 118 · ISS na base de PIS/COFINS','Receita de serviços (média mensal), alíquota de ISS (NFS-e), competência inicial e número de meses (período do arquivo).','A competência inicial e os meses vêm do período do arquivo importado.'],
+   ['Tema 1125 · ICMS-ST na base de PIS/COFINS','ICMS-ST suportado (média mensal, SPED Fiscal).',''],
+   ['Tema 779 · Créditos de Insumos','Regime e até 12 despesas do balancete.',''],
+   ['Energia · Previdenciária Patronal · Monofásico · Retenções','Consumo de energia (balancete); folha anual (eSocial); itens monofásicos (NF-e); IRRF, CSRF e INSS retidos (Reinf).','Uma conferência por tela. Anote a que vier vazia mesmo tendo o documento.'],
+   ['Saldo Credor PIS/COFINS · Exportação & Saldo Credor','Saldo credor (EFD 1100 e 1500) e receita de exportação.','']
+  ]},
+ {id:'fin',t:'Inteligência Financeira de ponta a ponta',doc:'Os documentos já importados nos exercícios anteriores',ref:'o que você sabe do cliente: margem, sazonalidade, aperto de caixa',
+  c:[
+   ['Dados Estratégicos','A tabela "Que documentos preenchem estes campos" diz "N de 10 fontes lidas" e marca "● lido" nas certas.','Clique em "⇣ Preencher pela Central". Conte os selos verdes (Central), amarelos (telas) e cinzas (digitados).'],
+   ['Dados Estratégicos: perfil','O perfil detectado está certo para o cliente (comércio, indústria, serviço, agro, bares/restaurantes, turismo)?','Se errou, anote qual sinal ele usou (aparece embaixo do seletor).'],
+   ['Dados Estratégicos: sazonalidade','Com 12 meses de PGDAS ou de XML de venda, aparece "Pelos documentos" com pico e vale.','Os meses de pico e vale batem com o que você conhece do cliente?'],
+   ['Identificador de Créditos','Débito, crédito e saldo de 2027 a 2033. "De onde veio" cita os documentos.',''],
+   ['DRE 2026–2033','Linhas com os nomes do perfil; IRPJ/CSLL estimado ou do Regime Ótimo; leitura setorial no fim.','O resultado de 2026 é crível para este cliente?'],
+   ['Fluxo de Caixa 2026–2033','Pior saldo, pior mês, capital necessário e gráfico dos 96 meses.','O mês que aperta faz sentido para o negócio?'],
+   ['Relatório PDF (modo completo)','Três páginas financeiras: DRE, Fluxo e "Caixa mês a mês e cenários".','A numeração das páginas segue sem pular.']
+  ]},
+ {id:'regras',t:'Regras: o que você digita vence, e um cliente não vaza para outro',doc:'Nenhum documento novo',ref:'um segundo cliente para trocar',
+  c:[
+   ['Digitado vence importado','No Regime Ótimo, digite outro faturamento e clique em "⚡ Aplicar tudo aos cálculos" de novo. O seu valor deve ficar.','Faça o mesmo nos Dados Estratégicos: o selo vira "digitado".'],
+   ['Reimportar não duplica','Importe o mesmo PGDAS uma segunda vez. O RBT12 não pode dobrar.',''],
+   ['Troca de cliente','Selecione outro CNPJ. Nenhum número do primeiro cliente pode aparecer no Regime Ótimo, no Dentro × Híbrido nem nos Dados Estratégicos.','Este é o teste mais importante de sigilo. Se vazar qualquer número, avise o Ricardo na hora.'],
+   ['Voltar ao primeiro cliente','Os dados dele voltam como estavam.','']
+  ]}
+];
+const K='lh_roteiro_v1';
+let S={}; try{ S=JSON.parse(localStorage.getItem(K)||'{}')||{}; }catch(e){ S={}; }
+/* arquivo devolvido: o estado viaja dentro do próprio HTML e vence o do navegador */
+try{ const emb=document.getElementById('estadoRoteiro'); if(emb&&emb.textContent.trim()){ const E=JSON.parse(emb.textContent); const base=S.salvoEm||S.zeradoEm||''; if(E&&E.salvoEm&&(!base||E.salvoEm>base)) S=E; } }catch(e){}   /* zerado depois do arquivo: o arquivo não revive */
+const save=()=>{ try{ localStorage.setItem(K,JSON.stringify(S)); }catch(e){} };
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const box=document.getElementById('exercicios'), toc=document.getElementById('toc');
+EX.forEach((x,i)=>{
+  const n=i+1; const sec=document.createElement('section'); sec.className='box ex'; sec.id=x.id;
+  sec.innerHTML='<header><div class="eyebrow">Exercício '+n+' de '+EX.length+'</div><h2>'+esc(x.t)+'</h2></header>'+
+   '<div class="doc"><span><b>Documento:</b> '+esc(x.doc)+'</span><span><b>Tenha em mãos:</b> '+esc(x.ref)+'</span></div>'+
+   '<div>'+x.c.map((c,j)=>'<label class="check"><input type="checkbox" id="c_'+x.id+'_'+j+'"><span class="t"><span class="where">'+esc(c[0])+'</span><div class="what">'+esc(c[1])+'</div>'+(c[2]?'<div class="how">'+esc(c[2])+'</div>':'')+'</span></label>').join('')+'</div>'+
+   '<h3>Resultado do exercício</h3><div class="verdict" role="group" aria-label="Resultado do exercício '+n+'">'+
+   '<button type="button" class="ok" data-v="ok" aria-pressed="false">Tudo bateu</button><button type="button" class="bad" data-v="bad" aria-pressed="false">Achei divergência</button><button type="button" class="na" data-v="na" aria-pressed="false">Não tenho o documento</button></div>'+
+   '<label class="small" for="n_'+x.id+'">O que estranhou (campo, valor esperado, valor que apareceu)</label><textarea id="n_'+x.id+'" rows="3" placeholder="ex: Regime Ótimo mostrou 1.180.000; o RBT12 do PGDAS é 1.240.000"></textarea>';
+  box.appendChild(sec);
+  const a=document.createElement('a'); a.href='#'+x.id; a.textContent=n+'. '+x.t.split(':')[0]; a.id='t_'+x.id; toc.appendChild(a);
+});
+function paint(){
+  let tot=0, ok=0;
+  EX.forEach(x=>{ x.c.forEach((c,j)=>{ tot++; const el=document.getElementById('c_'+x.id+'_'+j); el.checked=!!S['c_'+x.id+'_'+j]; if(el.checked) ok++; });
+    const v=S['v_'+x.id]; document.querySelectorAll('#'+x.id+' .verdict button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.v===v?'true':'false'));
+    document.getElementById('n_'+x.id).value=S['n_'+x.id]||''; const t=document.getElementById('t_'+x.id); t.className=v==='ok'?'done':v==='bad'?'prob':''; });
+  document.getElementById('barra').style.width=(tot?ok/tot*100:0)+'%'; document.getElementById('contagem').textContent=ok+' de '+tot+' conferências';
+  document.getElementById('testador').value=S.testador||'';
+}
+document.addEventListener('change',e=>{ const id=e.target.id; if(/^c_/.test(id)){ S[id]=e.target.checked; save(); paint(); } });
+document.addEventListener('input',e=>{ const id=e.target.id; if(/^n_/.test(id)||id==='testador'){ S[id]=e.target.value; save(); } });
+document.addEventListener('click',e=>{ const b=e.target.closest('.verdict button'); if(!b) return; const id=b.closest('section').id; S['v_'+id]=(S['v_'+id]===b.dataset.v)?null:b.dataset.v; save(); paint(); });
+function relatorio(){
+  const L=['ROTEIRO DE TESTE LIONHEART','Testador: '+(S.testador||'(sem nome)'),'Data: '+new Date().toLocaleString('pt-BR'),''];
+  let tot=0, ok=0; EX.forEach(x=>x.c.forEach((c,j)=>{ tot++; if(S['c_'+x.id+'_'+j]) ok++; })); L.push('Conferências marcadas: '+ok+' de '+tot,'');
+  EX.forEach((x,i)=>{ const v=S['v_'+x.id]; L.push((i+1)+'. '+x.t+' — '+(v==='ok'?'TUDO BATEU':v==='bad'?'DIVERGÊNCIA':v==='na'?'sem documento':'não avaliado'));
+    const falt=x.c.map((c,j)=>S['c_'+x.id+'_'+j]?null:c[0]).filter(Boolean); if(v&&v!=='na'&&falt.length) L.push('   não conferido: '+falt.join('; '));
+    if(S['n_'+x.id]) L.push('   nota: '+S['n_'+x.id].replace(/\n+/g,' / ')); });
+  return L.join('\n');
+}
+document.getElementById('gerar').addEventListener('click',()=>{ const t=relatorio(), ta=document.getElementById('relatorio'), msg=document.getElementById('copiado'); ta.value=t;
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(()=>{ msg.textContent='Copiado. Cole no WhatsApp do Ricardo.'; }).catch(()=>{ ta.focus(); ta.select(); msg.textContent='Texto selecionado: use Copiar do seu aparelho.'; }); }
+  else { ta.focus(); ta.select(); msg.textContent='Texto selecionado: use Copiar do seu aparelho.'; } });
+function documentoPreenchido(){
+  S.salvoEm=new Date().toISOString(); save();
+  const raiz=document.documentElement.cloneNode(true);
+  ['exercicios','toc'].forEach(id=>{ const e=raiz.querySelector('#'+id); if(e) e.innerHTML=''; });
+  const r=raiz.querySelector('#relatorio'); if(r) r.textContent='';
+  raiz.querySelectorAll('#estadoRoteiro').forEach(e=>e.remove());
+  const sc=document.createElement('script'); sc.type='application/json'; sc.id='estadoRoteiro'; sc.textContent=JSON.stringify(S).replace(/</g,'\\u003c');
+  const alvo=raiz.querySelector('.wrap')||raiz.querySelector('body'); alvo.parentNode.insertBefore(sc,alvo);
+  return '<!doctype html>\n'+raiz.outerHTML;
+}
+document.getElementById('salvarArq').addEventListener('click',async()=>{
+  const msg=document.getElementById('salvo'); const nome='Roteiro_Lionheart_'+((S.testador||'preenchido').replace(/[^\wÀ-ú]+/g,'_').slice(0,40))+'.html'; const html=documentoPreenchido();
+  try{ const dl=window.claude&&await window.claude.use('downloads'); if(dl){ await dl.save({filename:nome, data:new Blob([html],{type:'text/html'})}); msg.textContent='Arquivo salvo: '+nome+'. Mande para o Ricardo.'; return; } }catch(e){ if(e&&e.code==='declined'){ msg.textContent='Você cancelou o salvamento.'; return; } }
+  try{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([html],{type:'text/html'})); a.download=nome; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },2000); msg.textContent='Arquivo gerado: '+nome+'. Se não baixou, use "Gerar e copiar relatório em texto".'; }catch(e){ msg.textContent='Não consegui gerar o arquivo neste aparelho. Use "Gerar e copiar relatório em texto".'; }
+});
+document.getElementById('zerar').addEventListener('click',()=>{ document.getElementById('zerarConf').hidden=false; document.getElementById('zerado').textContent=''; });
+document.getElementById('zerarNao').addEventListener('click',()=>{ document.getElementById('zerarConf').hidden=true; });
+document.getElementById('zerarSim').addEventListener('click',()=>{
+  S={zeradoEm:new Date().toISOString()}; save();
+  document.querySelectorAll('#estadoRoteiro').forEach(e=>e.remove());
+  document.getElementById('zerarConf').hidden=true; document.getElementById('relatorio').value=''; document.getElementById('copiado').textContent=''; document.getElementById('salvo').textContent='';
+  paint(); document.getElementById('zerado').textContent='Respostas apagadas. O roteiro está em branco.'; window.scrollTo({top:0,behavior:'smooth'});
+});
+paint();
+</script>
+
+</body>
+</html>
