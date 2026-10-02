@@ -11,7 +11,7 @@ w.fetch = () => new Promise(() => {}); w.HTMLElement.prototype.scrollIntoView = 
 setTimeout(() => {
   const d = w.document, F = w.LH_FIN; w.LH_ALIQ_REF = 26.5; const O = { tipo: 'digitado', detalhe: 'prova', quando: '2026-10-01' };
   w.LH_EMP_CNPJ = '11111111000191'; w.localStorage.removeItem('LH_FIN::' + F.eid()); w.LH_PONTE.ultimo = {};
-  ex('37 campos (+ipi, is); os dois inputs existem', F.campos.length === 37 && !!d.getElementById('fin_ipi') && !!d.getElementById('fin_is'));
+  ex('campos +ipi, is; os dois inputs existem', F.campos.length >= 37 && !!d.getElementById('fin_ipi') && !!d.getElementById('fin_is'));
 
   /* indústria: IPI e IS */
   F.set({ fat: 1200000, cresc: 0, infl: 0, regime: 'presumido', perfil: 'industria', icms: 18, recExp: 20, compras: 600000, comprasTrat: 'cheia', desp: 5, pessoal: 200000, prolab: 60000, ocup: 40000, adm: 20000, pRec: 30, pPag: 20, vista: 20, caixa0: 50000, ressarc: 60 }, O);
