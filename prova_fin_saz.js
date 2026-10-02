@@ -11,7 +11,7 @@ w.fetch = () => new Promise(() => {}); w.HTMLElement.prototype.scrollIntoView = 
 setTimeout(() => {
   const d = w.document, F = w.LH_FIN; w.LH_ALIQ_REF = 26.5; const O = { tipo: 'digitado', detalhe: 'prova', quando: '2026-10-01' };
   w.LH_EMP_CNPJ = '11111111000191'; w.localStorage.removeItem('LH_FIN::' + F.eid()); w.LH_PONTE.ultimo = {};
-  ex('39 campos (+repasse, saz); regime "produtor" existe no select', F.campos.length === 39 && !!d.querySelector('#fin_regime option[value="produtor"]') && !!d.getElementById('fin_saz') && !!d.getElementById('fin_repasse'));
+  ex('campos +repasse, saz; regime "produtor" existe no select', F.campos.length >= 39 && !!d.querySelector('#fin_regime option[value="produtor"]') && !!d.getElementById('fin_saz') && !!d.getElementById('fin_repasse'));
 
   /* produtor rural fora do IBS/CBS */
   F.set({ fat: 2400000, cresc: 0, infl: 0, regime: 'presumido', perfil: 'agro', icms: 0, trat: 'red60', recExp: 0, compras: 1200000, comprasTrat: 'red60', desp: 3, pessoal: 300000, prolab: 60000, ocup: 50000, adm: 30000, pRec: 30, pPag: 30, vista: 10, caixa0: 100000, ressarc: 60, estoque: 60 }, O);

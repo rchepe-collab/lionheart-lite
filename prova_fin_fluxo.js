@@ -64,7 +64,7 @@ setTimeout(() => {
 
   /* a aba desenha */
   w.abrirPagina('fin_fluxo'); F.renderFluxo(); const box = d.getElementById('fin_fluxo_result');
-  ex('tabela com 8 anos: Entradas, Saídas, Capital de giro, Variação do giro, Caixa operacional, Saldo acumulado', box.querySelectorAll('thead th').length === 9 && ['Entradas', 'Saídas', 'Capital de giro', 'Variação do giro', 'Caixa operacional', 'Saldo acumulado'].every((t) => box.textContent.indexOf(t) >= 0));
+  ex('tabela com 8 anos: Entradas, Saídas, Capital de giro, Variação do giro, Caixa operacional, Saldo acumulado', box.querySelector('thead').querySelectorAll('th').length === 9 && ['Entradas', 'Saídas', 'Capital de giro', 'Variação do giro', 'Caixa operacional', 'Saldo acumulado'].every((t) => box.textContent.indexOf(t) >= 0));
   ex('KPIs: saldo 2033, pior saldo, NCG em dias, caixa retido; barras por ano', /Pior saldo/.test(box.textContent) && /dias/.test(box.textContent) && /Caixa retido/.test(box.textContent) && /caixa operacional por ano/.test(box.textContent));
   ex('painel de afluentes lista os Créditos Plenos ligados', /Créditos Plenos/.test(d.getElementById('fin_fluxo_afluentes').textContent));
   ex('"Como ler" e Premissas carimbam a conta', /Como ler este fluxo/.test(box.textContent) && /Premissas desta conta/.test(box.textContent));
