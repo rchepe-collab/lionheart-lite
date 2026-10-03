@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v900';</script>
+<body><script>window.LH_VERSAO='v909';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -66395,6 +66395,7 @@ function dxhRender(r, ent, motivo){
    if(_wrapD){
      var _tbD=document.getElementById('dxhTabela');
      var _tbBlk=_tbD?((_tbD.parentElement&&_tbD.parentElement!==_wrapD)?_tbD.parentElement:_tbD):null;
+     if(_tbBlk&&_tbBlk.id==='dxhDetalheCorpo') _tbBlk=null;   /* v909 · a tabela já mora no Detalhamento (v908): não arrancar o corpo para o topo no 2º Comparar */
      var _chD=document.getElementById('dxhChart'); var _chBlk=_chD?_chD.parentElement:null;
      var _ordem=[];
      if(_tbBlk&&_tbBlk!==_wrapD&&!_tbBlk.contains(_wrapD))_ordem.push(_tbBlk);
@@ -66510,6 +66511,8 @@ function dxhArrumar(){
       if(!det){ det=document.createElement('details'); det.id='dxhDetalhe'; det.className='lh-acc'; det.style.marginTop='12px'; det.innerHTML='<summary>📋 Detalhamento — Dentro × Híbrido linha a linha</summary><div class="lh-acc-body" id="dxhDetalheCorpo"></div>'; }
       det.querySelector('#dxhDetalheCorpo').appendChild(tab); caixa.remove();
     }
+    /* v909 · se algo tirou o corpo do Detalhamento (ou a tabela do corpo), devolve */
+    if(det){ var corpo=document.getElementById('dxhDetalheCorpo'); if(!corpo){ corpo=document.createElement('div'); corpo.className='lh-acc-body'; corpo.id='dxhDetalheCorpo'; } if(corpo.parentElement!==det) det.appendChild(corpo); if(tab && tab.parentElement!==corpo) corpo.appendChild(tab); }
     var curso=pg.querySelector('details.lh-curso');
     var ordem=[k, avisos, gWrap, curso, acha(/An[aá]lise de Resultados/i), det, acha(/Parecer do consultor/i), acha(/Parecer detalhado/i), acha(/Mem[oó]ria de c[aá]lculo/i), acha(/Base legal/i), acha(/^\s*Viabilidade/i), acha(/Nota metodol[oó]gica/i), document.getElementById('dxhBtnPdfCli'), document.getElementById('dxhPdfCli')];   /* mesma ordem do organizador v244 (rank), para ele não desfazer */
     ordem.forEach(function(el){ if(el){ var alvo=(el.id==='dxhBtnPdfCli'&&el.parentElement&&el.parentElement!==res&&el.parentElement.children.length===1)?el.parentElement:el; res.appendChild(alvo); } });

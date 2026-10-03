@@ -1,4 +1,4 @@
-/* PROVA v908/v908b — Dentro × Híbrido: resultado na ordem da casa (KPIs → gráfico → como usar → análise → detalhamento → pareceres →
+/* PROVA v908/v908b/v909 — Dentro × Híbrido: resultado na ordem da casa (KPIs → gráfico → como usar → análise → detalhamento → pareceres →
    memória → base legal → viabilidade → nota → PDF), sem o organizador v244 desfazer; prazos da Resolução CGSN 194/2026.
    Uso: npm i --no-save jsdom && node prova_dxh_layout.js */
 const { JSDOM, VirtualConsole } = require('jsdom'); const fs = require('fs'), path = require('path');
@@ -34,6 +34,14 @@ setTimeout(() => {
     const SEMCOM = APP.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));   /* comentário de código fica de fora, mesmas linhas */
     const datas = [...SEMCOM.matchAll(/30\/(?:09|11)\/2026/g)].filter((m) => /h[ií]brido/i.test(SEMCOM.slice(Math.max(0, m.index - 300), m.index + m[0].length + 300)));
     ex('nenhum "30/09/2026" ou "30/11/2026" perto de "híbrido" (Regularize e Transação PGFN ficam de fora)', datas.length === 0, datas.map((m) => m[0] + ' na linha ' + SEMCOM.slice(0, m.index).split('\n').length).join(', '));
+    /* v909 · 2º Comparar (outro valor): o gráfico continua logo depois dos KPIs e a tabela continua dentro do Detalhamento */
+    w.dxhRender(RA, ent);
+    setTimeout(() => {
+      const k3 = [...res.children]; const j = (f) => k3.findIndex(f);
+      ex('2º Comparar: KPIs primeiro, gráfico logo depois, tabela dentro do Detalhamento', j((e) => e.id === 'dxhKpis') === 0 && j((e) => e.id === 'dxhGrafico') < 3 && !!d.querySelector('#dxhDetalhe > #dxhDetalheCorpo #dxhTabela') && j((e) => e.id === 'dxhDetalheCorpo') < 0, k3.map((e) => e.id || e.tagName).slice(0, 5).join(','));
+      console.log(falhou ? '\nRESULTADO: ' + falhou + ' reprovada(s)' : '\nRESULTADO: tudo aprovado'); process.exit(falhou ? 1 : 0);
+    }, 3500);
+    return;
     console.log(falhou ? '\nRESULTADO: ' + falhou + ' reprovada(s)' : '\nRESULTADO: tudo aprovado'); process.exit(falhou ? 1 : 0);
   }, 3500);
 }, 9000);
