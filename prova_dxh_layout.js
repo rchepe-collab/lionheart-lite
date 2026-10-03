@@ -31,6 +31,9 @@ setTimeout(() => {
     ex('nenhum texto exibido da plataforma cita mais a Resolução 186 (só comentário de código)', !/186\/2026/.test(APP.replace(/\/\*[\s\S]*?\*\//g, '')));
     const velhas = [...APP.matchAll(/1[º°o]\s*a\s*30(?:\/set\/| de setembro de )2026/gi)].filter((m) => /h[ií]brido/i.test(APP.slice(Math.max(0, m.index - 300), m.index + m[0].length + 300)));
     ex('nenhum prazo antigo do híbrido ("1º a 30/set/2026" ou "1º a 30 de setembro de 2026"); Regularize fica de fora', velhas.length === 0, velhas.map((m) => 'linha ' + APP.slice(0, m.index).split('\n').length).join(', '));
+    const SEMCOM = APP.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));   /* comentário de código fica de fora, mesmas linhas */
+    const datas = [...SEMCOM.matchAll(/30\/(?:09|11)\/2026/g)].filter((m) => /h[ií]brido/i.test(SEMCOM.slice(Math.max(0, m.index - 300), m.index + m[0].length + 300)));
+    ex('nenhum "30/09/2026" ou "30/11/2026" perto de "híbrido" (Regularize e Transação PGFN ficam de fora)', datas.length === 0, datas.map((m) => m[0] + ' na linha ' + SEMCOM.slice(0, m.index).split('\n').length).join(', '));
     console.log(falhou ? '\nRESULTADO: ' + falhou + ' reprovada(s)' : '\nRESULTADO: tudo aprovado'); process.exit(falhou ? 1 : 0);
   }, 3500);
 }, 9000);
