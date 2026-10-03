@@ -8600,7 +8600,7 @@ function lhTrocarSenha(){
         </div>
     </div>
 
-    <div style="margin:10px 0 16px;padding:11px 14px;background:rgba(229,72,77,.07);border:1px solid rgba(229,72,77,.35);border-radius:9px;font-size:.8rem;color:#d4dce6;line-height:1.55">🚨 <b>Prazo de decisão:</b> a opção pelo regime híbrido (IBS/CBS por fora) para <b>jan–jun/2027</b> é feita <b>exclusivamente de 1º a 30 de setembro de 2026</b>, no Portal do Simples — mesma janela da opção pelo Simples 2027 (Resolução CGSN nº 186/2026). Depois, janelas semestrais. Quem não optar permanece DENTRO do DAS.</div><div class="lh-fonte-central" style="margin:10px 0;padding:9px 13px;border-radius:8px;background:rgba(74,158,255,.07);border:1px solid rgba(74,158,255,.28);font-size:.82rem;color:#8fb8e8">📥 <b>Os campos abaixo se preenchem pela Central de Documentos.</b> Suba os arquivos uma única vez e todas as calculadoras recebem o dado. Qualquer campo continua editável — o que você digitar prevalece.</div><div class="input-card">
+    <div style="margin:10px 0 16px;padding:11px 14px;background:rgba(229,72,77,.07);border:1px solid rgba(229,72,77,.35);border-radius:9px;font-size:.8rem;color:#d4dce6;line-height:1.55">🚨 <b>Prazo de decisão:</b> pela Resolução CGSN nº 194/2026, a opção pelo Simples 2027 vai <b>até 15/10/2026</b> e a opção pelo regime híbrido (IBS/CBS por fora) <b>até 30/10/2026</b>, no Portal do Simples. As opções podem ser canceladas de <b>03/11 a 20/12/2026</b>; depois disso são irretratáveis. Quem não optar permanece DENTRO do DAS.</div><div class="lh-fonte-central" style="margin:10px 0;padding:9px 13px;border-radius:8px;background:rgba(74,158,255,.07);border:1px solid rgba(74,158,255,.28);font-size:.82rem;color:#8fb8e8">📥 <b>Os campos abaixo se preenchem pela Central de Documentos.</b> Suba os arquivos uma única vez e todas as calculadoras recebem o dado. Qualquer campo continua editável — o que você digitar prevalece.</div><div class="input-card">
       <h3>Dados da Empresa</h3>
       <div class="input-grid-3">
         <div class="input-group">
@@ -59219,7 +59219,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      +li('<b>Alíquota nova por item</b>: o tratamento que o Classificador deu pelo NCM/NBS (integral, reduzida, zero), sobre a referência de <b>'+(selo?(selo.referencia*100).toFixed(2).replace('.',','):'26,50')+'%</b> em 2033'+(selo?' — '+selo.rotulo.toLowerCase()+' ('+selo.nome+')':'')+'. Sugestão de teste, não é lei: a definitiva sai por Resolução do Senado.')
      +li('<b>Curva da transição</b>: CBS 8,7% + IBS 0,1% em 2027-28; de 2029 a 2032 o IBS sobe 10 pontos ao ano da referência enquanto ICMS/ISS caem 1/10 ao ano; 2033 só IBS/CBS. PIS/COFINS acaba em 2027; IPI '+(cfg.zfm?'mantido (ZFM)':'zera em 2027 (art. 126 ADCT), exceto ZFM')+'.')
      +li('<b>Base do IBS/CBS</b> sem ICMS/ISS e PIS/COFINS (LC 214, art. 12 §2º V). '+(cfg.leitura==='plp'?'Leitura PLP 16/2025: o IBS/CBS também fica fora da base do ICMS/ISS.':'Leitura dos fiscos: o ICMS/ISS incide sobre o total, com o IBS/CBS (SP, CT 33.083/2026). Em disputa; troque em "leitura".'))
-     +(cfg.regime==='hibrido'?li('<b>Simples híbrido (art. 41)</b>: o imposto velho por dentro é só a fatia do DAS que sai (PIS/COFINS em 2027; ICMS/ISS de 2029 a 2033, pela tabela do Dentro × Híbrido'+(cfg.hib&&cfg.hib.anexo?', Anexo '+cfg.hib.anexo+', DAS '+pct(cfg.hib.aliq||0):', <b style="color:#e0a83a">Anexo/RBT12/alíquota não informados</b>')+'); o DAS residual fica dentro do que fica com você; IBS/CBS por fora na alíquota do item; a empresa passa a creditar as compras. Opção pelo híbrido: Res. CGSN 186/2026 (janelas semestrais).'):'')
+     +(cfg.regime==='hibrido'?li('<b>Simples híbrido (art. 41)</b>: o imposto velho por dentro é só a fatia do DAS que sai (PIS/COFINS em 2027; ICMS/ISS de 2029 a 2033, pela tabela do Dentro × Híbrido'+(cfg.hib&&cfg.hib.anexo?', Anexo '+cfg.hib.anexo+', DAS '+pct(cfg.hib.aliq||0):', <b style="color:#e0a83a">Anexo/RBT12/alíquota não informados</b>')+'); o DAS residual fica dentro do que fica com você; IBS/CBS por fora na alíquota do item; a empresa passa a creditar as compras. Opção pelo híbrido: Res. CGSN 194/2026 (até 30/10/2026; cancelamento de 03/11 a 20/12).'):'')
      +li('<b>Crédito de entrada na mercadoria</b>: '+(cfg.regime==='simples'?'Simples Nacional: sem crédito e sem destaque — o custo não muda.':(cfg.regime==='real'?'Lucro Real: o PIS/COFINS da compra já é crédito hoje — o custo não cai por isso.':'Presumido: o PIS/COFINS embutido na compra ('+pct(pisEmb)+') é cumulativo hoje e vira crédito de CBS a partir de 2027 — o custo do ano cai isso'))+(cfg.regime!=='simples'?' × a parcela da compra que gera crédito: '+(ctx.credTxt||(pct(cred*100)+(cred>=0.999?' (sem leitura da Cadeia nem ORIGEM_COMPRA: assume tudo)':' (Cadeia de Crédito)')))+' — fornecedor do Simples ~20%, pessoa física 0':'')+'. O ICMS da compra é neutro: crédito hoje, crédito de IBS amanhã.')
      +li('<b>Estratégia</b> "'+(ESTR[cfg.estr]||cfg.estr)+'"'+(ctx.repasse!=null&&Math.abs(ctx.repasse-100)>0.001?' e repasse de '+ctx.repasse+'%':'')+'; cliente '+(cfg.b2b?'empresa do regime regular (líquido PJ)':'consumidor final (prateleira)')+'.')
      +'</ul><b style="color:#e0a83a">Não entrou (de propósito)</b><ul style="margin:4px 0 8px 18px;padding:0">'
@@ -64570,7 +64570,7 @@ function lhCentralReforma(targetId){
   /* 2) PRAZO DE OPÇÃO (Simples) */
   if(regime==='simples'){
     ops.push({t:'Janela de decisão: opção pelo híbrido p/ jan-jun/2027 é SÓ de 1º a 30/set/2026',
-      v:0, d:'Resolução CGSN 186/2026 — perdeu a janela, ficou DENTRO do DAS até a próxima (semestral). Rode a Dentro × Híbrido antes de setembro.', tipo:'prazo'});
+      v:0, d:'Resolução CGSN 194/2026 — opção pelo híbrido até 30/10/2026 e cancelamento de 03/11 a 20/12; quem perde a janela fica DENTRO do DAS. Rode a Dentro × Híbrido antes de 30/10.', tipo:'prazo'});
   }
   /* 3) FORNECEDOR SIMPLES na cadeia */
   var fornSN=g('c05_forn_simples')||g('dxh_forn_simples');
@@ -66364,7 +66364,7 @@ function dxhRender(r, ent, motivo){
  if(_vd){ _vd.innerHTML='<div style="border-radius:12px;padding:14px;background:rgba(255,255,255,.02);border:1px solid '+cor+';border-left:4px solid '+cor+'"><div style="font-weight:800;color:'+cor+';margin-bottom:6px">'+tit+'</div><div style="font-size:.86rem;color:#d4dce6;line-height:1.6">'+v+'</div></div>';
  _vd.innerHTML += '<div style="margin-top:10px;border-radius:10px;padding:12px 13px;background:rgba(62,207,142,.05);border:1px solid rgba(62,207,142,.35);font-size:.8rem;color:#c8d4c8;line-height:1.55"><b style="color:#3ecf8e">◈ Antes de decidir pela troca de fornecedor:</b> este número mede só o lado do crédito tributário. A decisão real do cliente pesa fatores que a ferramenta não calcula — <b>qualidade</b> do produto, <b>certificações e homologações</b> exigidas, confiabilidade de <b>prazo</b>, e o custo de trocar. Um crédito menor nem sempre significa cliente perdido: se o fornecedor entrega valor que o concorrente não tem, a relação se mantém. Use como <b>piso, não teto</b> — leve o número para a mesa junto com o valor estratégico da relação.</div>'; }
  var _bl=_dxhBox('dxhBaseLegal','\u00a7 Base legal',false);
- if(_bl){ _bl.innerHTML='<div style="font-size:.8rem;color:#9aa7b8;line-height:1.65"><b style=\'color:#c9d4e0\'>Op\u00e7\u00e3o pelo h\u00edbrido (IBS/CBS por fora do DAS):</b> LC 214/2025, art. 41 \u00a73\u00ba (faculdade do optante do Simples, todos os anexos) \u00b7 arts. 501/508/519 e Anexos XVIII\u2013XXII (fatia de IBS/CBS dentro do DAS por anexo/faixa e tabelas da transi\u00e7\u00e3o) \u00b7 art. 146 \u00a73\u00ba, I (optante \u201cpor dentro\u201d n\u00e3o apropria cr\u00e9dito das entradas) \u00b7 arts. 344/347 (al\u00edquotas de teste 2026 e transi\u00e7\u00e3o 2027\u21922033). <b style=\'color:#c9d4e0\'>Janela de op\u00e7\u00e3o:</b> Resolu\u00e7\u00e3o CGSN n\u00ba 186/2026 (1\u00ba a 30/09/2026 para jan\u2013jun/2027; depois, janelas semestrais). <b style=\'color:#c9d4e0\'>Simples Nacional:</b> LC 123/2006, art. 18 e Anexos I\u2013V. <i>Al\u00edquota de refer\u00eancia 26,5% = estimativa t\u00e9cnica (LC 214); a definitiva sai por Resolu\u00e7\u00e3o do Senado.</i></div>'; }
+ if(_bl){ _bl.innerHTML='<div style="font-size:.8rem;color:#9aa7b8;line-height:1.65"><b style=\'color:#c9d4e0\'>Op\u00e7\u00e3o pelo h\u00edbrido (IBS/CBS por fora do DAS):</b> LC 214/2025, art. 41 \u00a73\u00ba (faculdade do optante do Simples, todos os anexos) \u00b7 arts. 501/508/519 e Anexos XVIII\u2013XXII (fatia de IBS/CBS dentro do DAS por anexo/faixa e tabelas da transi\u00e7\u00e3o) \u00b7 art. 146 \u00a73\u00ba, I (optante \u201cpor dentro\u201d n\u00e3o apropria cr\u00e9dito das entradas) \u00b7 arts. 344/347 (al\u00edquotas de teste 2026 e transi\u00e7\u00e3o 2027\u21922033). <b style=\'color:#c9d4e0\'>Janela de op\u00e7\u00e3o:</b> Resolu\u00e7\u00e3o CGSN n\u00ba 194/2026 (op\u00e7\u00e3o at\u00e9 30/10/2026; cancelamento de 03/11 a 20/12/2026, depois irretrat\u00e1vel). <b style=\'color:#c9d4e0\'>Simples Nacional:</b> LC 123/2006, art. 18 e Anexos I\u2013V. <i>Al\u00edquota de refer\u00eancia 26,5% = estimativa t\u00e9cnica (LC 214); a definitiva sai por Resolu\u00e7\u00e3o do Senado.</i></div>'; }
  var _vb=_dxhBox('dxhViabilidade','Viabilidade',false);
  if(_vb){ _vb.innerHTML='<div style="font-size:.8rem;color:#9aa7b8;line-height:1.65"><b style=\'color:#e8b93a\'>M\u00e9dia\u2013alta.</b> O comparativo usa dados reais importados (PGDAS: RBT12 e al\u00edquota efetiva; XMLs: compras credit\u00e1veis e perfil de fornecedores/clientes) e a fatia oficial de IBS/CBS por anexo/faixa. Pontos de aten\u00e7\u00e3o: (1) a decis\u00e3o \u00e9 por janela \u2014 revise a cada semestre, o mix de clientes pode mudar o lado vencedor; (2) cliente que N\u00c3O credita (ente p\u00fablico, B2C, Simples) n\u00e3o aproveita o cr\u00e9dito do h\u00edbrido \u2014 quanto maior essa fatia, mais o DENTRO ganha; (3) al\u00edquota de refer\u00eancia sujeita a revis\u00e3o. Valide com o contador respons\u00e1vel antes de exercer a op\u00e7\u00e3o no Portal do Simples.</div>'; }
  /* v410 · Parecer do consultor — entra nos DOIS PDFs (técnico e cliente) */
@@ -66477,6 +66477,45 @@ function dxhRender(r, ent, motivo){
         _v[kx]=vence; }); } }catch(_e){}
 
 }
+/* ★ v908 · ORDEM DO RESULTADO, igual às outras telas (Split Cash Gap): KPIs → gráfico → como usar → análise → detalhamento
+   (tabela completa, recolhida) → pareceres → memória → base legal → viabilidade → PDF → nota metodológica. Os injetores
+   antigos montam os blocos em momentos diferentes; o arrumador roda depois de cada desenho e só move o que já existe. */
+function dxhKpisHTML(r){
+  var F=function(v){ return 'R$ '+(Math.round((+v||0)*100)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  var c=(r&&r.comparacao)||{}, dif=+c.diferenca||0, cx=+c.credito_extra||0;
+  var card=function(rot,val,sub,cor){ return '<div class="kpi-card"><div class="kpi-label">'+rot+'</div><div class="kpi-value" style="color:'+cor+'">'+val+'</div><div class="kpi-label" style="margin-top:4px">'+sub+'</div></div>'; };
+  return '<div class="kpi-grid" style="margin-bottom:14px">'
+    +card('Imposto no mês · dentro do DAS', F(r.dentro&&r.dentro.das), 'tudo no DAS, sem crédito', '#4a9eff')
+    +card('Imposto no mês · híbrido', F(r.hibrido&&r.hibrido.total), 'DAS reduzido + IBS/CBS líquido', '#e0b93a')
+    +card(dif>=0?'O híbrido custa a mais':'O híbrido economiza', F(Math.abs(dif))+' /mês', dif>=0?'em relação a ficar dentro':'em relação a ficar dentro', dif>=0?'#f05d55':'#16c47c')
+    +card('Crédito extra que o cliente aproveita', F(cx)+' /mês', (c.b2b_aproveita!=null?c.b2b_aproveita+'% das vendas creditam':'fatia B2B'), '#16c47c')
+    +'</div>';
+}
+function dxhArrumar(){
+  try{
+    var res=document.getElementById('dxhRes'); if(!res || res.style.display==='none') return;
+    var pg=document.getElementById('page-dxh'); var ult=(window.LH_PONTE&&LH_PONTE.ultimo&&LH_PONTE.ultimo.dxhCalc)||null; var r=ult&&ult.resultado;
+    var acha=function(re){ var out=null; pg.querySelectorAll('details').forEach(function(dt){ if(out) return; var sm=dt.querySelector(':scope > summary'); if(sm && re.test(sm.textContent)) out=dt; }); return out; };
+    /* 1 · KPIs */
+    var k=document.getElementById('dxhKpis'); if(!k){ k=document.createElement('div'); k.id='dxhKpis'; }
+    if(r && r.dentro && r.hibrido){ k.innerHTML=dxhKpisHTML(r); k.style.display=''; } else k.style.display='none';
+    /* 2 · gráfico, fora da caixa da tabela */
+    var cv=document.getElementById('dxhChart'), gWrap=cv?cv.parentElement:null;
+    if(gWrap){ gWrap.id='dxhGrafico'; gWrap.style.margin='0 0 14px'; }
+    /* caixa do comparativo (tabela) vira "Detalhamento", recolhida; avisos que estavam nela sobem para logo depois dos KPIs */
+    var tab=document.getElementById('dxhTabela'), caixa=tab?tab.parentElement:null, det=document.getElementById('dxhDetalhe'), avisos=document.getElementById('dxhAvisos');
+    if(!avisos){ avisos=document.createElement('div'); avisos.id='dxhAvisos'; }
+    if(caixa && caixa.id!=='dxhDetalheCorpo'){
+      [].slice.call(caixa.children).forEach(function(ch){ if(ch===tab||ch===gWrap) return; if(/comparativo triplo/i.test(ch.textContent)&&ch.children.length===0){ ch.remove(); return; } avisos.appendChild(ch); });
+      if(!det){ det=document.createElement('details'); det.id='dxhDetalhe'; det.className='lh-acc'; det.style.marginTop='12px'; det.innerHTML='<summary>📋 Detalhamento — Dentro × Híbrido linha a linha</summary><div class="lh-acc-body" id="dxhDetalheCorpo"></div>'; }
+      det.querySelector('#dxhDetalheCorpo').appendChild(tab); caixa.remove();
+    }
+    var curso=pg.querySelector('details.lh-curso');
+    var ordem=[k, avisos, gWrap, curso, acha(/An[aá]lise de Resultados/i), det, acha(/Parecer do consultor/i), acha(/Parecer detalhado/i), acha(/Mem[oó]ria de c[aá]lculo/i), acha(/Base legal/i), acha(/^\s*Viabilidade/i), acha(/Nota metodol[oó]gica/i), document.getElementById('dxhBtnPdfCli'), document.getElementById('dxhPdfCli')];   /* mesma ordem do organizador v244 (rank), para ele não desfazer */
+    ordem.forEach(function(el){ if(el){ var alvo=(el.id==='dxhBtnPdfCli'&&el.parentElement&&el.parentElement!==res&&el.parentElement.children.length===1)?el.parentElement:el; res.appendChild(alvo); } });
+  }catch(_e){}
+}
+(function(){ var _r=window.dxhRender; if(typeof _r!=='function'||_r._v908) return; var w=function(){ var out=_r.apply(this,arguments); [0,350,1200,3000].forEach(function(t){ setTimeout(dxhArrumar,t); }); return out; }; w._v908=true; window.dxhRender=w; })();
 function dxhCalc(){
   var ent=dxhLerEntradas(); if(!ent) return;
   if(window.LH_PONTE && LH_PONTE.modo()==='servidor' && LH_PONTE.convertida('dxhCalc')){ LH_PONTE.executar('dxhCalc', ent); return; }
@@ -66509,9 +66548,13 @@ function dxhCalc(){
     if(/estrategia/.test(t)) return 4;
     if(/alerta|armadilha|pega-rat/.test(t)) return 4.5;      /* extra condicional */
     if(/requisito|trava|condicoes cumulativas/.test(t)) return 4.6; /* extra condicional */
+    if(/^\W*detalhamento/.test(t)) return 4.7;                 /* v908: detalhamento logo apos a analise */
+    if(/parecer do consultor/.test(t)) return 4.75;          /* v908 */
+    if(/parecer detalhado/.test(t)) return 4.76;             /* v908 */
     if(/memoria de calculo/.test(t)) return 5;
     if(/base legal|fundamento/.test(t)) return 6;
     if(/viabilidade/.test(t)) return 7;
+    if(/nota metodologica/.test(t)) return 7.5;              /* v908 */
     return 8;                                                /* nao-canonico: preserva depois do 7 */
   }
   function organizar(root){
@@ -67713,7 +67756,7 @@ window.fpLerEntradas=fpLerEntradas; window.fpCalcularLocal=fpCalcularLocal; wind
    return {anexo:anexo, faixa:fx, tributo:A.trib, federal:par[0], base:par[1],
            fatia:pct, ano:ano, seisFaixa:(fx===6), tetoISS:(fx===5 && (anexo==='III'||anexo==='IV'))};
  };
- window.LH_PRAZO_SN='⏰ <b>Resolução CGSN nº 186/2026:</b> a opção pelo regime híbrido (IBS/CBS por fora) para jan–jun/2027 é feita <b>exclusivamente de 1º a 30 de setembro de 2026</b>, no Portal do Simples — na mesma janela da opção pelo Simples 2027, que saiu de janeiro. Cancelamento até 30/11/2026. Depois, janelas semestrais (março → jul-dez; setembro → jan-jun). <b>Quem não fizer nada permanece DENTRO do DAS.</b>';
+ window.LH_PRAZO_SN='⏰ <b>Resolução CGSN nº 194/2026:</b> opção pelo Simples 2027 <b>até 15/10/2026</b>; opção pelo regime híbrido (IBS/CBS por fora) <b>até 30/10/2026</b>, no Portal do Simples. Cancelamento das opções de <b>03/11 a 20/12/2026</b> — depois disso é irretratável. A CBS de referência de 2027 sai pelo Senado até 15/12. <b>Quem não fizer nada permanece DENTRO do DAS.</b>';
 
  function banner(cor,html){
    return '<div style="margin:10px 0;background:rgba('+cor+',.07);border:1px solid rgba('+cor+',.45);border-radius:10px;padding:11px 13px;font-size:.8rem;color:#d4dce6;line-height:1.5">'+html+'</div>';
