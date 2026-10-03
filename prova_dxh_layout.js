@@ -1,4 +1,4 @@
-/* PROVA v908 — Dentro × Híbrido: resultado na ordem da casa (KPIs → gráfico → como usar → análise → detalhamento → pareceres →
+/* PROVA v908/v908b — Dentro × Híbrido: resultado na ordem da casa (KPIs → gráfico → como usar → análise → detalhamento → pareceres →
    memória → base legal → viabilidade → nota → PDF), sem o organizador v244 desfazer; prazos da Resolução CGSN 194/2026.
    Uso: npm i --no-save jsdom && node prova_dxh_layout.js */
 const { JSDOM, VirtualConsole } = require('jsdom'); const fs = require('fs'), path = require('path');
@@ -29,6 +29,8 @@ setTimeout(() => {
     const pg = d.getElementById('page-dxh').textContent;
     ex('prazos atualizados: Resolução CGSN 194/2026, até 30/10, cancelamento 03/11 a 20/12; nenhuma menção à 186 na tela', /194\/2026/.test(pg) && /30\/10\/2026/.test(pg) && /20\/12/.test(pg) && !/186\/2026/.test(pg));
     ex('nenhum texto exibido da plataforma cita mais a Resolução 186 (só comentário de código)', !/186\/2026/.test(APP.replace(/\/\*[\s\S]*?\*\//g, '')));
+    const velhas = [...APP.matchAll(/1[º°o]\s*a\s*30(?:\/set\/| de setembro de )2026/gi)].filter((m) => /h[ií]brido/i.test(APP.slice(Math.max(0, m.index - 300), m.index + m[0].length + 300)));
+    ex('nenhum prazo antigo do híbrido ("1º a 30/set/2026" ou "1º a 30 de setembro de 2026"); Regularize fica de fora', velhas.length === 0, velhas.map((m) => 'linha ' + APP.slice(0, m.index).split('\n').length).join(', '));
     console.log(falhou ? '\nRESULTADO: ' + falhou + ' reprovada(s)' : '\nRESULTADO: tudo aprovado'); process.exit(falhou ? 1 : 0);
   }, 3500);
 }, 9000);
