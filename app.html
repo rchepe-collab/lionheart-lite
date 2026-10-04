@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v914';</script>
+<body><script>window.LH_VERSAO='v915';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -71586,6 +71586,16 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     'body[data-lh-produto] #lh-aprenda-topbar{display:none!important}'+
     'body[data-lh-produto] nav.nav-section .nav-secao-js,body[data-lh-produto] nav.nav-section .nav-super-js{display:none!important}'+
     '#pcp-oculto{display:none!important}'+
+    /* v915 · abas do produto com a MESMA cor de rótulo (o CORE apaga os itens 'de suporte' com opacidade) e ícone de traço único dourado */
+    'body[data-lh-produto] nav.nav-section .nav-item[data-pcp],body[data-lh-produto] #lh-nav-admin{opacity:1!important;background:transparent!important;border:0!important;margin-top:0!important}'+
+    'body[data-lh-produto] nav.nav-section .nav-item[data-pcp]:hover,body[data-lh-produto] #lh-nav-admin:hover{background:rgba(255,255,255,0.06)!important}'+
+    'body[data-lh-produto] nav.nav-section .nav-item[data-pcp].active,body[data-lh-produto] #lh-nav-admin.active{background:rgba(201,162,39,0.13)!important}'+
+    'body[data-lh-produto] nav.nav-section .nav-item[data-pcp] .ni-label,body[data-lh-produto] #lh-nav-admin .ni-label{font-size:0.86em!important;color:rgba(240,232,208,0.86)!important;font-weight:500!important}'+
+    'body[data-lh-produto] nav.nav-section .nav-item[data-pcp].active .ni-label,body[data-lh-produto] #lh-nav-admin.active .ni-label{color:#f4cc4a!important;font-weight:700!important}'+
+    'body[data-lh-produto] .pcp-ic{width:20px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;color:#d9b53a!important;opacity:.95!important}'+
+    'body[data-lh-produto] .nav-item.active .pcp-ic{color:#f4cc4a;opacity:1}'+
+    'body[data-lh-produto] .pcp-ic svg{width:16px;height:16px;color:inherit!important;fill:none!important;stroke:currentColor!important;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}'+
+    'body[data-lh-produto] .pcp-ic svg *{fill:none!important;color:inherit!important;stroke:currentColor!important}'+
     /* v914 · a faixa "Quer dominar esta ferramenta? Formação · Glossário" das telas leva a páginas fora do produto */
     'body[data-lh-produto] .calc-page-links{display:none!important}'+
     /* v913 · pilares do produto na caixa dourada clara das seções do CORE (.nav-secao-js), como pediu o Ricardo */
@@ -71791,9 +71801,50 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
       if(!e._pcpRod && e.querySelectorAll('strong').length===2 && /também está em texto no/.test(e.textContent) && /Guia do Consultor/.test(e.textContent) && !e.closest('.page')){ e._pcpRod=true; e.style.setProperty('display','none','important'); e.setAttribute('data-pcp-oculto','1'); }
     });
   }
+  /* v915 · um ícone de traço único por aba (SVG, não emoji: mesma cara em qualquer aparelho) */
+  var ICO={
+    'pcp-bemvindo':'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 17l.7 1.8L21.5 19.5l-1.8.7L19 22l-.7-1.8-1.8-.7 1.8-.7z"/>',
+    'pcp-home':'<path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>',
+    'videos':'<circle cx="12" cy="12" r="9"/><path d="M10 8.5l5 3.5-5 3.5z"/>',
+    'empresas':'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/>',
+    '@cadcliente':'<circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M19 8v6M16 11h6"/>',
+    'importsped':'<path d="M12 15V3M7 8l5-5 5 5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/>',
+    'consultacnpj':'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+    'auditorcad':'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+    'classmassa':'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
+    'simnotas':'<path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+    'matrizdoc':'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+    'cadeia':'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+    'formpreco':'<path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+    'precmassa':'<path d="M4 20V11M10 20V4M16 20v-6M2 20h20"/>',
+    'contrato':'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>',
+    'meusdados':'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>',
+    'lgpd':'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+    'termos':'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 15l2 2 4-4"/>',
+    'admin':'<path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z"/>'
+  };
+  function chaveIco(el){
+    if(el.id==='lh-nav-admin') return 'admin';
+    if(/perguntarTipoCadastro/.test(el.getAttribute('onclick')||'')) return '@cadcliente';
+    return idDo(el);
+  }
+  function icones(){
+    var nav=document.querySelector('nav.nav-section'); if(!nav) return;
+    var alvo=Array.prototype.slice.call(nav.querySelectorAll('.nav-item[data-pcp]'));
+    var adm=document.getElementById('lh-nav-admin'); if(adm) alvo.push(adm);
+    alvo.forEach(function(el){
+      if(el.querySelector('.pcp-ic')) return;
+      var k=chaveIco(el), d=ICO[k]; if(!d) return;
+      Array.prototype.forEach.call(el.querySelectorAll('.ni-icon,.ni-ic'),function(x){ x.parentNode.removeChild(x); });
+      var sp=document.createElement('span'); sp.className='ni-icon pcp-ic'; sp.setAttribute('aria-hidden','true');
+      sp.innerHTML='<svg viewBox="0 0 24 24">'+d+'</svg>';
+      el.insertBefore(sp, el.firstChild);
+      el.classList.remove('nav-support');
+    });
+  }
   function aplicar(){
     if(document.body) document.body.setAttribute('data-lh-produto',PRODUTO.id);
-    montarMenu(); montarInicio(); topo(); trancar(); filtrarBusca(); abrirPilares(); rodape();
+    montarMenu(); montarInicio(); topo(); trancar(); filtrarBusca(); abrirPilares(); rodape(); icones();
   }
   aplicar();
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',aplicar);
