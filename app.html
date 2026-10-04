@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v913';</script>
+<body><script>window.LH_VERSAO='v914';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -71550,7 +71550,7 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     frase:'Cada item vendido com a classificação certa, o crédito medido e o preço que protege a margem de 2027 a 2033.',
     pilares:[
       { t:'Aprendizado', itens:[
-        ['videos','Vídeos Tutoriais'], ['basetecnica','Glossário Tributário'], ['glossario','Dicionário · Busca Rápida'] ]},
+        ['videos','Vídeos Tutoriais'] ]},   /* v914 · Glossário Tributário e Dicionário saem do produto (decisão do Ricardo) */
       { t:'Clientes & Documentos', itens:[
         ['empresas','Gestão de Carteira'], ['@cadcliente','Cadastrar Cliente · Grupo Econômico'],
         ['importsped','Importar & auto-preencher (SPED + XML/NFe)'], ['consultacnpj','Consulta CNPJ'] ]},
@@ -71586,6 +71586,8 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     'body[data-lh-produto] #lh-aprenda-topbar{display:none!important}'+
     'body[data-lh-produto] nav.nav-section .nav-secao-js,body[data-lh-produto] nav.nav-section .nav-super-js{display:none!important}'+
     '#pcp-oculto{display:none!important}'+
+    /* v914 · a faixa "Quer dominar esta ferramenta? Formação · Glossário" das telas leva a páginas fora do produto */
+    'body[data-lh-produto] .calc-page-links{display:none!important}'+
     /* v913 · pilares do produto na caixa dourada clara das seções do CORE (.nav-secao-js), como pediu o Ricardo */
     'body[data-lh-produto] nav.nav-section .nav-group-title[data-pcp]{font-family:\'Syne\',sans-serif!important;font-size:0.7em!important;font-weight:700!important;letter-spacing:0.04em!important;text-transform:uppercase!important;color:#fff4d6!important;padding:8px 11px!important;margin:12px 8px 6px!important;line-height:1.25!important;background:linear-gradient(100deg,rgba(201,162,39,0.42),rgba(244,204,74,0.18))!important;border:1px solid rgba(244,204,74,0.45)!important;border-left:3px solid var(--gold2,#f4cc4a)!important;border-radius:8px!important;box-shadow:0 1px 4px rgba(0,0,0,0.25)!important}'+
     'body[data-lh-produto] nav.nav-section .nav-group-title[data-pcp] .lh-cat-chevron{color:#fff4d6!important;opacity:.8}'+

@@ -31,7 +31,7 @@ setTimeout(() => {
   ex('Formação, Precificação em Massa e Contrato embaixo de Preços', ['formpreco', 'precmassa', 'contrato'].every((i) => grupoDe(i) === 'PREÇOS'));
   ex('Auditor, Classificador e Simulador embaixo de Cadastro & Nota', ['auditorcad', 'classmassa', 'simnotas'].every((i) => grupoDe(i) === 'CADASTRO & NOTA'));
   ex('Cadastrar Cliente presente (abre pelo formulário próprio)', vis.some((e) => /perguntarTipoCadastro/.test(e.getAttribute('onclick') || '')));
-  const fora = ['c05', 'dxh', 'c01', 'c02', 'radar', 'jornada', 'proposta', 'cr04', 'agro01', 'ind01', 'transacao', 'fin_dre', 'fin_fluxo', 'c10', 'tour', 'conhecimento', 'perguntas', 'bemvindo'];
+  const fora = ['basetecnica', 'glossario', 'c05', 'dxh', 'c01', 'c02', 'radar', 'jornada', 'proposta', 'cr04', 'agro01', 'ind01', 'transacao', 'fin_dre', 'fin_fluxo', 'c10', 'tour', 'conhecimento', 'perguntas', 'bemvindo'];
   ex('nada do resto do CORE aparece no menu', fora.every((i) => !ids.includes(i)), fora.filter((i) => ids.includes(i)).join(','));
   ex('cada aba aparece uma vez só', new Set(ids).size === ids.length);
   ex('as supercategorias de plano do CORE não aparecem', [...nav.querySelectorAll('.nav-secao-js,.nav-super-js')].every((e) => !visivel(P, e)));
@@ -47,6 +47,8 @@ setTimeout(() => {
   ex('rodapé que aponta o Guia do Consultor escondido', rods.length > 0 && rods.every((e) => !visivel(P, e)), String(rods.length));
   const tt = [...nav.querySelectorAll('.nav-group-title[data-pcp]')];
   ex('pilares na caixa dourada clara das seções do CORE', tt.length === 6 && tt.every((t) => P.getComputedStyle(t).color === 'rgb(255, 244, 214)' && /8px/.test(P.getComputedStyle(t).borderRadius)), tt.map((t) => P.getComputedStyle(t).color).join('|'));
+  ex('Aprendizado só com os Vídeos (Glossário e Dicionário fora)', ids.filter((i) => grupoDe(i) === 'APRENDIZADO').join() === 'videos' && !ids.includes('basetecnica') && !ids.includes('glossario'), ids.filter((i) => grupoDe(i) === 'APRENDIZADO').join());
+  ex('faixa Formação · Glossário das telas escondida', [...d.querySelectorAll('.calc-page-links')].length > 0 && [...d.querySelectorAll('.calc-page-links')].every((e) => P.getComputedStyle(e).display === 'none'));
   ex('aba do navegador com o nome do produto', /Inteligência de Cadastro e Preços/.test(d.title));
   ex('página inicial com os 4 passos e as 2 entregas', d.querySelectorAll('#page-pcp-home .pcp-passo').length === 4 && d.querySelectorAll('#page-pcp-home .pcp-entregas > div').length === 2);
   const linksIni = [...d.querySelectorAll('#page-pcp-home a[onclick]')].map(idDo);
