@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v918';</script>
+<body><script>window.LH_VERSAO='v919';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -59370,6 +59370,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var r={f:f,c:c}, y33=c.anos[2033], y27=c.anos[2027];
    /* os três caminhos da Formação de Preço, com o motor: segurar = manter o preço; repassar = a estratégia escolhida; dividir = repasse 50% */
    var seg=window.lhPreco({trat:f.trat,preco:f.preco,icms:f.icms,st:f.st,pis:c.pisUsado,ipi:null,custo:f.custo,custoNovo:c.custoNovo,icmsSt:f.icmsSt},2033,cfg,'preco');
+   try{ window.LH_PMI_ULTIMO={ resultado:{ok:true, f:{desc:f.desc, preco:f.preco, custo:f.custo}, y27:y27, y33:y33, seg:seg, estr:cfg.estr}, quando:String(Date.now()) }; }catch(_e){}   /* v919 · só leitura: a leitura do dono do ITFE lê daqui */
    var cam=function(tit,cor,txt){ return '<div style="background:rgba(255,255,255,.03);border:1px solid '+cor+';border-radius:12px;padding:12px 14px"><div style="font-weight:800;color:'+cor+';font-size:.86rem">'+tit+'</div><div style="font-size:.8rem;color:#d4dce6;margin-top:6px;line-height:1.55">'+txt+'</div></div>'; };
    var dF=y33.dFica, dP=y33.dFinal;
    var h='<div class="kpi-grid">';
@@ -71605,7 +71606,7 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
         ['dxh','Simples 2027: Dentro × Híbrido'], ['c05','Regime Ótimo'] ]},
       { t:'Preço', itens:[
         ['formpreco','Formação de Preço e Precificação em Massa'], ['c02','Reprecificação de Contratos'],
-        ['c04','Vou pagar mais ou menos imposto?'], ['calc03','Vender para empresa ou consumidor'] ]},
+        ['c04','Vou pagar mais ou menos imposto?'], ['calc03','Comprar do Simples ou do regime regular'] ]},
       { t:'Caixa', itens:[
         ['c01','Split Payment · quanto de caixa eu perco'], ['n33','Capital de giro (NCG)'] ]},
       { t:'Sócio', itens:[
@@ -71678,6 +71679,78 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
         return {t:'Split payment: quanto de caixa você perde', f:frases,
           a:['Comece a reservar caixa ainda em 2026, antes do split começar.','Negocie prazo maior com fornecedores e prazo menor com clientes.','Veja em Capital de giro (NCG) quanto a empresa vai precisar no total.']};
       }},
+      /* v919 · LOTE 2 */
+      calcularN33:{ pagina:'n33', depoisDe:'kpi-n33', texto:function(r,ent,F){
+        var p27=null; (r.projecao||[]).forEach(function(x){ if(+x.ano===2027) p27=x; });
+        var fr=['Hoje a sua empresa precisa de cerca de <b>'+F(r.ncg_2026)+'</b> de capital de giro: o dinheiro que fica parado entre pagar o fornecedor e receber do cliente'+(r.ciclo_financeiro_dias?' ('+Math.round(r.ciclo_financeiro_dias)+' dias de ciclo)':'')+'.',
+                'Com o crescimento e o split payment, em 2033 essa necessidade vai a <b>'+F(r.ncg_2033)+'</b> — '+F(r.aumento_da_ncg)+' a mais.'+(+r.camada_split_2033>0?' Só o split responde por '+F(r.camada_split_2033)+' dessa conta.':'')];
+        if(p27 && +p27.custo_anual>0) fr.push('Se esse giro for bancado com empréstimo'+(ent.custo_capital?' a '+ent.custo_capital+'% ao ano':'')+', custa cerca de <b>'+F(p27.custo_anual)+' por ano</b> já em 2027.');
+        return {t:'Capital de giro: quanto a empresa vai precisar', f:fr,
+          a:['Encurtar o prazo de recebimento é o que mais ajuda: ataca o giro e o split ao mesmo tempo.','Negocie prazo maior com fornecedores.','Defina antes de 2027 de onde vem esse dinheiro: caixa próprio ou linha de crédito já aprovada.']};
+      }},
+      calcularC02:{ pagina:'c02', depoisDe:'kpi-c02', texto:function(r,ent,F){
+        var p33=null; (r.projecao||[]).forEach(function(x){ if(+x.ano===2033) p33=x; });
+        var ano=r.ano_referencia||ent.ano||2027, pc=function(v){ return (+v).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'; };
+        var fr=['O contrato de <b>'+F(r.preco_atual)+'</b> precisa ir a <b>'+F(r.novo_preco)+'</b> em '+ano+' para manter a sua margem'+(ent.margem?' de '+ent.margem+'%':'')+' ('+(+r.variacao_pct>=0?'+':'')+pc(r.variacao_pct)+').'];
+        if(p33) fr.push('O peso maior vem depois: em 2033 o preço precisa ser <b>'+F(p33.novo_preco)+'</b> ('+(+p33.variacao_pct>=0?'+':'')+pc(p33.variacao_pct)+'). Sem reajuste, a sua margem cai para <b>'+pc(p33.margem_sem_reajuste_pct)+'</b>.');
+        return {t:'Contratos: quanto o preço precisa mudar', f:fr,
+          a:['Inclua já nos contratos longos uma cláusula de reajuste pela Reforma Tributária.','Cliente empresa recupera o IBS/CBS como crédito: para ele, o aumento pesa menos do que parece.','Para todos os seus produtos de uma vez, use a Formação de Preço e Precificação em Massa.']};
+      }},
+      calcularC04:{ pagina:'c04', depoisDe:'kpi-c04', texto:function(r,ent,F){
+        var p27=null; (r.projecao||[]).forEach(function(x){ if(+x.ano===2027) p27=x; });
+        var pc=function(v){ return (+v).toLocaleString('pt-BR',{maximumFractionDigits:2})+'%'; };
+        var fr=['Sobre o faturamento que você informou'+(ent.faturamento?' ('+F(ent.faturamento)+')':'')+', o imposto sobre o consumo hoje é <b>'+F(r.imposto_atual)+'</b> ('+pc(r.carga_atual_pct)+').'];
+        var p29=null; (r.projecao||[]).forEach(function(x){ if(+x.ano===2029) p29=x; });
+        if(p27) fr.push('Em 2027 ele '+(+p27.variacao_vs_hoje<0?'cai para '+F(p27.imposto)+' — '+F(-p27.variacao_vs_hoje)+' a menos':'sobe para '+F(p27.imposto)+' — '+F(p27.variacao_vs_hoje)+' a mais')+(p29?'; em 2029 fica em '+F(p29.imposto):'')+'.');
+        fr.push('Mas a conta não para aí: com o imposto novo cheio, em 2033 chega a <b>'+F(r.imposto_2033)+'</b> ('+pc(r.carga_2033_pct)+'): '+(+r.variacao_2033>=0?'<b>'+F(r.variacao_2033)+' a mais</b> que hoje.':'<b>'+F(-r.variacao_2033)+' a menos</b> que hoje.'));
+        var a=[]; if(+r.variacao_2033>0){ a.push('Reveja o preço antes da alta: a Formação de Preço mostra quanto cobrar em cada ano.'); a.push('Compre de fornecedores que destacam IBS/CBS: mais crédito, menos imposto a pagar.'); }
+        else a.push('A sua carga cai: dá para segurar o preço e ganhar margem, ou baixar o preço e ganhar mercado.');
+        if(r.observacao && /127/.test(r.observacao)) a.push('Se a sua atividade é profissão regulamentada, pode ter 30% de redução — veja Profissões regulamentadas.');
+        return {t:'Você vai pagar mais ou menos imposto?', f:fr, a:a};
+      }},
+      calcularCalc03:{ pagina:'calc03', depoisDe:'kpi-calc03', texto:function(r,ent,F){
+        var A=r.fornecedor_a||{}, B=r.fornecedor_b||{}, nm={SN:'do Simples',LP:'do Lucro Presumido',LR:'do Lucro Real',HIB:'do híbrido',IMP:'de importação'};
+        var n=function(x){ return 'fornecedor '+(nm[String(x.regime||'').toUpperCase()]||String(x.regime||'')); };
+        var barato=(+A.custo_liquido<=+B.custo_liquido)?A:B, caro=(barato===A)?B:A;
+        var fr=['Comprando '+F(A.compra)+' do '+n(A)+', depois do crédito o custo real é <b>'+F(A.custo_liquido)+'</b>. Do '+n(B)+', <b>'+F(B.custo_liquido)+'</b>.',
+                'O '+n(barato)+' sai <b>'+F(Math.abs(A.custo_liquido-B.custo_liquido))+' mais barato por mês</b> ('+F(Math.abs(A.custo_liquido-B.custo_liquido)*12)+' por ano), porque gera mais crédito para você.'];
+        /* em R$, não em %: o cartão "Deságio máximo" da tela usa outra base (diferença ÷ compra) e o % do servidor (÷ custo
+           líquido) daria um número diferente na mesma tela — achado de 04/10 */
+        if(+r.desconto_de_indiferenca_pct>0) fr.push('Para empatar, o '+n(caro)+' precisaria baixar o preço para cerca de <b>'+F(caro.compra*(1-r.desconto_de_indiferenca_pct/100))+'</b>.');
+        return {t:'De quem comprar: Simples ou regime regular', f:fr,
+          a:['Use esse preço como teto na negociação com o fornecedor do Simples.','Pergunte se o fornecedor do Simples vai optar pelo híbrido: aí o crédito passa a ser cheio.']};
+      }},
+      calcularC08:{ pagina:'c08', antes:true, ancora:function(){ var r=document.getElementById('res-c08'); return r?r.firstElementChild:null; }, texto:function(r,ent,F){
+        var ops=r.opcoes||[], m=r.melhor||ops[0]; if(!m) return null;
+        var eq=ops.filter(function(o){ return o.fator_r_ok && o.risco_fiscal==='baixo'; }).sort(function(a,b){ return a.custo_total-b.custo_total; })[0];
+        var fr=['Para tirar <b>'+F(r.renda_mensal||ent.renda_mensal)+' por mês</b> da empresa, o jeito mais barato é um pró-labore de <b>'+F(m.prolabore)+'</b>'+(/SM|m[ií]nimo/i.test(m.opcao||'')?' (o mínimo legal)':'')+' e o resto em dividendos: <b>'+F(m.custo_total)+' de imposto por mês</b>.'];
+        if(m.risco_fiscal==='alto' && eq && eq!==m){
+          fr.push('Mas pró-labore muito baixo chama a atenção do fisco. O equilíbrio é um pró-labore de <b>'+F(eq.prolabore)+'</b>: '+F(eq.custo_total)+' de imposto por mês, risco baixo'+(eq.fator_r_ok?' e mantém o Fator R (Anexo III no Simples)':'')+'.');
+        }
+        return {t:'Pró-labore: quanto tirar e como', f:fr,
+          a:['Defina o valor com o seu contador e registre a distribuição de lucros na contabilidade.','Dividendos acima de R$ 50 mil por mês, da mesma empresa, pagam 10% de imposto na fonte (regra de 2026).']};
+      }},
+      calcularC06:{ pagina:'c06', depoisDe:'kpi-c06', texto:function(r,ent,F){
+        var fr=['Retirando '+F(ent.prolabore)+' de pró-labore e '+F(ent.dividendo)+' de dividendos por mês, você paga <b>'+F(r.imposto_total_mes)+' de imposto</b> ('+(+r.aliquota_efetiva_pct).toLocaleString('pt-BR',{maximumFractionDigits:1})+'% do que retira) e fica com <b>'+F(r.liquido_socio_mes)+'</b>.'];
+        if(+r.ir_dividendos_10>0) fr.push('Os dividendos acima de R$ 50 mil no mês pagam <b>'+F(r.ir_dividendos_10)+'</b> de imposto na fonte (10%).');
+        else fr.push('Os dividendos não pagam imposto na fonte: ficaram abaixo de R$ 50 mil no mês.');
+        if(+r.irpfm_adicional_mes>0) fr.push('Pela renda alta no ano, entra também um imposto mínimo de cerca de '+F(r.irpfm_adicional_mes)+' por mês.');
+        return {t:'Dividendos 2026: quanto fica com você', f:fr,
+          a:['Se vai distribuir mais de R$ 50 mil num mês, planeje com o contador como dividir ao longo do ano.','Veja também o Pró-labore Ótimo: a divisão entre pró-labore e dividendos muda o total.']};
+      }},
+      lhPmItem:{ pagina:'precmassa', fonte:function(){ return window.LH_PMI_ULTIMO||null; },
+        ancora:function(){ var r=document.getElementById('pmi_res'); return r?r.querySelector('.kpi-grid'):null; },
+        texto:function(r,ent,F){
+          var y27=r.y27||{}, y33=r.y33||{}, s=r.seg, f=r.f||{};
+          F=function(v){ return 'R$ '+(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); };   /* item: centavos contam */
+          var d=(+y33.decidido||0)-(+y33.hojeCli||0), pc=Math.abs(d)/((+y33.hojeCli)||1)*100;
+          var desc=(f.desc && f.desc!=='ITEM' && !/exemplo|fecom/i.test(f.desc)) ? ' <b>'+f.desc+'</b>' : ' este item';
+          var fr=['Hoje você vende'+desc+' por <b>'+F(y33.hojeCli)+'</b> e ficam '+F(y33.ficaHoje)+' com você.',
+                  'Em 2033, para manter o que fica com você, o preço na prateleira vai a <b>'+F(y33.decidido)+'</b> ('+(d>=0?'+':'−')+pc.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%).'+(+y33.fora>0?' Desse preço, '+F(y33.fora)+' é imposto que o cliente empresa recupera.':'')];
+          if(s){ var g=(+s.fica)-(+s.ficaHoje); fr.push(Math.abs(g)<0.005?'Se você segurar o preço de hoje, a sua margem fica igual.':(g>0?'Se você segurar o preço de hoje, ganha <b>'+F(g)+' por item</b> de margem.':'Se você segurar o preço de hoje, perde <b>'+F(-g)+' por item</b> de margem.')); }
+          return {t:'Quanto cobrar por este item', f:fr,
+            a:['Para todos os produtos de uma vez, envie o seu catálogo em Precificação em Massa.','Clientes com contrato: avise e negocie o reajuste cedo.']};
+        }},
       calcularC05:{ pagina:'c05', depoisDe:'kpi-c05', texto:function(r,ent,F){
         var rk=(r.ranking||[]).slice().sort(function(a,b){ return a.total-b.total; });
         if(!rk.length) return null;
@@ -72067,11 +72140,11 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
   }
   function leituraDono(pg){
     var k=PAG_DONO[pg]; if(!k) return;
-    var cfg=PRODUTO.dono[k], u=(window.LH_PONTE && LH_PONTE.ultimo)?LH_PONTE.ultimo[k]:null;
-    var ref=document.getElementById(cfg.depoisDe); if(!ref || !ref.parentNode) return;
+    var cfg=PRODUTO.dono[k], u=cfg.fonte ? cfg.fonte() : ((window.LH_PONTE && LH_PONTE.ultimo)?LH_PONTE.ultimo[k]:null);
+    var ref=cfg.ancora ? cfg.ancora() : document.getElementById(cfg.depoisDe); if(!ref || !ref.parentNode) return;
     var card=document.getElementById('pcp-dono-'+pg);
     if(!u || !u.resultado || u.resultado.ok===false){ if(card) card.parentNode.removeChild(card); return; }
-    if(card && card.getAttribute('data-q')===u.quando && card.previousElementSibling===ref) return;
+    if(card && card.getAttribute('data-q')===u.quando && (cfg.antes ? card.nextElementSibling===ref : card.previousElementSibling===ref)) return;
     var L=null; try{ L=cfg.texto(u.resultado,u.ent||{},fmtR); }catch(e){ L=null; }
     if(!L){ if(card) card.parentNode.removeChild(card); return; }
     if(!card){ card=document.createElement('div'); card.id='pcp-dono-'+pg; card.className='pcp-dono'; }
@@ -72079,7 +72152,8 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     card.innerHTML='<div class="eb">Para você, dono</div><h4>'+L.t+'</h4>'+L.f.map(function(x){ return '<p>'+x+'</p>'; }).join('')+
       (L.a&&L.a.length?'<div class="faz"><b class="t">O que fazer</b><ul>'+L.a.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul></div>':'')+
       '<div class="rod">Mesma conta que o seu contador vê no sistema dele — só a leitura é diferente.</div>';
-    if(ref.nextSibling!==card) ref.parentNode.insertBefore(card, ref.nextSibling);
+    if(cfg.antes){ if(ref.previousSibling!==card) ref.parentNode.insertBefore(card, ref); }
+    else if(ref.nextSibling!==card) ref.parentNode.insertBefore(card, ref.nextSibling);
   }
   var _obs={};
   function vigiarDono(){
@@ -72093,9 +72167,15 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     });
   }
   window.LH_DONO_ATUALIZAR=function(pg){ limparPagina(pg); leituraDono(pg); };
+  /* v919 · o exemplo do item vem do encontro Fecomércio no CORE; no ITFE o rótulo é neutro */
+  function exemploNeutro(){
+    if(PRODUTO.id!=='empresario' || typeof window.lhPmItemExemplo!=='function' || window.lhPmItemExemplo._pcp) return;
+    var f=window.lhPmItemExemplo, g=function(){ var r=f.apply(this,arguments); try{ var e=document.getElementById('pmi_desc'); if(e && /fecom/i.test(e.value)) e.value='Exemplo (R$ 100)'; }catch(_e){} return r; };
+    g._pcp=true; window.lhPmItemExemplo=g;
+  }
   function aplicar(){
     if(document.body) document.body.setAttribute('data-lh-produto',PRODUTO.id);
-    montarMenu(); montarInicio(); topo(); trancar(); filtrarBusca(); abrirPilares(); rodape(); icones(); segmento(); vigiarDono();
+    montarMenu(); montarInicio(); topo(); trancar(); filtrarBusca(); abrirPilares(); rodape(); icones(); segmento(); vigiarDono(); exemploNeutro();
   }
   aplicar();
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',aplicar);
