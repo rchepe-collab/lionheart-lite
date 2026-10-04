@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v909';</script>
+<body><script>window.LH_VERSAO='v911';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -71517,6 +71517,246 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
   }
   if(document.readyState!=='loading') setTimeout(pintar,300);
   else document.addEventListener('DOMContentLoaded',function(){ setTimeout(pintar,300); });
+})();
+</script>
+<script>
+/* ★ v911 · PRODUTO "CADASTRO, CRÉDITO & PREÇO" — o CORE vestido como produto próprio.
+   Entra por app.html?produto=preco (ou preco.html, que redireciona). Sem o parâmetro,
+   nada aqui roda e o CORE fica exatamente como era.
+
+   POR QUE UM MODO E NÃO UM ARQUIVO NOVO: o produto usa as MESMAS telas do CORE.
+   Uma cópia do app.html divergiria na primeira correção (um conceito, um escritor).
+   Aqui o menu é remontado em pilares e o resto do CORE fica escondido; uma correção
+   no Precificador vale para os dois produtos no mesmo commit.
+
+   O QUE ESTE BLOCO FAZ, E SÓ ISSO:
+   1. remonta o menu em pilares, MOVENDO os itens originais (mantém onclick e ouvintes);
+   2. guarda o resto do menu num contêiner oculto (nada é apagado: outros scripts acham
+      seus elementos por id e não podem quebrar);
+   3. troca a página inicial do CORE por uma página inicial do produto;
+   4. tranca a navegação: análise do CORE fora do produto não abre — volta ao início com aviso;
+   5. filtra a busca global para só achar o que está no produto.
+   Planos de pagamento NÃO são tocados aqui (decisão do Ricardo, 04/10): o servidor
+   continua autorizando pelo plano da conta, como sempre. */
+(function(){
+  'use strict';
+  var q=''; try{ q=(new URLSearchParams(location.search).get('produto')||'').toLowerCase(); }catch(e){}
+  if(q!=='preco') return;
+
+  var PRODUTO={
+    id:'preco',
+    nome:'Cadastro, Crédito & Preço',
+    marca:'Lionheart',
+    frase:'Cada item vendido com a classificação certa, o crédito medido e o preço que protege a margem de 2027 a 2033.',
+    pilares:[
+      { t:'Aprendizado', itens:[
+        ['videos','Vídeos Tutoriais'], ['basetecnica','Glossário Tributário'], ['glossario','Dicionário · Busca Rápida'] ]},
+      { t:'Clientes & Documentos', itens:[
+        ['empresas','Gestão de Carteira'], ['@cadcliente','Cadastrar Cliente · Grupo Econômico'],
+        ['importsped','Importar & auto-preencher (SPED + XML/NFe)'], ['consultacnpj','Consulta CNPJ'] ]},
+      { t:'Cadastro & Nota', itens:[
+        ['auditorcad','Auditor de Cadastro (cClassTrib)'], ['classmassa','Classificador em Massa CBS/IBS'],
+        ['simnotas','Simulador de Notas (emissor)'], ['matrizdoc','Matriz de Inputs Automáticos'] ]},
+      { t:'Identificador de Crédito', itens:[
+        ['cadeia','Cadeia de Crédito · entradas × saídas'] ]},
+      { t:'Preços', itens:[
+        ['formpreco','Formação de Preço 2027-33'], ['precmassa','Precificação em Massa 2027-33'],
+        ['contrato','Analisador de Contrato'] ]},
+      { t:'Sua Conta', itens:[
+        ['meusdados','Meus Dados'], ['lgpd','Política de Privacidade'], ['termos','Termo de Uso'] ]}
+    ]
+  };
+  window.LH_PRODUTO=PRODUTO;
+
+  /* páginas do produto (o que pode abrir) */
+  var PERMITIDAS={'pcp-home':1};
+  PRODUTO.pilares.forEach(function(p){ p.itens.forEach(function(it){ if(it[0].charAt(0)!=='@') PERMITIDAS[it[0]]=1; }); });
+
+  function idDo(el){ var m=((el&&el.getAttribute&&el.getAttribute('onclick'))||'').match(/abrirPagina\(\s*['"]([\w-]+)['"]/); return m?m[1]:null; }
+
+  /* páginas que o menu original do CORE oferece — só elas são trancadas. Páginas
+     internas (formulários, modais de cadastro) seguem abrindo: trancar o que não se
+     conhece quebraria fluxo de tela do produto. */
+  var DO_CORE={};
+
+  var css=document.createElement('style');
+  css.textContent=
+    '#lhwc{display:none!important}'+
+    'body[data-lh-produto] .topbar button[onclick^="abrirPagina(\'tour\'"]{display:none!important}'+
+    'body[data-lh-produto] #lh-aprenda-topbar{display:none!important}'+
+    'body[data-lh-produto] nav.nav-section .nav-secao-js,body[data-lh-produto] nav.nav-section .nav-super-js{display:none!important}'+
+    '#pcp-oculto{display:none!important}'+
+    /* o botão de dúvida leva às Perguntas do CORE inteiro: no produto ele só daria em tranca */
+    'body[data-lh-produto] #lh-fab-perg{display:none!important}'+
+    /* celular: a barra de cima do CORE não quebra linha e alarga a tela inteira; no produto ela quebra e o selo sai */
+    '@media (max-width:720px){body[data-lh-produto] .topbar{flex-wrap:wrap;height:auto!important;row-gap:8px;padding-top:8px;padding-bottom:8px}body[data-lh-produto] .pcp-chip{display:none}body[data-lh-produto] .pcp-home h2{font-size:1.6em}}'+
+    '.pcp-chip{font-family:\'Syne\',sans-serif;font-weight:800;font-size:.78em;letter-spacing:.04em;color:#f4cc4a;border:1px solid rgba(201,162,39,.45);background:rgba(201,162,39,.10);height:36px;padding:0 14px;border-radius:8px;display:flex;align-items:center;white-space:nowrap;flex-shrink:0}'+
+    '.pcp-home{max-width:980px;margin:0 auto;padding:28px 4px 60px}'+
+    '.pcp-home .eb{font-size:.72em;letter-spacing:.16em;text-transform:uppercase;color:#c9a227;font-weight:700}'+
+    '.pcp-home h2{font-family:\'Syne\',sans-serif;font-size:2.1em;font-weight:800;margin:.2em 0 .3em;color:var(--text)}'+
+    '.pcp-home .fr{color:var(--text2);font-size:1.02em;line-height:1.6;max-width:66ch;margin:0 0 22px}'+
+    '.pcp-fluxo{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:0 0 26px}'+
+    '.pcp-passo{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px}'+
+    '.pcp-passo .n{font-family:\'Syne\',sans-serif;font-weight:800;color:#c9a227;font-size:.8em;letter-spacing:.1em}'+
+    '.pcp-passo b{color:var(--text);font-size:1.02em}'+
+    '.pcp-passo span{color:var(--text2);font-size:.86em;line-height:1.5}'+
+    '.pcp-passo .lk{margin-top:auto;display:flex;flex-direction:column;gap:4px;padding-top:6px}'+
+    '.pcp-passo .lk a{color:#e8b020;font-size:.84em;cursor:pointer;text-decoration:none}'+
+    '.pcp-passo .lk a:hover{text-decoration:underline}'+
+    '.pcp-entregas{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}'+
+    '.pcp-entregas div{border:1px dashed rgba(201,162,39,.45);border-radius:12px;padding:14px;color:var(--text2);font-size:.9em;line-height:1.55}'+
+    '.pcp-entregas b{display:block;color:var(--text);margin-bottom:4px}'+
+    '#pcp-aviso{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#0c1628;color:#f0e8d0;border:1px solid rgba(201,162,39,.5);border-radius:10px;padding:10px 16px;font-size:.88em;z-index:99998;box-shadow:0 8px 30px rgba(0,0,0,.4);max-width:92vw}';
+  document.head.appendChild(css);
+
+  function montarMenu(){
+    var nav=document.querySelector('nav.nav-section');
+    if(!nav || nav.getAttribute('data-lh-produto')) return !!nav;
+    var antigos=Array.prototype.slice.call(nav.children);
+    antigos.forEach(function(el){
+      if(el.classList && el.classList.contains('nav-item')){ var i=idDo(el); if(i) DO_CORE[i]=1; }
+      Array.prototype.forEach.call(el.querySelectorAll ? el.querySelectorAll('.nav-item[onclick]') : [], function(x){ var i=idDo(x); if(i) DO_CORE[i]=1; });
+    });
+    var oculto=document.createElement('div'); oculto.id='pcp-oculto'; oculto.setAttribute('aria-hidden','true');
+    antigos.forEach(function(el){ oculto.appendChild(el); });
+
+    function acharItem(id){
+      var todos=oculto.querySelectorAll('.nav-item');
+      for(var k=0;k<todos.length;k++){
+        var el=todos[k];
+        if(id==='@cadcliente'){ if(/perguntarTipoCadastro/.test(el.getAttribute('onclick')||'')) return el; }
+        else if(idDo(el)===id) return el;
+      }
+      return null;
+    }
+
+    var frag=document.createDocumentFragment();
+    var ini=document.createElement('div');
+    ini.className='nav-item'; ini.id='pcp-nav-inicio'; ini.setAttribute('data-pcp','1');
+    ini.setAttribute('onclick',"abrirPagina('pcp-home',this)");
+    ini.style.cssText='margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:10px;';
+    ini.innerHTML='<span class="ni-icon"></span><span class="ni-label">Início</span>';
+    frag.appendChild(ini);
+
+    PRODUTO.pilares.forEach(function(p,ix){
+      var tt=document.createElement('div');
+      tt.className='nav-group-title'; tt.setAttribute('data-pcp','1');
+      tt.style.cssText='margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);color:#C9A227';
+      tt.textContent=p.t.toUpperCase();
+      frag.appendChild(tt);
+      p.itens.forEach(function(it){
+        var el=acharItem(it[0]);
+        if(!el){
+          el=document.createElement('div'); el.className='nav-item';
+          el.setAttribute('onclick',"abrirPagina('"+it[0]+"',this)");
+          el.innerHTML='<span class="ni-icon"></span><span class="ni-label"></span>';
+        }
+        var lb=el.querySelector('.ni-label'); if(lb) lb.textContent=it[1];
+        el.setAttribute('data-pcp','1');
+        el.removeAttribute('id');
+        frag.appendChild(el);
+      });
+    });
+    nav.appendChild(frag);
+    nav.appendChild(oculto);
+    nav.setAttribute('data-lh-produto',PRODUTO.id);
+    return true;
+  }
+
+  function montarInicio(){
+    if(document.getElementById('page-pcp-home')) return;
+    var home=document.getElementById('page-home');
+    if(!home || !home.parentNode) return;
+    var L=function(id,txt){ return '<a onclick="abrirPagina(\''+id+'\',null)">'+txt+' →</a>'; };
+    var pg=document.createElement('div');
+    pg.className='page'; pg.id='page-pcp-home';
+    pg.innerHTML=
+      '<div class="pcp-home">'+
+        '<div class="eb">'+PRODUTO.marca+'</div>'+
+        '<h2>'+PRODUTO.nome+'</h2>'+
+        '<p class="fr">'+PRODUTO.frase+'</p>'+
+        '<div class="pcp-fluxo">'+
+          '<div class="pcp-passo"><span class="n">1 · ENTRADA</span><b>Cliente e documentos</b><span>Cadastre a empresa e traga o que já existe: SPED, XML e CNPJ. O que vem do documento não se digita.</span>'+
+            '<div class="lk">'+L('empresas','Gestão de Carteira')+L('importsped','Importar documentos')+L('consultacnpj','Consulta CNPJ')+'</div></div>'+
+          '<div class="pcp-passo"><span class="n">2 · CADASTRO</span><b>Cada item classificado</b><span>NCM, NBS e cClassTrib conferidos item a item. Erro de cadastro vira erro de imposto e de preço.</span>'+
+            '<div class="lk">'+L('auditorcad','Auditor de Cadastro')+L('classmassa','Classificador em Massa')+L('simnotas','Simulador de Notas')+'</div></div>'+
+          '<div class="pcp-passo"><span class="n">3 · CRÉDITO</span><b>Quanto a compra devolve</b><span>De quem compra e para quem vende: quanto vira crédito, quanto fica na mesa e o saldo de cada ano.</span>'+
+            '<div class="lk">'+L('cadeia','Cadeia de Crédito')+'</div></div>'+
+          '<div class="pcp-passo"><span class="n">4 · PREÇO</span><b>Preço que protege a margem</b><span>Preço por item, ano a ano da transição, e os contratos longos que precisam de cláusula nova.</span>'+
+            '<div class="lk">'+L('formpreco','Formação de Preço')+L('precmassa','Precificação em Massa')+L('contrato','Analisador de Contrato')+'</div></div>'+
+        '</div>'+
+        '<div class="pcp-entregas">'+
+          '<div><b>Entrega 1 · Relatório de cadastro</b>O que está classificado errado, o que falta e o que muda no destaque da nota.</div>'+
+          '<div><b>Entrega 2 · Tabela de preços 2027–2033</b>Preço por item em cada ano, com o crédito da compra já descontado.</div>'+
+        '</div>'+
+      '</div>';
+    home.parentNode.insertBefore(pg,home);
+    if(home.classList.contains('active')){ home.classList.remove('active'); pg.classList.add('active'); }
+  }
+
+  function topo(){
+    var bar=document.querySelector('.topbar'); if(!bar || document.getElementById('pcp-chip')) return;
+    var c=document.createElement('span'); c.id='pcp-chip'; c.className='pcp-chip'; c.textContent=PRODUTO.nome;
+    var ref=document.getElementById('btn-tema-topbar');
+    if(ref && ref.nextSibling) bar.insertBefore(c, ref.nextSibling); else bar.appendChild(c);
+    try{ document.title=PRODUTO.marca+' · '+PRODUTO.nome; }catch(e){}
+    try{ var sv=document.getElementById('lh-selo-versao'); if(sv && sv.previousSibling && sv.previousSibling.nodeType===3) sv.previousSibling.nodeValue=PRODUTO.nome+' · '; }catch(e){}
+  }
+
+  function aviso(txt){
+    var a=document.getElementById('pcp-aviso');
+    if(!a){ a=document.createElement('div'); a.id='pcp-aviso'; a.setAttribute('role','status'); document.body.appendChild(a); }
+    a.textContent=txt; a.style.display='block';
+    clearTimeout(aviso._t); aviso._t=setTimeout(function(){ a.style.display='none'; },4200);
+  }
+
+  /* a tranca: embrulha a abrirPagina vigente. Vários blocos do CORE reembrulham a
+     função ao longo da carga; por isso a tranca se reinstala por cima enquanto a
+     página assenta. */
+  function trancar(){
+    var f=window.abrirPagina;
+    if(typeof f!=='function' || f._pcp) return;
+    var g=function(id){
+      var k=String(id||'');
+      if(DO_CORE[k] && !PERMITIDAS[k]){
+        aviso('Esta análise faz parte do Lionheart CORE e não está neste produto.');
+        return f.call(this,'pcp-home',document.getElementById('pcp-nav-inicio'));
+      }
+      return f.apply(this,arguments);
+    };
+    g._pcp=true; g._orig=f;
+    window.abrirPagina=g;
+  }
+
+  function filtrarBusca(){
+    try{
+      if(Array.isArray(window.BUSCA_INDEX) && !window.BUSCA_INDEX._pcp){
+        var b=window.BUSCA_INDEX.filter(function(x){ return !(x && x.id && DO_CORE[x.id] && !PERMITIDAS[x.id]) && !(x && /^central-/.test(x.id||'')); });
+        b._pcp=true; window.BUSCA_INDEX=b;
+      }
+    }catch(e){}
+  }
+
+  /* pilares abertos: são poucos itens, recolher só esconde o produto */
+  function abrirPilares(){
+    var nav=document.querySelector('nav.nav-section'); if(!nav) return;
+    Array.prototype.forEach.call(nav.querySelectorAll('.nav-cat-wrap'),function(w){
+      var t=w.querySelector('.nav-group-title');
+      if(t && t.getAttribute('data-pcp') && !w._pcpAberto){
+        w._pcpAberto=true; w.classList.remove('lh-collapsed');
+        var box=w.querySelector('.nav-cat-itens'); if(box) box.style.maxHeight='none';
+      }
+    });
+  }
+
+  function aplicar(){
+    if(document.body) document.body.setAttribute('data-lh-produto',PRODUTO.id);
+    montarMenu(); montarInicio(); topo(); trancar(); filtrarBusca(); abrirPilares();
+  }
+  aplicar();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',aplicar);
+  window.addEventListener('load',aplicar);
+  var n=0, iv=setInterval(function(){ aplicar(); if(++n>=20) clearInterval(iv); },750);
 })();
 </script>
 </body>
