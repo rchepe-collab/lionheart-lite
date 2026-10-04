@@ -26,7 +26,7 @@ setTimeout(() => {
   ex('produto empresario ligado pelo arquivo (sem parâmetro na URL)', nav.getAttribute('data-lh-produto') === 'empresario');
   const titulos = [...nav.querySelectorAll('.nav-group-title')].filter((t) => visivel(E, t)).map((t) => t.textContent.replace(/[▼▶]/g, '').trim());
   console.log('  pilares: ' + titulos.join(' · '));
-  ex('pilares do empresário na ordem', titulos.slice(0, 8).join('|') === 'APRENDIZADO|MINHA EMPRESA|CADASTRO & CRÉDITO|REGIME|PREÇO|CAIXA|SÓCIO|FINANCEIRO' && /^SEU SEGMENTO/.test(titulos[8]) && titulos[9] === 'SUA CONTA', titulos.join('|'));
+  ex('pilares do empresário na ordem', titulos.slice(0, 9).join('|') === 'APRENDIZADO|DIAGNÓSTICO & PLANO|MINHA EMPRESA|CADASTRO & CRÉDITO|REGIME|PREÇO|CAIXA|SÓCIO|FINANCEIRO' && /^SEU SEGMENTO/.test(titulos[9]) && titulos[10] === 'SUA CONTA', titulos.join('|'));
   const ids = () => [...nav.querySelectorAll('.nav-item')].filter((e) => visivel(E, e)).map(idDo).filter(Boolean);
   const comuns = ['videos', 'importsped', 'auditorcad', 'classmassa', 'cadeia', 'dxh', 'c05', 'formpreco', 'c02', 'c04', 'calc03', 'c01', 'n33', 'c08', 'c06', 'fin_dados', 'fin_cred', 'fin_dre', 'fin_fluxo'];
   ex('todas as abas comuns da lista estão no menu', comuns.every((i) => ids().includes(i)), comuns.filter((i) => !ids().includes(i)).join(','));
@@ -35,7 +35,7 @@ setTimeout(() => {
   ex('nada de advogado, recuperação de crédito ou escritório no menu', fora.every((i) => !ids().includes(i)), fora.filter((i) => ids().includes(i)).join(','));
   ex('nenhuma menção a Fecomércio no menu', !/fecom[eé]rcio/i.test(nav.textContent.replace(d.getElementById('pcp-oculto').textContent, '')));
   const wraps = [...nav.querySelectorAll('.nav-cat-wrap')].filter((w) => { const t = w.querySelector('.nav-group-title'); return t && t.getAttribute('data-pcp') && visivel(E, t); });
-  ex('ITFE abre com os pilares recolhidos (' + wraps.length + ')', wraps.length >= 9 && wraps.every((w) => w.classList.contains('lh-collapsed')), wraps.filter((w) => !w.classList.contains('lh-collapsed')).map((w) => w.textContent.trim().slice(0, 20)).join('|'));
+  ex('ITFE abre com os pilares recolhidos (' + wraps.length + ')', wraps.length >= 10 && wraps.every((w) => w.classList.contains('lh-collapsed')), wraps.filter((w) => !w.classList.contains('lh-collapsed')).map((w) => w.textContent.trim().slice(0, 20)).join('|'));
   ex('abre nas Boas-Vindas do ITFE', d.getElementById('page-pcp-bemvindo').classList.contains('active') && /INTELIGÊNCIA TRIBUTÁRIA E FINANCEIRA EMPRESARIAL/.test(d.getElementById('page-pcp-bemvindo').textContent));
   ex('Boas-Vindas pergunta o segmento (4 botões)', d.querySelectorAll('#pcp-segmentos button[data-seg]').length === 4);
   ex('tela de acesso diz ITFE, não CORE', /ITFE · Inteligência Tributária e Financeira Empresarial · Acesso/.test(d.getElementById('lh-login-produto').textContent));
@@ -74,7 +74,7 @@ setTimeout(() => {
   ex('trocar de segmento limpa o sub-ramo', (() => { E.LH_EMP_SEGMENTO('agro'); return !d.querySelector('#pcp-subramos button.on'); })());
   E.LH_EMP_SEGMENTO('agro'); E.LH_EMP_SUBRAMO('leite');
   ex('título do pilar diz segmento e sub-ramo', /SEU SEGMENTO · AGRO · LEITE/.test(d.getElementById('pcp-seg-titulo').textContent), d.getElementById('pcp-seg-titulo').textContent);
-  ex('com segmento e sub-ramo, o empresário vê até 32 abas', (() => { const n = ids().length; return n >= 24 && n <= 32; })(), String(ids().length));
+  ex('com segmento e sub-ramo, o empresário vê até 36 abas (v924: +4 do Diagnóstico & Plano)', (() => { const n = ids().length; return n >= 28 && n <= 36; })(), String(ids().length));
 
   ex('seletor de tema no topo (4 temas)', d.querySelectorAll('#pcp-temas button[data-tema]').length === 4);
   E.LH_EMP_TEMA('musgo'); ex('tema verde musgo aplica no ITFE', d.documentElement.getAttribute('data-pcp-tema') === 'musgo' && d.querySelector('#pcp-temas button.on').getAttribute('data-tema') === 'musgo');

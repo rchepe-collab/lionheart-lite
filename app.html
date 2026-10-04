@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v923';</script>
+<body><script>window.LH_VERSAO='v924';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -11027,6 +11027,68 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
     </div>
     <div id="fin_fluxo_result"></div>
   </div>
+<!-- v924 · ITFE etapa 3: telas trazidas do ITFE v194 (só aparecem no menu do ITFE) -->
+<div class="page" id="page-diagnostico">
+  <div style="max-width:1100px;margin:0 auto">
+    <div style="text-align:center;margin:8px 0 4px">
+      <div style="font-size:1.5rem;font-weight:800;color:var(--gold2,#e0b93a)">◎ Diagnóstico de Maturidade</div>
+      <div style="font-size:.88rem;color:#9aa7b8;margin-top:6px;line-height:1.6;max-width:720px;margin-left:auto;margin-right:auto">
+        Quatro dimensões, quatro blocos curtos. Cada resposta gera a sua nota <b>e</b> as ações que faltam —
+        dizendo quem executa cada uma: a ferramenta, o contador, ou o seu fornecedor de sistema.
+      </div>
+      <div class="dg-proc">
+        <span class="dg-proc-t">▤ As quatro frentes</span>
+        São as quatro frentes de adequação de toda empresa à Reforma:
+        <i>jurídica, operacional, tecnológica e estratégica</i>.
+        Cada uma recebe a sua nota — a média esconderia justamente a frente que está atrasada.
+      </div>
+      <style>
+      .dg-proc{margin:12px 0 6px;padding:12px 15px;background:rgba(158,197,242,.07);
+        border-left:3px solid rgba(158,197,242,.55);border-radius:0 10px 10px 0;
+        font-size:.82rem;color:#c0cad6;line-height:1.68}
+      .dg-proc b{color:#f0e8d0}
+      .dg-proc i{color:#9ec5f2;font-style:italic}
+      .dg-proc-t{display:block;font-size:.68rem;font-weight:800;letter-spacing:.09em;
+        text-transform:uppercase;color:#9ec5f2;margin-bottom:4px}
+      </style>
+
+    </div>
+    <div id="dg2_host"></div>
+  </div>
+</div>
+<div class="page" id="page-piso">
+  <div style="max-width:1080px;margin:0 auto">
+    <div style="text-align:center;margin:8px 0 6px">
+      <div style="font-size:1.5rem;font-weight:800;color:var(--gold2,#e0b93a)">⬥ Piso Obrigatório</div>
+      <div style="font-size:.88rem;color:#9aa7b8;margin-top:7px;line-height:1.6;max-width:700px;margin-left:auto;margin-right:auto">
+        O que <b>toda</b> empresa faz na Reforma — não depende de diagnóstico, de maturidade nem de opinião.
+        É lei, e tem prazo. Filtrado pelo seu setor e regime, nas mesmas 4 dimensões.
+      </div>
+    </div>
+    <div id="piso_host"></div>
+  </div>
+</div>
+<div class="page" id="page-prazos">
+  <div style="max-width:1050px;margin:0 auto">
+    <div style="text-align:center;margin:8px 0 4px">
+      <div style="font-size:1.5rem;font-weight:800;color:var(--gold2,#e0b93a)">⧗ Radar de Prazos da Reforma</div>
+      <div style="color:#9aa7b8;font-size:.88rem;margin-top:4px">Os marcos oficiais 2026–2033 — com contagem regressiva do que está batendo na porta.</div>
+    </div>
+    <div id="prazosUrgentes"></div>
+    <div id="prazosLinha"></div>
+  </div>
+</div>
+<div class="page" id="page-plano">
+  <div style="max-width:1150px;margin:0 auto">
+    <div style="text-align:center;margin:8px 0 4px">
+      <div style="font-size:1.5rem;font-weight:800;color:var(--gold2,#e0b93a)">▤ Plano de Ação (5W2H)</div>
+      <div style="color:#9aa7b8;font-size:.88rem;margin-top:4px">Da análise à <b>ação</b>. As adequações que faltaram no diagnóstico já entram aqui — você define quem, quando e como.</div>
+    </div>
+    <div style="text-align:center;margin:12px 0"><button class="addbtn" style="border-style:solid;background:linear-gradient(135deg,var(--gold,#C9A227),var(--gold2,#e0b93a));color:#0c1420;padding:9px 20px" onclick="lhImportarDiagPlano()">↓ Puxar pendências do meu Diagnóstico</button>
+    <button class="addbtn" onclick="lhAddAcao()">+ Adicionar ação</button></div>
+    <div id="planoLista"></div>
+  </div>
+</div>
   <div class="page" id="page-cr04">
     <div class="calc-page-header">
       <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.18),rgba(234,179,8,0.10));"></div>
@@ -71521,6 +71583,1219 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
   else document.addEventListener('DOMContentLoaded',function(){ setTimeout(pintar,300); });
 })();
 </script>
+<style id="lh-v924-ramo">
+.mapa-ramo{padding:8px 16px;border:1px solid rgba(201,162,39,.3);background:transparent;color:#9aa7b8;border-radius:20px;cursor:pointer;font-weight:700;font-size:.85rem;transition:.2s}
+.mapa-ramo.on{background:linear-gradient(135deg,var(--gold,#C9A227),var(--gold2,#e0b93a));color:#0c1420;border-color:transparent}
+.addbtn{padding:9px 18px;border:1px dashed rgba(201,162,39,.55);background:transparent;color:#e0b93a;border-radius:10px;cursor:pointer;font-weight:700;font-size:.85rem;font-family:inherit;margin:3px}
+.addbtn:hover{background:rgba(201,162,39,.1)}
+</style>
+<style id="lh-diag2">
+#dg2_host{max-width:1080px;margin:0 auto}
+.dg2-setor{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 18px}
+.dg2-st{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:#9aa7b8;
+  border-radius:999px;padding:8px 18px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit}
+.dg2-st.on{background:rgba(201,162,39,.14);border-color:#c9a227;color:#e0b93a}
+.dg2-placar{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:18px;margin-bottom:20px}
+.dg2-plac-h{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#9aa7b8;font-weight:800;margin-bottom:14px;text-align:center}
+.dg2-grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.dg2-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:11px;
+  padding:14px 12px;text-align:center;cursor:pointer;transition:border-color .15s}
+.dg2-card:hover{border-color:rgba(201,162,39,.5)}
+.dg2-ci{font-size:1.4rem}
+.dg2-cn{font-size:.8rem;font-weight:800;color:#e8edf5;margin:6px 0 9px;line-height:1.3}
+.dg2-bar{height:6px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin-bottom:8px}
+.dg2-fill{height:100%;border-radius:99px;transition:width .3s}
+.dg2-cp{font-size:1.25rem;font-weight:800;color:#e0b93a;font-family:ui-monospace,monospace}
+.dg2-cq{font-size:.7rem;color:#8a97a8;margin-top:3px}
+.dg2-geral{text-align:center;margin-top:15px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);
+  color:#c4cdd8;font-size:.9rem}
+.dg2-geral.dg2-vazio{color:#9aa7b8;font-size:.85rem;border-top:none;padding-top:6px}
+.dg2-lab{color:#e0b93a;font-weight:800;letter-spacing:.04em}
+.dg2-mini{display:block;font-size:.75rem;color:#8a97a8;margin-top:5px}
+.dg2-bloco{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);border-radius:14px;
+  padding:18px;margin-bottom:16px}
+.dg2-bh{display:flex;align-items:center;gap:13px;margin-bottom:16px;padding-bottom:13px;border-bottom:1px solid rgba(255,255,255,.08)}
+.dg2-bi{font-size:1.5rem}
+.dg2-bt{font-size:1.02rem;font-weight:800;color:#e0b93a}
+.dg2-bd{font-size:.79rem;color:#9aa7b8;margin-top:2px}
+.dg2-bp{margin-left:auto;font-size:.78rem;color:#8a97a8;font-family:ui-monospace,monospace;font-weight:700}
+.dg2-q{margin-bottom:15px}
+.dg2-qt{font-size:.9rem;color:#e8edf5;font-weight:600;margin-bottom:8px;line-height:1.5}
+.dg2-ops{display:flex;flex-direction:column;gap:5px}
+.dg2-op{text-align:left;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);
+  color:#b6c0cd;border-radius:8px;padding:9px 13px;font-size:.84rem;cursor:pointer;font-family:inherit;
+  line-height:1.4;transition:all .12s}
+.dg2-op:hover{border-color:rgba(201,162,39,.4);color:#e8edf5}
+.dg2-op.on{background:rgba(201,162,39,.13);border-color:#c9a227;color:#e0b93a;font-weight:700}
+.dg2-plano{background:rgba(255,255,255,.03);border:1px solid rgba(201,162,39,.28);border-radius:14px;padding:20px;margin-top:22px}
+.dg2-ph{font-size:1.06rem;font-weight:800;color:#e0b93a;margin-bottom:14px}
+.dg2-vazio2{color:#9aa7b8;font-size:.86rem;line-height:1.6}
+.dg2-resumo{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}
+.dg2-t{font-size:.76rem;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid}
+.dg2-t.v{color:#7fc79a;border-color:rgba(127,199,154,.35);background:rgba(127,199,154,.08)}
+.dg2-t.a{color:#8fb0e8;border-color:rgba(143,176,232,.35);background:rgba(143,176,232,.08)}
+.dg2-t.c{color:#9aa7b8;border-color:rgba(154,167,184,.3);background:rgba(154,167,184,.06)}
+.dg2-acao{border-radius:0 10px 10px 0;padding:13px 16px;margin-bottom:9px;
+  background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07)}
+.dg2-acao.v{border-left:3px solid #7fc79a}
+.dg2-acao.a{border-left:3px solid #8fb0e8}
+.dg2-acao.c{border-left:3px solid #6b7684}
+.dg2-al{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.dg2-selo{font-size:.63rem;font-weight:800;letter-spacing:.07em;padding:3px 8px;border-radius:5px}
+.dg2-selo.v{color:#7fc79a;background:rgba(127,199,154,.12)}
+.dg2-selo.a{color:#8fb0e8;background:rgba(143,176,232,.12)}
+.dg2-selo.c{color:#9aa7b8;background:rgba(154,167,184,.1)}
+.dg2-peso{font-size:.7rem;color:#e0a83a;font-weight:700}
+.dg2-at{font-size:.92rem;font-weight:700;color:#e8edf5;line-height:1.45}
+.dg2-ap{font-size:.81rem;color:#9aa7b8;margin-top:5px;line-height:1.55}
+.dg2-btn{margin-top:9px;background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.4);
+  color:#e0b93a;border-radius:7px;padding:7px 14px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit}
+.dg2-btn:hover{background:rgba(201,162,39,.2)}
+.dg2-rodape{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);
+  font-size:.76rem;color:#e0a83a;line-height:1.5}
+.dg2-limpar{background:transparent;border:1px solid rgba(255,255,255,.14);color:#8a97a8;
+  border-radius:8px;padding:8px 18px;font-size:.8rem;cursor:pointer;font-family:inherit}
+.dg2-btn.cinza{background:rgba(154,167,184,.1);border-color:rgba(154,167,184,.4);color:#c4cdd8}
+.dg2-btn.cinza:hover{background:rgba(154,167,184,.18)}
+#dg2_modal{display:none}
+.dg2-ov{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;display:flex;
+  align-items:center;justify-content:center;padding:20px}
+.dg2-md{background:#141d2b;border:1px solid rgba(201,162,39,.35);border-radius:14px;
+  padding:22px;max-width:640px;width:100%;max-height:86vh;overflow:auto}
+.dg2-mh{font-size:1.05rem;font-weight:800;color:#e0b93a;margin-bottom:5px}
+.dg2-ms{font-size:.82rem;color:#9aa7b8;margin-bottom:13px}
+.dg2-ta{width:100%;min-height:280px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);
+  color:#e8edf5;border-radius:9px;padding:13px;font-size:.83rem;line-height:1.6;
+  font-family:ui-monospace,monospace;resize:vertical}
+.dg2-mb{display:flex;gap:9px;margin-top:13px}
+html[data-theme="claro"] .dg2-md{background:#fbfaf5}
+html[data-theme="claro"] .dg2-ta{background:#fff;color:#21252b}
+@media(max-width:820px){.dg2-grid4{grid-template-columns:repeat(2,1fr)}}
+html[data-theme="claro"] .dg2-cn,html[data-theme="claro"] .dg2-qt,html[data-theme="claro"] .dg2-at{color:#21252b}
+html[data-theme="claro"] .dg2-op{color:#3d4450}
+</style>
+<style id="lh-pisopg">
+#piso_host{max-width:960px;margin:0 auto}
+.ps-filtros{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin:16px 0 18px}
+.ps-fg{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.ps-fl{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:#8a97a8;font-weight:800}
+.ps-fb{display:flex;gap:5px;flex-wrap:wrap}
+.ps-b{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:#9aa7b8;
+  border-radius:999px;padding:6px 13px;font-size:.79rem;font-weight:700;cursor:pointer;font-family:inherit}
+.ps-b.on{background:rgba(201,162,39,.14);border-color:#c9a227;color:#e0b93a}
+.ps-urg{background:rgba(224,168,58,.07);border:1px solid rgba(224,168,58,.3);border-radius:11px;
+  padding:14px;margin-bottom:16px}
+.ps-uh{font-size:.83rem;font-weight:800;color:#e0a83a;margin-bottom:9px}
+.ps-ul{display:flex;align-items:baseline;gap:10px;padding:5px 0;font-size:.82rem;color:#c4cdd8;flex-wrap:wrap}
+.ps-ud{flex:0 0 auto;font-weight:800;color:#e0a83a;font-family:ui-monospace,monospace;
+  background:rgba(224,168,58,.14);padding:2px 8px;border-radius:5px;font-size:.75rem}
+.ps-up{margin-left:auto;font-size:.73rem;color:#8a97a8;font-family:ui-monospace,monospace;white-space:nowrap}
+.ps-geral{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:11px;
+  padding:14px 16px;margin-bottom:18px;text-align:center}
+.ps-gt{font-size:.73rem;letter-spacing:.07em;text-transform:uppercase;color:#8a97a8;font-weight:800;margin-bottom:8px}
+.ps-gb{height:7px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden}
+.ps-gf{height:100%;background:linear-gradient(90deg,#c9a227,#e0b93a);border-radius:99px;transition:width .3s}
+.ps-gn{font-size:.79rem;color:#9aa7b8;margin-top:7px;font-weight:700}
+.ps-dim{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08);border-radius:12px;
+  padding:16px;margin-bottom:14px}
+.ps-dh{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.ps-di{font-size:1.25rem}
+.ps-dn{font-size:.96rem;font-weight:800;color:#e0b93a}
+.ps-dc{margin-left:auto;font-size:.78rem;color:#9aa7b8;font-weight:800;font-family:ui-monospace,monospace}
+.ps-db{height:5px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin-bottom:11px}
+.ps-df{height:100%;background:#9aa7b8;border-radius:99px;transition:width .25s}
+.ps-item{display:flex;align-items:flex-start;gap:10px;padding:9px;border-radius:7px;cursor:pointer;
+  transition:background .12s;flex-wrap:wrap}
+.ps-item:hover{background:rgba(255,255,255,.04)}
+.ps-item.ok .ps-txt{color:#7fc79a;text-decoration:line-through;opacity:.7}
+.ps-cb{margin-top:2px;flex:0 0 auto;width:16px;height:16px;cursor:pointer;accent-color:#c9a227}
+.ps-txt{flex:1;min-width:200px;font-size:.85rem;color:#b6c0cd;line-height:1.5}
+.ps-prazo{font-size:.71rem;font-weight:800;color:#9aa7b8;background:rgba(255,255,255,.05);
+  padding:3px 8px;border-radius:5px;white-space:nowrap;font-family:ui-monospace,monospace}
+.ps-prazo.urg{color:#e0a83a;background:rgba(224,168,58,.13)}
+.ps-rodape{text-align:center;font-size:.82rem;color:#8a97a8;margin-top:16px;line-height:1.6}
+.ps-rodape a{color:#e0b93a;font-weight:700}
+html[data-theme="claro"] .ps-txt{color:#3d4450}
+</style>
+<style id="lh-v116">
+.dgp-colapso{margin:10px 0;border:1px solid rgba(255,255,255,.09);border-radius:9px;overflow:hidden;
+  background:rgba(255,255,255,.02)}
+.dgp-colapso summary{padding:9px 13px;cursor:pointer;font-size:.79rem;color:#8a97a8;list-style:none;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dgp-colapso summary::-webkit-details-marker{display:none}
+.dgp-colapso summary b{color:#c4cdd8;font-weight:700}
+.dgp-colapso summary:hover{background:rgba(255,255,255,.04)}
+.dgp-c2{color:#7fc79a;font-size:.76rem;font-weight:700}
+.dgp-lk{margin-left:auto;color:#e0b93a;font-size:.74rem;font-weight:700;cursor:pointer;opacity:.8}
+.dgp-lk:hover{opacity:1;text-decoration:underline}
+.dgp-colapso[open] summary{border-bottom:1px solid rgba(255,255,255,.08)}
+.dg2-exp{background:rgba(201,162,39,.11);border:1px solid rgba(201,162,39,.4);border-radius:13px;
+  padding:16px 18px;margin:22px 0 10px}
+.dgx-t{font-size:.95rem;font-weight:800;color:#e0b93a;margin-bottom:7px}
+.dgx-d{font-size:.84rem;color:#aab6c4;line-height:1.72;margin-bottom:13px}
+.dgx-d b{color:#e8edf5}
+.dgx-b{display:flex;gap:9px;flex-wrap:wrap}
+.dgx-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);color:#c4cdd8;
+  border-radius:9px;padding:11px 18px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit}
+.dgx-btn:hover{background:rgba(255,255,255,.11)}
+.dgx-xls{background:rgba(127,199,154,.18);border-color:rgba(127,199,154,.5);color:#7fc79a}
+.dgx-xls:hover{background:rgba(127,199,154,.3)}
+.dgx-msg{margin-top:10px;font-size:.81rem;min-height:1em}
+html[data-theme="claro"] .dgx-d{color:#21252b}
+@media(max-width:600px){.dgx-b{flex-direction:column}.dgx-btn{width:100%}}
+</style>
+<script>
+/* ★ v924 · ITFE etapa 3 — Diagnóstico, O que é obrigatório (Piso), Radar de Prazos e Plano de Ação (5W2H),
+   trazidos do ITFE v194. As telas existem no app.html mas só aparecem no menu do ITFE (PRODUTOS.empresario).
+   Mudanças em relação ao v194: LH_PLANO → LH_PLANO5W2H (no CORE, LH_PLANO é o paywall); prazos do Simples
+   alinhados à tela Dentro × Híbrido (opção até 15/10, híbrido até 30/10, cancelamento 03/11–20/12/2026);
+   sem Fecomércio, sem citação de lei; agro entra nos filtros (perguntas e itens gerais). */
+var LH_ADEQ_RAMO="comercio";
+var LH_ADEQ_REGIME="simples";
+var CHECKLIST_OBRIG=[
+ {area:"▤ Simples Nacional — pontos de atenção",itens:[
+   {id:"ct_marco",txt:"Março/2027: 2ª janela de opção pelo regime regular (efeito no 2º semestre de 2027) — a opção é SEMESTRAL",regimes:["simples"],critico:true},
+   {id:"ct_nada",txt:"Entender a regra do silêncio: sem manifestação até 30/10/2026, o IBS/CBS CONTINUA dentro do Simples",regimes:["simples"],critico:true},
+   {id:"ct_canc",txt:"Cancelamento das opções de 03/11 a 20/12/2026 — depois disso é IRRETRATÁVEL",regimes:["simples"]},
+   {id:"ct_sub",txt:"Acompanhar o sublimite de R$ 3,6 mi — passando dele, ICMS/ISS saem do DAS e vão pelas regras normais",regimes:["simples"]},
+   {id:"ct_nfse_an",txt:"NFS-e Nacional vale mesmo para quem está com o pedido de opção pelo Simples EM ANÁLISE",regimes:["simples"],critico:true}
+ ]},
+ {area:"⌁ Preparação da empresa (marcos de 2026)",itens:[
+   {id:"fe_ncm",txt:"Revisar NCMs e cadastro de produtos no ERP (cClassTrib) — a alíquota é do produto, não do CNAE",regimes:["simples","presumido","real"],critico:true},
+   {id:"fe_matriz",txt:"Mapear os créditos por despesa (cartão, frete, publicidade, energia, aluguel PJ) — use a Matriz de Créditos",regimes:["presumido","real","simples"]},
+   {id:"fe_forn",txt:"Classificar fornecedores por regime (~50% são Simples/MEI): crédito limitado ao valor recolhido muda a decisão de compra",regimes:["presumido","real"],critico:true},
+   {id:"fe_preco",txt:"Refazer a formação de preço item a item (PIS/COFINS sai, CBS entra) — decidir: segurar, repassar ou dividir",regimes:["simples","presumido","real"]},
+   {id:"fe_contr",txt:"Revisar contratos de clientes e fornecedores: cláusula de reequilíbrio tributário antes de 2027",regimes:["presumido","real","simples"]},
+   {id:"fe_split",txt:"Preparar o caixa p/ o Split Payment — fase 1 (previsão 2º sem/2027): Pix, boleto e TED; cartões depois",regimes:["simples","presumido","real"]},
+   {id:"fe_apur",txt:"Acompanhar a Apuração Assistida (pré-preenchimento oficial) e conferir com a apuração própria",regimes:["presumido","real"]},
+   {id:"fe_antec",txt:"Turismo: reavaliar pacotes vendidos com antecedência (risco de tributação no pagamento) — calc Pagamentos Antecipados",regimes:["simples","presumido","real"],ramos:["turismo"]}
+ ]},
+ {area:"✧ Decisão de outubro/2026 — Simples 2027",itens:[
+   {id:"sn_portal",txt:"Consultar o Portal do Simples Nacional e fazer a opção pelo Simples 2027 até 15/10/2026",regimes:["simples"],critico:true},
+   {id:"sn_pend",txt:"Verificar e regularizar pendências fiscais (opção indeferida dá só 30 dias p/ regularizar)",regimes:["simples"]},
+   {id:"sn_dxh",txt:"Rodar a comparação dentro × híbrido com os números da empresa (calculadora Dentro × Híbrido)",regimes:["simples"],critico:true},
+   {id:"sn_nfse",txt:"Migrar a emissão para a NFS-e Nacional — obrigatória p/ ME/EPP de serviços desde 01/09/2026",regimes:["simples"],ramos:["servico","turismo"]},
+   {id:"sn_cont",txt:"Fechar a decisão com o contador: Simples até 15/10 e regime híbrido até 30/10/2026 — o cancelamento só vai até 20/12",regimes:["simples"]}
+ ]},
+ {area:"▤ Nota Fiscal & Emissor",itens:[
+   {id:"nf_ibs",txt:"Atualizar o emissor de NF-e/NFC-e para incluir os campos de IBS e CBS",critico:true},
+   {id:"nf_zero",txt:"Simples: incluir os campos de IBS/CBS mesmo com valores zerados",regimes:["simples"]},
+   {id:"nf_nacional",txt:"Migrar a emissão de NFS-e para o Emissor Nacional (Portal NFS-e)",ramos:["servico","turismo"]},
+   {id:"nf_dps",txt:"Adequar o sistema para a DPS (que substitui o RPS)",ramos:["servico","turismo"]},
+   {id:"nf_teste",txt:"Usar o ambiente de testes do Emissor Nacional antes de emitir de verdade"},
+   {id:"nf_das",txt:"Simples: continuar recolhendo pelo DAS (sem aumento imediato em 2026)",regimes:["simples"]}
+ ]},
+ {area:"▭ ERP & Sistemas",itens:[
+   {id:"erp_up",txt:"Atualizar ERPs e módulos fiscais conforme a a nota técnica vigente",critico:true},
+   {id:"erp_param",txt:"Rever as parametrizações de cálculo do sistema",regimes:["presumido","real"]},
+   {id:"erp_cst",txt:"Cadastrar os novos CST, cClassTrib e Créditos Presumidos por produto"},
+   {id:"erp_layout",txt:"Alinhar com o novo layout nacional de documentos fiscais",regimes:["real"]},
+   {id:"erp_recon",txt:"Reconfiguração completa do ERP e novas regras de cálculo",regimes:["real"]}
+ ]},
+ {area:"▤ Obrigações Acessórias",itens:[
+   {id:"oa_sped",txt:"Ajustar SPED, EFD e DCTFWeb ao novo modelo",regimes:["presumido","real"]},
+   {id:"oa_seg",txt:"Manter registros segregados dos dois sistemas (atual + Reforma) até 2033"},
+   {id:"oa_obr",txt:"Adequar as demais obrigações acessórias",regimes:["real"]}
+ ]},
+ {area:"▢ Compras & Fornecedores",itens:[
+   {id:"c1",txt:"Mapear quais fornecedores geram crédito de CBS/IBS"},
+   {id:"c2",txt:"Avaliar o custo LÍQUIDO (após crédito) na escolha do fornecedor"},
+   {id:"c3",txt:"Verificar se o fornecedor está tecnicamente adequado (senão você perde crédito)"}
+ ]},
+ {area:"▣ Estoque & Custos",itens:[
+   {id:"e1",txt:"Confirmar que IBS/CBS NÃO entram no valor do estoque"},
+   {id:"e2",txt:"Controlar o crédito na entrada da mercadoria",ramos:["comercio","industria"]},
+   {id:"e3",txt:"Atualizar centros de custo com a nova lógica de crédito",regimes:["real"]}
+ ]},
+ {area:"⌗ Preços & Contratos",itens:[
+   {id:"p1",txt:"Recalcular margens e reprecificar com a lógica de crédito"},
+   {id:"p2",txt:"Revisar contratos e modelos de precificação (cláusulas de reajuste/transição)"},
+   {id:"p3",txt:"Definir como o tributo aparece na composição do preço"}
+ ]},
+ {area:"▤ Vendas & Caixa",itens:[
+   {id:"v1",txt:"Equipe comercial entende e sabe explicar o Split Payment"},
+   {id:"o2",txt:"Projetar o cash gap do Split Payment e formar reserva de caixa"},
+   {id:"o1",txt:"Refazer o orçamento com a nova carga tributária"}
+ ]},
+ {area:"◑ Pessoas & Treinamento",itens:[
+   {id:"t1",txt:"Capacitar e treinar as equipes (fiscal, faturamento, financeiro, vendas)"},
+   {id:"t2",txt:"Buscar cursos focados nas novas codificações (CST/cClassTrib)"}
+ ]},
+ {area:"⌂ Específico do seu setor",itens:[
+   {id:"rt",txt:"Configurar o regime específico (−40%) no sistema e nos pacotes",ramos:["turismo"]},
+   {id:"rs",txt:"Reavaliar terceirização × CLT (folha não gera crédito)",ramos:["servico"]},
+   {id:"ri",txt:"Controle de crédito de insumo e energia por linha de produção",ramos:["industria"]},
+   {id:"rc",txt:"Ajustar precificação por produto com o fim da Substituição Tributária (ST)",ramos:["comercio"]}
+ ]}
+];
+function _adeqKey(){return "LHADEQ::"+LH_ADEQ_RAMO+"::"+LH_ADEQ_REGIME;}
+function _adeqLoad(){try{return JSON.parse(localStorage.getItem(_adeqKey())||"{}");}catch(e){return {};}}
+function _adeqSave(st){try{localStorage.setItem(_adeqKey(),JSON.stringify(st));}catch(e){}}
+function lhSetRamoAdeq(r){LH_ADEQ_RAMO=r;document.querySelectorAll("#page-adequacao .mapa-ramo:not(.reg)").forEach(function(b){b.classList.toggle("on",b.dataset.r===r);});renderAdeq();}
+function lhSetRegimeAdeq(rg){LH_ADEQ_REGIME=rg;document.querySelectorAll("#page-adequacao .mapa-ramo.reg").forEach(function(b){b.classList.toggle("on",b.dataset.reg===rg);});renderAdeq();}
+function lhToggleAdeq(id){var st=_adeqLoad();st[id]=!st[id];_adeqSave(st);renderAdeq();}
+function renderAdeq(){
+  var lista=document.getElementById("adeqLista"); if(!lista)return;
+  var st=_adeqLoad(), total=0, feitos=0, html="";
+  CHECKLIST_OBRIG.forEach(function(g){
+    var its=g.itens.filter(function(it){return (!it.ramos || it.ramos.indexOf(LH_ADEQ_RAMO)>=0) && (!it.regimes || it.regimes.indexOf(LH_ADEQ_REGIME)>=0);});
+    if(!its.length)return;
+    html+='<div style="margin-bottom:16px"><div style="font-size:.9rem;font-weight:800;color:#fff;margin-bottom:6px">'+g.area+'</div>';
+    its.forEach(function(it){
+      total++; var ok=!!st[it.id]; if(ok)feitos++;
+      html+='<div onclick="lhToggleAdeq(\''+it.id+'\')" style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;margin:4px 0;background:rgba(255,255,255,'+(ok?'.06':'.02')+');border:1px solid '+(it.critico&&!ok?'rgba(192,101,62,.5)':'rgba(255,255,255,.06)')+';border-radius:9px;cursor:pointer">'+
+        '<div style="width:20px;height:20px;border-radius:5px;border:2px solid '+(ok?'#3ecf8e':'#6b7a90')+';background:'+(ok?'#3ecf8e':'transparent')+';flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#0c1420;font-weight:900;font-size:.8rem">'+(ok?'✓':'')+'</div>'+
+        '<div style="font-size:.85rem;color:'+(ok?'#8a97a8':'#d4dce6')+';'+(ok?'text-decoration:line-through':'')+'">'+it.txt+(it.critico?' <span style="color:#e8916f;font-weight:700;font-size:.72rem">⧗ crítico</span>':'')+'</div></div>';
+    });
+    html+='</div>';
+  });
+  lista.innerHTML=html;
+  var pct=total?Math.round(feitos/total*100):0;
+  document.getElementById("adeqPct").textContent=pct+"% ("+feitos+"/"+total+")";
+  document.getElementById("adeqBar").style.width=pct+"%";
+}
+setTimeout(renderAdeq,600);
+</script>
+<script>
+var LH_PLANO5W2H=[], LH_PLANO_SEQ=1;
+function _planoLoad(){try{LH_PLANO5W2H=JSON.parse(localStorage.getItem("LHPLANO")||"[]");LH_PLANO5W2H.forEach(function(a){if(+a.id>=LH_PLANO_SEQ)LH_PLANO_SEQ=+a.id+1;});}catch(e){LH_PLANO5W2H=[];}}
+function _planoSave(){try{localStorage.setItem("LHPLANO",JSON.stringify(LH_PLANO5W2H));}catch(e){}}
+function lhAddAcao(oq,porque){LH_PLANO5W2H.push({id:LH_PLANO_SEQ++,oq:oq||"",porque:porque||"",quem:"",quando:"",como:"",quanto:"",feito:false});_planoSave();renderPlano();}
+function lhDelAcao(id){LH_PLANO5W2H=LH_PLANO5W2H.filter(function(a){return a.id!==id;});_planoSave();renderPlano();}
+function lhUpdAcao(id,campo,val){var a=LH_PLANO5W2H.find(function(x){return x.id===id;});if(a){a[campo]=val;_planoSave();if(campo==="feito")renderPlano();}}
+function lhImportarDiagPlano(){
+  /* v77 — religado ao motor novo (LH_DIAG2). O botão lia o banco ANTIGO de
+     perguntas, que não existe mais: puxava zero e o dono achava que o
+     diagnóstico não servia pra nada. Agora traz as ações do plano, cada uma
+     com o SELO de quem executa — porque no 5W2H o "quem" é a coluna que
+     mais importa, e para as ações de fora do escopo o "quem" não é a empresa. */
+  if(!window.LH_DIAG2){ alert("O diagnóstico ainda não carregou. Abra o Diagnóstico de Maturidade primeiro."); return; }
+  var pl=LH_DIAG2.plano();
+  if(!pl.length){ alert("Nenhuma ação ainda — responda o Diagnóstico de Maturidade primeiro."); return; }
+  var SELO={resolve:"● A ferramenta resolve", orienta:"◉ A ferramenta orienta", fora:"○ Fora do escopo — exigir de quem faz"};
+  var add=0;
+  pl.forEach(function(a){
+    if(LH_PLANO5W2H.some(function(x){ return x.oq===a.txt; })) return;
+    lhAddAcao(a.txt, SELO[a.selo]+" · "+(a.porque||""));
+    add++;
+  });
+  alert(add ? ("Importei "+add+" ação(ões) do seu diagnóstico.") : "Todas as ações do diagnóstico já estão no plano.");
+}
+function _esc(x){return (x||"").replace(/"/g,"&quot;");}
+function renderPlano(){
+  var l=document.getElementById("planoLista"); if(!l)return;
+  if(!LH_PLANO5W2H.length){l.innerHTML='<div style="text-align:center;color:#6b7a90;padding:30px;font-style:italic">Nenhuma ação ainda. Puxe as pendências do diagnóstico ou adicione manualmente.</div>';return;}
+  var feitos=LH_PLANO5W2H.filter(function(a){return a.feito;}).length;
+  var cols="28px 2fr 1.3fr 1fr .9fr 1.3fr .9fr 30px";
+  var html='<div style="text-align:center;color:#9aa7b8;font-size:.82rem;margin-bottom:10px">'+feitos+' de '+LH_PLANO5W2H.length+' ações concluídas</div>';
+  html+='<div style="display:grid;grid-template-columns:'+cols+';gap:6px;font-size:.66rem;color:#8a97a8;font-weight:700;padding:0 4px 4px;text-transform:uppercase"><div>✓</div><div>O quê</div><div>Por quê</div><div>Quem</div><div>Quando</div><div>Como</div><div>Quanto</div><div></div></div>';
+  LH_PLANO5W2H.forEach(function(a){
+    var inpStyle="width:100%;padding:5px 6px;font-size:.74rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:5px;color:#d4dce6";
+    function inp(campo,ph){return '<input value="'+_esc(a[campo])+'" placeholder="'+ph+'" data-pid="'+a.id+'" data-campo="'+campo+'" class="lh-plano-inp" style="'+inpStyle+'">';}
+    var chk='<div class="lh-plano-chk" data-pid="'+a.id+'" style="width:20px;height:20px;border-radius:5px;border:2px solid '+(a.feito?"#3ecf8e":"#6b7a90")+';background:'+(a.feito?"#3ecf8e":"transparent")+';cursor:pointer;display:flex;align-items:center;justify-content:center;color:#0c1420;font-weight:900;font-size:.75rem">'+(a.feito?"✓":"")+'</div>';
+    var del='<div class="lh-plano-del" data-pid="'+a.id+'" style="text-align:center;color:#c0653e;cursor:pointer;font-weight:700">×</div>';
+    html+='<div style="display:grid;grid-template-columns:'+cols+';gap:6px;align-items:center;margin:3px 0;'+(a.feito?"opacity:.55":"")+'">'+chk+'<div>'+inp("oq","O que fazer")+'</div><div>'+inp("porque","Por quê")+'</div><div>'+inp("quem","Responsável")+'</div><div>'+inp("quando","Prazo")+'</div><div>'+inp("como","Como")+'</div><div>'+inp("quanto","Custo")+'</div>'+del+'</div>';
+  });
+  l.innerHTML=html;
+}
+document.addEventListener("input",function(e){var t=e.target;if(t.classList&&t.classList.contains("lh-plano-inp")){lhUpdAcao(+t.dataset.pid,t.dataset.campo,t.value);}});
+document.addEventListener("click",function(e){var t=e.target;if(!t.dataset||!t.dataset.pid)return;if(t.classList.contains("lh-plano-chk")){var a=LH_PLANO5W2H.find(function(x){return x.id===+t.dataset.pid;});if(a){lhUpdAcao(+t.dataset.pid,"feito",!a.feito);}}else if(t.classList.contains("lh-plano-del")){lhDelAcao(+t.dataset.pid);}});
+_planoLoad();setTimeout(renderPlano,500);
+</script>
+<script>
+var LH_PRAZOS=[
+ {d:"2027-01-01",t:"Apuração Assistida (pré-preenchida) do IBS/CBS",desc:"O fisco passa a pré-preencher a apuração a partir dos documentos fiscais eletrônicos — a empresa CONFERE e ajusta, em vez de montar do zero. Consequência prática: erro de cadastro (CST/cClassTrib) e nota mal emitida viram imposto errado direto na apuração. Quem tem cadastro limpo colhe o benefício; quem não tem, herda o erro. Use o Auditor de Cadastro.",quem:"Todas · quem emite documento fiscal",critico:true},
+ {d:"2026-07-31",t:"PF contribuintes precisam de CNPJ",desc:"Produtores rurais, transportadores autônomos e profissionais liberais que contribuirão com CBS/IBS devem ter CNPJ.",quem:"Autônomos e liberais"},
+ {d:"2026-08-01",t:"Novas obrigações acessórias em vigor",desc:"Empresas do regime regular não podem mais emitir NF sem os campos de IBS/CBS — nota rejeitada trava a operação.",quem:"Regime regular (Presumido/Real)",critico:true},
+ {d:"2026-09-01",t:"NFS-e NACIONAL obrigatória — serviços do Simples",desc:"ME/EPP prestadoras de serviço devem emitir pela NFS-e Nacional (Emissor Nacional / Portal NFS-e), com DPS no lugar do RPS.",quem:"ME/EPP de serviços (Simples)",critico:true},
+ {d:"2026-07-31",t:"Cálculos das alíquotas de referência vão ao TCU",desc:"Governo envia ao TCU os cálculos das alíquotas de referência de CBS/IBS. Depois, o Senado fixa a alíquota — previsão até 15/12/2026. Referência atual: 26,5% (CBS 8,8 + IBS 17,7); projeções de mercado chegam a 9,43% de CBS.",quem:"Todas (acompanhar)"},
+ {d:"2026-10-15",t:"Prazo da opção pelo Simples 2027",desc:"Opção pelo Simples Nacional para 2027 no Portal do Simples. Confira antes as pendências fiscais: opção indeferida tem prazo curto para regularizar.",quem:"Simples Nacional e MEI",critico:true},
+ {d:"2026-10-30",t:"Prazo da opção pelo regime híbrido (IBS/CBS por fora)",desc:"Quem quer recolher IBS/CBS por fora do DAS opta até 30/10 no Portal do Simples. Sem manifestação, tudo continua dentro do DAS. Compare antes em Simples 2027: Dentro × Híbrido.",quem:"Simples Nacional",critico:true},
+ {d:"2026-12-20",t:"Último dia para cancelar a opção — depois é irretratável",desc:"O cancelamento das opções (Simples 2027 e regime híbrido) vai de 03/11 a 20/12/2026. Depois disso, a decisão vale para 2027.",quem:"Simples Nacional e MEI",critico:true},
+ {d:"2026-10-01",t:"Empresas novas: regra própria de opção",desc:"CNPJ constituído de 01/10 a 31/12/2026 opta na constituição; efeitos SN desde a inscrição; IBS/CBS por fora só a partir de 01/01/2027.",quem:"Empresas em abertura"},
+ {d:"2026-12-15",t:"Senado fixa a alíquota de referência da CBS",desc:"Previsão: o Senado fixa a alíquota oficial da CBS para 2027, validada pelo TCU. É o número que substitui a estimativa de 8,8%.",quem:"Todas",critico:true},
+ {d:"2027-01-01",t:"CBS entra CHEIA · PIS/COFINS extintos · Imposto Seletivo",desc:"CBS plena (8,8%), IPI zerado (exceto ZFM), IS passa a incidir. Simples passa a destacar IBS/CBS.",quem:"Todas as empresas"},
+ {d:"2027-07-01",t:"Split Payment — fase 1 (previsão)",desc:"Implementação prevista para o 2º semestre/2027: Pix, boleto e TED. Cartões de crédito/débito ficam para fase posterior (data a definir) — varejo que opera com cartão tem prazo extra.",quem:"Todas · atenção varejo"},
+ {d:"2027-03-31",t:"Re-opção semestral: IBS/CBS por fora",desc:"Quem ficou dentro do DAS tem nova chance em março/2027 de optar pelo regime híbrido — efeitos no 2º semestre/2027. A opção passa a ser semestral.",quem:"Simples Nacional"},
+ {d:"2029-01-01",t:"IBS começa: 10% · ICMS/ISS a 9/10",desc:"Início da transição estadual/municipal.",quem:"Todas"},
+ {d:"2030-01-01",t:"IBS 20% · ICMS/ISS a 8/10",desc:"Segundo degrau da transição.",quem:"Todas"},
+ {d:"2031-01-01",t:"IBS 30% · ICMS/ISS a 7/10 · revisão da trava 26,5%",desc:"Se a alíquota projetada passar de 26,5%, o governo deve propor ajustes.",quem:"Todas"},
+ {d:"2032-01-01",t:"IBS 40% · ICMS/ISS a 6/10",desc:"Último ano do sistema híbrido.",quem:"Todas"},
+ {d:"2033-01-01",t:"Sistema pleno · ICMS e ISS EXTINTOS",desc:"IBS+CBS integral (26,5% referência). Fim da transição.",quem:"Todas",critico:true}
+];
+function renderPrazos(){
+  LH_PRAZOS.sort(function(a,b){ return a.d<b.d?-1:a.d>b.d?1:0; });   /* v924: a linha do tempo em ordem de data */
+  var urg=document.getElementById("prazosUrgentes"), lin=document.getElementById("prazosLinha");
+  if(!urg)return;
+  var hoje=new Date(); hoje.setHours(0,0,0,0);
+  var uhtml="", lhtml='<div style="margin-top:16px">';
+  LH_PRAZOS.forEach(function(p){
+    var dt=new Date(p.d+"T00:00:00"), dias=Math.round((dt-hoje)/86400000);
+    var passado=dias<0, urgente=dias>=0&&dias<=90;
+    var badge = passado?'<span style="color:#6b7a90;font-size:.7rem;font-weight:800">JÁ EM VIGOR</span>'
+      : '<span style="color:'+(urgente?'#c0653e':'#8a97a8')+';font-size:'+(urgente?'.9rem':'.75rem')+';font-weight:900">'+(dias===0?'É HOJE!':'faltam '+dias+' dias')+'</span>';
+    if(urgente&&!passado){
+      uhtml+='<div style="background:rgba(192,101,62,.1);border:1px solid rgba(192,101,62,.45);border-radius:12px;padding:14px 16px;margin:8px 0">'+
+        '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><div style="font-weight:800;color:#fff;font-size:.95rem">⚑ '+p.t+'</div>'+badge+'</div>'+
+        '<div style="font-size:.83rem;color:#d4dce6;margin-top:5px">'+p.desc+'</div>'+
+        '<div style="font-size:.72rem;color:#e8b49a;margin-top:4px">◑ '+p.quem+' · ⌗ '+dt.toLocaleDateString("pt-BR")+'</div></div>';
+    }
+    lhtml+='<div style="display:flex;gap:12px;margin:6px 0;opacity:'+(passado?'.5':'1')+'">'+
+      '<div style="width:86px;flex-shrink:0;text-align:right;font-size:.78rem;font-weight:800;color:'+(p.critico?'var(--gold,#C9A227)':'#8a97a8')+'">'+dt.toLocaleDateString("pt-BR")+'</div>'+
+      '<div style="width:10px;position:relative;flex-shrink:0"><div style="position:absolute;left:4px;top:4px;bottom:-10px;width:2px;background:rgba(255,255,255,.1)"></div><div style="position:absolute;left:0;top:4px;width:10px;height:10px;border-radius:50%;background:'+(p.critico?'var(--gold,#C9A227)':(passado?'#3a4556':'#4a9eff'))+'"></div></div>'+
+      '<div style="padding-bottom:8px"><div style="font-size:.86rem;font-weight:700;color:#e8edf3">'+p.t+' '+badge+'</div>'+
+      '<div style="font-size:.78rem;color:#9aa7b8;margin-top:2px">'+p.desc+' <span style="color:#6b7a90">· '+p.quem+'</span></div></div></div>';
+  });
+  lhtml+='</div>';
+  urg.innerHTML=uhtml?'<div style="font-size:.85rem;font-weight:800;color:#e8916f;margin:12px 0 4px">⚑ BATENDO NA PORTA (próximos 90 dias):</div>'+uhtml:"";
+  lin.innerHTML=lhtml;
+}
+setTimeout(renderPrazos,600);
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   v77 — DIAGNÓSTICO MODULAR (4 blocos) + PLANO DE AÇÃO COM SELO
+   ─────────────────────────────────────────────────────────────────────
+   As 4 dimensões vêm da chamada do encontro Fecomércio-RS: "adequações
+   jurídicas, operacionais, tecnológicas e estratégicas". O bloco
+   tecnológico usa o termo do Carlos: INTEGRAÇÃO TECNOLÓGICA.
+
+   Mecânica (herdada do motor do CORE, adaptada para o DONO):
+     · cada resposta carrega DUAS cargas: um score de MATURIDADE (0 a 4,
+       onde 4 = já está pronto) e a lista de AÇÕES que ela exige;
+     · o score vira uma nota POR BLOCO — nunca uma nota só, porque uma
+       empresa 90% estratégica e 10% tecnológica tem média 50% e a média
+       esconde exatamente a coisa que ia salvar ela;
+     · as ações caem num plano único, cada uma com um SELO de quem executa.
+
+   A RÉGUA DO SELO — a ferramenta DECIDE, o ERP EXECUTA:
+     ● resolve  → a conta é nossa: abre a calculadora certa
+     ◉ orienta  → a pauta é nossa, a execução é do contador/advogado
+     ○ fora     → não é nossa função — e dizemos exatamente o que EXIGIR
+                   de quem faz. Este é o selo mais valioso: o dono não sabe
+                   o que pedir ao fornecedor de ERP. Agora sabe.
+
+   ⚠ Nota: textos e scores em conferência final antes do cliente.
+   ═══════════════════════════════════════════════════════════════════════ */
+(function(){
+ 'use strict';
+ var ACOES={"a_contrato_cliente": {"t": "Revisar contratos de venda com cláusula de repasse tributário", "selo": "resolve", "calc": "c02", "p": "Contrato longo sem cláusula tributária = você absorve o aumento sozinho."}, "a_contrato_forn": {"t": "Renegociar contratos de compra com cláusula de transição", "selo": "orienta", "calc": null, "p": "Leve ao advogado: quem paga a diferença de carga entre 2027 e 2033?"}, "a_antecipado": {"t": "Medir a exposição dos pagamentos recebidos antecipadamente", "selo": "resolve", "calc": "antecip", "p": "Se você recebe hoje e entrega daqui a anos, o tributo pode ser exigido no recebimento."}, "a_tese_credito": {"t": "Ver com o contador se há créditos antigos a recuperar", "selo": "orienta", "calc": null, "p": "Peça ao seu contador para avaliar se há créditos antigos a recuperar antes que prescrevam."}, "a_regulatorio": {"t": "Acompanhar a regulamentação infralegal e o Comitê Gestor", "selo": "resolve", "calc": "prazos", "p": "A lei está posta; o que muda agora é o regulamento — e ele muda o número."}, "a_juridico_resp": {"t": "Definir quem responde juridicamente pela transição", "selo": "orienta", "calc": null, "p": "Sem um responsável nomeado, ninguém acompanha e o prazo passa."}, "a_forn_regime": {"t": "Mapear o regime tributário de cada fornecedor", "selo": "resolve", "calc": "calc03", "p": "Cerca de metade dos fornecedores é Simples ou MEI — e o crédito fica limitado ao recolhido."}, "a_class_decidir": {"t": "Definir a alíquota e a classificação de cada família de produto", "selo": "resolve", "calc": "classif", "p": "A decisão tributária é nossa. É aqui que se define o número."}, "a_class_auditar": {"t": "Auditar o cClassTrib dos produtos já cadastrados", "selo": "resolve", "calc": "auditorcad", "p": "Classificação errada = nota rejeitada ou imposto pago a mais."}, "a_class_carregar": {"t": "Carregar a classificação definida no ERP, SKU a SKU", "selo": "fora", "calc": null, "p": "Exija do seu ERP/TI: importação em massa de cClassTrib, NCM e CST por SKU, com log de quem alterou.", "exige": {"para": "fornecedor do ERP / TI", "txt": "Vou entregar a classificação tributária definida por família de produto. Preciso que o sistema permita:\n\n1) Importação em massa de cClassTrib, NCM e CST por SKU (planilha ou API);\n2) Log de alteração: quem mudou, quando e o valor anterior;\n3) Relatório dos SKUs sem classificação preenchida;\n4) Bloqueio de emissão para item sem classificação.\n\nPeço prazo para a entrega de cada item."}}, "a_cd_logistica": {"t": "Reavaliar centros de distribuição e malha logística", "selo": "orienta", "calc": null, "p": "O IBS é no DESTINO. A vantagem fiscal de estar num estado pode virar pó."}, "a_docfiscal": {"t": "Adequar a emissão de documentos fiscais com IBS/CBS", "selo": "fora", "calc": null, "p": "Exija do seu ERP: campos de IBS/CBS na nota, cClassTrib, e teste em ambiente de homologação (SVRS).", "exige": {"para": "fornecedor do ERP", "txt": "Preciso da confirmação de que a emissão de documentos fiscais já contempla:\n\n1) Os campos de IBS e CBS no layout vigente;\n2) O cClassTrib por item;\n3) Emissão testada em ambiente de HOMOLOGAÇÃO (SVRS), com nota de exemplo;\n4) O que acontece se a nota for rejeitada por campo faltante.\n\nA nota rejeitada trava a operação. Preciso de prazo e de um plano B."}}, "a_gov_fiscal": {"t": "Nomear um responsável pela governança fiscal", "selo": "orienta", "calc": null, "p": "Não precisa ser cargo novo. Precisa ser nome com sobrenome."}, "a_erp": {"t": "Adequar o ERP aos novos tributos", "selo": "fora", "calc": null, "p": "Exija do fornecedor, por escrito e com prazo: campos IBS/CBS, cClassTrib, apuração paralela 2026–2033, e crédito por documento.", "exige": {"para": "fornecedor do ERP", "txt": "Solicito confirmação POR ESCRITO, com prazo, de que o sistema estará adequado à Reforma Tributária:\n\n1) Emissão de documento fiscal com os campos de IBS e CBS;\n2) Campo cClassTrib por item, com importação em massa;\n3) Apuração PARALELA dos dois sistemas durante a transição 2026–2033;\n4) Apropriação de crédito por documento, com rastreio da origem;\n5) Tratamento do Split Payment na baixa do recebimento;\n6) Data de entrega de cada item acima.\n\nPeço a resposta com prazo e responsável técnico nomeado."}}, "a_apur_paralela": {"t": "Rodar a apuração paralela dos dois sistemas", "selo": "fora", "calc": null, "p": "Até 2033 convivem dois sistemas. Exija do ERP: apurar o antigo E o novo, lado a lado, no mesmo mês.", "exige": {"para": "fornecedor do ERP", "txt": "Durante a transição (2026–2033) convivem o sistema antigo e o novo. Preciso que o sistema apure OS DOIS, lado a lado, no mesmo período:\n\n1) Apuração do modelo atual (PIS, COFINS, IPI, ICMS, ISS);\n2) Apuração do modelo novo (IBS e CBS), com a curva de transição do ano;\n3) Relatório comparativo dos dois no mesmo mês;\n4) Confirmação de qual será o comportamento em cada ano da transição.\n\nSem isso, não consigo conferir o que estou pagando."}}, "a_nfse": {"t": "Migrar para a NFS-e Nacional", "selo": "orienta", "calc": null, "p": "Serviço no Simples: obrigatória a partir de 09/2026. Não é opção."}, "a_apur_assistida": {"t": "Entender a Apuração Assistida da Receita", "selo": "orienta", "calc": null, "p": "O fisco pré-preenche a apuração. Quem não confere, aceita o número dele."}, "a_teste_homolog": {"t": "Testar a emissão em ambiente de homologação", "selo": "fora", "calc": null, "p": "Exija do ERP: nota emitida em homologação, com IBS/CBS, ANTES de virar obrigatório.", "exige": {"para": "fornecedor do ERP", "txt": "Solicito o TESTE de emissão em ambiente de homologação, antes da obrigatoriedade:\n\n1) Nota emitida em homologação com IBS/CBS, para conferência;\n2) Data desse teste;\n3) Quem, da sua equipe, acompanha o teste comigo;\n4) Lista dos cenários testados (venda, devolução, transferência, brinde).\n\nQuero descobrir o problema no teste, não na venda."}}, "a_integra_banco": {"t": "Verificar a integração com o banco para o Split Payment", "selo": "fora", "calc": null, "p": "O split é executado na liquidação. Pergunte ao seu banco/adquirente como será feito.", "exige": {"para": "banco / adquirente", "txt": "Sobre o Split Payment da Reforma Tributária, preciso saber:\n\n1) Como será feita a segregação do tributo na liquidação do recebimento;\n2) Se haverá diferença entre Pix, boleto e cartão;\n3) Em quanto tempo o valor líquido cai na conta;\n4) Qual relatório vocês entregam para eu conciliar o que foi retido;\n5) A partir de qual data isso passa a valer para a minha conta.\n\nPreciso disso para projetar o meu caixa."}}, "a_split_gap": {"t": "Medir o gap de caixa do Split Payment", "selo": "resolve", "calc": "c01", "p": "O imposto sai na hora da venda. O dinheiro que ficava no caixa some."}, "a_ncg": {"t": "Recalcular a necessidade de capital de giro", "selo": "resolve", "calc": "n33", "p": "Mudou o ciclo, mudou o giro. Descubra antes do banco descobrir."}, "a_preco": {"t": "Reprecificar produtos e serviços para 2027–2033", "selo": "resolve", "calc": "formpreco", "p": "Preço errado por um ano come a margem de três."}, "a_creditos": {"t": "Mapear os créditos que a Reforma abre", "selo": "resolve", "calc": "cadeia", "p": "Crédito amplo é a boa notícia da Reforma. Quem não mapeia, não pega."}, "a_regime_decidir": {"t": "Decidir o regime: dentro do Simples ou híbrido", "selo": "resolve", "calc": "dxh", "p": "Opção pelo Simples até 15/10 e pelo híbrido até 30/10/2026. O cancelamento só vai até 20/12; depois, não tem volta no ano."}, "a_regime_otimo": {"t": "Comparar Simples × Lucro Presumido × Lucro Real", "selo": "resolve", "calc": "c05", "p": "O regime que servia até 2026 pode ser o pior a partir de 2027."}, "a_dre_fluxo": {"t": "Projetar o DRE e o fluxo de caixa até 2033", "selo": "resolve", "calc": "fin_dre", "p": "A transição é um filme de 8 anos, não uma foto."}, "a_setor_regime": {"t": "Verificar o regime específico do seu setor", "selo": "resolve", "calc": "pcp-bemvindo", "p": "Bares, hotéis, agro, saúde, transporte: cada um tem regra própria."}, "a_sublimite": {"t": "Vigiar o sublimite e o teto do Simples", "selo": "orienta", "calc": null, "p": "Estourar o teto sem perceber é exclusão retroativa. Acompanhe com o seu contador o faturamento dos últimos 12 meses."}, "a_monofasico": {"t": "Revisar produtos monofásicos e ICMS-ST na revenda", "selo": "orienta", "calc": null, "p": "Quem revende monofásico paga imposto que já foi pago lá atrás. Leve ao seu contador: na Reforma isso muda."}, "a_mix_b2b": {"t": "Separar o mix B2B do B2C na estratégia de preço", "selo": "resolve", "calc": "formpreco", "p": "Quem vende para empresa que credita aguenta preço maior. Quem vende para o consumidor, não."}, "a_difal": {"t": "Medir a exposição de DIFAL nas vendas interestaduais", "selo": "resolve", "calc": "difal", "p": "O IBS vai para o destino. Quem vende para fora do estado sente primeiro."}, "a_fator_r": {"t": "Verificar o Fator R — Anexo III ou V", "selo": "resolve", "calc": "fatorR", "p": "A diferença entre o Anexo III e o V é dinheiro. E depende da folha."}, "a_carga_servico": {"t": "Medir o aumento de carga no serviço (pouco insumo, pouco crédito)", "selo": "resolve", "calc": "c04", "p": "Serviço tem pouca despesa que gera crédito. É o setor que mais tende a sentir."}, "a_prolabore": {"t": "Recalcular o pró-labore ótimo", "selo": "resolve", "calc": "c08", "p": "Pró-labore mexe no Fator R, no INSS e no IRPF. Os três ao mesmo tempo."}, "a_hotel_eventos": {"t": "Separar hospedagem de eventos na apuração", "selo": "resolve", "calc": "hotelev", "p": "Hotel tem redutor de 40% sem crédito; evento pode ter 60% com crédito. Misturar custa caro."}, "a_agencia": {"t": "Verificar o regime da agência de viagem (intermediação × pacote)", "selo": "resolve", "calc": "agviagem", "p": "Vender pacote próprio e intermediar são coisas diferentes para o tributo."}, "a_bares": {"t": "Rodar o regime específico de bares e restaurantes", "selo": "resolve", "calc": "bares", "p": "Regime específico com trava de crédito. Não é a regra geral."}, "a_seletivo": {"t": "Verificar se o Imposto Seletivo atinge seus produtos", "selo": "resolve", "calc": "seletivo", "p": "O IS é sobre o que faz mal à saúde ou ao meio ambiente. E não gera crédito."}, "a_credito_insumo": {"t": "Mapear o crédito dos insumos de produção", "selo": "resolve", "calc": "cadeia", "p": "Crédito amplo é a boa notícia da Reforma para quem transforma."}, "a_ipi_zfm": {"t": "Reavaliar benefícios de IPI e Zona Franca", "selo": "orienta", "calc": null, "p": "O IPI vira resíduo. Benefício que dependia dele pode evaporar — leve ao contador."}, "a_segunda_janela": {"t": "Marcar a 2ª janela de opção: março/2027", "selo": "resolve", "calc": "dxh", "p": "Quem perde outubro NÃO perde o ano. Em março/2027 abre nova opção, com efeito no 2º semestre."}, "a_sublimite_icms": {"t": "Vigiar o sublimite de R$ 3,6 milhões", "selo": "orienta", "calc": null, "p": "Acompanhe com o seu contador. Passou do sublimite: continua no Simples para os federais, mas o ICMS/ISS sai do DAS e vai pelas regras normais."}, "a_omissao": {"t": "Entender que NÃO decidir já é uma decisão", "selo": "orienta", "calc": null, "p": "Sem manifestação até 30/10, o IBS/CBS continua dentro do Simples. O silêncio escolhe por você."}, "a_empresa_nova": {"t": "Empresa constituída após 01/10/2026: regra própria", "selo": "orienta", "calc": null, "p": "Quem abre CNPJ de 01/10 a 31/12/2026 opta na constituição. Não entra na janela de outubro."}, "a_cancelamento": {"t": "Saber que o cancelamento (de 03/11 a 20/12/2026) é IRRETRATÁVEL", "selo": "orienta", "calc": null, "p": "Dá para desistir da opção de 03/11 a 20/12. Mas o cancelamento não tem volta — pense antes."}}, Q=[{"id": "j1", "bloco": "juridica", "txt": "Seus contratos de venda têm cláusula que permite repassar a mudança de tributo?", "set": null, "op": [{"t": "Não temos contrato longo — venda é pontual", "s": 4, "a": []}, {"t": "Temos contratos, mas nenhum tem cláusula tributária", "s": 0, "a": ["a_contrato_cliente", "a_juridico_resp"]}, {"t": "Alguns têm; a maioria não", "s": 2, "a": ["a_contrato_cliente"]}, {"t": "Todos já foram revisados com cláusula de transição", "s": 4, "a": []}]}, {"id": "j2", "bloco": "juridica", "txt": "E os contratos de COMPRA — quem absorve o aumento de carga do fornecedor?", "set": null, "op": [{"t": "Nunca pensamos nisso", "s": 0, "a": ["a_contrato_forn"]}, {"t": "Sabemos que é um problema, mas não mexemos", "s": 1, "a": ["a_contrato_forn"]}, {"t": "Estamos renegociando", "s": 3, "a": ["a_contrato_forn"]}, {"t": "Já está previsto em contrato", "s": 4, "a": []}]}, {"id": "j3", "bloco": "juridica", "txt": "Você recebe dinheiro hoje por algo que vai entregar daqui a meses ou anos?", "set": null, "op": [{"t": "Não — entrego junto com o recebimento", "s": 4, "a": []}, {"t": "Sim, e nunca calculei o efeito tributário disso", "s": 0, "a": ["a_antecipado", "a_contrato_cliente"]}, {"t": "Sim, e sei que é um risco — mas não medi", "s": 1, "a": ["a_antecipado"]}, {"t": "Sim, e já medi o impacto", "s": 4, "a": []}]}, {"id": "j4", "bloco": "juridica", "txt": "Sua empresa já avaliou se tem créditos antigos de impostos a recuperar?", "set": null, "op": [{"t": "Nunca ouvi falar", "s": 0, "a": ["a_tese_credito"]}, {"t": "Ouvi falar, mas nunca calculei", "s": 1, "a": ["a_tese_credito"]}, {"t": "O contador disse que não se aplica", "s": 2, "a": ["a_tese_credito"]}, {"t": "Já recuperamos ou já está em andamento", "s": 4, "a": []}]}, {"id": "j5", "bloco": "juridica", "txt": "Quem, na sua empresa, acompanha o que o Comitê Gestor publica?", "set": null, "op": [{"t": "Ninguém", "s": 0, "a": ["a_regulatorio", "a_juridico_resp"]}, {"t": "O contador, quando lembra", "s": 1, "a": ["a_regulatorio"]}, {"t": "Acompanho por conta própria", "s": 3, "a": ["a_regulatorio"]}, {"t": "Temos rotina definida de acompanhamento", "s": 4, "a": []}]}, {"id": "o1", "bloco": "operacional", "txt": "Você sabe quais dos seus fornecedores geram crédito integral e quais não?", "set": null, "op": [{"t": "Não faço ideia", "s": 0, "a": ["a_forn_regime"]}, {"t": "Sei que alguns são do Simples, mas não medi o efeito", "s": 1, "a": ["a_forn_regime"]}, {"t": "Mapeei os principais", "s": 3, "a": ["a_forn_regime"]}, {"t": "Cadeia toda mapeada por geração de crédito", "s": 4, "a": []}]}, {"id": "o2", "bloco": "operacional", "txt": "Seus produtos já têm a classificação tributária da Reforma definida?", "set": ["comercio", "industria", "turismo"], "op": [{"t": "Não sei nem o que é cClassTrib", "s": 0, "a": ["a_class_decidir", "a_class_auditar", "a_class_carregar"]}, {"t": "O ERP preencheu automático, nunca conferi", "s": 1, "a": ["a_class_auditar", "a_class_carregar"]}, {"t": "Estamos revisando família por família", "s": 3, "a": ["a_class_decidir", "a_class_carregar"]}, {"t": "Cadastro revisado, auditado e carregado", "s": 4, "a": []}]}, {"id": "o3", "bloco": "operacional", "txt": "Você vende ou compra de outros estados?", "set": null, "op": [{"t": "Não — tudo dentro do estado", "s": 4, "a": []}, {"t": "Sim, e nunca pensei no efeito da mudança para o destino", "s": 0, "a": ["a_cd_logistica"]}, {"t": "Sim, é parte relevante do negócio", "s": 2, "a": ["a_cd_logistica"]}, {"t": "Sim, e já revisei a malha logística por causa do IBS", "s": 4, "a": []}]}, {"id": "o4", "bloco": "operacional", "txt": "Quem é o responsável pela governança fiscal na sua empresa?", "set": null, "op": [{"t": "Ninguém — cai no colo de quem sobrar", "s": 0, "a": ["a_gov_fiscal"]}, {"t": "É o contador externo", "s": 2, "a": ["a_gov_fiscal"]}, {"t": "Tem um responsável interno informal", "s": 3, "a": ["a_gov_fiscal"]}, {"t": "Cargo e política definidos", "s": 4, "a": []}]}, {"id": "o5", "bloco": "operacional", "txt": "Sua nota fiscal já sai com os campos de IBS/CBS?", "set": null, "op": [{"t": "Não, e não sei se o sistema faz", "s": 0, "a": ["a_docfiscal", "a_teste_homolog"]}, {"t": "O fornecedor do sistema disse que vai fazer", "s": 1, "a": ["a_docfiscal", "a_teste_homolog"]}, {"t": "Já sai, mas nunca testamos direito", "s": 3, "a": ["a_teste_homolog"]}, {"t": "Sai e já foi testada em homologação", "s": 4, "a": []}]}, {"id": "t1", "bloco": "tecnologica", "txt": "Seu ERP já foi atualizado para a Reforma?", "set": null, "op": [{"t": "Não sei / nunca perguntei", "s": 0, "a": ["a_erp", "a_teste_homolog"]}, {"t": "Perguntei e não tenho resposta com prazo", "s": 1, "a": ["a_erp"]}, {"t": "Está em atualização", "s": 3, "a": ["a_erp"]}, {"t": "Atualizado e testado", "s": 4, "a": []}]}, {"id": "t2", "bloco": "tecnologica", "txt": "Seu sistema consegue apurar o modelo ANTIGO e o NOVO ao mesmo tempo?", "set": null, "op": [{"t": "Não sabia que precisava", "s": 0, "a": ["a_apur_paralela", "a_erp"]}, {"t": "Sei que precisa, o sistema não faz", "s": 1, "a": ["a_apur_paralela"]}, {"t": "O fornecedor prometeu para 2026", "s": 2, "a": ["a_apur_paralela"]}, {"t": "Já apura os dois em paralelo", "s": 4, "a": []}]}, {"id": "t3", "bloco": "tecnologica", "txt": "Você já usa a NFS-e Nacional?", "set": ["servico", "turismo"], "op": [{"t": "Não, e não sabia que era obrigatória", "s": 0, "a": ["a_nfse"]}, {"t": "Sei que é obrigatória e ainda não migrei", "s": 1, "a": ["a_nfse"]}, {"t": "Migração em andamento", "s": 3, "a": ["a_nfse"]}, {"t": "Já emitimos por ela", "s": 4, "a": []}]}, {"id": "t4", "bloco": "tecnologica", "txt": "Você sabe o que é a Apuração Assistida?", "set": null, "op": [{"t": "Não faço ideia", "s": 0, "a": ["a_apur_assistida"]}, {"t": "Já ouvi, mas não sei o que muda para mim", "s": 1, "a": ["a_apur_assistida"]}, {"t": "Sei o que é e vou conferir o que o fisco pré-preencher", "s": 3, "a": ["a_apur_assistida"]}, {"t": "Já temos processo de conferência", "s": 4, "a": []}]}, {"id": "t5", "bloco": "tecnologica", "txt": "Você já falou com seu banco ou adquirente sobre o Split Payment?", "set": null, "op": [{"t": "Não — nem sabia que envolve o banco", "s": 0, "a": ["a_integra_banco", "a_split_gap"]}, {"t": "Sei que envolve, não procurei ainda", "s": 1, "a": ["a_integra_banco"]}, {"t": "Já perguntei, aguardo resposta", "s": 3, "a": ["a_integra_banco"]}, {"t": "Já sei exatamente como vai funcionar", "s": 4, "a": []}]}, {"id": "e1", "bloco": "estrategica", "txt": "Você já calculou quanto de caixa o Split Payment vai tirar da sua empresa?", "set": null, "op": [{"t": "Não — nem sei o que é Split Payment", "s": 0, "a": ["a_split_gap", "a_ncg", "a_dre_fluxo"]}, {"t": "Sei o que é, nunca calculei", "s": 1, "a": ["a_split_gap", "a_ncg"]}, {"t": "Tenho uma estimativa grosseira", "s": 2, "a": ["a_split_gap", "a_dre_fluxo"]}, {"t": "Já calculei e já provisionei o giro", "s": 4, "a": []}]}, {"id": "e2", "bloco": "estrategica", "txt": "Seus preços já consideram a carga e o crédito de 2027 em diante?", "set": null, "op": [{"t": "Não — preço é o mesmo de sempre", "s": 0, "a": ["a_preco", "a_creditos"]}, {"t": "Sei que vou ter que mexer, não mexi", "s": 1, "a": ["a_preco"]}, {"t": "Simulei, ainda não apliquei", "s": 3, "a": ["a_preco"]}, {"t": "Já reprecifiquei com a nova lógica", "s": 4, "a": []}]}, {"id": "e3", "bloco": "estrategica", "txt": "Você sabe quais despesas suas vão virar crédito na Reforma?", "set": null, "op": [{"t": "Não", "s": 0, "a": ["a_creditos"]}, {"t": "Sei que o crédito ficou mais amplo, não mapeei", "s": 1, "a": ["a_creditos"]}, {"t": "Mapeei as principais", "s": 3, "a": ["a_creditos"]}, {"t": "Mapa de créditos completo e por despesa", "s": 4, "a": []}]}, {"id": "e4", "bloco": "estrategica", "txt": "Sua empresa é do Simples? Já decidiu se fica dentro ou vai para o híbrido?", "set": null, "op": [{"t": "Sou do Simples e nunca ouvi falar dessa decisão", "s": 0, "a": ["a_regime_decidir", "a_sublimite"]}, {"t": "Sou do Simples e sei da decisão — não decidi", "s": 1, "a": ["a_regime_decidir"]}, {"t": "Sou do Simples e já simulei os dois", "s": 4, "a": []}, {"t": "Não sou do Simples", "s": 4, "a": ["a_regime_otimo"]}]}, {"id": "e5", "bloco": "estrategica", "txt": "Você já projetou o resultado da empresa até 2033, com a transição?", "set": null, "op": [{"t": "Não — olho o mês, no máximo o ano", "s": 0, "a": ["a_dre_fluxo"]}, {"t": "Faço orçamento anual, sem a Reforma dentro", "s": 1, "a": ["a_dre_fluxo"]}, {"t": "Tenho projeção, mas sem a curva da transição", "s": 2, "a": ["a_dre_fluxo"]}, {"t": "Projeção pronta com a transição ano a ano", "s": 4, "a": []}]}, {"id": "e6", "bloco": "estrategica", "txt": "Seu setor tem regime específico na Reforma. Você sabe o seu?", "set": null, "op": [{"t": "Não sabia que existiam regimes específicos", "s": 0, "a": ["a_setor_regime"]}, {"t": "Ouvi falar, não sei se me aplica", "s": 1, "a": ["a_setor_regime"]}, {"t": "Sei que se aplica, não calculei", "s": 2, "a": ["a_setor_regime"]}, {"t": "Já usei a calculadora do meu setor", "s": 4, "a": []}]}, {"id": "s_com1", "bloco": "operacional", "txt": "Você revende produtos monofásicos ou com ICMS-ST (bebida, combustível, autopeça, cosmético)?", "set": ["comercio"], "op": [{"t": "Não", "s": 4, "a": []}, {"t": "Sim, e nunca calculei o efeito da Reforma neles", "s": 0, "a": ["a_monofasico"]}, {"t": "Sim, e sei que muda — não medi", "s": 1, "a": ["a_monofasico"]}, {"t": "Sim, e já calculei", "s": 4, "a": []}]}, {"id": "s_com2", "bloco": "estrategica", "txt": "Quanto do seu faturamento vem de venda para OUTRAS EMPRESAS (que aproveitam crédito)?", "set": ["comercio"], "op": [{"t": "Quase tudo é consumidor final", "s": 2, "a": ["a_mix_b2b"]}, {"t": "Misturado, e nunca separei na hora de precificar", "s": 0, "a": ["a_mix_b2b", "a_preco"]}, {"t": "Misturado, e já sei que precisa preço diferente", "s": 3, "a": ["a_mix_b2b"]}, {"t": "Já tenho política de preço separada por tipo de cliente", "s": 4, "a": []}]}, {"id": "s_com3", "bloco": "operacional", "txt": "Você vende para consumidor final de outro estado?", "set": ["comercio"], "op": [{"t": "Não", "s": 4, "a": []}, {"t": "Sim, e nunca olhei o DIFAL", "s": 0, "a": ["a_difal"]}, {"t": "Sim, e pago DIFAL — não sei o que muda", "s": 1, "a": ["a_difal"]}, {"t": "Sim, e já projetei a mudança para o destino", "s": 4, "a": []}]}, {"id": "s_com4", "bloco": "juridica", "txt": "Seus fornecedores já avisaram se vão repassar a mudança de carga no preço?", "set": ["comercio"], "op": [{"t": "Ninguém me falou nada", "s": 0, "a": ["a_contrato_forn", "a_forn_regime"]}, {"t": "Alguns comentaram, sem número", "s": 1, "a": ["a_contrato_forn"]}, {"t": "Estou negociando com os principais", "s": 3, "a": ["a_contrato_forn"]}, {"t": "Já está tudo acordado em contrato", "s": 4, "a": []}]}, {"id": "s_ser1", "bloco": "estrategica", "txt": "Você sabe que o setor de serviços tende a ter AUMENTO de carga (porque tem pouco insumo com crédito)?", "set": ["servico"], "op": [{"t": "Não sabia disso", "s": 0, "a": ["a_carga_servico", "a_preco"]}, {"t": "Ouvi falar, não calculei o meu caso", "s": 1, "a": ["a_carga_servico"]}, {"t": "Sei, e estou tentando achar créditos", "s": 3, "a": ["a_carga_servico", "a_creditos"]}, {"t": "Já calculei o meu aumento e ajustei o preço", "s": 4, "a": []}]}, {"id": "s_ser2", "bloco": "estrategica", "txt": "Sua empresa é do Simples? Já verificou o Fator R (Anexo III × Anexo V)?", "set": ["servico"], "op": [{"t": "Não sou do Simples", "s": 4, "a": []}, {"t": "Sou do Simples e não sei o que é Fator R", "s": 0, "a": ["a_fator_r", "a_prolabore"]}, {"t": "Sei o que é, nunca calculei o meu", "s": 1, "a": ["a_fator_r"]}, {"t": "Já calculei e ajusto o pró-labore por causa dele", "s": 4, "a": []}]}, {"id": "s_ser3", "bloco": "tecnologica", "txt": "Você emite nota de serviço por qual sistema?", "set": ["servico"], "op": [{"t": "Pelo site da prefeitura, manualmente", "s": 1, "a": ["a_nfse", "a_erp"]}, {"t": "Por um sistema, mas não sei se está pronto para a NFS-e Nacional", "s": 1, "a": ["a_nfse", "a_erp"]}, {"t": "Sistema integrado, já em migração para a NFS-e Nacional", "s": 3, "a": ["a_nfse"]}, {"t": "Já emito pela NFS-e Nacional", "s": 4, "a": []}]}, {"id": "s_ser4", "bloco": "juridica", "txt": "Seus contratos de serviço têm prazo longo com preço fixo?", "set": ["servico"], "op": [{"t": "Não — serviço avulso", "s": 4, "a": []}, {"t": "Sim, e o preço não pode subir por contrato", "s": 0, "a": ["a_contrato_cliente", "a_preco"]}, {"t": "Sim, com reajuste só por índice de inflação", "s": 1, "a": ["a_contrato_cliente"]}, {"t": "Sim, com cláusula específica de mudança tributária", "s": 4, "a": []}]}, {"id": "s_tur1", "bloco": "estrategica", "txt": "Você vende hospedagem E eventos (salão, congresso, casamento)?", "set": ["turismo"], "op": [{"t": "Só hospedagem", "s": 3, "a": ["a_setor_regime"]}, {"t": "Os dois, e apuro tudo junto", "s": 0, "a": ["a_hotel_eventos"]}, {"t": "Os dois, e sei que a regra é diferente — não separei", "s": 1, "a": ["a_hotel_eventos"]}, {"t": "Os dois, já separados na apuração", "s": 4, "a": []}]}, {"id": "s_tur2", "bloco": "estrategica", "txt": "Você vende pacote próprio ou intermedia (agência)?", "set": ["turismo"], "op": [{"t": "Não é o meu caso", "s": 4, "a": []}, {"t": "Vendo pacote e nunca olhei o regime específico", "s": 0, "a": ["a_agencia"]}, {"t": "Intermedeio, e não sei se muda a base de cálculo", "s": 1, "a": ["a_agencia"]}, {"t": "Já sei o meu regime e calculei", "s": 4, "a": []}]}, {"id": "s_tur3", "bloco": "juridica", "txt": "Você vende pacote com muita antecedência (mais de 12 meses)?", "set": ["turismo"], "op": [{"t": "Não — venda para uso próximo", "s": 4, "a": []}, {"t": "Sim, e nunca pensei em quando o tributo é exigido", "s": 0, "a": ["a_antecipado", "a_contrato_cliente"]}, {"t": "Sim, e sei que o tributo pode ser exigido no recebimento", "s": 2, "a": ["a_antecipado"]}, {"t": "Sim, e já medi o impacto de caixa disso", "s": 4, "a": []}]}, {"id": "s_tur4", "bloco": "operacional", "txt": "Você tem bar ou restaurante dentro da operação?", "set": ["turismo"], "op": [{"t": "Não", "s": 4, "a": []}, {"t": "Sim, e apuro junto com a hospedagem", "s": 0, "a": ["a_bares", "a_hotel_eventos"]}, {"t": "Sim, e sei que tem regime próprio", "s": 2, "a": ["a_bares"]}, {"t": "Sim, já apurado separado", "s": 4, "a": []}]}, {"id": "s_ind1", "bloco": "estrategica", "txt": "Seus produtos podem ser alcançados pelo Imposto Seletivo (bebida, fumo, veículo, extrativo)?", "set": ["industria"], "op": [{"t": "Não", "s": 4, "a": []}, {"t": "Não sei o que é o Imposto Seletivo", "s": 0, "a": ["a_seletivo"]}, {"t": "Talvez — nunca conferi", "s": 1, "a": ["a_seletivo"]}, {"t": "Sim, e já calculei o efeito", "s": 4, "a": []}]}, {"id": "s_ind2", "bloco": "estrategica", "txt": "Você já mapeou quais insumos de produção vão gerar crédito?", "set": ["industria"], "op": [{"t": "Não", "s": 0, "a": ["a_credito_insumo", "a_creditos"]}, {"t": "Sei que o crédito ficou mais amplo, não mapeei", "s": 1, "a": ["a_credito_insumo"]}, {"t": "Mapeei os principais insumos", "s": 3, "a": ["a_credito_insumo"]}, {"t": "Mapa completo por insumo", "s": 4, "a": []}]}, {"id": "s_ind3", "bloco": "juridica", "txt": "Sua empresa tem benefício fiscal de IPI ou Zona Franca?", "set": ["industria"], "op": [{"t": "Não", "s": 4, "a": []}, {"t": "Sim, e não sei o que acontece com ele", "s": 0, "a": ["a_ipi_zfm", "a_regulatorio"]}, {"t": "Sim, e sei que pode mudar — não avaliei", "s": 1, "a": ["a_ipi_zfm"]}, {"t": "Sim, e já avaliei o cenário sem ele", "s": 4, "a": []}]}, {"id": "s_ind4", "bloco": "operacional", "txt": "Você tem centro de distribuição em estado escolhido por vantagem fiscal?", "set": ["industria", "comercio"], "op": [{"t": "Não", "s": 4, "a": []}, {"t": "Sim, e nunca pensei que o IBS no destino muda isso", "s": 0, "a": ["a_cd_logistica"]}, {"t": "Sim, e sei que a vantagem some — não recalculei", "s": 1, "a": ["a_cd_logistica"]}, {"t": "Sim, e já refiz a conta sem o benefício", "s": 4, "a": []}]}, {"id": "c_jan", "bloco": "estrategica", "txt": "Se você perder a janela de outubro/2026, sabe que existe uma SEGUNDA chance em março/2027?", "set": null, "op": [{"t": "Não sabia — achava que perderia o ano inteiro", "s": 0, "a": ["a_segunda_janela", "a_regime_decidir"]}, {"t": "Não sou do Simples, não me aplica", "s": 4, "a": []}, {"t": "Sei que existe, mas quero decidir em outubro mesmo", "s": 3, "a": ["a_regime_decidir"]}, {"t": "Sei, e já tenho as duas datas marcadas", "s": 4, "a": []}]}, {"id": "c_sub", "bloco": "estrategica", "txt": "Você acompanha o SUBLIMITE (R$ 3,6 mi)? Passando dele, o ICMS/ISS sai do DAS.", "set": null, "op": [{"t": "Não sabia que existia sublimite", "s": 0, "a": ["a_sublimite_icms"]}, {"t": "Sei que existe, não sei onde estou", "s": 1, "a": ["a_sublimite_icms"]}, {"t": "Estou longe dele", "s": 4, "a": []}, {"t": "Acompanho mês a mês", "s": 4, "a": []}]}, {"id": "c_omi", "bloco": "estrategica", "txt": "Você sabe o que acontece se NÃO se manifestar até 30/10/2026?", "set": null, "op": [{"t": "Não faço ideia", "s": 0, "a": ["a_omissao", "a_regime_decidir"]}, {"t": "Achava que nada acontecia", "s": 0, "a": ["a_omissao"]}, {"t": "Sei que continuo dentro do Simples por omissão", "s": 3, "a": ["a_omissao"]}, {"t": "Sei, e a omissão é justamente a minha escolha", "s": 4, "a": []}]}, {"id": "c_canc", "bloco": "juridica", "txt": "Você sabe que dá para cancelar a opção de 03/11 a 20/12/2026 — mas que o cancelamento é irretratável?", "set": null, "op": [{"t": "Não sabia de nada disso", "s": 0, "a": ["a_cancelamento", "a_regime_decidir"]}, {"t": "Sabia do prazo, não sabia que é irretratável", "s": 2, "a": ["a_cancelamento"]}, {"t": "Não sou do Simples", "s": 4, "a": []}, {"t": "Sei das duas coisas", "s": 4, "a": []}]}], BLOCOS=window.LH_BLOCOS={"juridica": {"n": "Jurídica & Contratos", "i": "⚖", "d": "Contratos, teses e o que o regulador ainda vai publicar"}, "operacional": {"n": "Operacional & Cadeia", "i": "⚙", "d": "Fornecedores, cadastro de produtos, nota fiscal, logística"}, "tecnologica": {"n": "Integração Tecnológica", "i": "▭", "d": "ERP, apuração paralela, NFS-e, banco — o que exigir de quem faz"}, "estrategica": {"n": "Estratégica & Financeira", "i": "◈", "d": "Caixa, preço, crédito, regime e o resultado até 2033"}};
+ var LSK='lh_diag2';
+ var SETORES={comercio:'▢ Comércio', servico:'▤ Serviço', turismo:'⌂ Turismo', industria:'▦ Indústria', agro:'◆ Agro'};   /* v924: agro (só as perguntas gerais) */
+
+ function ler(){ try{ return JSON.parse(localStorage.getItem(LSK)||'{}'); }catch(e){ return {}; } }
+ function gravar(o){ try{ localStorage.setItem(LSK, JSON.stringify(o)); }catch(e){} }
+ function estado(){
+   var d=ler();
+   if(!d.setor) d.setor=(typeof window.LH_DIAG_SETOR_PADRAO==='function' && window.LH_DIAG_SETOR_PADRAO()) || 'comercio';   /* v924: o ITFE sugere pelo segmento */
+   if(!d.resp) d.resp={};
+   return d;
+ }
+ function perguntasDe(bloco, setor){
+   return Q.filter(function(q){
+     if(q.bloco!==bloco) return false;
+     if(!q.set) return true;
+     return q.set.indexOf(setor)>=0;
+   });
+ }
+
+ /* ── score por bloco: % de maturidade ── */
+ function score(){
+   var d=estado(), out={}, tot=0, max=0, resp=0, nq=0;
+   Object.keys(BLOCOS).forEach(function(b){
+     var qs=perguntasDe(b, d.setor);
+     var t=0, m=0, r=0;
+     qs.forEach(function(q){
+       var mx=Math.max.apply(null, q.op.map(function(o){return o.s;}));
+       m+=mx;
+       if(d.resp[q.id]!==undefined){ t+=q.op[d.resp[q.id]].s; r++; }
+     });
+     out[b]={total:t, max:m, respondidas:r, perguntas:qs.length,
+             pct: m>0 ? (t/m*100) : 0};
+     tot+=t; max+=m; resp+=r; nq+=qs.length;
+   });
+   return {porBloco:out, total:tot, max:max, pct: max>0?(tot/max*100):0,
+           respondidas:resp, perguntas:nq};
+ }
+
+ /* ── o plano: as ações que as respostas exigem ── */
+ function plano(){
+   var d=estado(), conta={};
+   Q.forEach(function(q){
+     if(d.resp[q.id]===undefined) return;
+     if(q.set && q.set.indexOf(d.setor)<0) return;
+     (q.op[d.resp[q.id]].a||[]).forEach(function(a){
+       if(!conta[a]) conta[a]={id:a, peso:0, blocos:{}};
+       conta[a].peso++;
+       conta[a].blocos[q.bloco]=1;
+     });
+   });
+   var lista=Object.keys(conta).map(function(a){
+     var A=ACOES[a]||{};
+     return {id:a, peso:conta[a].peso, blocos:Object.keys(conta[a].blocos),
+             txt:A.t||a, selo:A.selo||'orienta', calc:A.calc||null, porque:A.p||''};
+   });
+   /* ordem: quem foi citado por mais respostas primeiro; depois quem a ferramenta resolve */
+   var ordem={resolve:0, orienta:1, fora:2};
+   lista.sort(function(x,y){
+     if(y.peso!==x.peso) return y.peso-x.peso;
+     return ordem[x.selo]-ordem[y.selo];
+   });
+   return lista;
+ }
+
+ /* ── ações do usuário ── */
+ window.dg2Setor=function(s){ var d=estado(); d.setor=s; gravar(d); render(); };
+ window.dg2Resp=function(qid, idx){
+   var d=estado(); d.resp[qid]=parseInt(idx); gravar(d);
+   var y=window.scrollY; render(); window.scrollTo(0,y);
+ };
+ window.dg2Limpar=function(){
+   if(!confirm('Apagar todas as respostas do diagnóstico?')) return;
+   var d=estado(); d.resp={}; gravar(d); render();
+ };
+ window.dg2Ir=function(pid){ if(typeof abrirPagina==='function') abrirPagina(pid,null); };
+ window.dg2Exigir=function(aid){
+   var A=ACOES[aid]; if(!A||!A.exige) return;
+   var txt='Assunto: Reforma Tributária — '+A.t+'\n\n'+A.exige.txt+'\n\n—\nGerado pela ITFE Lionheart · Diagnóstico de Maturidade';
+   var m=document.getElementById('dg2_modal');
+   if(!m){ m=document.createElement('div'); m.id='dg2_modal'; document.body.appendChild(m); }
+   m.innerHTML='<div class="dg2-ov" onclick="dg2Fechar(event)">'
+     +'<div class="dg2-md" onclick="event.stopPropagation()">'
+     +'<div class="dg2-mh">▤ O que exigir do '+A.exige.para+'</div>'
+     +'<div class="dg2-ms">Copie e mande. Peça prazo e um responsável com nome.</div>'
+     +'<textarea id="dg2_txt" class="dg2-ta" readonly>'+txt+'</textarea>'
+     +'<div class="dg2-mb"><button class="dg2-btn" onclick="dg2Copiar()">Copiar texto</button>'
+     +'<button class="dg2-limpar" onclick="dg2Fechar()">Fechar</button></div>'
+     +'</div></div>';
+   m.style.display='block';
+ };
+ window.dg2Copiar=function(){
+   var t=document.getElementById('dg2_txt'); if(!t) return;
+   t.removeAttribute('readonly'); t.select(); t.setSelectionRange(0, 99999);
+   try{ document.execCommand('copy'); }catch(e){}
+   try{ navigator.clipboard.writeText(t.value); }catch(e){}
+   t.setAttribute('readonly','');
+   var b=event && event.target; if(b){ var o=b.textContent; b.textContent='✓ Copiado'; setTimeout(function(){ b.textContent=o; }, 1600); }
+ };
+ window.dg2Fechar=function(e){
+   if(e && e.target && e.target.className!=='dg2-ov') return;
+   var m=document.getElementById('dg2_modal'); if(m) m.style.display='none';
+ };
+ window.dg2Bloco=function(b){
+   var el=document.getElementById('dg2_b_'+b);
+   if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+ };
+
+ /* ── render ── */
+ function barra(pct, resp, n){
+   var cor = resp===0 ? '#5a6474' : (pct<40 ? '#d18189' : pct<70 ? '#e0a83a' : '#7fc79a');
+   return '<div class="dg2-bar"><div class="dg2-fill" style="width:'+Math.max(2,pct)+'%;background:'+cor+'"></div></div>';
+ }
+ function render(){
+   var host=document.getElementById('dg2_host');
+   if(!host) return;
+   var d=estado(), sc=score(), pl=plano();
+   var h='';
+
+   /* setor */
+   h+='<div class="dg2-setor">';
+   Object.keys(SETORES).forEach(function(s){
+     h+='<button class="dg2-st'+(d.setor===s?' on':'')+'" onclick="dg2Setor(\''+s+'\')">'+SETORES[s]+'</button>';
+   });
+   h+='</div>';
+
+   /* placar: uma nota POR BLOCO */
+   h+='<div class="dg2-placar"><div class="dg2-plac-h">Sua maturidade, dimensão por dimensão</div><div class="dg2-grid4">';
+   Object.keys(BLOCOS).forEach(function(b){
+     var x=sc.porBloco[b], B=BLOCOS[b];
+     var pct=Math.round(x.pct);
+     h+='<div class="dg2-card" onclick="dg2Bloco(\''+b+'\')">'
+       +'<div class="dg2-ci">'+B.i+'</div>'
+       +'<div class="dg2-cn">'+B.n+'</div>'
+       +barra(x.pct, x.respondidas, x.perguntas)
+       +'<div class="dg2-cp">'+(x.respondidas===0 ? '—' : pct+'%')+'</div>'
+       +'<div class="dg2-cq">'+x.respondidas+' de '+x.perguntas+' respondidas</div>'
+       +'</div>';
+   });
+   h+='</div>';
+   if(sc.respondidas>0){
+     var g=Math.round(sc.pct);
+     var lab = g<40 ? 'MUITO A FAZER' : g<70 ? 'NO CAMINHO' : 'BEM PREPARADA';
+     h+='<div class="dg2-geral">Maturidade geral: <b>'+g+'%</b> · <span class="dg2-lab">'+lab+'</span>'
+       +' <span class="dg2-mini">(a média esconde o pior bloco — olhe as quatro barras acima)</span></div>';
+   } else {
+     h+='<div class="dg2-geral dg2-vazio">Responda os blocos abaixo. São 5 ou 6 perguntas cada — faça um por vez.</div>';
+   }
+   h+='</div>';
+
+   /* os 4 blocos de perguntas */
+   Object.keys(BLOCOS).forEach(function(b){
+     var B=BLOCOS[b], qs=perguntasDe(b, d.setor), x=sc.porBloco[b];
+     h+='<div class="dg2-bloco" id="dg2_b_'+b+'">'
+       +'<div class="dg2-bh"><span class="dg2-bi">'+B.i+'</span>'
+       +'<div><div class="dg2-bt">'+B.n+'</div><div class="dg2-bd">'+B.d+'</div></div>'
+       +'<div class="dg2-bp">'+x.respondidas+'/'+x.perguntas+'</div></div>';
+     qs.forEach(function(q){
+       h+='<div class="dg2-q"><div class="dg2-qt">'+q.txt+'</div><div class="dg2-ops">';
+       q.op.forEach(function(o, i){
+         var on = d.resp[q.id]===i;
+         h+='<button class="dg2-op'+(on?' on':'')+'" onclick="dg2Resp(\''+q.id+'\','+i+')">'+o.t+'</button>';
+       });
+       h+='</div></div>';
+     });
+     h+='</div>';
+   });
+
+   /* o plano */
+   h+='<div class="dg2-plano" id="dg2_plano">';
+   h+='<div class="dg2-ph">▤ Seu plano de ação</div>';
+   if(!pl.length){
+     h+='<div class="dg2-vazio2">Responda o diagnóstico acima. Cada resposta gera aqui as ações que a sua empresa precisa fazer — e diz quem executa cada uma.</div>';
+   } else {
+     var cnt={resolve:0, orienta:0, fora:0};
+     pl.forEach(function(a){ cnt[a.selo]++; });
+     h+='<div class="dg2-resumo">'
+       +'<span class="dg2-t v">● '+cnt.resolve+' a ferramenta resolve</span>'
+       +'<span class="dg2-t a">◉ '+cnt.orienta+' a ferramenta orienta</span>'
+       +'<span class="dg2-t c">○ '+cnt.fora+' fora do escopo — mas dizemos o que exigir</span>'
+       +'</div>';
+     var SELO={resolve:{t:'A FERRAMENTA RESOLVE', c:'v'}, orienta:{t:'A FERRAMENTA ORIENTA', c:'a'}, fora:{t:'FORA DO ESCOPO', c:'c'}};
+     pl.forEach(function(a){
+       var S=SELO[a.selo];
+       h+='<div class="dg2-acao '+S.c+'">'
+         +'<div class="dg2-al"><span class="dg2-selo '+S.c+'">'+S.t+'</span>'
+         +(a.peso>1 ? '<span class="dg2-peso">apontada por '+a.peso+' respostas</span>' : '')+'</div>'
+         +'<div class="dg2-at">'+a.txt+'</div>'
+         +'<div class="dg2-ap">'+a.porque+'</div>';
+       if(a.calc) h+='<button class="dg2-btn" onclick="dg2Ir(\''+a.calc+'\')">Abrir a calculadora →</button>';
+       /* O selo cinza só vale se entregar a EXIGÊNCIA pronta. Dizer "fale com o
+          seu TI" não ajuda ninguém: o dono não sabe o que pedir. Aqui ele copia
+          o texto e manda — com os itens certos e pedindo prazo e responsável. */
+       if(a.selo==='fora' && ACOES[a.id] && ACOES[a.id].exige){
+         h+='<button class="dg2-btn cinza" onclick="dg2Exigir(\''+a.id+'\')">▤ Copiar o que exigir do '+ACOES[a.id].exige.para+'</button>';
+       }
+       h+='</div>';
+     });
+     h+='<div class="dg2-rodape">⚠ As perguntas e a pontuação são <b>valores de referência</b>, em revisão técnica.</div>';
+   }
+   h+='</div>';
+
+   if(sc.respondidas>0) h+='<div style="text-align:center;margin:16px 0"><button class="dg2-limpar" onclick="dg2Limpar()">Recomeçar o diagnóstico</button></div>';
+   host.innerHTML=h;
+ }
+
+ var _ap=window.abrirPagina;
+ window.abrirPagina=function(id,el){
+   var r=_ap.apply(this,arguments);
+   if(id==='diagnostico') setTimeout(render, 220);
+   return r;
+ };
+ window.LH_DIAG2={score:score, plano:plano, render:render, perguntas:Q, acoes:ACOES, blocos:BLOCOS};
+ if(document.readyState!=='loading') setTimeout(render, 900);
+ else document.addEventListener('DOMContentLoaded', function(){ setTimeout(render, 900); });
+})();
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   v82 — A FUSÃO: uma lista de tarefas, duas origens, os prazos preservados
+   ─────────────────────────────────────────────────────────────────────
+   O Chepe perguntou se a aba "Adequações Operacionais" e o bloco
+   "Operacional" do Diagnóstico se sobrepõem. Sim — em cerca de 70%. Mas o
+   problema nunca foi a sobreposição: era o dono ter DUAS listas de tarefas
+   concorrentes (o checklist de 45 itens e o plano do diagnóstico) sem saber
+   qual seguir. É o mesmo erro das cinco portas, uma camada abaixo.
+
+   As três peças NÃO são a mesma coisa — elas são um ENCADEAMENTO:
+     · Adequações  = a LISTA     (o que existe para fazer — o piso obrigatório)
+     · Radar       = o QUANDO    (as datas oficiais, com contagem regressiva)
+     · Diagnóstico = o MEDIDOR   (o que é prioridade PARA VOCÊ, e o que já fez)
+     · Plano 5W2H  = a EXECUÇÃO  (quem, quando, como)
+
+   A fusão: o Plano vira a lista ÚNICA, com duas origens —
+     ⬥ O PISO  — obrigatório para todos, filtrado pelo seu setor e regime
+     ◎ O MEU   — personalizado, sai das suas respostas no diagnóstico
+
+   E os prazos não se perdem: eles vão parar exatamente onde sempre deveriam
+   estar — na coluna QUANDO do 5W2H. O prazo legal deixa de ser um aviso numa
+   tela e vira a data de vencimento da tarefa.
+   ═══════════════════════════════════════════════════════════════════════ */
+(function(){
+ 'use strict';
+
+ /* ── de qual item do checklist sai qual prazo legal.
+       O checklist não tinha campo de data (só "critico"). O Radar tem as datas
+       oficiais. Aqui eu caso um com o outro — por assunto, não por adivinhação. */
+ var PRAZO_DE = {
+   fe_ncm:      '2026-08-01',   /* cadastro tem que estar pronto antes da NF exigir os campos */
+   fe_preco:    '2026-12-31',
+   fe_contrato: '2026-12-31',
+   fe_split:    '2027-07-01',
+   fe_forn:     '2026-12-31',
+   fe_matriz:   '2026-12-31',
+   /* v84 — pontos da cartilha Fecomércio que faltavam */
+   ct_marco:    '2027-03-31',   /* a 2ª janela: a opção é SEMESTRAL */
+   ct_nada:     '2026-10-30',   /* a regra do silêncio */
+   ct_canc:     '2026-12-20',
+   sn_portal:   '2026-10-15',   /* v924: prazos da Res. CGSN 194/2026, os mesmos da tela Dentro × Híbrido */
+   sn_dxh:      '2026-10-30',
+   sn_cont:     '2026-10-15',   /* cancelamento irretratável */
+   ct_nfse_an:  '2026-09-01'
+ };
+ /* casamento por assunto quando o id não está no mapa acima */
+ var POR_TEXTO = [
+   {re:/NFS-?e Nacional/i,                     d:'2026-09-01'},
+   {re:/dentro\s*[×x]\s*h[íi]brido|h[íi]brido|30\/10/i, d:'2026-10-30'},
+   {re:/op[çc][ãa]o pelo Simples|15\/10/i, d:'2026-10-15'},
+   {re:/Portal do Simples/i,                    d:'2026-10-15'},
+   {re:/emissor|NF-?e|NFC-?e|campos de IBS/i,  d:'2026-08-01'},
+   {re:/ERP|NT 2025|m[óo]dulo fiscal/i,        d:'2026-08-01'},
+   {re:/cClassTrib|CST|NCM/i,                  d:'2026-08-01'},
+   {re:/homologa[çc][ãa]o|ambiente de testes/i,d:'2026-08-01'},
+   {re:/segregad|dois sistemas|paralel/i,      d:'2027-01-01'}
+ ];
+
+ function prazoDe(item){
+   if(PRAZO_DE[item.id]) return PRAZO_DE[item.id];
+   for(var i=0;i<POR_TEXTO.length;i++){
+     if(POR_TEXTO[i].re.test(item.txt||'')) return POR_TEXTO[i].d;
+   }
+   return null;
+ }
+ function fmt(d){
+   if(!d) return '';
+   var p=d.split('-');
+   return p[2]+'/'+p[1]+'/'+p[0];
+ }
+ function diasAte(d){
+   if(!d) return null;
+   return Math.ceil((new Date(d+'T00:00:00') - new Date())/86400000);
+ }
+
+ /* ── o piso que se aplica a ESTA empresa (setor + regime) ── */
+ function piso(){
+   if(typeof CHECKLIST_OBRIG==='undefined') return [];
+   var ramo = (typeof LH_ADEQ_RAMO!=='undefined') ? LH_ADEQ_RAMO : 'comercio';
+   var reg  = (typeof LH_ADEQ_REGIME!=='undefined') ? LH_ADEQ_REGIME : 'simples';
+   var out=[];
+   CHECKLIST_OBRIG.forEach(function(g){
+     (g.itens||[]).forEach(function(it){
+       if(it.regimes && it.regimes.indexOf(reg)<0) return;
+       if(it.ramos && it.ramos.indexOf(ramo)<0) return;
+       var d=prazoDe(it);
+       out.push({id:it.id, txt:it.txt, area:g.area, critico:!!it.critico,
+                 prazo:d, dias:diasAte(d)});
+     });
+   });
+   /* quem vence primeiro, primeiro. sem prazo vai para o fim. */
+   out.sort(function(a,b){
+     if(a.prazo && b.prazo) return a.prazo < b.prazo ? -1 : 1;
+     if(a.prazo) return -1;
+     if(b.prazo) return 1;
+     return (b.critico?1:0)-(a.critico?1:0);
+   });
+   return out;
+ }
+
+ /* ── o que o diagnóstico JÁ deu como pronto não precisa voltar como tarefa.
+       Se o dono respondeu "minha nota já sai com IBS/CBS e foi testada", o item
+       correspondente do piso não deve reaparecer pedindo para ser feito. Ele
+       não responde a mesma coisa duas vezes. ── */
+ function jaResolvido(){
+   var feito={};
+   if(!window.LH_DIAG2) return feito;
+   var d={};
+   try{ d=JSON.parse(localStorage.getItem('lh_diag2')||'{}'); }catch(e){ return feito; }
+   if(!d.resp) return feito;
+   /* pergunta do diagnóstico → itens do piso que ela cobre.
+      ⚠ Na primeira versão eu INVENTEI 11 dos 15 ids e a supressão quase não
+      funcionava (pulava 3 de 15). Estes são os ids REAIS do CHECKLIST_OBRIG,
+      conferidos um a um contra o banco.
+      ⚠ CUIDADO: o checklist usa ids curtos (o1, o2, t1, t2) que COLIDEM com os
+      ids das perguntas do diagnóstico. A chave deste mapa é a PERGUNTA (dg_*),
+      o valor é o item do PISO — nunca misturar os dois espaços de nomes. */
+   var COBRE = {
+     /* pergunta o5: "sua nota fiscal já sai com os campos de IBS/CBS?" */
+     o5: ['nf_ibs','nf_zero','nf_teste','nf_nacional'],
+     /* pergunta o2: "seus produtos já têm a classificação tributária definida?" */
+     o2: ['fe_ncm','erp_cst','erp_param'],
+     /* pergunta o1: "sabe quais fornecedores geram crédito integral?" */
+     o1: ['fe_forn','c1','c2','c3'],
+     /* pergunta t1: "seu ERP já foi atualizado para a Reforma?" */
+     t1: ['erp_up','erp_param','erp_layout'],
+     /* pergunta t2: "seu sistema apura o antigo E o novo ao mesmo tempo?" */
+     t2: ['oa_seg','fe_apur'],
+     /* pergunta t3: "você já usa a NFS-e Nacional?" */
+     t3: ['sn_nfse','nf_nacional','nf_dps'],
+     /* pergunta e4: "já decidiu dentro × híbrido?" */
+     e4: ['sn_portal','sn_pend','sn_dxh','sn_cont'],
+     /* pergunta e3: "sabe quais despesas viram crédito?" */
+     e3: ['fe_matriz'],
+     /* pergunta e2: "seus preços já consideram a carga de 2027?" */
+     e2: ['fe_preco','p1','p2','p3'],
+     /* pergunta e1: "já calculou o caixa que o Split leva?" */
+     e1: ['fe_split','o2'],
+     /* pergunta j1: "contratos de venda têm cláusula de repasse?" */
+     j1: ['fe_contr']
+   };
+   LH_DIAG2.perguntas.forEach(function(q){
+     var idx=d.resp[q.id];
+     if(idx===undefined) return;
+     var op=q.op[idx];
+     var maxS=Math.max.apply(null, q.op.map(function(o){return o.s;}));
+     /* só marca como resolvido se a resposta foi a de MAIOR maturidade
+        E ela não gerou nenhuma ação (ou seja: "já está pronto") */
+     if(op.s!==maxS || (op.a||[]).length) return;
+     (COBRE[q.id]||[]).forEach(function(pid){ feito[pid]=1; });
+   });
+   return feito;
+ }
+
+ /* ── importar o piso para o Plano 5W2H, com o prazo na coluna QUANDO ── */
+ window.lhImportarPiso=function(){
+   if(typeof lhAddAcao!=='function' || typeof LH_PLANO5W2H==='undefined'){
+     alert('O Plano de Ação ainda não carregou.'); return;
+   }
+   var lista=piso(), feito=jaResolvido(), add=0, pulados=0;
+   lista.forEach(function(it){
+     if(feito[it.id]){ pulados++; return; }                    /* o diagnóstico já deu como pronto */
+     if(LH_PLANO5W2H.some(function(a){ return a.oq===it.txt; })) return;
+     var pq='⬥ PISO OBRIGATÓRIO · '+it.area
+          + (it.critico ? ' · ⧗ CRÍTICO' : '');
+     lhAddAcao(it.txt, pq);
+     /* o prazo legal vai para a coluna QUANDO — é o lugar dele */
+     var nova=LH_PLANO5W2H[LH_PLANO5W2H.length-1];
+     if(nova && it.prazo){
+       nova.quando = fmt(it.prazo) + (it.dias!==null && it.dias>=0 ? ' (faltam '+it.dias+' dias)' : '');
+     }
+     add++;
+   });
+   if(typeof _planoSave==='function') _planoSave();
+   if(typeof renderPlano==='function') renderPlano();
+   alert(add
+     ? ('Importei '+add+(add>1?' itens':' item')+' do piso obrigatório — com o prazo legal já na coluna QUANDO.'
+        + (pulados ? '\n\nPulei '+pulados+' que o seu diagnóstico já deu como prontos.' : ''))
+     : (pulados ? 'Tudo o que era obrigatório o seu diagnóstico já deu como pronto.' : 'O piso já está todo no plano.'));
+ };
+
+ /* ── o botão no Plano ── */
+ function botao(){
+   var p=document.getElementById('page-plano');
+   if(!p || document.getElementById('lh_btn_piso')) return;
+   var alvo=[].slice.call(p.querySelectorAll('button'))
+     .filter(function(b){ return /Puxar pend[êe]ncias/i.test(b.textContent||''); })[0];
+   if(!alvo) return;
+   var b=document.createElement('button');
+   b.id='lh_btn_piso';
+   b.className=alvo.className;
+   b.setAttribute('onclick','lhImportarPiso()');
+   b.style.cssText='border-style:solid;background:rgba(154,167,184,.12);border-color:rgba(154,167,184,.45);color:#c4cdd8;padding:9px 20px';
+   b.textContent='⬥ Puxar o piso obrigatório (com prazos)';
+   alvo.parentNode.insertBefore(b, alvo);
+   /* uma linha explicando de onde vem cada coisa */
+   var nota=document.createElement('div');
+   nota.id='lh_piso_nota';
+   nota.style.cssText='text-align:center;color:#8a97a8;font-size:.79rem;margin:10px auto 0;max-width:620px;line-height:1.55';
+   nota.innerHTML='O <b>piso</b> é o que toda empresa faz, com prazo legal — filtrado pelo seu setor e regime. '
+     + 'O <b>seu plano</b> sai das respostas do Diagnóstico. As duas listas vivem aqui, uma só.';
+   var cx=alvo.parentNode;
+   if(cx && cx.parentNode) cx.parentNode.insertBefore(nota, cx.nextSibling);
+ }
+
+ var _ap=window.abrirPagina;
+ window.abrirPagina=function(id,el){
+   var r=_ap.apply(this,arguments);
+   if(id==='plano') setTimeout(botao, 260);
+   return r;
+ };
+ window.LH_PISO={piso:piso, jaResolvido:jaResolvido, prazoDe:prazoDe};
+ setTimeout(botao, 1800);
+})();
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   v83 — O PISO ENTRA NO DIAGNÓSTICO, REPARTIDO NAS 4 DIMENSÕES
+   ─────────────────────────────────────────────────────────────────────
+   Chepe: "a aba Adequações Operacionais ainda está separada do diagnóstico,
+   não vai confundir a cabeça do usuário? não tem como repartir esta aba
+   entre as 4 partes do diagnóstico?"
+
+   Tem. E é o fecho da lógica que a gente vinha construindo.
+
+   Cada bloco do diagnóstico passa a ter DUAS camadas, na ordem certa:
+     1) O PISO daquela dimensão — o que é obrigatório, com prazo legal.
+        Não depende de resposta nenhuma: é lei. Vem com data e contagem.
+     2) AS PERGUNTAS — o que mede a SUA maturidade e gera o SEU plano.
+
+   Os 45 itens do checklist foram repartidos pela NATUREZA da tarefa, não
+   pela área antiga: contrato e cláusula vão para a jurídica; fornecedor,
+   cadastro e estoque para a operacional; ERP, emissor, layout e obrigação
+   acessória para a integração tecnológica; preço, caixa, regime, crédito e
+   gente para a estratégica.
+
+   Assim some a última lista concorrente. O dono tem UM lugar para olhar por
+   dimensão: aqui está o que a lei exige de você, aqui está o quanto você já
+   fez, e aqui está o que sobra para o seu plano.
+   ═══════════════════════════════════════════════════════════════════════ */
+(function(){
+ 'use strict';
+ var DIM={"fe_contr": "juridica", "fe_antec": "juridica", "sn_cont": "juridica", "p2": "juridica", "rs": "juridica", "fe_ncm": "operacional", "fe_forn": "operacional", "c1": "operacional", "c2": "operacional", "c3": "operacional", "e1": "operacional", "e2": "operacional", "e3": "operacional", "ri": "operacional", "nf_ibs": "tecnologica", "nf_zero": "tecnologica", "nf_nacional": "tecnologica", "nf_dps": "tecnologica", "nf_teste": "tecnologica", "sn_nfse": "tecnologica", "erp_up": "tecnologica", "erp_param": "tecnologica", "erp_cst": "tecnologica", "erp_layout": "tecnologica", "erp_recon": "tecnologica", "oa_sped": "tecnologica", "oa_seg": "tecnologica", "oa_obr": "tecnologica", "fe_apur": "tecnologica", "rt": "tecnologica", "fe_matriz": "estrategica", "fe_preco": "estrategica", "fe_split": "estrategica", "sn_portal": "estrategica", "sn_pend": "estrategica", "sn_dxh": "estrategica", "nf_das": "estrategica", "p1": "estrategica", "p3": "estrategica", "v1": "estrategica", "o1": "estrategica", "o2": "estrategica", "t1": "estrategica", "t2": "estrategica", "rc": "estrategica", "ct_marco": "estrategica", "ct_nada": "estrategica", "ct_sub": "estrategica", "ct_canc": "juridica", "ct_nfse_an": "tecnologica"};
+ var LSK='lh_piso_feito';
+
+ function feitos(){ try{ return JSON.parse(localStorage.getItem(LSK)||'{}'); }catch(e){ return {}; } }
+ function marcar(id, on){
+   var f=feitos(); if(on) f[id]=1; else delete f[id];
+   try{ localStorage.setItem(LSK, JSON.stringify(f)); }catch(e){}
+ }
+
+ /* o piso de UMA dimensão, já filtrado por setor e regime */
+ function pisoDe(dim){
+   if(typeof CHECKLIST_OBRIG==='undefined' || !window.LH_PISO) return [];
+   return LH_PISO.piso().filter(function(it){ return DIM[it.id]===dim; });
+ }
+ window.LH_PISODIM={pisoDe:pisoDe, DIM:DIM, feitos:feitos, injetar:function(){}};   /* v924: o piso tem tela própria; não entra no diagnóstico */
+})();
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   v85 — CATEGORIA DIAGNÓSTICO: o obrigatório, o medidor e a execução
+   ─────────────────────────────────────────────────────────────────────
+   Chepe pediu uma categoria própria, ANTES do Comece Aqui, com três abas:
+     ⬥ Piso Obrigatório   — o que a lei exige (4 dimensões, com prazo)
+     ◎ Diagnóstico        — as perguntas que medem VOCÊ (4 dimensões)
+     ▤ Plano de Ação      — o que fazer, com quem, quando e como
+
+   Na v83 eu tinha embutido o piso DENTRO de cada bloco de perguntas. Faz
+   sentido conceitual, mas engordou a tela: o dono abria o diagnóstico e via
+   35 checkboxes antes da primeira pergunta. Separado fica melhor — e a
+   sequência das abas já ensina a lógica:
+     primeiro o que a LEI exige de todos,
+     depois o que EU pergunto sobre você,
+     por último o que VOCÊ vai fazer.
+   ═══════════════════════════════════════════════════════════════════════ */
+(function(){
+ 'use strict';
+ var DIMS=[
+  {k:'juridica',    i:'⚖', n:'Jurídica & Contratos'},
+  {k:'operacional', i:'⚙', n:'Operacional & Cadeia'},
+  {k:'tecnologica', i:'▭', n:'Integração Tecnológica'},
+  {k:'estrategica', i:'◈', n:'Estratégica & Financeira'}
+ ];
+
+ function fmtBR(d){ var p=(d||'').split('-'); return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : d; }
+ function feitos(){ try{ return JSON.parse(localStorage.getItem('lh_piso_feito')||'{}'); }catch(e){ return {}; } }
+
+ function render(){
+   var host=document.getElementById('piso_host');
+   if(!host || !window.LH_PISO || !window.LH_PISODIM) return;
+   var f=feitos(), todo=LH_PISO.piso();
+   var geralOk=todo.filter(function(x){ return f[x.id]; }).length;
+
+   /* setor e regime — os mesmos filtros da aba antiga, aqui em cima */
+   var h='<div class="ps-filtros">';
+   h+='<div class="ps-fg"><span class="ps-fl">Setor</span><div class="ps-fb">';
+   [['comercio','▢ Comércio'],['servico','▤ Serviço'],['turismo','⌂ Turismo'],['industria','▦ Indústria'],['agro','◆ Agro']].forEach(function(x){
+     var on = (typeof LH_ADEQ_RAMO!=='undefined' && LH_ADEQ_RAMO===x[0]);
+     h+='<button class="ps-b'+(on?' on':'')+'" onclick="psRamo(\''+x[0]+'\')">'+x[1]+'</button>';
+   });
+   h+='</div></div>';
+   h+='<div class="ps-fg"><span class="ps-fl">Regime</span><div class="ps-fb">';
+   [['simples','Simples Nacional'],['presumido','Lucro Presumido'],['real','Lucro Real']].forEach(function(x){
+     var on = (typeof LH_ADEQ_REGIME!=='undefined' && LH_ADEQ_REGIME===x[0]);
+     h+='<button class="ps-b'+(on?' on':'')+'" onclick="psRegime(\''+x[0]+'\')">'+x[1]+'</button>';
+   });
+   h+='</div></div></div>';
+
+   /* o que está batendo na porta */
+   var urg=todo.filter(function(x){ return !f[x.id] && x.dias!==null && x.dias!==undefined && x.dias<=60 && x.dias>=0; });
+   if(urg.length){
+     h+='<div class="ps-urg"><div class="ps-uh">⚑ Batendo na porta (próximos 60 dias)</div>';
+     urg.slice(0,4).forEach(function(x){
+       h+='<div class="ps-ul"><span class="ps-ud">'+x.dias+'d</span><span>'+x.txt+'</span>'
+         +'<span class="ps-up">'+fmtBR(x.prazo)+'</span></div>';
+     });
+     h+='</div>';
+   }
+
+   /* progresso geral */
+   h+='<div class="ps-geral"><div class="ps-gt">Progresso do piso</div>'
+     +'<div class="ps-gb"><div class="ps-gf" style="width:'+(todo.length? geralOk/todo.length*100 : 0)+'%"></div></div>'
+     +'<div class="ps-gn">'+geralOk+' de '+todo.length+' concluídos</div></div>';
+
+   /* as 4 dimensões */
+   DIMS.forEach(function(D){
+     var lista=LH_PISODIM.pisoDe(D.k);
+     if(!lista.length) return;
+     var ok=lista.filter(function(x){ return f[x.id]; }).length;
+     h+='<div class="ps-dim">';
+     h+='<div class="ps-dh"><span class="ps-di">'+D.i+'</span>'
+       +'<div class="ps-dn">'+D.n+'</div>'
+       +'<div class="ps-dc">'+ok+'/'+lista.length+'</div></div>';
+     h+='<div class="ps-db"><div class="ps-df" style="width:'+(ok/lista.length*100)+'%"></div></div>';
+     lista.forEach(function(it){
+       var venc = it.dias!==null && it.dias!==undefined;
+       var urgente = venc && it.dias<=30;
+       h+='<label class="ps-item'+(f[it.id]?' ok':'')+'">'
+         +'<input type="checkbox" class="ps-cb" '+(f[it.id]?'checked':'')+' onchange="psMarcar(\''+it.id+'\',this)">'
+         +'<span class="ps-txt">'+it.txt+'</span>';
+       if(it.prazo) h+='<span class="ps-prazo'+(urgente?' urg':'')+'">⌗ '+fmtBR(it.prazo)
+         + (it.dias>=0 ? ' · '+it.dias+'d' : ' · venceu') +'</span>';
+       else if(it.critico) h+='<span class="ps-prazo urg">⧗ crítico</span>';
+       h+='</label>';
+     });
+     h+='</div>';
+   });
+
+   h+='<div class="ps-rodape">Marcou tudo? O que sobrou vira tarefa no '
+     +'<a href="#" onclick="abrirPagina(\'plano\',null);return false">Plano de Ação</a> — com o prazo já na coluna QUANDO.</div>';
+   host.innerHTML=h;
+ }
+
+ window.psMarcar=function(id, el){
+   var f=feitos();
+   if(el.checked) f[id]=1; else delete f[id];
+   try{ localStorage.setItem('lh_piso_feito', JSON.stringify(f)); }catch(e){}
+   render();
+ };
+ window.psRamo=function(r){
+   window.__psRamoManual=true;   /* v924: escolheu na mão, o segmento do ITFE não sobrescreve */
+   try{ LH_ADEQ_RAMO=r; }catch(e){}
+   window.LH_ADEQ_RAMO=r;
+   render();
+ };
+ window.psRegime=function(r){
+   try{ LH_ADEQ_REGIME=r; }catch(e){}
+   window.LH_ADEQ_REGIME=r;
+   render();
+ };
+
+ var _ap=window.abrirPagina;
+ window.abrirPagina=function(id,el){
+   var r=_ap.apply(this,arguments);
+   if(id==='piso') setTimeout(render, 240);
+   return r;
+ };
+ window.LH_PISOPG={render:render};
+})();
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   v116 — O DIAGNÓSTICO PARA DE FAZER QUATRO COISAS AO MESMO TEMPO
+   ─────────────────────────────────────────────────────────────────────
+   Chepe apontou três coisas na mesma aba, e as três são a mesma doença: ela
+   tenta ser QUESTIONÁRIO, PAINEL DE PISO, MAPA SETORIAL e PLANO DE AÇÃO ao
+   mesmo tempo. Nove mil duzentos e cinquenta pixels.
+
+   O resultado é uma inversão cruel de prioridade: o que MENOS importa ali (o
+   piso obrigatório, repetido quatro vezes — e que já tem uma aba inteira só
+   dele) ocupa o meio de cada bloco; e o que MAIS importa (o plano de ação, que
+   é o RESULTADO de responder tudo) mora no rodapé, com 99 pixels, e nem exporta.
+
+   Uma tela que enterra o próprio resultado ensina o dono a não terminar.
+
+   ① OS PISOS COLAPSAM. Não somem: viram uma linha com o progresso da dimensão
+      ("2 de 5 feitos") e um link pra aba que existe pra isso. Repetir a lista
+      inteira quatro vezes não informava mais — informava a mesma coisa quatro
+      vezes, que é outra forma de não informar.
+   ② OS EIXOS SETORIAIS descem pro fim. "O que a Reforma muda no seu ramo" é uma
+      pergunta que só faz sentido DEPOIS de responder o diagnóstico, não entre o
+      placar e a primeira pergunta.
+   ③ O PLANO DE AÇÃO GANHA A FRENTE — e exporta pra Excel, que era o pedido. O
+      dono responde, vê o plano, baixa e leva pro contador. Esse é o arco.
+   ═══════════════════════════════════════════════════════════════════════ */
+(function(){
+ 'use strict';
+
+ /* ── ① os pisos colapsam, mas o progresso continua à vista ── */
+ function colapsarPisos(){
+   var host=document.getElementById('dg2_host');
+   if(!host) return 0;
+   var blocos=host.querySelectorAll('.dgp-box, .dg2-piso, [class*="dgp-"]');
+   var n=0;
+
+   /* acha os cartões de piso: têm o texto "O piso obrigatório desta dimensão" */
+   var cards=[].filter.call(host.querySelectorAll('div'), function(el){
+     return /O piso obrigat[óo]rio desta dimens/i.test(el.textContent||'')
+            && !el.__pisoWrap
+            && el.offsetHeight>60 && el.offsetHeight<900
+            && !el.querySelector('details');
+   });
+   /* fica só com os mais externos de cada grupo */
+   var folhas=cards.filter(function(c){
+     return !cards.some(function(o){ return o!==c && c.contains(o); });
+   });
+
+   folhas.forEach(function(card){
+     if(card.__pisoWrap) return;
+     card.__pisoWrap=1;
+
+     /* extrai o contador ("2 de 5 feitos") pra manter na linha resumida */
+     var cont=card.querySelector('.dgp-cont');
+     var resumo = cont ? (cont.textContent||'').trim() : '';
+
+     var det=document.createElement('details');
+     det.className='dgp-colapso';
+     var sum=document.createElement('summary');
+     sum.innerHTML='⬥ <b>Piso obrigatório desta dimensão</b>'
+       + (resumo ? ' <span class="dgp-c2">'+resumo+'</span>' : '')
+       + '<span class="dgp-lk" onclick="event.stopPropagation();abrirPagina(\'piso\',null)">ver a aba completa →</span>';
+     det.appendChild(sum);
+
+     var pai=card.parentNode;
+     pai.insertBefore(det, card);
+     det.appendChild(card);
+     n++;
+   });
+   return n;
+ }
+
+ /* ── ② os eixos setoriais descem pro fim ── */
+ function moverEixos(){
+   var host=document.getElementById('dg2_host');
+   if(!host) return false;
+   var ex=host.querySelector('.ex-bloco');
+   var plano=document.getElementById('dg2_plano');
+   if(!ex || !plano || ex.__movido) return false;
+   ex.__movido=1;
+   /* entra DEPOIS do plano — "e agora, no meu ramo?" é pergunta de depois */
+   if(plano.parentNode) plano.parentNode.insertBefore(ex, plano.nextSibling);
+   var t=ex.querySelector('[class*="-t"], b, strong');
+   return true;
+ }
+
+ /* ── ③ o plano de ação ganha a frente e exporta ── */
+ function promoverPlano(){
+   var plano=document.getElementById('dg2_plano');
+   if(!plano || document.getElementById('dg2_export')) return false;
+
+   var barra=document.createElement('div');
+   barra.id='dg2_export';
+   barra.className='dg2-exp';
+   barra.innerHTML=
+     '<div class="dgx-t">▤ Este é o resultado do diagnóstico — leve-o embora</div>'
+    +'<div class="dgx-d">O plano abaixo nasce das <b>suas</b> respostas. Ele diz o que fazer, '
+    +'em que ordem, e <b>quem executa cada coisa</b>: o que você resolve, o que o contador orienta '
+    +'e o que precisa de advogado. Baixe e leve para a próxima reunião.</div>'
+    +'<div class="dgx-b">'
+    +'<button type="button" class="dgx-btn dgx-xls" onclick="dgExportarExcel()">⤓ Baixar em Excel (.xlsx)</button>'
+    +'<button type="button" class="dgx-btn" onclick="dgCopiarPauta()">⎘ Copiar pauta pro contador</button>'
+    +'</div><div id="dgx_msg" class="dgx-msg"></div>';
+
+   plano.parentNode.insertBefore(barra, plano);
+   return true;
+ }
+
+ /* colhe o plano DA TELA — é a fonte da verdade, não um cálculo paralelo.
+    ⚠️ v116b — a primeira versão varria [class*="dg2-a"] e trazia LIXO: o seletor
+    pegava o SELO ("A FERRAMENTA RESOLVE") como se fosse ação, e o dono baixaria
+    uma planilha com rótulos no lugar de tarefas. Um seletor genérico "pra pegar
+    tudo" pega tudo mesmo — inclusive o que não é. Agora leio a estrutura de
+    verdade: cada .dg2-acao tem um TÍTULO (.dg2-at), um PORQUÊ (.dg2-ap) e um
+    SELO (.dg2-selo) que diz quem resolve. */
+ function colherPlano(){
+   var plano=document.getElementById('dg2_plano');
+   if(!plano) return [];
+   var out=[], v={};
+   [].forEach.call(plano.querySelectorAll('.dg2-acao'), function(el){
+     var at=el.querySelector('.dg2-at');
+     var ap=el.querySelector('.dg2-ap');
+     var selo=el.querySelector('.dg2-selo');
+     var acao = at ? (at.innerText||'').replace(/\s+/g,' ').trim() : '';
+     if(acao.length<6) return;
+     var porque = ap ? (ap.innerText||'').replace(/\s+/g,' ').trim() : '';
+     var sel = selo ? (selo.innerText||'').trim() : '';
+
+     /* quem executa: o selo diz o papel da ferramenta; o texto diz o do humano */
+     var quem;
+     if(/advogad/i.test(porque)) quem='Advogado';
+     else if(/contador|contabil/i.test(porque)) quem='Contador';
+     else if(/RESOLVE/i.test(sel)) quem='Você (a ferramenta faz a conta)';
+     else if(/ORIENTA/i.test(sel)) quem='Você + contador';
+     else if(/FORA/i.test(sel)) quem='Fornecedor / terceiro — exija';
+     else quem='Você';
+
+     if(v[acao]) return;
+     v[acao]=1;
+     out.push({acao:acao.slice(0,200), porque:porque.slice(0,300), quem:quem, selo:sel});
+   });
+   return out;
+ }
+
+ window.dgExportarExcel=function(){
+   var msg=document.getElementById('dgx_msg');
+   var itens=colherPlano();
+   if(!itens.length){
+     if(msg) msg.innerHTML='<span style="color:#e0a83a">Responda o diagnóstico primeiro — o plano nasce das suas respostas.</span>';
+     return;
+   }
+   if(typeof XLSX==='undefined'){
+     if(msg) msg.innerHTML='<span style="color:#d18189">A biblioteca de planilha não carregou. Use "Copiar pauta" por enquanto.</span>';
+     return;
+   }
+   try{
+     var dados=[['#','AÇÃO','POR QUE IMPORTA','QUEM EXECUTA','PRAZO','FEITO?']];
+     itens.forEach(function(x,i){ dados.push([i+1, x.acao, x.porque, x.quem, '', '']); });
+     var ws=XLSX.utils.aoa_to_sheet(dados);
+     ws['!cols']=[{wch:4},{wch:60},{wch:72},{wch:30},{wch:12},{wch:9}];
+     var wb=XLSX.utils.book_new();
+     XLSX.utils.book_append_sheet(wb, ws, 'Plano de Ação');
+     var d=new Date();
+     var nome='Plano_de_Acao_Reforma_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.xlsx';
+     XLSX.writeFile(wb, nome);
+     if(msg) msg.innerHTML='<span style="color:#7fc79a">✓ '+itens.length+' ações exportadas em '+nome+'</span>';
+   }catch(e){
+     if(msg) msg.innerHTML='<span style="color:#d18189">Não consegui gerar o arquivo: '+String(e.message||e).slice(0,60)+'</span>';
+   }
+ };
+
+ window.dgCopiarPauta=function(){
+   var msg=document.getElementById('dgx_msg');
+   var itens=colherPlano();
+   if(!itens.length){
+     if(msg) msg.innerHTML='<span style="color:#e0a83a">Responda o diagnóstico primeiro.</span>';
+     return;
+   }
+   var por={};
+   itens.forEach(function(x){ (por[x.quem]=por[x.quem]||[]).push(x); });
+   var txt='PAUTA — REFORMA TRIBUTÁRIA\n(gerada pelo diagnóstico de maturidade da minha empresa)\n\n';
+   Object.keys(por).forEach(function(q){
+     txt+='── '+q.toUpperCase()+' ──\n';
+     por[q].forEach(function(x,i){
+       txt+='  '+(i+1)+'. '+x.acao+'\n';
+       if(x.porque) txt+='     (por quê: '+x.porque+')\n';
+     });
+     txt+='\n';
+   });
+   try{
+     navigator.clipboard.writeText(txt);
+     if(msg) msg.innerHTML='<span style="color:#7fc79a">✓ pauta copiada ('+itens.length+' ações) — é só colar no e-mail ou no WhatsApp</span>';
+   }catch(e){
+     if(msg) msg.innerHTML='<span style="color:#d18189">Não consegui copiar. Selecione o plano abaixo manualmente.</span>';
+   }
+ };
+
+ function tudo(){
+   colapsarPisos();
+   moverEixos();
+   promoverPlano();
+ }
+
+ var _ap=window.abrirPagina;
+ window.abrirPagina=function(id,el){
+   var r=_ap.apply(this,arguments);
+   if(id==='diagnostico'){ [400, 1100, 2200].forEach(function(t){ setTimeout(tudo, t); }); }
+   return r;
+ };
+ /* o diagnóstico é remontado a cada resposta — reaplica */
+ var _dg=window.dg2Render || window.renderDg2;
+ if(_dg){
+   var nome = window.dg2Render ? 'dg2Render' : 'renderDg2';
+   window[nome]=function(){ var r=_dg.apply(this,arguments); setTimeout(tudo, 120); return r; };
+ }
+ setTimeout(tudo, 9000);
+ window.LH_V116={tudo:tudo, colher:colherPlano};
+})();
+</script>
 <script>
 /* ★ v911 · PRODUTO "INTELIGÊNCIA DE CADASTRO E PREÇOS" (v912: nome definitivo + Boas-Vindas) — o CORE vestido como produto próprio.
    Entra por app.html?produto=preco (ou preco.html, que redireciona). Sem o parâmetro,
@@ -71615,6 +72890,10 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     extras:['precmassa'],
     pilares:[
       { t:'Aprendizado', itens:[ ['videos','Vídeos Tutoriais'] ]},
+      /* v924 · etapa 3: o obrigatório, o medidor e a execução (trazidos do ITFE v194) */
+      { t:'Diagnóstico & Plano', itens:[
+        ['piso','O que é obrigatório'], ['diagnostico','Diagnóstico da empresa'],
+        ['plano','Plano de Ação (5W2H)'], ['prazos','Radar de Prazos'] ]},
       { t:'Minha Empresa', itens:[
         ['@cadcliente','Cadastrar minha empresa'], ['importsped','Importar documentos (XML · SPED)'] ]},
       { t:'Cadastro & Crédito', itens:[
@@ -72396,6 +73675,15 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     segmento();
     aviso('Menu ajustado para '+PRODUTO.segmentos[v]+'. Agora escolha o seu ramo.');
   };
+  /* v924 · o segmento escolhido nas Boas-Vindas vira o setor do Diagnóstico e do "O que é obrigatório"
+     (até a pessoa escolher outro na própria tela) */
+  function ramoDiag(){ var v=segLer(), sb=subLer(v);
+    if(v==='servicos') return sb==='turismo' ? 'turismo' : 'servico';
+    return ({comercio:'comercio', industria:'industria', agro:'agro'})[v] || ''; }
+  window.LH_DIAG_SETOR_PADRAO=ramoDiag;
+  (function(){ var ap=window.abrirPagina; if(typeof ap!=='function' || ap.__pcpRamo) return;
+    var novo=function(id){ if(id==='piso' && !window.__psRamoManual){ var r=ramoDiag(); if(r) window.LH_ADEQ_RAMO=r; } return ap.apply(this,arguments); };
+    novo.__pcpRamo=1; window.abrirPagina=novo; })();
   window.LH_EMP_SUBRAMO=function(k){
     var v=segLer(); if(!v || !PRODUTO.subramos || !PRODUTO.subramos[v] || !PRODUTO.subramos[v][k]) return;
     try{ localStorage.setItem(CH_SUB,k); }catch(e){}
