@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v919';</script>
+<body><script>window.LH_VERSAO='v920';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -71598,7 +71598,23 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     marca:'Lionheart ITFE',
     frase:'A Reforma Tributária na linguagem do dono: quanto muda o seu imposto, o seu preço e o seu caixa de 2026 a 2033 — e o que decidir em cada ano.',
     segmentos:{comercio:'Comércio', servicos:'Serviços', industria:'Indústria', agro:'Agro'},
+    /* v920 · SUB-RAMO (decisão do Ricardo, 04/10): profundidade setorial sem estourar o menu — cada empresário vê
+       as abas certas do ramo dele. Pensado do lado das entidades: Farsul (agro), Fiergs (indústria), Fecomércio. */
+    subramos:{
+      comercio:{varejo:'Varejo em geral', super:'Supermercado', farmacia:'Farmácia', posto:'Posto de combustível', autopecas:'Autopeças', ecom:'Vende pela internet ou para outros estados', importa:'Importador'},
+      servicos:{liberal:'Profissional liberal', saude:'Saúde', alimentacao:'Bares e restaurantes', turismo:'Hotelaria e turismo', transporte:'Transporte e logística', educacao:'Educação'},
+      industria:{incentivo:'Tem incentivo fiscal (Fundopem etc.)', exporta:'Exporta', investe:'Vai investir em máquinas', seletivo:'Bebidas, fumo, veículos ou mineração', geral:'Nenhum desses'},
+      agro:{graos:'Grãos', pecuaria:'Pecuária de corte', leite:'Leite', horti:'Hortifrúti', coop:'Vende pela cooperativa'}
+    },
     recolhido:true,   /* v918 · o ITFE abre com os pilares recolhidos, como o CORE (pedido do Ricardo, 04/10) */
+    /* v920 · TEMAS EM TESTE (Ricardo e Carlos decidem juntos): o fundo muda, o dourado Lionheart fica — o dourado
+       combina com os três e é a cor que o CORE usa em centenas de pontos fixos. Escolha guardada no navegador. */
+    temas:{
+      onyx:  {rot:'Onyx (atual)', amostra:'#0e1520'},
+      musgo: {rot:'Verde musgo',  amostra:'#1f3a2b', v:{bg:'#13261b',bg2:'#1a3124',card:'#1c3426',card2:'#264331',navy:'#0d1c13',sb:'#0b1910',borda:'rgba(212,168,42,0.28)'}},
+      marinho:{rot:'Azul-marinho',amostra:'#16294f', v:{bg:'#0e1f42',bg2:'#132852',card:'#162b57',card2:'#1f3a6e',navy:'#0a1733',sb:'#081430',borda:'rgba(212,168,42,0.26)'}},
+      violeta:{rot:'Violeta',     amostra:'#3a2560', v:{bg:'#1c1333',bg2:'#251a42',card:'#2a1d4a',card2:'#36265e',navy:'#140d26',sb:'#120b22',borda:'rgba(212,168,42,0.28)'}}
+    },
     extras:['precmassa'],
     pilares:[
       { t:'Aprendizado', itens:[ ['videos','Vídeos Tutoriais'] ]},
@@ -71619,18 +71635,30 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
         ['fin_dados','Dados da Empresa'], ['fin_cred','Impostos ano a ano'],
         ['fin_dre','DRE 2026–2033'], ['fin_fluxo','Fluxo de Caixa 2026–2033'] ]},
       { t:'Seu Segmento', seg:true, itens:[
+        /* comércio (Fecomércio) */
         ['classif','Alíquota por produto (mix)','comercio'], ['raiox360','Raio-X do Produto','comercio'],
-        ['simnotas','Simulador de Nota','comercio'], ['antecip','Pagamentos Antecipados','comercio'],
-        ['fatorR','Fator R · Anexo III × V','servicos'], ['art127','Profissões regulamentadas','servicos'],
-        ['bares','Bares & Restaurantes','servicos'], ['hotel','Hotelaria & Parques','servicos'],
-        ['agviagem','Agências de Viagem','servicos'], ['transpax','Transporte de Passageiros','servicos'],
-        ['logcarga','Logística & Cargas','servicos'],
+        ['simnotas','Simulador de Nota','comercio'], ['antecip','Pagamentos Antecipados','comercio:varejo,ecom|servicos:educacao,turismo'],
+        ['medicamento','Farmácia · medicamentos','comercio:farmacia'], ['combustivel','Posto · combustíveis','comercio:posto'],
+        ['difal','Venda para outro estado (DIFAL)','comercio:ecom'], ['import','Importação','comercio:importa,autopecas'],
+        /* serviços (Fecomércio) */
+        ['fatorR','Fator R · Anexo III × V','servicos:liberal,saude,educacao'], ['art127','Profissões regulamentadas','servicos:liberal,saude'],
+        ['bares','Bares & Restaurantes','servicos:alimentacao'], ['hotel','Hotelaria & Parques','servicos:turismo'],
+        ['hotelev','Hotel × Eventos','servicos:turismo'], ['agviagem','Agências de Viagem','servicos:turismo'],
+        ['transpax','Transporte de Passageiros','servicos:transporte'], ['logcarga','Logística & Cargas','servicos:transporte'],
+        /* indústria (Fiergs) */
         ['ind01','Crédito de Estoque na Virada','industria'], ['ind06','IPI na Transição & ZFM','industria'],
         ['ind08','Preço Industrial por fora','industria'], ['ind11','Split & Ciclo Longo','industria'],
-        ['seletivo','Imposto Seletivo','industria'],
+        ['ind09','Fundopem RS & Fundo de Compensação','industria:incentivo'], ['ind02','Subvenção · Lei 14.789','industria:incentivo'],
+        ['export','Exportação & saldo credor','industria:exporta'], ['capex','CAPEX · crédito de investimento','industria:investe'],
+        ['ind07','Ex-Tarifário · máquina importada','industria:investe'], ['seletivo','Imposto Seletivo','industria:seletivo'],
+        /* agro (Farsul) */
         ['agro03','Produtor PF × PJ Rural','agro'], ['agroSuper1','Decisor do Produtor','agro'],
         ['agro14sent','Sentinela do Teto · R$ 3,6 mi','agro'], ['agroSuper4','Ciclo de Caixa da Safra','agro'],
-        ['agro06','Custeio · CPR × LCA × Banco','agro'], ['agroSuper5','Momento Ótimo do Investimento','agro'] ]},
+        ['agro01','Funrural · Receita × Folha','agro'], ['agro08','Sucessão Rural · custo de esperar','agro'],
+        ['agro12','Cooperativa · Ato × Terceiro','agro:coop'], ['agro09','Crédito Presumido do Produtor','agro:coop,leite,pecuaria'],
+        ['agro02','Barter · Insumo × Safra','agro:graos'], ['agro06','Custeio · CPR × LCA × Banco','agro:graos,horti'],
+        ['agroSuper5','Momento Ótimo do Investimento','agro:graos,pecuaria,leite'] ]},
+
       { t:'Sua Conta', itens:[
         ['meusdados','Meus Dados'], ['lgpd','Política de Privacidade'], ['termos','Termo de Uso'] ]}
     ],
@@ -71952,7 +71980,7 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
         '</div>'+
         (PRODUTO.segmentos ? '<div id="pcp-segmentos" class="pcp-segs"><div class="pcp-segs-t">Qual é o seu segmento?</div><div class="pcp-segs-b">'+
           Object.keys(PRODUTO.segmentos).map(function(k){ return '<button type="button" data-seg="'+k+'" onclick="window.LH_EMP_SEGMENTO(\''+k+'\')">'+PRODUTO.segmentos[k]+'</button>'; }).join('')+
-          '</div><div class="pcp-segs-n">Mostramos no menu só as análises do seu ramo. Dá para trocar quando quiser.</div></div>' : '')+
+          '</div><div id="pcp-subramos" style="display:none"></div><div class="pcp-segs-n">Mostramos no menu só as análises do seu ramo. Dá para trocar quando quiser.</div></div>' : '')+
         (PRODUTO.bvCards||[]).map(function(c){ return C(c[0],c[1],c[2]); }).join('')+
         '<button onclick="abrirPagina(\'pcp-home\',null)" style="margin-top:24px;padding:13px 32px;background:linear-gradient(135deg,#c9a227,#e8b020);color:#0c1628;border:none;border-radius:10px;cursor:pointer;font-family:\'Syne\',\'Plus Jakarta Sans\',sans-serif;font-size:0.95em;font-weight:800;letter-spacing:.03em;">Ver como funciona</button>'+
       '</div>';
@@ -72080,6 +72108,22 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     'agroSuper4':'<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/><path d="M12 8v4l2 2"/>',
     'agro06':'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/>',
     'agroSuper5':'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    /* v920 · abas do sub-ramo */
+    'medicamento':'<rect x="3" y="8" width="18" height="8" rx="4"/><path d="M12 8v8"/>',
+    'combustivel':'<path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h12M4 10h10"/><path d="M14 8l3 3v6a2 2 0 0 0 4 0V9l-3-3"/>',
+    'difal':'<circle cx="6" cy="12" r="3"/><circle cx="18" cy="12" r="3"/><path d="M9 12h6M13 10l2 2-2 2"/>',
+    'import':'<path d="M12 3v12M7 10l5 5 5-5"/><path d="M3 21h18"/>',
+    'hotelev':'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 15h3"/>',
+    'ind09':'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v8M9 11h6"/>',
+    'ind02':'<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4"/>',
+    'export':'<path d="M12 21V9M7 14l5-5 5 5"/><path d="M3 3h18"/>',
+    'capex':'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
+    'ind07':'<path d="M2 20h20"/><path d="M5 20V9l5 3V9l5 3V5h4v15"/>',
+    'agro01':'<path d="M3 21h18"/><path d="M6 21V11M12 21V7M18 21v-6"/><path d="M4 9l8-6 8 6"/>',
+    'agro08':'<circle cx="8" cy="7" r="3"/><circle cx="16" cy="9" r="2"/><path d="M2 20c0-3 3-5 6-5s6 2 6 5M14 20c0-2 1-3.5 2-3.5s4 1.5 4 3.5"/>',
+    'agro12':'<circle cx="6" cy="8" r="2.5"/><circle cx="18" cy="8" r="2.5"/><circle cx="12" cy="16" r="2.5"/><path d="M8 9.5l2.5 4.5M16 9.5l-2.5 4.5M8.5 8h7"/>',
+    'agro09':'<path d="M12 21V11"/><path d="M12 11c0-4 3-7 7-7 0 4-3 7-7 7z"/><path d="M5 15h4M7 13v4"/>',
+    'agro02':'<path d="M7 7h13l-3-3M17 17H4l3 3"/>',
     '_':'<path d="M12 4l8 8-8 8-8-8z"/>'
   };
   function chaveIco(el){
@@ -72102,25 +72146,54 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     });
   }
   /* v916 · segmento do empresário: guardado só neste navegador; sem escolha, o menu mostra os quatro */
-  var CH_SEG='LH_EMP_SEG';
+  var CH_SEG='LH_EMP_SEG', CH_SUB='LH_EMP_SUB';
   function segLer(){ try{ var v=localStorage.getItem(CH_SEG); return (PRODUTO.segmentos && PRODUTO.segmentos[v]) ? v : ''; }catch(e){ return ''; } }
+  function subLer(seg){ try{ var v=localStorage.getItem(CH_SUB); return (seg && PRODUTO.subramos && PRODUTO.subramos[seg] && PRODUTO.subramos[seg][v]) ? v : ''; }catch(e){ return ''; } }
+  /* 'comercio' · 'comercio:farmacia,posto' · 'comercio:varejo|servicos:turismo' → {comercio:'*'|[...], ...} */
+  function regraSeg(txt){ var m={}; String(txt||'').split('|').forEach(function(p){ if(!p) return; var a=p.split(':'); m[a[0]]=a[1]?a[1].split(','):'*'; }); return m; }
+  function segVisivel(txt, seg, sub){
+    if(!seg) return true;                          /* sem segmento: mostra tudo */
+    var m=regraSeg(txt), r=m[seg]; if(!r) return false;
+    return r==='*' || !sub || r.indexOf(sub)>=0;   /* sem sub-ramo: tudo do segmento */
+  }
   function segmento(){
     if(!PRODUTO.segmentos) return;
-    var v=segLer(), nav=document.querySelector('nav.nav-section'); if(!nav) return;
+    var v=segLer(), sb=subLer(v), nav=document.querySelector('nav.nav-section'); if(!nav) return;
     Array.prototype.forEach.call(nav.querySelectorAll('.nav-item[data-pcp-seg]'),function(el){
-      var on=!v || el.getAttribute('data-pcp-seg')===v;
-      el.classList.toggle('pcp-seg-off', !on);   /* classe + regra !important: scripts do CORE que mexem no style.display não desfazem o filtro */
+      el.classList.toggle('pcp-seg-off', !segVisivel(el.getAttribute('data-pcp-seg'), v, sb));   /* classe + regra !important: scripts do CORE que mexem no style.display não desfazem o filtro */
     });
     var t=document.getElementById('pcp-seg-titulo');
-    if(t){ var ch=t.querySelector('.lh-cat-chevron'); t.firstChild && t.firstChild.nodeType===3 ? (t.firstChild.nodeValue=(v?'SEU SEGMENTO · '+PRODUTO.segmentos[v].toUpperCase():'SEU SEGMENTO · ESCOLHA NAS BOAS-VINDAS')) : null; }
+    if(t && t.firstChild && t.firstChild.nodeType===3){
+      t.firstChild.nodeValue = v ? ('SEU SEGMENTO · '+PRODUTO.segmentos[v].toUpperCase()+(sb?' · '+PRODUTO.subramos[v][sb].toUpperCase():'')) : 'SEU SEGMENTO · ESCOLHA NAS BOAS-VINDAS';
+    }
     Array.prototype.forEach.call(document.querySelectorAll('#pcp-segmentos button[data-seg]'),function(b){ b.classList.toggle('on', b.getAttribute('data-seg')===v); });
-    try{ var w=t&&t.closest('.nav-cat-wrap'); var box=w&&w.querySelector('.nav-cat-itens'); if(box) box.style.maxHeight='none'; }catch(e){}
+    /* sub-ramos do segmento escolhido */
+    var box2=document.getElementById('pcp-subramos');
+    if(box2){
+      var subs=(v && PRODUTO.subramos && PRODUTO.subramos[v]) || null;
+      if(!subs){ box2.style.display='none'; box2.innerHTML=''; }
+      else {
+        var chave=v+'|'+sb;
+        if(box2.getAttribute('data-k')!==chave){
+          box2.setAttribute('data-k',chave); box2.style.display='';
+          box2.innerHTML='<div class="pcp-segs-t" style="margin-top:12px">E qual é o seu ramo dentro de '+PRODUTO.segmentos[v]+'?</div><div class="pcp-segs-b">'+
+            Object.keys(subs).map(function(k){ return '<button type="button" data-sub="'+k+'" class="'+(k===sb?'on':'')+'" onclick="window.LH_EMP_SUBRAMO(\''+k+'\')">'+subs[k]+'</button>'; }).join('')+'</div>';
+        }
+      }
+    }
+    try{ var w=t&&t.closest('.nav-cat-wrap'); var bx=w&&w.querySelector('.nav-cat-itens'); if(bx) bx.style.maxHeight='none'; }catch(e){}
   }
   window.LH_EMP_SEGMENTO=function(v){
     if(!PRODUTO.segmentos || !PRODUTO.segmentos[v]) return;
-    try{ localStorage.setItem(CH_SEG,v); }catch(e){}
+    try{ if(localStorage.getItem(CH_SEG)!==v) localStorage.removeItem(CH_SUB); localStorage.setItem(CH_SEG,v); }catch(e){}
     segmento();
-    aviso('Menu ajustado para '+PRODUTO.segmentos[v]+'.');
+    aviso('Menu ajustado para '+PRODUTO.segmentos[v]+'. Agora escolha o seu ramo.');
+  };
+  window.LH_EMP_SUBRAMO=function(k){
+    var v=segLer(); if(!v || !PRODUTO.subramos || !PRODUTO.subramos[v] || !PRODUTO.subramos[v][k]) return;
+    try{ localStorage.setItem(CH_SUB,k); }catch(e){}
+    segmento();
+    aviso('Menu ajustado para '+PRODUTO.subramos[v][k]+'.');
   };
   /* v917 · LEITURA DO DONO — esconde o técnico, troca a análise do contador pela do dono */
   function fmtR(v){ v=+v||0; return 'R$ '+Math.round(v).toLocaleString('pt-BR'); }
@@ -72177,9 +72250,47 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     var f=window.lhPmItemExemplo, g=function(){ var r=f.apply(this,arguments); try{ var e=document.getElementById('pmi_desc'); if(e && /fecom/i.test(e.value)) e.value='Exemplo (R$ 100)'; }catch(_e){} return r; };
     g._pcp=true; window.lhPmItemExemplo=g;
   }
+  /* v920 · temas do ITFE (só fundo; o dourado fica) */
+  var CH_TEMA='LH_EMP_TEMA';
+  function temaCSS(){
+    if(!PRODUTO.temas || document.getElementById('pcp-temas-css')) return;
+    var c='';
+    Object.keys(PRODUTO.temas).forEach(function(k){ var t=PRODUTO.temas[k].v; if(!t) return;
+      var sel='html[data-pcp-tema="'+k+'"]:not([data-theme="claro"])';
+      c+=sel+'{--bg:'+t.bg+';--bg2:'+t.bg2+';--card:'+t.card+';--card2:'+t.card2+';--navy:'+t.navy+';--sidebar-bg:'+t.sb+';--border:'+t.borda+'}'+
+         sel+' body,'+sel+' .main,'+sel+' main.main{background:'+t.bg+'!important}'+
+         sel+' .sidebar,'+sel+' aside.sidebar{background:'+t.sb+'!important}'+
+         sel+' .topbar{background:'+t.navy+'!important}'+
+         sel+' .input-card,'+sel+' .kpi-card,'+sel+' .pcp-bv-card,'+sel+' .pcp-passo,'+sel+' .pcp-segs{background-color:'+t.card+'}';
+    });
+    c+='.pcp-temas{display:flex;align-items:center;gap:6px;height:36px;padding:0 10px;border:1px solid rgba(201,162,39,.35);border-radius:8px;flex-shrink:0}'+
+       '.pcp-temas span{font-size:.72em;color:rgba(240,232,208,.7);letter-spacing:.04em;margin-right:2px}'+
+       '.pcp-temas button{width:18px;height:18px;border-radius:50%;border:2px solid rgba(240,232,208,.35);cursor:pointer;padding:0}'+
+       '.pcp-temas button.on{border-color:#f4cc4a;box-shadow:0 0 0 2px rgba(244,204,74,.35)}'+
+       '@media (max-width:720px){.pcp-temas span{display:none}}';
+    var st=document.createElement('style'); st.id='pcp-temas-css'; st.textContent=c; document.head.appendChild(st);
+  }
+  function temaLer(){ try{ var v=localStorage.getItem(CH_TEMA); return (PRODUTO.temas && PRODUTO.temas[v]) ? v : 'onyx'; }catch(e){ return 'onyx'; } }
+  function temaAplicar(){
+    if(!PRODUTO.temas) return;
+    temaCSS();
+    var v=temaLer(); document.documentElement.setAttribute('data-pcp-tema',v);
+    var bar=document.querySelector('.topbar'), box=document.getElementById('pcp-temas');
+    if(bar && !box){
+      box=document.createElement('div'); box.id='pcp-temas'; box.className='pcp-temas'; box.title='Tema de cores (teste)';
+      box.innerHTML='<span>Tema</span>'+Object.keys(PRODUTO.temas).map(function(k){ return '<button type="button" data-tema="'+k+'" title="'+PRODUTO.temas[k].rot+'" aria-label="Tema '+PRODUTO.temas[k].rot+'" style="background:'+PRODUTO.temas[k].amostra+'" onclick="window.LH_EMP_TEMA(\''+k+'\')"></button>'; }).join('');
+      var chip=document.getElementById('pcp-chip'); if(chip && chip.nextSibling) bar.insertBefore(box, chip.nextSibling); else bar.appendChild(box);
+    }
+    if(box) Array.prototype.forEach.call(box.querySelectorAll('button'),function(b){ b.classList.toggle('on', b.getAttribute('data-tema')===v); });
+  }
+  window.LH_EMP_TEMA=function(k){
+    if(!PRODUTO.temas || !PRODUTO.temas[k]) return;
+    try{ localStorage.setItem(CH_TEMA,k); }catch(e){}
+    temaAplicar(); aviso('Tema: '+PRODUTO.temas[k].rot+'.');
+  };
   function aplicar(){
     if(document.body) document.body.setAttribute('data-lh-produto',PRODUTO.id);
-    montarMenu(); montarInicio(); topo(); trancar(); filtrarBusca(); abrirPilares(); rodape(); icones(); segmento(); vigiarDono(); exemploNeutro();
+    montarMenu(); montarInicio(); topo(); trancar(); filtrarBusca(); abrirPilares(); rodape(); icones(); segmento(); vigiarDono(); exemploNeutro(); temaAplicar();
   }
   aplicar();
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',aplicar);

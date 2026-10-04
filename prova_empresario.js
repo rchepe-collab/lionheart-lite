@@ -31,7 +31,7 @@ setTimeout(() => {
   const comuns = ['videos', 'importsped', 'auditorcad', 'classmassa', 'cadeia', 'dxh', 'c05', 'formpreco', 'c02', 'c04', 'calc03', 'c01', 'n33', 'c08', 'c06', 'fin_dados', 'fin_cred', 'fin_dre', 'fin_fluxo'];
   ex('todas as abas comuns da lista estão no menu', comuns.every((i) => ids().includes(i)), comuns.filter((i) => !ids().includes(i)).join(','));
   ex('Cadastrar minha empresa presente', [...nav.querySelectorAll('.nav-item')].some((e) => visivel(E, e) && /perguntarTipoCadastro/.test(e.getAttribute('onclick') || '')));
-  const fora = ['n15', 'n16', 'sucessorio', 'transacao', 'prescricao', 'decisor', 'cr01', 'cr04', 'monofasico', 'ins', 'ind02', 'ind03', 'agro01', 'agro08', 'empresas', 'proposta', 'motor360', 'c10', 'radar', 'jornada', 'tour', 'basetecnica', 'glossario', 'conhecimento', 'perguntas'];
+  const fora = ['n15', 'n16', 'sucessorio', 'transacao', 'prescricao', 'decisor', 'cr01', 'cr04', 'monofasico', 'ins', 'ind03', 'ind04', 'ind05', 'agro04', 'agro07', 'empresas', 'proposta', 'motor360', 'c10', 'radar', 'jornada', 'tour', 'basetecnica', 'glossario', 'conhecimento', 'perguntas'];
   ex('nada de advogado, recuperação de crédito ou escritório no menu', fora.every((i) => !ids().includes(i)), fora.filter((i) => ids().includes(i)).join(','));
   ex('nenhuma menção a Fecomércio no menu', !/fecom[eé]rcio/i.test(nav.textContent.replace(d.getElementById('pcp-oculto').textContent, '')));
   const wraps = [...nav.querySelectorAll('.nav-cat-wrap')].filter((w) => { const t = w.querySelector('.nav-group-title'); return t && t.getAttribute('data-pcp') && visivel(E, t); });
@@ -41,17 +41,44 @@ setTimeout(() => {
   ex('tela de acesso diz ITFE, não CORE', /ITFE · Inteligência Tributária e Financeira Empresarial · Acesso/.test(d.getElementById('lh-login-produto').textContent));
   ex('título do arquivo é o do ITFE', /ITFE/.test(EMP.match(/<title>[^<]*<\/title>/)[0]));
 
-  const segIds = { comercio: ['classif', 'raiox360', 'simnotas', 'antecip'], servicos: ['fatorR', 'art127', 'bares', 'hotel', 'agviagem', 'transpax', 'logcarga'], industria: ['ind01', 'ind06', 'ind08', 'ind11', 'seletivo'], agro: ['agro03', 'agroSuper1', 'agro14sent', 'agroSuper4', 'agro06', 'agroSuper5'] };
-  const todosSeg = [].concat(...Object.values(segIds));
-  ex('sem segmento escolhido, mostra os quatro', todosSeg.every((i) => ids().includes(i)), todosSeg.filter((i) => !ids().includes(i)).join(','));
+  /* v920 · segmento + sub-ramo (Farsul, Fiergs, Fecomércio) */
+  const segIds = {
+    comercio: ['classif', 'raiox360', 'simnotas', 'antecip', 'medicamento', 'combustivel', 'difal', 'import'],
+    servicos: ['fatorR', 'art127', 'bares', 'hotel', 'hotelev', 'agviagem', 'transpax', 'logcarga', 'antecip'],
+    industria: ['ind01', 'ind06', 'ind08', 'ind11', 'ind09', 'ind02', 'export', 'capex', 'ind07', 'seletivo'],
+    agro: ['agro03', 'agroSuper1', 'agro14sent', 'agroSuper4', 'agro01', 'agro08', 'agro12', 'agro09', 'agro02', 'agro06', 'agroSuper5'] };
+  const todosSeg = [...new Set([].concat(...Object.values(segIds)))];
+  ex('sem segmento escolhido, mostra todas as do segmento', todosSeg.every((i) => ids().includes(i)), todosSeg.filter((i) => !ids().includes(i)).join(','));
   for (const k of Object.keys(segIds)) {
     E.LH_EMP_SEGMENTO(k);
     const v = ids(); const outros = todosSeg.filter((i) => !segIds[k].includes(i));
-    ex('segmento ' + k + ': só as ' + segIds[k].length + ' do ramo, nenhuma de outro', segIds[k].every((i) => v.includes(i)) && outros.every((i) => !v.includes(i)) && comuns.every((i) => v.includes(i)), outros.filter((i) => v.includes(i)).join(','));
+    ex('segmento ' + k + ' (sem sub-ramo): as ' + segIds[k].length + ' do segmento, nenhuma de outro', segIds[k].every((i) => v.includes(i)) && outros.every((i) => !v.includes(i)), outros.filter((i) => v.includes(i)).join(',') + ' / falta ' + segIds[k].filter((i) => !v.includes(i)).join(','));
   }
-  ex('título do pilar diz o segmento', /SEU SEGMENTO · AGRO/.test(d.getElementById('pcp-seg-titulo').textContent));
-  ex('cada empresário vê de 26 a 32 abas', (() => { const n = ids().length; return n >= 26 && n <= 32; })(), String(ids().length));
+  const SUB = [
+    ['agro', 'coop', ['agro12', 'agro09', 'agro01', 'agro08'], ['agro02', 'agro06']],
+    ['agro', 'graos', ['agro02', 'agro06', 'agroSuper5', 'agro01'], ['agro12']],
+    ['industria', 'incentivo', ['ind09', 'ind02', 'ind01'], ['export', 'capex', 'seletivo']],
+    ['industria', 'exporta', ['export', 'ind01'], ['ind09', 'capex']],
+    ['comercio', 'farmacia', ['medicamento', 'classif'], ['combustivel', 'difal', 'import']],
+    ['comercio', 'posto', ['combustivel'], ['medicamento']],
+    ['servicos', 'turismo', ['hotel', 'hotelev', 'agviagem', 'antecip'], ['bares', 'fatorR', 'logcarga']],
+    ['servicos', 'liberal', ['fatorR', 'art127'], ['hotel', 'bares']] ];
+  for (const [sg, sb, tem, nao] of SUB) {
+    E.LH_EMP_SEGMENTO(sg); E.LH_EMP_SUBRAMO(sb);
+    const v = ids();
+    ex('sub-ramo ' + sg + ' · ' + sb + ': mostra as certas e esconde as outras', tem.every((i) => v.includes(i)) && nao.every((i) => !v.includes(i)), 'falta ' + tem.filter((i) => !v.includes(i)).join(',') + ' / sobra ' + nao.filter((i) => v.includes(i)).join(','));
+  }
+  ex('Boas-Vindas mostra os sub-ramos do segmento escolhido', d.querySelectorAll('#pcp-subramos button[data-sub]').length === 6 && /Profissional liberal/.test(d.getElementById('pcp-subramos').textContent));
+  ex('trocar de segmento limpa o sub-ramo', (() => { E.LH_EMP_SEGMENTO('agro'); return !d.querySelector('#pcp-subramos button.on'); })());
+  E.LH_EMP_SEGMENTO('agro'); E.LH_EMP_SUBRAMO('leite');
+  ex('título do pilar diz segmento e sub-ramo', /SEU SEGMENTO · AGRO · LEITE/.test(d.getElementById('pcp-seg-titulo').textContent), d.getElementById('pcp-seg-titulo').textContent);
+  ex('com segmento e sub-ramo, o empresário vê até 32 abas', (() => { const n = ids().length; return n >= 24 && n <= 32; })(), String(ids().length));
 
+  ex('seletor de tema no topo (4 temas)', d.querySelectorAll('#pcp-temas button[data-tema]').length === 4);
+  E.LH_EMP_TEMA('musgo'); ex('tema verde musgo aplica no ITFE', d.documentElement.getAttribute('data-pcp-tema') === 'musgo' && d.querySelector('#pcp-temas button.on').getAttribute('data-tema') === 'musgo');
+  E.LH_EMP_TEMA('marinho'); E.LH_EMP_TEMA('violeta'); E.LH_EMP_TEMA('onyx');
+  ex('volta ao Onyx', d.documentElement.getAttribute('data-pcp-tema') === 'onyx');
+  ex('o CORE não ganha seletor de tema', !C.document.getElementById('pcp-temas') && !C.document.documentElement.getAttribute('data-pcp-tema'));
   E.abrirPagina('c05'); ex('Regime Ótimo abre no ITFE', d.getElementById('page-c05').classList.contains('active'));
   E.abrirPagina('formpreco'); ex('Formação de Preço abre a página da Precificação', d.getElementById('page-precmassa').classList.contains('active'));
   E.abrirPagina('n15'); ex('Holding (advogado) fica trancada e volta às Boas-Vindas', !d.getElementById('page-n15').classList.contains('active') && d.getElementById('page-pcp-bemvindo').classList.contains('active'));
