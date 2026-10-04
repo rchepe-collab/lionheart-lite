@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v916';</script>
+<body><script>window.LH_VERSAO='v917';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -71639,7 +71639,57 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     bvConvite:'<b style="color:var(--text);">Escolha o seu segmento</b> e siga os quatro passos, na ordem.',
     bvCards:[['videos','1. Vídeos Tutoriais','Como usar a ferramenta, passo a passo.'],
              ['pcp-home','2. Como funciona','Os quatro passos: empresa, regime, preço e caixa, oito anos.'],
-             ['@cadcliente','3. Cadastre a sua empresa','Comece pelos dados da empresa: todas as telas leem daqui.']]
+             ['@cadcliente','3. Cadastre a sua empresa','Comece pelos dados da empresa: todas as telas leem daqui.']],
+    /* v917 · ETAPA 2 — LEITURA DO DONO.
+       tecnico: blocos (<details>) que o empresário não vê — base legal, memória de cálculo,
+       viabilidade, pareceres, nota metodológica, detalhamento linha a linha, guia de campos.
+       dono: por calculadora, a leitura na linguagem do dono. Ela lê o RESULTADO DO SERVIDOR
+       (LH_PONTE.ultimo — a mesma conta que o contador vê no CORE) e escreve 2 a 4 frases +
+       o que fazer. Onde há leitura do dono, a "Análise de Resultados" do contador sai;
+       onde ainda não há, ela fica (melhor uma análise técnica do que nenhuma). */
+    tecnico:/Base legal|Mem[oó]ria de c[aá]lculo|Viabilidade|Nota metodol|Parecer|Decomposi[cç][aã]o da carga|Detalhamento|Como usar|guia campo|Ver em v[ií]deo|Comparativo dos regimes/i,
+    dono:{
+      dxhCalc:{ pagina:'dxh', depoisDe:'dxhKpis', texto:function(r,ent,F){
+        var d=r.dentro||{}, h=r.hibrido||{}, c=r.comparacao||{};
+        var dentro=+d.das||0, hib=+h.total||0, dif=dentro-hib, ano=r.ano||ent.ano||2027;
+        var frases=['Ficando como está, dentro do Simples, o seu imposto do mês é <b>'+F(dentro)+'</b>. No híbrido, seria <b>'+F(hib)+'</b>.'];
+        var acoes=[];
+        if(c.vence_hibrido){
+          frases.push('O híbrido sai <b>'+F(Math.abs(dif))+' mais barato por mês</b> — cerca de '+F(Math.abs(dif)*12)+' por ano.');
+          if(+c.credito_extra>0) frases.push('E os seus clientes empresa passam a aproveitar <b>'+F(c.credito_extra)+' a mais de crédito</b> por mês comprando de você — o que ajuda a vender.');
+          acoes.push('Leve este resultado ao seu contador e confirme os números de compras e vendas.');
+          acoes.push('A opção pelo híbrido é feita no Portal do Simples, <b>até 30/10/2026</b>. Quem não opta continua dentro do DAS.');
+        } else if(c.vence_dentro){
+          frases.push('Ficar dentro do Simples é o caminho <b>mais barato</b>: o híbrido custaria '+F(Math.abs(dif))+' a mais por mês.');
+          acoes.push('Não precisa fazer nada: quem não opta continua dentro do DAS.');
+          acoes.push('Refaça a conta se começar a vender mais para empresas — é isso que pode virar o jogo.');
+        } else {
+          frases.push('As duas contas ficaram próximas — a decisão depende de quanto o seu cliente empresa valoriza o crédito.');
+          acoes.push('Converse com o seu contador antes de 30/10/2026, prazo da opção pelo híbrido.');
+        }
+        return {t:'Simples ou híbrido em '+ano+': o que isso quer dizer para você', f:frases, a:acoes};
+      }},
+      calcularC01:{ pagina:'c01', depoisDe:'kpi-c01', texto:function(r,ent,F){
+        var p27=null,p33=null; (r.projecao||[]).forEach(function(x){ if(+x.ano===2027) p27=x; if(+x.ano===2033) p33=x; });
+        var frases=['Com o split payment, o imposto da venda é retido <b>na hora do pagamento</b> — antes de chegar à sua conta. Hoje esse dinheiro fica com você até o vencimento da guia.',
+          'Em 2027 isso deixa de entrar no seu caixa <b>'+F(r.gap_2027)+' por mês</b>. Em 2033, com a alíquota cheia, chega a <b>'+F(r.gap_2033)+' por mês</b>.'];
+        if(p27 && p33) frases.push('Cobrir esse buraco com capital de giro custa cerca de <b>'+F(p27.custo_mensal_para_repor)+' por mês</b> em 2027 e '+F(p33.custo_mensal_para_repor)+' em 2033.');
+        return {t:'Split payment: quanto de caixa você perde', f:frases,
+          a:['Comece a reservar caixa ainda em 2026, antes do split começar.','Negocie prazo maior com fornecedores e prazo menor com clientes.','Veja em Capital de giro (NCG) quanto a empresa vai precisar no total.']};
+      }},
+      calcularC05:{ pagina:'c05', depoisDe:'kpi-c05', texto:function(r,ent,F){
+        var rk=(r.ranking||[]).slice().sort(function(a,b){ return a.total-b.total; });
+        if(!rk.length) return null;
+        var m=rk[0], s2=rk[1];
+        var frases=['Para o seu faturamento, o regime que paga <b>menos imposto</b> é o <b>'+m.regime+'</b>: '+F(m.total)+' por ano, cerca de '+F(m.total/12)+' por mês.'];
+        if(s2) frases.push('O segundo é o '+s2.regime+', '+F(s2.total-m.total)+' a mais por ano.');
+        /* o "pior regime" fica de fora de propósito: o KPI do CORE lê o último da lista do servidor, que não vem
+           ordenada (achado 04/10, Regime Ótimo só muda depois do Excel Mestre C05) — a leitura do dono não pode
+           contradizer o cartão ao lado */
+        return {t:'Qual regime paga menos imposto', f:frases,
+          a:['Folha, pró-labore e custos mudam esta conta: confirme esses números com o seu contador antes de trocar de regime.','A troca de regime vale a partir de janeiro — a decisão precisa estar tomada até o fim do ano.']};
+      }}
+    }
   };
 
   var PRODUTO=PRODUTOS[q];
@@ -71706,6 +71756,15 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     '.pcp-bv-nome{font-family:\'Syne\',\'Plus Jakarta Sans\',sans-serif;font-size:2em;font-weight:800;background:linear-gradient(135deg,#c9a227 0%,#f4cc4a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:.03em;line-height:1.15;margin-bottom:6px}'+
     '@media (max-width:720px){.pcp-bv-nome{font-size:1.45em}}'+
     'body[data-lh-produto] nav.nav-section .nav-item.pcp-seg-off{display:none!important}'+
+    'body[data-lh-produto] .pcp-tec{display:none!important}'+
+    '.pcp-dono{margin:14px 0 6px;border:1px solid rgba(201,162,39,.5);border-left:4px solid #e0b93a;border-radius:12px;padding:16px 20px;background:linear-gradient(135deg,rgba(201,162,39,.10),rgba(201,162,39,.02))}'+
+    '.pcp-dono .eb{font-size:.7em;letter-spacing:.14em;text-transform:uppercase;color:#c9a227;font-weight:700;margin-bottom:4px}'+
+    '.pcp-dono h4{margin:0 0 8px;font-size:1.08em;color:var(--text)}'+
+    '.pcp-dono p{margin:6px 0;color:rgba(240,232,208,.9);line-height:1.6;font-size:.95em}'+
+    '.pcp-dono .faz{margin-top:10px;padding-top:10px;border-top:1px solid rgba(201,162,39,.25)}'+
+    '.pcp-dono .faz b.t{display:block;color:#e0b93a;font-size:.8em;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}'+
+    '.pcp-dono ul{margin:0;padding-left:18px}.pcp-dono li{margin:3px 0;color:rgba(240,232,208,.86);font-size:.92em;line-height:1.5}'+
+    '.pcp-dono .rod{margin-top:8px;font-size:.76em;color:rgba(240,232,208,.5)}'+
     '.pcp-segs{margin:14px 0 2px;text-align:left;background:var(--card);border:1px solid rgba(201,162,39,.35);border-radius:12px;padding:14px 18px}'+
     '.pcp-segs-t{font-weight:700;color:var(--text);margin-bottom:9px}'+
     '.pcp-segs-b{display:flex;flex-wrap:wrap;gap:8px}'+
@@ -71984,9 +72043,57 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     segmento();
     aviso('Menu ajustado para '+PRODUTO.segmentos[v]+'.');
   };
+  /* v917 · LEITURA DO DONO — esconde o técnico, troca a análise do contador pela do dono */
+  function fmtR(v){ v=+v||0; return 'R$ '+Math.round(v).toLocaleString('pt-BR'); }
+  var PAG_DONO={}; Object.keys(PRODUTO.dono||{}).forEach(function(k){ PAG_DONO[PRODUTO.dono[k].pagina]=k; });
+  var RX_MARCA=/Fecom[eé]rcio|\bno CORE\b|\bdo CORE\b|Lionheart CORE/;
+  function limparPagina(pg){
+    var P=document.getElementById('page-'+pg); if(!P) return;
+    var temDono=!!PAG_DONO[pg];
+    if(PRODUTO.tecnico){
+      Array.prototype.forEach.call(P.querySelectorAll('summary'),function(sm){
+        var t=(sm.textContent||'').trim(), d=sm.closest('details'); if(!d || d.classList.contains('pcp-tec')) return;
+        if(PRODUTO.tecnico.test(t) || (temDono && /An[aá]lise de Resultados/i.test(t))) d.classList.add('pcp-tec');
+      });
+      Array.prototype.forEach.call(P.querySelectorAll('[id^="lhFront-"]'),function(e){ e.classList.add('pcp-tec'); });
+    }
+    /* menções a Fecomércio e ao CORE: some o bloco curto que as contém (subtítulos, rodapés) */
+    Array.prototype.forEach.call(P.querySelectorAll('b,strong,span,a,i,em,small'),function(e){
+      if(e.closest('.pcp-tec,.pcp-dono') || !RX_MARCA.test(e.textContent||'')) return;
+      var bl=e.closest('p,div,li'); if(bl && (bl.textContent||'').length<320 && bl!==P) bl.classList.add('pcp-tec');
+    });
+  }
+  function leituraDono(pg){
+    var k=PAG_DONO[pg]; if(!k) return;
+    var cfg=PRODUTO.dono[k], u=(window.LH_PONTE && LH_PONTE.ultimo)?LH_PONTE.ultimo[k]:null;
+    var ref=document.getElementById(cfg.depoisDe); if(!ref || !ref.parentNode) return;
+    var card=document.getElementById('pcp-dono-'+pg);
+    if(!u || !u.resultado || u.resultado.ok===false){ if(card) card.parentNode.removeChild(card); return; }
+    if(card && card.getAttribute('data-q')===u.quando && card.previousElementSibling===ref) return;
+    var L=null; try{ L=cfg.texto(u.resultado,u.ent||{},fmtR); }catch(e){ L=null; }
+    if(!L){ if(card) card.parentNode.removeChild(card); return; }
+    if(!card){ card=document.createElement('div'); card.id='pcp-dono-'+pg; card.className='pcp-dono'; }
+    card.setAttribute('data-q',u.quando);
+    card.innerHTML='<div class="eb">Para você, dono</div><h4>'+L.t+'</h4>'+L.f.map(function(x){ return '<p>'+x+'</p>'; }).join('')+
+      (L.a&&L.a.length?'<div class="faz"><b class="t">O que fazer</b><ul>'+L.a.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul></div>':'')+
+      '<div class="rod">Mesma conta que o seu contador vê no sistema dele — só a leitura é diferente.</div>';
+    if(ref.nextSibling!==card) ref.parentNode.insertBefore(card, ref.nextSibling);
+  }
+  var _obs={};
+  function vigiarDono(){
+    if(!PRODUTO.tecnico && !PRODUTO.dono) return;
+    Object.keys(PERMITIDAS).forEach(function(pg){
+      var P=document.getElementById('page-'+pg); if(!P || _obs[pg]) return;
+      var t=null, rodar=function(){ t=null; try{ limparPagina(pg); leituraDono(pg); }catch(e){} };
+      rodar();
+      if(window.MutationObserver){ _obs[pg]=new MutationObserver(function(){ if(!t) t=setTimeout(rodar,120); }); _obs[pg].observe(P,{childList:true,subtree:true}); }
+      else _obs[pg]=true;
+    });
+  }
+  window.LH_DONO_ATUALIZAR=function(pg){ limparPagina(pg); leituraDono(pg); };
   function aplicar(){
     if(document.body) document.body.setAttribute('data-lh-produto',PRODUTO.id);
-    montarMenu(); montarInicio(); topo(); trancar(); filtrarBusca(); abrirPilares(); rodape(); icones(); segmento();
+    montarMenu(); montarInicio(); topo(); trancar(); filtrarBusca(); abrirPilares(); rodape(); icones(); segmento(); vigiarDono();
   }
   aplicar();
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',aplicar);
