@@ -45,6 +45,8 @@ setTimeout(() => {
   ex('tela de acesso diz o produto, não CORE', /Inteligência de Cadastro e Preços · Acesso/.test((d.getElementById('lh-login-produto') || {}).textContent || ''));
   const rods = [...d.querySelectorAll('main div')].filter((e) => /também está em texto no/.test(e.textContent) && e.querySelectorAll('strong').length === 2 && !e.closest('.page'));
   ex('rodapé que aponta o Guia do Consultor escondido', rods.length > 0 && rods.every((e) => !visivel(P, e)), String(rods.length));
+  const tt = [...nav.querySelectorAll('.nav-group-title[data-pcp]')];
+  ex('pilares na caixa dourada clara das seções do CORE', tt.length === 6 && tt.every((t) => P.getComputedStyle(t).color === 'rgb(255, 244, 214)' && /8px/.test(P.getComputedStyle(t).borderRadius)), tt.map((t) => P.getComputedStyle(t).color).join('|'));
   ex('aba do navegador com o nome do produto', /Inteligência de Cadastro e Preços/.test(d.title));
   ex('página inicial com os 4 passos e as 2 entregas', d.querySelectorAll('#page-pcp-home .pcp-passo').length === 4 && d.querySelectorAll('#page-pcp-home .pcp-entregas > div').length === 2);
   const linksIni = [...d.querySelectorAll('#page-pcp-home a[onclick]')].map(idDo);
