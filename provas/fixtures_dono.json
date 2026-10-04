@@ -934,5 +934,422 @@
   "aliquota_efetiva_2033_pct": 7.42,
   "aliquota_regime_informada": false,
   "credito_ignorado_por_cumulatividade": false
+ },
+ "difal": {
+  "ok": true,
+  "tese": "DIFAL interestadual",
+  "leitura": "O DIFAL morre com o ICMS em 2033.",
+  "base_legal": "EC 87/2015",
+  "fcp_mensal": 0,
+  "total_anual": 72000,
+  "difal_mensal": 6000,
+  "quem_recolhe": "REMETENTE — GNRE por operação ou inscrição de substituto no estado de destino",
+  "total_mensal": 6000,
+  "alerta_aliquotas": null,
+  "aliquota_difal_pct": 6,
+  "pct_sobre_faturamento": 6
+ },
+ "import": {
+  "ok": true,
+  "cif": 1000000,
+  "hoje": {
+   "ii": 120000,
+   "ipi": 112000,
+   "nota": "O II FICA",
+   "pis_cofins": 117500,
+   "icms_por_dentro": 296231.71,
+   "substituivel_pela_reforma": 525731.71
+  },
+  "tese": "Importação & regimes",
+  "alivia": true,
+  "regime": "comum",
+  "leitura": "",
+  "projecao": [
+   {
+    "ano": 2026,
+    "ibs_cbs_bruto": 11200,
+    "liquido_de_credito": 0
+   },
+   {
+    "ano": 2027,
+    "ibs_cbs_bruto": 98560,
+    "liquido_de_credito": 0
+   },
+   {
+    "ano": 2028,
+    "ibs_cbs_bruto": 98560,
+    "liquido_de_credito": 0
+   },
+   {
+    "ano": 2029,
+    "ibs_cbs_bruto": 118384,
+    "liquido_de_credito": 0
+   },
+   {
+    "ano": 2030,
+    "ibs_cbs_bruto": 138208,
+    "liquido_de_credito": 0
+   },
+   {
+    "ano": 2031,
+    "ibs_cbs_bruto": 158032,
+    "liquido_de_credito": 0
+   },
+   {
+    "ano": 2032,
+    "ibs_cbs_bruto": 177856,
+    "liquido_de_credito": 0
+   },
+   {
+    "ano": 2033,
+    "ibs_cbs_bruto": 296800,
+    "liquido_de_credito": 0
+   }
+  ],
+  "suspensao": false,
+  "base_legal": "LC 214/2025 arts. 63 a 70",
+  "base_ibs_cbs": 1120000,
+  "ibs_cbs_2033": 296800,
+  "diferenca_2033": -228931.71
+ },
+ "mix-efetiva": {
+  "ok": true,
+  "alivia": false,
+  "projecao": [
+   {
+    "ano": 2026,
+    "imposto": 38480,
+    "por_balde": [
+     {
+      "i": 0,
+      "pct": 60,
+      "balde": "red40",
+      "imposto": 23400
+     },
+     {
+      "i": 1,
+      "pct": 20,
+      "balde": "red60",
+      "imposto": 5200
+     },
+     {
+      "i": 2,
+      "pct": 12,
+      "balde": "red40",
+      "imposto": 4680
+     },
+     {
+      "i": 3,
+      "pct": 8,
+      "balde": "cheia",
+      "imposto": 5200
+     }
+    ],
+    "imposto_cheio": 65000,
+    "variacao_vs_hoje": 38480,
+    "economia_vs_cheio": 26520,
+    "aliquota_efetiva_pct": 0.3848
+   },
+   {
+    "ano": 2027,
+    "imposto": 338624,
+    "por_balde": [
+     {
+      "i": 0,
+      "pct": 60,
+      "balde": "red40",
+      "imposto": 205920
+     },
+     {
+      "i": 1,
+      "pct": 20,
+      "balde": "red60",
+      "imposto": 45760
+     },
+     {
+      "i": 2,
+      "pct": 12,
+      "balde": "red40",
+      "imposto": 41184
+     },
+     {
+      "i": 3,
+      "pct": 8,
+      "balde": "cheia",
+      "imposto": 45760
+     }
+    ],
+    "imposto_cheio": 572000,
+    "variacao_vs_hoje": 338624,
+    "economia_vs_cheio": 233376,
+    "aliquota_efetiva_pct": 3.3862
+   },
+   {
+    "ano": 2028,
+    "imposto": 338624,
+    "por_balde": [
+     {
+      "i": 0,
+      "pct": 60,
+      "balde": "red40",
+      "imposto": 205920
+     },
+     {
+      "i": 1,
+      "pct": 20,
+      "balde": "red60",
+      "imposto": 45760
+     },
+     {
+      "i": 2,
+      "pct": 12,
+      "balde": "red40",
+      "imposto": 41184
+     },
+     {
+      "i": 3,
+      "pct": 8,
+      "balde": "cheia",
+      "imposto": 45760
+     }
+    ],
+    "imposto_cheio": 572000,
+    "variacao_vs_hoje": 338624,
+    "economia_vs_cheio": 233376,
+    "aliquota_efetiva_pct": 3.3862
+   },
+   {
+    "ano": 2029,
+    "imposto": 406733.6,
+    "por_balde": [
+     {
+      "i": 0,
+      "pct": 60,
+      "balde": "red40",
+      "imposto": 247338
+     },
+     {
+      "i": 1,
+      "pct": 20,
+      "balde": "red60",
+      "imposto": 54964
+     },
+     {
+      "i": 2,
+      "pct": 12,
+      "balde": "red40",
+      "imposto": 49467.6
+     },
+     {
+      "i": 3,
+      "pct": 8,
+      "balde": "cheia",
+      "imposto": 54964
+     }
+    ],
+    "imposto_cheio": 687050,
+    "variacao_vs_hoje": 406733.6,
+    "economia_vs_cheio": 280316.4,
+    "aliquota_efetiva_pct": 4.0673
+   },
+   {
+    "ano": 2030,
+    "imposto": 474843.2,
+    "por_balde": [
+     {
+      "i": 0,
+      "pct": 60,
+      "balde": "red40",
+      "imposto": 288756
+     },
+     {
+      "i": 1,
+      "pct": 20,
+      "balde": "red60",
+      "imposto": 64168
+     },
+     {
+      "i": 2,
+      "pct": 12,
+      "balde": "red40",
+      "imposto": 57751.2
+     },
+     {
+      "i": 3,
+      "pct": 8,
+      "balde": "cheia",
+      "imposto": 64168
+     }
+    ],
+    "imposto_cheio": 802100,
+    "variacao_vs_hoje": 474843.2,
+    "economia_vs_cheio": 327256.8,
+    "aliquota_efetiva_pct": 4.7484
+   },
+   {
+    "ano": 2031,
+    "imposto": 542952.8,
+    "por_balde": [
+     {
+      "i": 0,
+      "pct": 60,
+      "balde": "red40",
+      "imposto": 330174
+     },
+     {
+      "i": 1,
+      "pct": 20,
+      "balde": "red60",
+      "imposto": 73372
+     },
+     {
+      "i": 2,
+      "pct": 12,
+      "balde": "red40",
+      "imposto": 66034.8
+     },
+     {
+      "i": 3,
+      "pct": 8,
+      "balde": "cheia",
+      "imposto": 73372
+     }
+    ],
+    "imposto_cheio": 917150,
+    "variacao_vs_hoje": 542952.8,
+    "economia_vs_cheio": 374197.2,
+    "aliquota_efetiva_pct": 5.4295
+   },
+   {
+    "ano": 2032,
+    "imposto": 611062.4,
+    "por_balde": [
+     {
+      "i": 0,
+      "pct": 60,
+      "balde": "red40",
+      "imposto": 371592
+     },
+     {
+      "i": 1,
+      "pct": 20,
+      "balde": "red60",
+      "imposto": 82576
+     },
+     {
+      "i": 2,
+      "pct": 12,
+      "balde": "red40",
+      "imposto": 74318.4
+     },
+     {
+      "i": 3,
+      "pct": 8,
+      "balde": "cheia",
+      "imposto": 82576
+     }
+    ],
+    "imposto_cheio": 1032200,
+    "variacao_vs_hoje": 611062.4,
+    "economia_vs_cheio": 421137.6,
+    "aliquota_efetiva_pct": 6.1106
+   },
+   {
+    "ano": 2033,
+    "imposto": 1019720,
+    "por_balde": [
+     {
+      "i": 0,
+      "pct": 60,
+      "balde": "red40",
+      "imposto": 620100
+     },
+     {
+      "i": 1,
+      "pct": 20,
+      "balde": "red60",
+      "imposto": 137800
+     },
+     {
+      "i": 2,
+      "pct": 12,
+      "balde": "red40",
+      "imposto": 124020
+     },
+     {
+      "i": 3,
+      "pct": 8,
+      "balde": "cheia",
+      "imposto": 137800
+     }
+    ],
+    "imposto_cheio": 1722500,
+    "variacao_vs_hoje": 1019720,
+    "economia_vs_cheio": 702780,
+    "aliquota_efetiva_pct": 10.1972
+   }
+  ],
+  "base_legal": "LC 214/2025 art. 77",
+  "carga_atual": 0,
+  "imposto_2033": 1019720,
+  "variacao_2033": 1019720,
+  "retencao_ponderada": 0.592,
+  "aliquota_bruta_2033_pct": 15.688,
+  "reducao_equivalente_pct": 40.8,
+  "aliquota_efetiva_2033_pct": 10.1972
+ },
+ "ind02": {
+  "ok": true,
+  "tese": "Subvenção — Lei 14.789/2023",
+  "leitura": "",
+  "beneficio": 2000000,
+  "base_legal": "Lei 14.789/2023",
+  "carga_liquida": 565000,
+  "com_tese_1182": 185000,
+  "economia_da_tese": 380000,
+  "tributacao_43_25": 865000,
+  "carga_efetiva_pct": 28.25,
+  "credito_fiscal_25": 300000
+ },
+ "export": {
+  "ok": true,
+  "tese": "Exportação & saldo credor",
+  "insumos": 900000,
+  "leitura": "",
+  "receita": 2000000,
+  "base_legal": "CF art. 156-A",
+  "potencial_total": 406500,
+  "credito_anual_gerado": 238500,
+  "saldo_acumulado_corrigido": 168000
+ },
+ "ind07": {
+  "ok": true,
+  "tese": "Ex-tarifário — bem de capital",
+  "leitura": "",
+  "requisito": "Pleito na Gecex/Camex",
+  "base_legal": "Resolução Gecex 512/2023",
+  "ii_evitado": 252000,
+  "economia_total": 307317.07,
+  "valor_aduaneiro": 2000000,
+  "economia_pct_cif": 15.3659,
+  "cascata_icms_evitada": 55317.07
+ },
+ "agro08": {
+  "ok": true,
+  "uf": "RS",
+  "area": 1000,
+  "tese": "Sucessão rural — o custo de esperar",
+  "leitura": "",
+  "premissa": "Conferir a tabela da SEFAZ",
+  "herdeiros": 2,
+  "base_legal": "LC 227/2026",
+  "quinhao_mercado": 17500000,
+  "custo_de_esperar": 900000,
+  "itcmd_base_mercado": 1890000,
+  "patrimonio_mercado": 35000000,
+  "economia_da_divisao": 105000,
+  "itcmd_base_historica": 990000,
+  "patrimonio_historico": 20000000,
+  "itcmd_se_herdeiro_unico": 1995000
  }
 }

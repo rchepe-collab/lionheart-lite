@@ -1,4 +1,4 @@
-/* PROVA v917/v919/v921 — LEITURA DO DONO no ITFE (empresario.html). Lote 1: Dentro × Híbrido, Split, Regime Ótimo.
+/* PROVA v917/v919/v921/v922 — LEITURA DO DONO no ITFE (empresario.html). Lote 1: Dentro × Híbrido, Split, Regime Ótimo.
    Lote 2 (v919): NCG, Reprecificação de Contratos, Alíquota efetiva, Comprar do Simples × regular, Pró-labore,
    Dividendos e Formação de Preço (item, cálculo local — lê LH_PMI_ULTIMO).
    O servidor é simulado com resultados reais do Supabase (provas/fixtures_dono.json, tirados de
@@ -49,7 +49,15 @@ const CASOS = [
   { pg: 'ind09', kpis: 'kpi-ind09', recs: true, rodar: (w) => { w.calcularIND09(); }, deve: [/R\$ 3\.000\.000 por ano/, /deixa de receber <b>R\$ 3\.000\.000/, /habilite no prazo/, /R\$ 1\.297\.500 por ano/] },
   { pg: 'capex', kpis: 'kpi-capex', recs: true, rodar: (w) => { set(w, 'capex_valor', 100000); w.calcularCapex(); }, deve: [/R\$ 9\.5(59|60)/, /R\$ 90\.44\d/, /em 2029/, /volta para a empresa/] },
   { pg: 'medicamento', kpis: 'kpi-medicamento', recs: true, rodar: (w) => { set(w, 'med_sub', 'medicamento_geral'); set(w, 'med_fat', 100000); set(w, 'med_atual', 17.86); set(w, 'med_cred', 30); w.calcularMedicamento(); }, deve: [/R\$ 17\.860/, /R\$ 7\.420 por ano/, /R\$ 10\.440 a menos/, /redução de 60%/] },
-  { pg: 'combustivel', kpis: 'kpi-combustivel', recs: true, rodar: (w) => { set(w, 'comb_vol', 5000000); set(w, 'comb_novo', 2.2); set(w, 'comb_atual', 2.01); w.calcularCombustivel(); }, deve: [/uma vez só/, /R\$ 10\.050\.000/, /R\$ 11\.000\.000/, /R\$ 950\.000 a mais/, /R\$ 2,20 por litro/, /estimativa/] }
+  { pg: 'combustivel', kpis: 'kpi-combustivel', recs: true, rodar: (w) => { set(w, 'comb_vol', 5000000); set(w, 'comb_novo', 2.2); set(w, 'comb_atual', 2.01); w.calcularCombustivel(); }, deve: [/uma vez só/, /R\$ 10\.050\.000/, /R\$ 11\.000\.000/, /R\$ 950\.000 a mais/, /R\$ 2,20 por litro/, /estimativa/] },
+  /* v922 · lote 4 (setoriais) */
+  { pg: 'difal', kpis: 'kpi-difal', recs: true, rodar: (w) => { set(w, 'dif_valor_mes', 100000); set(w, 'dif_aliq_inter', '12'); set(w, 'dif_aliq_interna', 18); set(w, 'dif_tipo_dest', 'nao_contrib'); w.calcularDIFAL(); }, deve: [/R\$ 100\.000 por mês/, /R\$ 6\.000 por mês/, /R\$ 72\.000/, /quem paga é a sua empresa/, /acaba em 2033/] },
+  { pg: 'import', kpis: 'kpi-import', recs: true, rodar: (w) => { set(w, 'imp_cif', 1000000); set(w, 'imp_ii', 12); set(w, 'imp_ipi', 10); set(w, 'imp_pis', 11.75); set(w, 'imp_icms', 18); set(w, 'imp_cred', 100); w.calcularImport(); }, deve: [/R\$ 1\.000\.000/, /R\$ 525\.73\d/, /R\$ 296\.800/, /R\$ 228\.93\d a menos/, /R\$ 120\.000/, /fica com a empresa é de <b>R\$ 0/] },
+  { pg: 'hotelev', kpis: 'kpi-hotelev', recs: true, rodar: (w) => { set(w, 'hev_fat', 10000000); w.calcularHotelEv(); }, deve: [/R\$ 1\.019\.720 por ano/, /R\$ 1\.722\.500/, /R\$ 702\.780 por ano/, /Em 2033/] },
+  { pg: 'ind02', kpis: 'kpi-ind02', recs: true, rodar: (w) => { w.calcularIND02(); }, deve: [/R\$ 2\.000\.000 por ano/, /R\$ 865\.000 por ano/, /R\$ 300\.000/, /R\$ 565\.000 por ano/, /R\$ 380\.000 a menos/] },
+  { pg: 'export', kpis: 'kpi-export', recs: true, rodar: (w) => { set(w, 'exp_rec', 2000000); set(w, 'exp_ins', 45); set(w, 'exp_saldo', 150000); set(w, 'exp_selic', 12); w.calcularExport(); }, deve: [/R\$ 238\.500 por ano/, /R\$ 168\.000/, /R\$ 406\.500/] },
+  { pg: 'ind07', kpis: 'kpi-ind07', recs: true, rodar: (w) => { w.calcularIND07(); }, deve: [/R\$ 2\.000\.000/, /R\$ 307\.317/, /15,4%/, /R\$ 252\.000/, /R\$ 55\.317/] },
+  { pg: 'agro08', kpis: 'kpi-agro08', recs: true, rodar: (w) => { set(w, 'agro08_area', 1000); set(w, 'agro08_mercado', 35000); set(w, 'agro08_hist', 20000); w.calcularAGRO08(); }, deve: [/R\$ 35\.000\.000/, /R\$ 1\.890\.000/, /R\$ 990\.000/, /R\$ 900\.000/, /R\$ 105\.000/] }
 ];
 let E2 = null;
 
@@ -98,6 +106,7 @@ let E2 = null;
   ex('agro01: com folha baixa, o cartão aponta a folha', /folha sai <b>R\$ 20\.900 mais barata/.test(h2) && /janeiro/.test(h2));
   h2 = troca('calcularIND09', 'ind09', { compensacao_fundo: 0, perda_liquida: 3000000, custo_2029: 1597500 });
   ex('ind09: sem cobertura do fundo, o cartão diz que nada é compensado', /nada disso é compensado/.test(h2) && /R\$ 1\.597\.500/.test(h2));
+  ex('agro09 e agro02: sem cartão até resolver o coeficiente do crédito presumido', !E.LH_PRODUTO.dono.calcularAGRO09 && !E.LH_PRODUTO.dono.calcularAGRO02);
   console.log('--- tema claro legível (v921) ---');
   E.Element.prototype.getClientRects = function () { return [{ width: 1, height: 1 }]; };   /* o jsdom não faz layout */
   E.abrirPagina('c01'); await espera(300);

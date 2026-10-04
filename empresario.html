@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v921';</script>
+<body><script>window.LH_VERSAO='v922';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -71874,6 +71874,77 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
         var ac=['Quando o valor oficial por litro for publicado, refaça esta conta.'];
         ac.push(d>0?'Planeje o repasse no preço da bomba: o custo por litro tende a subir.':'Se o custo por litro cair, decida se vira margem ou preço na bomba.');
         return {t:'Combustível: o imposto que vem no litro', f:fr, a:ac};
+      }},
+      /* v922 · LOTE 4 — setoriais: DIFAL, Importação, Hotel × Eventos, Subvenção, Exportação, Ex-Tarifário, Sucessão Rural.
+         Crédito Presumido do Produtor (agro09) e Barter (agro02) ficam SEM cartão: a tela manda 55 ("% do imposto")
+         e o servidor usa como coeficiente C da fórmula VO×C/(1+C) — dá crédito de 32% da compra, acima da alíquota.
+         Achado de 04/10, aguarda o Ricardo. */
+      calcularDIFAL:{ pagina:'difal', depoisDe:'kpi-difal', texto:function(r,ent,F){
+        var mes=+r.total_mensal, ano=+r.total_anual, base=+ent.valor_mensal, nc=(ent._tipoDest==='nao_contrib' || ent.destinatario==='nao_contribuinte');
+        if(!(base>0)) return null;
+        var fr=['Vendendo <b>'+F(base)+' por mês</b> para outros estados, o DIFAL (a diferença de ICMS entre o seu estado e o do cliente) é de <b>'+F(mes)+' por mês</b>, cerca de '+F(ano)+' por ano.',
+                nc?'Como o cliente não é contribuinte do ICMS (pessoa física, por exemplo), <b>quem paga é a sua empresa</b>, a cada venda, para o estado do cliente.':'Como o cliente é contribuinte do ICMS, <b>quem paga é ele</b>: a sua empresa só destaca o valor na nota.',
+                'O DIFAL diminui junto com o ICMS a partir de 2029 e <b>acaba em 2033</b>: no imposto novo, a cobrança já é sempre no estado de destino.'];
+        var ac=nc?['Inclua o DIFAL no preço das vendas para fora do estado até 2032.','Confira com o seu contador se vale a inscrição no estado do cliente, para não recolher nota a nota.']
+                 :['Destaque o DIFAL corretamente na nota: o erro trava a mercadoria na fiscalização do destino.'];
+        return {t:'DIFAL: quanto custa vender para fora do estado', f:fr, a:ac};
+      }},
+      calcularImport:{ pagina:'import', depoisDe:'kpi-import', texto:function(r,ent,F){
+        var h=r.hoje||{}, sub=+h.substituivel_pela_reforma, ii=+h.ii, p33=null; (r.projecao||[]).forEach(function(x){ if(+x.ano===2033) p33=x; });
+        if(!(sub>0) || !p33) return null;
+        var nv=+p33.ibs_cbs_bruto, liq=+p33.liquido_de_credito, d=nv-sub;
+        var fr=['Numa importação de <b>'+F(ent.cif)+'</b>, hoje a empresa paga <b>'+F(sub)+'</b> de IPI, PIS/COFINS e ICMS na entrada.',
+                'Em 2033 esses impostos viram um só, o imposto novo: <b>'+F(nv)+'</b>, '+(d<=0?'<b>'+F(-d)+' a menos</b>.':'<b>'+F(d)+' a mais</b>.')];
+        if(r.suspensao) fr.push('No regime especial escolhido, esse imposto fica <b>suspenso</b> na entrada.');
+        else if(liq<nv) fr.push('Como o importado gera crédito, esse imposto volta depois, na venda: o custo que fica com a empresa é de <b>'+F(liq)+'</b>.');
+        fr.push('O Imposto de Importação ('+F(ii)+') <b>continua</b>: ele não muda com a reforma.');
+        return {t:'Importação: o que muda no custo de entrada', f:fr,
+          a:['Use o custo de entrada de 2033 para rever o preço do produto importado na Formação de Preço.','Se você importa para produzir ou exportar, pergunte ao seu despachante sobre regimes especiais (drawback, por exemplo): eles suspendem o imposto na entrada.']};
+      }},
+      calcularHotelEv:{ pagina:'hotelev', depoisDe:'kpi-hotelev', texto:function(r,ent,F){
+        var ano=+(ent._ano||2033), p=null; (r.projecao||[]).forEach(function(x){ if(+x.ano===ano) p=x; });
+        if(!p) return null;
+        var sem=+p.imposto_cheio, com=+p.imposto, eco=sem-com;
+        var fr=['Em '+ano+', separando o faturamento por atividade (hospedagem, eventos, alimentação e o resto), o imposto fica em <b>'+F(com)+' por ano</b>.',
+                'Sem separar, tudo paga a alíquota cheia: <b>'+F(sem)+'</b>. A separação vale <b>'+F(eco)+' por ano</b>.'];
+        if(ent._regime==='simples_dentro') fr=['Dentro do Simples, as reduções de hospedagem e eventos não se aplicam: o imposto é o do DAS. Compare no Simples 2027: Dentro × Híbrido.'];
+        return {t:'Hotel e eventos: separar o faturamento compensa', f:fr,
+          a:['Emita nota separada para hospedagem, eventos e alimentação: é a nota que prova a redução.','Organize a contabilidade por linha de receita desde 2026.','Eventos para empresas geram crédito ao cliente: use isso na hora de vender.']};
+      }},
+      calcularIND02:{ pagina:'ind02', depoisDe:'kpi-ind02', texto:function(r,ent,F){
+        var ben=+r.beneficio, trib=+r.tributacao_43_25, cr=+r.credito_fiscal_25, liq=+r.carga_liquida, tese=+r.com_tese_1182, eco=+r.economia_da_tese;
+        if(!(ben>0)) return null;
+        var fr=['O incentivo de ICMS de <b>'+F(ben)+' por ano</b> passou a pagar imposto federal (IR, CSLL, PIS e COFINS): <b>'+F(trib)+' por ano</b>.'];
+        if(cr>0) fr.push('Como parte do incentivo vai para implantação ou expansão e a empresa está habilitada na Receita, ela recupera <b>'+F(cr)+'</b> em crédito. O custo líquido fica em <b>'+F(liq)+' por ano</b>.');
+        else fr.push('Sem a habilitação na Receita, a empresa não recupera o crédito de 25% sobre a parte de implantação e expansão.');
+        if(eco>0) fr.push('Há uma discussão na Justiça que, se vencer, baixa esse custo para '+F(tese)+': <b>'+F(eco)+' a menos por ano</b>.');
+        var ac=[]; if(!(cr>0)) ac.push('Peça a habilitação na Receita Federal: sem ela, o crédito de 25% se perde.');
+        ac.push('Coloque esse custo no planejamento do ano: ele sai do caixa todo mês.'); if(eco>0) ac.push('Avalie com um advogado tributarista se vale entrar com a discussão.');
+        return {t:'Incentivo de ICMS: quanto ele custa agora', f:fr, a:ac};
+      }},
+      calcularExport:{ pagina:'export', depoisDe:'kpi-export', texto:function(r,ent,F){
+        var cr=+r.credito_anual_gerado, sal=+r.saldo_acumulado_corrigido, pot=+r.potencial_total;
+        if(!(+r.receita>0)) return null;
+        var fr=['Exportar <b>não paga</b> o imposto novo, e o imposto pago nas compras <b>volta como crédito</b>: cerca de <b>'+F(cr)+' por ano</b>, que pode ser pedido em dinheiro.'];
+        if(sal>0) fr.push('Somando o saldo antigo de PIS/COFINS corrigido ('+F(sal)+'), são <b>'+F(pot)+'</b> a recuperar no primeiro ano.');
+        return {t:'Exportação: o crédito que vira dinheiro', f:fr,
+          a:['Peça o ressarcimento a cada apuração: crédito parado é caixa parado.','Mantenha as notas de compra em ordem: o crédito depende delas.','Use esse dinheiro no planejamento de caixa (Fluxo de Caixa).']};
+      }},
+      calcularIND07:{ pagina:'ind07', depoisDe:'kpi-ind07', texto:function(r,ent,F){
+        var v=+r.valor_aduaneiro, eco=+r.economia_total, ii=+r.ii_evitado, cas=+r.cascata_icms_evitada, pct=+r.economia_pct_cif;
+        if(!(v>0)) return null;
+        return {t:'Máquina importada: o Ex-Tarifário', f:['Se a máquina de <b>'+F(v)+'</b> não tem similar fabricado no Brasil, o Ex-Tarifário zera o Imposto de Importação.',
+                  'A economia é de <b>'+F(eco)+'</b>, '+pct.toLocaleString('pt-BR',{maximumFractionDigits:1})+'% do valor do bem: '+F(ii)+' de Imposto de Importação e mais '+F(cas)+' de ICMS que deixa de incidir sobre ele.'],
+          a:['Peça o Ex-Tarifário antes de fechar a compra: o pedido leva de 60 a 120 dias.','Confira com o despachante se já existe Ex-Tarifário para o código (NCM) da máquina.']};
+      }},
+      calcularAGRO08:{ pagina:'agro08', depoisDe:'kpi-agro08', texto:function(r,ent,F){
+        var m=+r.itcmd_base_mercado, h=+r.itcmd_base_historica, c=+r.custo_de_esperar, pat=+r.patrimonio_mercado, her=+r.herdeiros||+ent.herdeiros||1, div=+r.economia_da_divisao;
+        if(!(pat>0)) return null;
+        var fr=['A terra vale cerca de <b>'+F(pat)+'</b> a preço de mercado. Na sucessão, o imposto (ITCMD) sobre esse valor fica em <b>'+F(m)+'</b>.',
+                'Pelo valor histórico, seria '+F(h)+'. A diferença, <b>'+F(c)+'</b>, é o que está em jogo ao planejar a sucessão com antecedência.'];
+        if(her>1 && div>0) fr.push('Com '+her+' herdeiros, cada parte cai numa faixa menor do imposto: são '+F(div)+' a menos do que se fosse um herdeiro só.');
+        return {t:'Sucessão rural: o custo de deixar para depois', f:fr,
+          a:['Converse com a família e com um advogado sobre o planejamento da sucessão.','Confira a tabela do ITCMD do seu estado antes de qualquer decisão.']};
       }}
     }
   };
