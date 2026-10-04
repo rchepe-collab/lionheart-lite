@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v922';</script>
+<body><script>window.LH_VERSAO='v923';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -71652,8 +71652,11 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
         ['agro03','Produtor PF × PJ Rural','agro'], ['agroSuper1','Decisor do Produtor','agro'],
         ['agro14sent','Sentinela do Teto · R$ 3,6 mi','agro'], ['agroSuper4','Ciclo de Caixa da Safra','agro'],
         ['agro01','Funrural · Receita × Folha','agro'], ['agro08','Sucessão Rural · custo de esperar','agro'],
-        ['agro12','Cooperativa · Ato × Terceiro','agro:coop'], ['agro09','Crédito Presumido do Produtor','agro:coop,leite,pecuaria'],
-        ['agro02','Barter · Insumo × Safra','agro:graos'], ['agro06','Custeio · CPR × LCA × Banco','agro:graos,horti'],
+        ['agro12','Cooperativa · Ato × Terceiro','agro:coop'],
+        /* v923 · FORA até validar no Excel Mestre o coeficiente do crédito presumido (tela manda 55 = "% do imposto";
+           o servidor usa como C de VO×C/(1+C) → crédito de 32% da compra). Para voltar, é só descomentar:
+           ['agro09','Crédito Presumido do Produtor','agro:coop,leite,pecuaria'], ['agro02','Barter · Insumo × Safra','agro:graos'], */
+        ['agro06','Custeio · CPR × LCA × Banco','agro:graos,horti'],
         ['agroSuper5','Momento Ótimo do Investimento','agro:graos,pecuaria,leite'] ]},
 
       { t:'Sua Conta', itens:[
@@ -71941,7 +71944,56 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
         if(her>1 && div>0) fr.push('Com '+her+' herdeiros, cada parte cai numa faixa menor do imposto: são '+F(div)+' a menos do que se fosse um herdeiro só.');
         return {t:'Sucessão rural: o custo de deixar para depois', f:fr,
           a:['Converse com a família e com um advogado sobre o planejamento da sucessão.','Confira a tabela do ITCMD do seu estado antes de qualquer decisão.']};
-      }}
+      }},
+      /* v923 · LOTE 5 — Dados da Empresa, DRE e Fluxo de Caixa. Não passam pelo servidor: o motor é o LH_FIN do
+         próprio app (o mesmo no CORE e no ITFE). A leitura chama LH_FIN.dre()/fluxo() e só aparece com faturamento. */
+      finDados:{ pagina:'fin_dados', antes:true, ancora:function(){ return document.querySelector('#page-fin_dados .input-card'); },
+        fonte:function(){ if(!window.LH_FIN) return null; var E=LH_FIN.get(), d=E.dados||{};
+          var ESS=[['fat','o faturamento do ano'],['regime','o regime de tributação'],['compras','as compras (mercadoria ou insumos)'],['pessoal','a folha de pagamento'],['prolab','o pró-labore'],['ocup','o aluguel e a ocupação'],['adm','as despesas administrativas'],['pRec','o prazo médio de recebimento'],['pPag','o prazo médio de pagamento'],['caixa0','o caixa de hoje']];
+          var vazio=function(k){ return d[k]==null || d[k]===''; };
+          var n=LH_FIN.campos.filter(function(k){ return !vazio(k); }).length, falta=ESS.filter(function(x){ return vazio(x[0]); }).map(function(x){ return x[1]; });
+          var nDoc=Object.keys(E.origem||{}).filter(function(k){ return !vazio(k) && (E.origem[k]||{}).tipo==='central'; }).length;
+          return { resultado:{ok:true, n:n, total:LH_FIN.campos.length, falta:falta, nDoc:nDoc}, quando:n+'|'+falta.length+'|'+nDoc }; },
+        texto:function(r,ent,F){
+          var fr=['Você preencheu <b>'+r.n+' de '+r.total+'</b> dados da empresa'+(r.nDoc?', '+r.nDoc+' deles lidos direto dos documentos':'')+'. O DRE e o fluxo de caixa de 2026 a 2033 saem daqui.'];
+          var ac=[];
+          if(r.falta.length){ fr.push('Para a conta sair confiável, ainda faltam: <b>'+r.falta.join(', ')+'</b>.');
+            ac.push('Comece por “Preencher pela Central”: o que veio das notas e dos documentos não precisa ser digitado.'); ac.push('O que você não souber, peça ao seu contador: são números que ele já tem.'); }
+          else { fr.push('O essencial está preenchido.'); ac.push('Veja o resultado ano a ano no DRE e o caixa no Fluxo de Caixa.'); }
+          return {t:'Seus dados: o que falta para a conta ficar certa', f:fr, a:ac};
+        }},
+      finDre:{ pagina:'fin_dre', ancora:function(){ return document.querySelector('#fin_dre_result .kpi-grid'); },
+        fonte:function(){ if(!window.LH_FIN) return null; var d=LH_FIN.get().dados||{}; if(!(+d.fat>0)) return null; var S=LH_FIN.dre();
+          return { resultado:{ok:true, S:S}, quando:S.map(function(y){ return Math.round(y.lucro); }).join('|')+'|'+Math.round(S[7].impostos) }; },
+        texto:function(r,ent,F){
+          var S=r.S, a=S[0], z=S[7], pior=S[0]; S.forEach(function(y){ if(y.lucro<pior.lucro) pior=y; });
+          var P=function(v){ return (+v||0).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'; }, d=z.lucro-a.lucro;
+          var fr=['Hoje a empresa lucra <b>'+F(a.lucro)+' por ano</b> (margem de '+P(a.margemPct)+'). Em 2033, já com o imposto novo, o lucro projetado é <b>'+F(z.lucro)+'</b> (margem de '+P(z.margemPct)+')'+(Math.abs(d)>=1?', '+F(Math.abs(d))+(d>0?' a mais':' a menos')+'.':'.'),
+                  'O imposto sobre as vendas vai de '+F(a.impostos)+' para <b>'+F(z.impostos)+'</b> por ano.'];
+          if(pior.lucro<0) fr.push('Atenção: em <b>'+pior.ano+'</b> a conta fecha com <b>prejuízo de '+F(-pior.lucro)+'</b>.');
+          else if(pior.ano!==2026) fr.push('O ano mais apertado é <b>'+pior.ano+'</b>, com lucro de '+F(pior.lucro)+'.');
+          if(z.pe!=null && z.pe>0) fr.push('Para não ter prejuízo em 2033, a empresa precisa vender pelo menos <b>'+F(z.pe)+'</b> no ano.');
+          var ac=[]; if(d<0 || pior.lucro<0){ ac.push('Reveja os preços: a Precificação em Massa mostra quanto cada produto precisa subir para manter a margem.'); ac.push('Reajuste primeiro os contratos antigos (Reprecificação de Contratos).'); }
+          ac.push('Confira com o seu contador os números dos Dados da Empresa: o DRE é tão bom quanto eles.'); ac.push('Lucro não é dinheiro no banco: veja o Fluxo de Caixa.');
+          return {t:'O resultado da empresa até 2033', f:fr, a:ac};
+        }},
+      finFluxo:{ pagina:'fin_fluxo', ancora:function(){ return document.querySelector('#fin_fluxo_result .kpi-grid'); },
+        fonte:function(){ if(!window.LH_FIN) return null; var d=LH_FIN.get().dados||{}; if(!(+d.fat>0)) return null; var S=LH_FIN.fluxo();
+          return { resultado:{ok:true, S:S, K:S.capital}, quando:S.map(function(y){ return Math.round(y.saldo); }).join('|')+'|'+Math.round((S.capital||{}).falta||0) }; },
+        texto:function(r,ent,F){
+          var S=r.S, K=r.K||{}, a=S[0], z=S[7], pior=S[0], pm=S[0]; S.forEach(function(y){ if(y.saldo<pior.saldo) pior=y; if(y.piorMes.saldo<pm.piorMes.saldo) pm=y; });
+          var MES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+          var fr=['Somando os oito anos, o caixa chega a 2033 com <b>'+F(z.saldo)+'</b>.'];
+          if(pior.saldo<0) fr.push('O ano mais apertado é <b>'+pior.ano+'</b>: o saldo fica <b>negativo em '+F(-pior.saldo)+'</b>.');
+          else fr.push('O ano mais apertado é '+pior.ano+', com saldo de '+F(pior.saldo)+(K.falta>0?'.':': o caixa aguenta a transição.'));
+          if(pm.piorMes && pm.piorMes.saldo<pior.saldo) fr.push('O mês mais difícil é '+MES[pm.piorMes.mes-1]+' de '+pm.ano+', com '+F(pm.piorMes.saldo)+'.');
+          if(z.ncg>a.ncg) fr.push('O dinheiro parado no giro (estoque e prazos'+(z.ncgSplit>0?', mais o que o split payment retém':'')+') vai de '+F(a.ncg)+' para <b>'+F(z.ncg)+'</b>.');
+          var ac=[];
+          if(K.falta>0){ fr.push('Para não ficar abaixo do caixa mínimo, a empresa precisa de <b>'+F(K.falta)+'</b> de reforço de caixa '+(K.quando.ano<=2026?'já em 2026':'até '+MES[K.quando.mes-1]+' de '+K.quando.ano)+'. Se vier de empréstimo'+(K.juros?' a '+K.juros+'% ao ano':'')+', custa cerca de '+F(K.custo)+' até 2033.');
+            ac.push('Negocie a linha de crédito agora, antes de precisar: com caixa no limite, o banco cobra mais.'); }
+          ac.push('Encurtar o prazo de recebimento é o que mais solta caixa.'); ac.push('Combine com os sócios quanto do lucro sai a cada ano: a distribuição pesa no saldo.');
+          return {t:'O caixa da empresa até 2033', f:fr, a:ac};
+        }}
     }
   };
 
@@ -72359,6 +72411,12 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     var temDono=!!PAG_DONO[pg];
     /* v921 · onde há cartão do dono, a leitura do contador (recs-<pg>, com base legal) sai de cena */
     if(temDono){ var _rc=document.getElementById('recs-'+pg); if(_rc) _rc.classList.add('pcp-tec'); }
+    /* v923 · DRE e Fluxo: as dobras de método e a leitura setorial (com artigos de lei) são do contador */
+    if(temDono && /^fin_(dre|fluxo)$/.test(pg)){
+      Array.prototype.forEach.call(P.querySelectorAll('.pm-dobra'),function(dv){ var hd=dv.firstElementChild; if(hd && /Como ler este|Premissas desta conta/.test(hd.textContent||'')) dv.classList.add('pcp-tec'); });
+      Array.prototype.forEach.call(P.querySelectorAll('h3'),function(h){ if(!/^O que o DRE diz/.test((h.textContent||'').trim())) return; h.classList.add('pcp-tec');
+        for(var e=h.nextElementSibling; e && e.tagName==='DIV' && /border-left/.test(e.getAttribute('style')||''); e=e.nextElementSibling) e.classList.add('pcp-tec'); });
+    }
     if(PRODUTO.tecnico){
       Array.prototype.forEach.call(P.querySelectorAll('summary'),function(sm){
         var t=(sm.textContent||'').trim(), d=sm.closest('details'); if(!d || d.classList.contains('pcp-tec')) return;

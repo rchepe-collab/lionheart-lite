@@ -46,7 +46,7 @@ setTimeout(() => {
     comercio: ['classif', 'raiox360', 'simnotas', 'antecip', 'medicamento', 'combustivel', 'difal', 'import'],
     servicos: ['fatorR', 'art127', 'bares', 'hotel', 'hotelev', 'agviagem', 'transpax', 'logcarga', 'antecip'],
     industria: ['ind01', 'ind06', 'ind08', 'ind11', 'ind09', 'ind02', 'export', 'capex', 'ind07', 'seletivo'],
-    agro: ['agro03', 'agroSuper1', 'agro14sent', 'agroSuper4', 'agro01', 'agro08', 'agro12', 'agro09', 'agro02', 'agro06', 'agroSuper5'] };
+    agro: ['agro03', 'agroSuper1', 'agro14sent', 'agroSuper4', 'agro01', 'agro08', 'agro12', 'agro06', 'agroSuper5'] };   /* v923: agro09 e agro02 fora até validar o crédito presumido */
   const todosSeg = [...new Set([].concat(...Object.values(segIds)))];
   ex('sem segmento escolhido, mostra todas as do segmento', todosSeg.every((i) => ids().includes(i)), todosSeg.filter((i) => !ids().includes(i)).join(','));
   for (const k of Object.keys(segIds)) {
@@ -55,14 +55,16 @@ setTimeout(() => {
     ex('segmento ' + k + ' (sem sub-ramo): as ' + segIds[k].length + ' do segmento, nenhuma de outro', segIds[k].every((i) => v.includes(i)) && outros.every((i) => !v.includes(i)), outros.filter((i) => v.includes(i)).join(',') + ' / falta ' + segIds[k].filter((i) => !v.includes(i)).join(','));
   }
   const SUB = [
-    ['agro', 'coop', ['agro12', 'agro09', 'agro01', 'agro08'], ['agro02', 'agro06']],
-    ['agro', 'graos', ['agro02', 'agro06', 'agroSuper5', 'agro01'], ['agro12']],
+    ['agro', 'coop', ['agro12', 'agro01', 'agro08'], ['agro06']],
+    ['agro', 'graos', ['agro06', 'agroSuper5', 'agro01'], ['agro12']],
     ['industria', 'incentivo', ['ind09', 'ind02', 'ind01'], ['export', 'capex', 'seletivo']],
     ['industria', 'exporta', ['export', 'ind01'], ['ind09', 'capex']],
     ['comercio', 'farmacia', ['medicamento', 'classif'], ['combustivel', 'difal', 'import']],
     ['comercio', 'posto', ['combustivel'], ['medicamento']],
     ['servicos', 'turismo', ['hotel', 'hotelev', 'agviagem', 'antecip'], ['bares', 'fatorR', 'logcarga']],
     ['servicos', 'liberal', ['fatorR', 'art127'], ['hotel', 'bares']] ];
+  E.LH_EMP_SEGMENTO('agro'); E.LH_EMP_SUBRAMO('');
+  ex('v923: Crédito Presumido do Produtor e Barter fora do menu do ITFE', !ids().includes('agro09') && !ids().includes('agro02'));
   for (const [sg, sb, tem, nao] of SUB) {
     E.LH_EMP_SEGMENTO(sg); E.LH_EMP_SUBRAMO(sb);
     const v = ids();

@@ -1,4 +1,4 @@
-/* PROVA v917/v919/v921/v922 — LEITURA DO DONO no ITFE (empresario.html). Lote 1: Dentro × Híbrido, Split, Regime Ótimo.
+/* PROVA v917/v919/v921/v922/v923 — LEITURA DO DONO no ITFE (empresario.html). Lote 1: Dentro × Híbrido, Split, Regime Ótimo.
    Lote 2 (v919): NCG, Reprecificação de Contratos, Alíquota efetiva, Comprar do Simples × regular, Pró-labore,
    Dividendos e Formação de Preço (item, cálculo local — lê LH_PMI_ULTIMO).
    O servidor é simulado com resultados reais do Supabase (provas/fixtures_dono.json, tirados de
@@ -106,6 +106,36 @@ let E2 = null;
   ex('agro01: com folha baixa, o cartão aponta a folha', /folha sai <b>R\$ 20\.900 mais barata/.test(h2) && /janeiro/.test(h2));
   h2 = troca('calcularIND09', 'ind09', { compensacao_fundo: 0, perda_liquida: 3000000, custo_2029: 1597500 });
   ex('ind09: sem cobertura do fundo, o cartão diz que nada é compensado', /nada disso é compensado/.test(h2) && /R\$ 1\.597\.500/.test(h2));
+  console.log('--- lote 5: Dados da Empresa, DRE e Fluxo (v923) ---');
+  E.abrirPagina('fin_dados'); await espera(800);
+  let hc = (E.document.getElementById('pcp-dono-fin_dados') || {}).innerHTML || '';
+  ex('Dados: cartão aparece ANTES do formulário', !!E.document.getElementById('pcp-dono-fin_dados') && E.document.getElementById('pcp-dono-fin_dados').nextElementSibling === E.document.querySelector('#page-fin_dados .input-card'));
+  { const D0 = E.LH_FIN.get().dados, vz = (k) => D0[k] == null || D0[k] === '', n0 = E.LH_FIN.campos.filter((k) => !vz(k)).length;   /* telas já rodadas nesta prova preenchem alguns campos */
+    ex('Dados incompleto: conta certa de campos e lista o que falta', hc.includes('<b>' + n0 + ' de ' + E.LH_FIN.campos.length + '</b>') && (!vz('pPag') ? true : /prazo médio de pagamento/.test(hc)) && (!vz('pessoal') ? true : /folha de pagamento/.test(hc)) && /ainda faltam/.test(hc), hc.replace(/<[^>]+>/g, '').slice(0, 220)); }
+  const DADOS = { fat: 4800000, regime: 'presumido', compras: 2400000, pessoal: 720000, prolab: 120000, ocup: 180000, adm: 150000, cresc: 5, infl: 4, pRec: 45, pPag: 30, vista: 20, estoque: 40, caixa0: 150000, distrib: 50 };
+  E.LH_FIN.set(DADOS, { tipo: 'digitado' }); C.LH_FIN.set(DADOS, { tipo: 'digitado' });
+  E.abrirPagina('pcp-bemvindo'); E.abrirPagina('fin_dados'); await espera(800);
+  hc = E.document.getElementById('pcp-dono-fin_dados').innerHTML;
+  ex('Dados completo: "o essencial está preenchido"', /essencial está preenchido/.test(hc) && !/ainda faltam/.test(hc));
+  const FR = (v) => 'R$ ' + Math.round(+v || 0).toLocaleString('pt-BR');   /* o mesmo formato do cartão */
+  for (const [pg, fn] of [['fin_dre', 'renderDre'], ['fin_fluxo', 'renderFluxo']]) {
+    E.abrirPagina(pg); E.LH_FIN[fn](); C.abrirPagina(pg); C.LH_FIN[fn](); await espera(1500);
+    const card = E.document.getElementById('pcp-dono-' + pg), h = card ? card.innerHTML : '';
+    ex(pg + ': cartão logo depois dos números', !!card && card.previousElementSibling && card.previousElementSibling.classList.contains('kpi-grid'));
+    if (pg === 'fin_dre') { const S = E.LH_FIN.dre();
+      ex('fin_dre: lucro de hoje e de 2033 iguais aos do motor', h.includes(FR(S[0].lucro)) && h.includes(FR(S[7].lucro)), h.replace(/<[^>]+>/g, '').slice(0, 200));
+      ex('fin_dre: imposto 2033 e ponto de equilíbrio do motor', h.includes(FR(S[7].impostos)) && h.includes(FR(S[7].pe)));
+    } else { const S = E.LH_FIN.fluxo();
+      ex('fin_fluxo: saldo de 2033 igual ao do motor', h.includes(FR(S[7].saldo)), h.replace(/<[^>]+>/g, '').slice(0, 200));
+      ex('fin_fluxo: capital necessário do motor, sem dizer que "aguenta"', S.capital.falta > 0 ? (h.includes(FR(S.capital.falta)) && !/aguenta/.test(h)) : /aguenta/.test(h));
+    }
+    const P = E.document.getElementById('page-' + pg);
+    const dob = [...P.querySelectorAll('.pm-dobra')].filter((dv) => /Como ler este|Premissas desta conta/.test(dv.textContent));
+    ex(pg + ': "Como ler" e "Premissas" escondidos', dob.length >= 2 && dob.every((dv) => !visivel(E, dv)));
+    if (pg === 'fin_dre') { const h3 = [...P.querySelectorAll('h3')].find((x) => /^O que o DRE diz/.test(x.textContent.trim())); ex('fin_dre: leitura setorial do contador escondida', !h3 || !visivel(E, h3)); }
+    const CP = C.document.getElementById('page-' + pg);
+    ex(pg + ': no CORE nada muda', !C.document.getElementById('pcp-dono-' + pg) && !CP.querySelector('.pcp-tec') && [...CP.querySelectorAll('.pm-dobra')].some((dv) => /Como ler este/.test(dv.textContent)));
+  }
   ex('agro09 e agro02: sem cartão até resolver o coeficiente do crédito presumido', !E.LH_PRODUTO.dono.calcularAGRO09 && !E.LH_PRODUTO.dono.calcularAGRO02);
   console.log('--- tema claro legível (v921) ---');
   E.Element.prototype.getClientRects = function () { return [{ width: 1, height: 1 }]; };   /* o jsdom não faz layout */
