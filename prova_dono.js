@@ -1,4 +1,4 @@
-/* PROVA v917/v919 — LEITURA DO DONO no ITFE (empresario.html). Lote 1: Dentro × Híbrido, Split, Regime Ótimo.
+/* PROVA v917/v919/v921 — LEITURA DO DONO no ITFE (empresario.html). Lote 1: Dentro × Híbrido, Split, Regime Ótimo.
    Lote 2 (v919): NCG, Reprecificação de Contratos, Alíquota efetiva, Comprar do Simples × regular, Pró-labore,
    Dividendos e Formação de Preço (item, cálculo local — lê LH_PMI_ULTIMO).
    O servidor é simulado com resultados reais do Supabase (provas/fixtures_dono.json, tirados de
@@ -42,7 +42,14 @@ const CASOS = [
   { pg: 'calc03', kpis: 'kpi-calc03', rodar: (w) => { set(w, 'calc03_compra_sn', 50000); set(w, 'calc03_compra_lp', 50000); w.calcularCalc03(); }, deve: [/R\$ 47\.410/, /R\$ 45\.820/, /R\$ 1\.590 mais barato por m[eê]s/, /R\$ 48\.32\d/], semPct: true },
   { pg: 'c08', antes: 'res-c08', rodar: (w) => { set(w, 'c08_renda', 30000); set(w, 'c08_lucro', 40000); w.calcularC08(); }, deve: [/pró-labore de <b>R\$ 1\.621<\/b> \(o mínimo legal\)/, /R\$ 8\.400/, /Fator R/] },
   { pg: 'c06', kpis: 'kpi-c06', rodar: (w) => { set(w, 'c06_prolabore', 10000); set(w, 'c06_dividendo', 30000); w.calcularC06(); }, deve: [/R\$ 2\.517/, /R\$ 37\.483/, /abaixo de R\$ 50 mil/] },
-  { pg: 'precmassa', abrir: 'formpreco', grade: true, rodar: (w) => { w.lhPmItemExemplo(); w.lhPmItem(); }, deve: [/R\$ 100,00/, /R\$ 100,38/, /perde <b>R\$ 0,30 por item/], semExemplo: true }
+  { pg: 'precmassa', abrir: 'formpreco', grade: true, rodar: (w) => { w.lhPmItemExemplo(); w.lhPmItem(); }, deve: [/R\$ 100,00/, /R\$ 100,38/, /perde <b>R\$ 0,30 por item/], semExemplo: true },
+  /* v921 · lote 3 (Funrural, Cooperativa, Fundopem, CAPEX, Farmácia, Posto) */
+  { pg: 'agro01', kpis: 'kpi-agro01', recs: true, rodar: (w) => { set(w, 'agro01_receita', 3000000); set(w, 'agro01_folha', 240000); w.calcularAGRO01(); }, deve: [/R\$ 48\.900 por ano/, /R\$ 58\.800/, /R\$ 9\.900 a menos por ano/, /R\$ 195\.000 por ano/, /STF/] },
+  { pg: 'agro12', kpis: 'kpi-agro12', recs: true, rodar: (w) => { set(w, 'agro12_ato', 30000000); set(w, 'agro12_terc', 10000000); w.calcularAGRO12(); }, deve: [/R\$ 284\.000/, /R\$ 1\.208\.000/, /R\$ 924\.000 por ano/, /R\$ 352\.000<\/b> em 2027/, /imposto novo é <b>zero/] },
+  { pg: 'ind09', kpis: 'kpi-ind09', recs: true, rodar: (w) => { w.calcularIND09(); }, deve: [/R\$ 3\.000\.000 por ano/, /deixa de receber <b>R\$ 3\.000\.000/, /habilite no prazo/, /R\$ 1\.297\.500 por ano/] },
+  { pg: 'capex', kpis: 'kpi-capex', recs: true, rodar: (w) => { set(w, 'capex_valor', 100000); w.calcularCapex(); }, deve: [/R\$ 9\.5(59|60)/, /R\$ 90\.44\d/, /em 2029/, /volta para a empresa/] },
+  { pg: 'medicamento', kpis: 'kpi-medicamento', recs: true, rodar: (w) => { set(w, 'med_sub', 'medicamento_geral'); set(w, 'med_fat', 100000); set(w, 'med_atual', 17.86); set(w, 'med_cred', 30); w.calcularMedicamento(); }, deve: [/R\$ 17\.860/, /R\$ 7\.420 por ano/, /R\$ 10\.440 a menos/, /redução de 60%/] },
+  { pg: 'combustivel', kpis: 'kpi-combustivel', recs: true, rodar: (w) => { set(w, 'comb_vol', 5000000); set(w, 'comb_novo', 2.2); set(w, 'comb_atual', 2.01); w.calcularCombustivel(); }, deve: [/uma vez só/, /R\$ 10\.050\.000/, /R\$ 11\.000\.000/, /R\$ 950\.000 a mais/, /R\$ 2,20 por litro/, /estimativa/] }
 ];
 let E2 = null;
 
@@ -67,6 +74,7 @@ let E2 = null;
     const sums = [...P.querySelectorAll('summary')];
     const tec = sums.filter((s) => /Base legal|Mem[oó]ria de c[aá]lculo|Viabilidade|Parecer|An[aá]lise de Resultados/i.test(s.textContent));
     ex(k.pg + ': técnico e análise do contador escondidos (' + tec.length + ' blocos)', tec.every((s) => !visivel(E, s)), tec.filter((s) => visivel(E, s)).map((s) => s.textContent.trim().slice(0, 30)).join('|'));
+    if (k.recs) { const rc = d.getElementById('recs-' + k.pg); ex(k.pg + ': a leitura do contador (com base legal) sai de cena', !rc || !visivel(E, rc)); }
     if (k.semPct) ex(k.pg + ': sem % de desconto que contradiga o cartão da tela', !/% de desconto/.test(h));
     if (k.semExemplo) ex(k.pg + ': exemplo do item sem Fecomércio', !/fecom/i.test((d.getElementById('pmi_desc') || {}).value || '') && !/fecom/i.test(h));
     ex(k.pg + ': nenhuma menção a Fecomércio ou CORE visível', !/Fecom[eé]rcio|\bno CORE\b|\bdo CORE\b|Lionheart CORE/.test(textoVisivel(E, P)));
@@ -80,5 +88,15 @@ let E2 = null;
   ex('dxh: se ficar dentro vence, o cartão manda não fazer nada', /Não precisa fazer nada/.test(E.document.getElementById('pcp-dono-dxh').innerHTML));
   E.LH_PONTE.ultimo.dxhCalc = { resultado: { ok: false }, quando: 'erro' }; E.LH_DONO_ATUALIZAR('dxh');
   ex('dxh: resultado com erro some com o cartão (nunca texto sem número)', !E.document.getElementById('pcp-dono-dxh'));
+  console.log('--- lote 3: os outros caminhos ---');
+  const troca = (fn, pg, mut) => { const u = E.LH_PONTE.ultimo[fn]; u.resultado = Object.assign(JSON.parse(JSON.stringify(u.resultado)), mut); u.quando = 'teste-' + pg; E.LH_DONO_ATUALIZAR(pg); return E.document.getElementById('pcp-dono-' + pg).innerHTML; };
+  let h2 = troca('calcularCapex', 'capex', { regime: 'simples', credito_apropriado: 0, custo_liquido_do_bem: 100000, credito_perdido_no_simples: 9559.56 });
+  ex('capex: no Simples, o cartão diz que o imposto não volta', /não volta/.test(h2) && /Dentro × Híbrido/.test(h2) && !/volta para a empresa/.test(h2));
+  h2 = troca('calcularAGRO12', 'agro12', { opcao_art271_exercida: false, ibs_cbs_ato_cooperativo: 1056000 });
+  ex('agro12: sem a opção, o cartão mostra o custo e manda levar à assembleia', /R\$ 1\.056\.000/.test(h2) && /assembleia/.test(h2));
+  h2 = troca('calcularAGRO01', 'agro01', { opcao_folha: { total: 28000 }, economia_anual: 20900, vence: 'OPTAR PELA FOLHA' });
+  ex('agro01: com folha baixa, o cartão aponta a folha', /folha sai <b>R\$ 20\.900 mais barata/.test(h2) && /janeiro/.test(h2));
+  h2 = troca('calcularIND09', 'ind09', { compensacao_fundo: 0, perda_liquida: 3000000, custo_2029: 1597500 });
+  ex('ind09: sem cobertura do fundo, o cartão diz que nada é compensado', /nada disso é compensado/.test(h2) && /R\$ 1\.597\.500/.test(h2));
   console.log(falhou ? '\nRESULTADO: ' + falhou + ' reprovada(s)' : '\nRESULTADO: tudo aprovado'); process.exit(falhou ? 1 : 0);
 })();

@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v920';</script>
+<body><script>window.LH_VERSAO='v921';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -23506,6 +23506,7 @@ function calcularCombustivel(){
     var _thd='<thead><tr><th>Ano</th><th>Novo (ad rem)</th><th>Velho (ICMS-comb)</th><th>Total</th><th>Var. vs Hoje</th><th>Resultado</th></tr></thead>';
     var _tbl=_t.closest('table'); if(_tbl){ _tbl.innerHTML=_thd+'<tbody id="tbody-combustivel">'+_rows+'</tbody>'; } else { _t.innerHTML=_rows; }
   } }catch(e){}
+  try{ window.LH_COMB_ULTIMO={ resultado:{ok:true, prod:prod, vol:vol, novoL:novoL, atualL:atualL, totalNovo:totalNovo, totalAtual:totalAtual}, quando:String(Date.now()) }; }catch(_e){}   /* v921 · só leitura: a leitura do dono do ITFE lê daqui */
   document.getElementById('res-combustivel').classList.add('visible');
   try{ if(window.setMotorResultado) setMotorResultado('combustivel',{tipo:alivia?'economia_anual':'custo_imposto',valor:Math.abs(varVs),valorAnual:Math.abs(varVs),contexto:'Combustível '+prod,descricao:'Combustível '+prod+': novo '+fmtR(totalNovo)+' vs atual '+fmtR(totalAtual)+'.',recomendacao:'Aguardar alíquota R$/L da regulamentação; revisar precificação na bomba.'}); }catch(e){}
   mostrarToast('✓ Impacto do combustível calculado','success');
@@ -71790,6 +71791,85 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
            contradizer o cartão ao lado */
         return {t:'Qual regime paga menos imposto', f:frases,
           a:['Folha, pró-labore e custos mudam esta conta: confirme esses números com o seu contador antes de trocar de regime.','A troca de regime vale a partir de janeiro — a decisão precisa estar tomada até o fim do ano.']};
+      }},
+      /* v921 · LOTE 3 — Funrural, Cooperativa, Fundopem, CAPEX, Farmácia (medicamentos) e Posto (combustível) */
+      calcularAGRO01:{ pagina:'agro01', depoisDe:'kpi-agro01', texto:function(r,ent,F){
+        var rec=+((r.sobre_receita||{}).total), fol=+((r.opcao_folha||{}).total), eq=+r.folha_de_equilibrio, eco=Math.abs(rec-fol);
+        if(!(rec>0)) return null;
+        var fr=['Recolhendo o Funrural sobre a venda da produção, você paga <b>'+F(rec)+' por ano</b>. Pela folha de pagamento, pagaria <b>'+F(fol)+'</b>.'], ac=[];
+        if(rec<=fol){
+          fr.push('Fique na receita: são <b>'+F(eco)+' a menos por ano</b>.');
+          ac.push('Não precisa fazer nada: sem pedir a opção pela folha, o recolhimento continua sobre a receita.');
+        } else {
+          fr.push('A folha sai <b>'+F(eco)+' mais barata por ano</b>.');
+          ac.push('A opção pela folha é feita no começo do ano e vale para o ano inteiro: combine com o seu contador já na folha de janeiro.');
+        }
+        if(eq>0) fr.push('O ponto de virada é uma folha de <b>'+F(eq)+' por ano</b>: acima disso, a receita compensa; abaixo, a folha.');
+        if(r.alerta_lc224) fr.push('A conta já inclui o aumento de 2026 sobre o Funrural, que está em discussão no STF. Se ele cair, o valor sobre a receita diminui.');
+        ac.push('Refaça a conta em dezembro, com a venda e a folha previstas para o ano seguinte.');
+        return {t:'Funrural: receita ou folha', f:fr, a:ac};
+      }},
+      calcularAGRO12:{ pagina:'agro12', depoisDe:'kpi-agro12', texto:function(r,ent,F){
+        var com=+r.irpj_csll_com_segregacao, sem=+r.irpj_csll_sem_segregacao, val=+r.valor_da_segregacao_contabil, ter=+r.ibs_cbs_terceiros, ato=+r.ibs_cbs_ato_cooperativo, ano=r.ano||ent.ano||2027;
+        if(!(sem>0)) return null;
+        var fr=['Separando na contabilidade o que é negócio com os associados (ato cooperativo) do que é negócio com terceiros, a cooperativa paga <b>'+F(com)+'</b> de IR e CSLL por ano. Sem essa separação, pagaria <b>'+F(sem)+'</b>.',
+                'A separação bem feita vale <b>'+F(val)+' por ano</b>.',
+                'Nos negócios com terceiros entra o imposto novo: <b>'+F(ter)+'</b> em '+ano+'. Esse valor sobe a cada ano até 2033.'];
+        var ac=[];
+        if(ato>0){ fr.push('Sobre o ato cooperativo, a cooperativa pagaria <b>'+F(ato)+'</b> de imposto novo, porque a opção pela alíquota zero não foi feita.');
+          ac.push('Leve a opção pela alíquota zero à assembleia: ela é aprovada em ata e comunicada no ano anterior ao que vai valer.'); }
+        else { fr.push('Sobre o ato cooperativo, o imposto novo é <b>zero</b>, porque a cooperativa fez a opção pela alíquota zero.');
+          ac.push('Confirme que a opção pela alíquota zero está aprovada em ata e comunicada no ano anterior ao que vai valer.'); }
+        ac.push('Peça à contabilidade a separação mensal entre ato cooperativo e terceiros: é ela que garante os '+F(val)+'.');
+        ac.push('Considere o imposto que sobe nos negócios com terceiros ao negociar esses preços.');
+        return {t:'Cooperativa: onde está o dinheiro', f:fr, a:ac};
+      }},
+      calcularIND09:{ pagina:'ind09', depoisDe:'kpi-ind09', texto:function(r,ent,F){
+        var ben=+r.beneficio_anual, perda=(r.perda_total!=null?+r.perda_total:ben*(0.1+0.2+0.3+0.4)), comp=+r.compensacao_fundo, liq=+r.perda_liquida, trib=+r.tributacao_lei_14789, c29=+r.custo_2029;
+        if(!(ben>0)) return null;   /* "perda" acima é a mesma conta do cartão "Perda acumulada" da tela */
+        var fr=['O seu incentivo de ICMS de <b>'+F(ben)+' por ano</b> cai 10% ao ano a partir de 2029 e acaba em 2033. Somando 2029 a 2032, a empresa deixa de receber <b>'+F(perda)+'</b>.'];
+        if(comp>0) fr.push('O fundo de compensação do governo federal cobre <b>'+F(comp)+'</b> disso'+(liq>0?', e sobram <b>'+F(liq)+'</b> de perda que ninguém repõe.':', desde que a empresa se habilite no prazo.'));
+        else fr.push('Do jeito que está, nada disso é compensado: a perda fica em <b>'+F(liq)+'</b>.');
+        if(trib>0) fr.push('Além disso, o incentivo hoje paga IR e CSLL: cerca de <b>'+F(trib)+' por ano</b>, que o fundo não devolve. Somando tudo, o custo real de 2029 fica em <b>'+F(c29)+'</b>.');
+        return {t:'Fundopem: quanto do incentivo você perde', f:fr,
+          a:['Confirme com o seu contador se o incentivo pode ser compensado: ele precisa ter sido concedido até 31/05/2023, com prazo e contrapartidas.',
+             'Não perca o prazo de habilitação no fundo: sem ela, não há compensação.',
+             'Coloque a queda do incentivo no planejamento de preço e de caixa de 2029 em diante.']};
+      }},
+      calcularCapex:{ pagina:'capex', depoisDe:'kpi-capex', texto:function(r,ent,F){
+        var v=+r.valor_investimento, emb=+r.imposto_embutido, cred=+r.credito_apropriado, liq=+r.custo_liquido_do_bem, perd=+r.credito_perdido_no_simples, ano=r.ano||ent.ano;
+        if(!(v>0)) return null;
+        if(r.regime==='simples' || perd>0){
+          return {t:'Investimento: quanto do imposto volta', f:['No preço de '+F(v)+' que você paga pelo bem, <b>'+F(emb)+'</b> é imposto.','No Simples, esse imposto <b>não volta</b>: o bem custa os '+F(v)+' inteiros.'],
+            a:['Antes de um investimento grande, simule o Simples Híbrido em Dentro × Híbrido: fora do DAS, esse imposto volta como crédito.','Converse com o seu contador sobre o melhor momento da compra.']};
+        }
+        var fr=['Comprando um bem de '+F(v)+(ano?' em '+ano:'')+', <b>'+F(cred)+'</b> do preço é imposto que volta para a empresa como crédito, de uma vez, no mês da compra.',
+                'O custo real do bem cai para <b>'+F(liq)+'</b>.'];
+        if(ano && +ano<2033) fr.push('Até 2033 a alíquota sobe a cada ano: o crédito cresce, mas o preço do bem também.');
+        return {t:'Investimento: quanto do imposto volta', f:fr,
+          a:['Guarde a nota fiscal do bem e confira com o seu contador se o crédito entrou no mês da compra.','Use o custo real ('+F(liq)+') para calcular o retorno do investimento.']};
+      }},
+      calcularMedicamento:{ pagina:'medicamento', depoisDe:'kpi-medicamento', texto:function(r,ent,F){
+        var hoje=+r.carga_atual, n=+r.imposto_2033, d=n-hoje, fat=+(r.receita_total||r.base_valor), red=+r.reducao_pct;
+        if(!(fat>0)) return null;
+        var fr=['Para um faturamento de <b>'+F(fat)+' por ano</b> em '+(r.regime?String(r.regime).toLowerCase():'medicamentos')+', o imposto sobre a venda hoje é <b>'+F(hoje)+'</b>.',
+                'Em 2033, com a regra nova'+(red>0&&red<100?' (redução de '+red.toLocaleString('pt-BR')+'% no imposto)':'')+', passa a <b>'+F(n)+' por ano</b>: '+(d<=0?'<b>'+F(-d)+' a menos</b>.':'<b>'+F(d)+' a mais</b>.')];
+        if(r.subtipo==='fora_da_lista') fr.push('Atenção: fora da lista, o produto perde a redução e paga o imposto cheio.');
+        var ac=['A redução depende de cada produto estar na lista certa: confira a classificação no Classificador em Massa e no Auditor de Cadastro.',
+                'Decida o que fazer com a diferença, se vira margem ou preço mais competitivo: simule em Formação de Preço.'];
+        if(d>0) ac.push('Comece a ajustar os preços aos poucos, antes de 2033.');
+        return {t:'Medicamentos: quanto muda o seu imposto', f:fr, a:ac};
+      }},
+      lhCombustivel:{ pagina:'combustivel', depoisDe:'kpi-combustivel', fonte:function(){ return window.LH_COMB_ULTIMO||null; }, texto:function(r,ent,F){
+        if(!(+r.vol>0)) return null;
+        var F2=function(v){ return 'R$ '+(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+        var d=(+r.totalNovo)-(+r.totalAtual), nome={gasolina:'gasolina',diesel:'diesel',etanol:'etanol',glp:'GLP',gnv:'GNV'}[r.prod]||r.prod;
+        var fr=['No combustível, o imposto é cobrado <b>uma vez só</b>, no começo da cadeia (refinaria ou importador), em reais por litro. Ele já vem dentro do preço que o posto paga, e na revenda não é cobrado de novo.',
+                'Para '+(+r.vol).toLocaleString('pt-BR')+' litros de '+nome+' por ano, o imposto embutido hoje é <b>'+F(r.totalAtual)+'</b> ('+F2(r.atualL)+' por litro). Na regra nova, com a alíquota cheia de 2033: <b>'+F(r.totalNovo)+'</b> ('+F2(r.novoL)+' por litro), '+(d<=0?F(-d)+' a menos.':F(d)+' a mais.'),
+                'O valor por litro da regra nova ainda não foi definido oficialmente: a conta usa uma estimativa.'];
+        var ac=['Quando o valor oficial por litro for publicado, refaça esta conta.'];
+        ac.push(d>0?'Planeje o repasse no preço da bomba: o custo por litro tende a subir.':'Se o custo por litro cair, decida se vira margem ou preço na bomba.');
+        return {t:'Combustível: o imposto que vem no litro', f:fr, a:ac};
       }}
     }
   };
@@ -72198,6 +72278,8 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
   function limparPagina(pg){
     var P=document.getElementById('page-'+pg); if(!P) return;
     var temDono=!!PAG_DONO[pg];
+    /* v921 · onde há cartão do dono, a leitura do contador (recs-<pg>, com base legal) sai de cena */
+    if(temDono){ var _rc=document.getElementById('recs-'+pg); if(_rc) _rc.classList.add('pcp-tec'); }
     if(PRODUTO.tecnico){
       Array.prototype.forEach.call(P.querySelectorAll('summary'),function(sm){
         var t=(sm.textContent||'').trim(), d=sm.closest('details'); if(!d || d.classList.contains('pcp-tec')) return;
