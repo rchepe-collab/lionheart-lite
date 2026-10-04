@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v917';</script>
+<body><script>window.LH_VERSAO='v918';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -71597,6 +71597,7 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
     marca:'Lionheart ITFE',
     frase:'A Reforma Tributária na linguagem do dono: quanto muda o seu imposto, o seu preço e o seu caixa de 2026 a 2033 — e o que decidir em cada ano.',
     segmentos:{comercio:'Comércio', servicos:'Serviços', industria:'Indústria', agro:'Agro'},
+    recolhido:true,   /* v918 · o ITFE abre com os pilares recolhidos, como o CORE (pedido do Ricardo, 04/10) */
     extras:['precmassa'],
     pilares:[
       { t:'Aprendizado', itens:[ ['videos','Vídeos Tutoriais'] ]},
@@ -71931,6 +71932,7 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
 
   /* pilares abertos: são poucos itens, recolher só esconde o produto */
   function abrirPilares(){
+    if(PRODUTO.recolhido) return;   /* v918 · recolhido: fica como o CORE monta (todos fechados; o dono abre o que quiser) */
     var nav=document.querySelector('nav.nav-section'); if(!nav) return;
     Array.prototype.forEach.call(nav.querySelectorAll('.nav-cat-wrap'),function(w){
       var t=w.querySelector('.nav-group-title');

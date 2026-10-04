@@ -34,6 +34,8 @@ setTimeout(() => {
   const fora = ['n15', 'n16', 'sucessorio', 'transacao', 'prescricao', 'decisor', 'cr01', 'cr04', 'monofasico', 'ins', 'ind02', 'ind03', 'agro01', 'agro08', 'empresas', 'proposta', 'motor360', 'c10', 'radar', 'jornada', 'tour', 'basetecnica', 'glossario', 'conhecimento', 'perguntas'];
   ex('nada de advogado, recuperação de crédito ou escritório no menu', fora.every((i) => !ids().includes(i)), fora.filter((i) => ids().includes(i)).join(','));
   ex('nenhuma menção a Fecomércio no menu', !/fecom[eé]rcio/i.test(nav.textContent.replace(d.getElementById('pcp-oculto').textContent, '')));
+  const wraps = [...nav.querySelectorAll('.nav-cat-wrap')].filter((w) => { const t = w.querySelector('.nav-group-title'); return t && t.getAttribute('data-pcp') && visivel(E, t); });
+  ex('ITFE abre com os pilares recolhidos (' + wraps.length + ')', wraps.length >= 9 && wraps.every((w) => w.classList.contains('lh-collapsed')), wraps.filter((w) => !w.classList.contains('lh-collapsed')).map((w) => w.textContent.trim().slice(0, 20)).join('|'));
   ex('abre nas Boas-Vindas do ITFE', d.getElementById('page-pcp-bemvindo').classList.contains('active') && /INTELIGÊNCIA TRIBUTÁRIA E FINANCEIRA EMPRESARIAL/.test(d.getElementById('page-pcp-bemvindo').textContent));
   ex('Boas-Vindas pergunta o segmento (4 botões)', d.querySelectorAll('#pcp-segmentos button[data-seg]').length === 4);
   ex('tela de acesso diz ITFE, não CORE', /ITFE · Inteligência Tributária e Financeira Empresarial · Acesso/.test(d.getElementById('lh-login-produto').textContent));
