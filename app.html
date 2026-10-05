@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v924';</script>
+<body><script>window.LH_VERSAO='v925';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -11089,6 +11089,91 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
     <div id="planoLista"></div>
   </div>
 </div>
+<!-- v925 · ITFE etapa 3 (fim): Jornada do Empresário, Quadro Estratégico e Pedir dados ao contador -->
+<div id="page-jornadaemp" class="page">
+ <div style="max-width:1000px;margin:0 auto">
+  <h1 style="color:var(--gold2,#e0b93a);font-size:1.6rem;margin-bottom:4px">✧ Jornada do Empresário — sua vida na Reforma até 2033</h1>
+  <p style="color:#c4cdd8;line-height:1.6;margin-bottom:14px">Escolha o perfil da sua empresa e veja <b>quais preocupações e ferramentas importam em cada ano</b> da transição — de 2026 a 2033. Quanto mais quente a célula, mais aquela frente exige sua atenção naquele ano. É o mapa de <b>o que olhar primeiro</b>, e quando.</p>
+
+  <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:16px;margin-bottom:14px">
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="input-group"><label>Regime tributário</label>
+     <select id="je_regime" onchange="jeCompute()">
+      <option value="simples">Simples Nacional</option>
+      <option value="presumido">Lucro Presumido</option>
+      <option value="real" selected>Lucro Real</option>
+     </select></div>
+    <div class="input-group"><label>Porte</label>
+     <select id="je_porte" onchange="jeCompute()">
+      <option value="micro">Micro</option>
+      <option value="pequena">Pequena</option>
+      <option value="media" selected>Média</option>
+      <option value="grande">Grande</option>
+     </select></div>
+    <div class="input-group" style="grid-column:1/-1"><label>Setor da sua empresa</label>
+     <select id="je_setor" onchange="jeCompute()">
+      <option value="varejo">Comércio / Varejo</option>
+      <option value="atacado">Atacado / Distribuição</option>
+      <option value="restaurante">Bar / Restaurante / Padaria</option>
+      <option value="hotel">Hotel / Pousada / Turismo</option>
+      <option value="servico">Serviços em geral</option>
+      <option value="servprof">Serviços profissionais (advocacia, contabilidade, saúde)</option>
+      <option value="transporte">Transporte / Logística</option>
+      <option value="farmacia">Farmácia / Revenda monofásica</option>
+      <option value="industria">Indústria</option>
+      <option value="agro">Agro / Produtor rural</option>
+      <option value="construcao">Construção / Imobiliário</option>
+     </select></div>
+   </div>
+  </div>
+
+  <div id="je_perfil" style="background:rgba(201,162,39,.06);border:1px solid var(--line,rgba(201,162,39,.26));border-radius:10px;padding:10px 14px;font-size:.86rem;color:#c4cdd8;margin-bottom:10px"></div>
+
+
+  <div style="overflow-x:auto;border:1px solid var(--line,rgba(201,162,39,.26));border-radius:12px">
+   <table id="je_tabela" style="border-collapse:collapse;width:100%;min-width:640px;font-size:.8rem"></table>
+  </div>
+
+  <div id="je_barras" style="margin-top:18px"></div>
+
+  <div id="je_foco" style="margin-top:16px"></div>
+
+  <div style="background:rgba(74,123,192,.06);border:1px solid rgba(74,123,192,.3);border-radius:10px;padding:12px 15px;font-size:.78rem;color:#c8d2de;line-height:1.6;margin-top:14px">
+   <b style="color:#9ec5f2">Como ler:</b> a intensidade é uma <b>régua de prioridade</b> pra leitura, não um valor em reais. Ela combina o quanto cada frente importa pro seu perfil com o momento da transição (o peso cai à medida que 2033 se aproxima e as regras se estabilizam). Clique numa frente do "foco do ano" para ir direto à calculadora.
+  </div>
+ </div>
+</div>
+
+<div class="page" id="page-swot">
+  <div style="max-width:1100px;margin:0 auto">
+    <div style="text-align:center;margin:8px 0 4px">
+      <div style="font-size:1.5rem;font-weight:800;color:var(--gold2,#e0b93a)">◎ Quadro Estratégico da Reforma</div>
+      <div style="color:#9aa7b8;font-size:.88rem;margin-top:4px">A sua SWOT montada a partir das respostas do Diagnóstico e do que a Reforma muda no seu setor.</div>
+    </div>
+    <div id="swotAviso" style="text-align:center;font-size:.82rem;color:#8a97a8;margin:12px 0"></div>
+    <div id="swotGrid" class="sw-grid"></div>
+  </div>
+</div>
+<div id="page-fichacontador" class="page">
+ <div style="max-width:1050px;margin:0 auto">
+  <h1 style="color:var(--gold2,#e0b93a);font-size:1.55rem;margin-bottom:4px">▤ Pedir dados ao contador — a planilha de ida e volta</h1>
+  <p style="color:#c4cdd8;line-height:1.65;margin-bottom:10px">Você não precisa caçar dado nenhum. <b>Exporte a planilha, mande para o seu contador, ele preenche, você importa de volta</b> — e a ferramenta preenche TODOS os campos sozinha, em todas as calculadoras. Os campos com ◐ na ferramenta são exatamente os que entram nesta ficha.</p>
+  <div style="background:rgba(74,123,192,.08);border:1px solid rgba(74,123,192,.3);border-radius:10px;padding:12px 16px;margin:10px 0;color:#c4cdd8;font-size:.85rem;line-height:1.7">
+   <b style="color:#9ec5f2">Como funciona (3 passos):</b><br>
+   <b>1.</b> Clique em <b>Exportar Ficha</b> → baixa um Excel com todos os dados que precisamos, cada um com a explicação de onde tirar (SPED, PGDAS, ECD, balancete).<br>
+   <b>2.</b> Mande para o contador. Ele preenche só a coluna <b>VALOR</b> e devolve.<br>
+   <b>3.</b> Clique em <b>Importar Ficha</b> → a ferramenta preenche tudo e você já pode calcular.
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin:14px 0">
+   <button class="btn-calcular" onclick="fcExportar()">⇧ Exportar Ficha (Excel)</button>
+   <button type="button" onclick="fcImportar()" style="cursor:pointer;padding:10px 18px;border-radius:8px;border:1px solid rgba(62,207,142,.5);background:rgba(62,207,142,.14);color:#3ecf8e;font-weight:800">⇩ Importar Ficha preenchida</button>
+   <button type="button" onclick="fcPreview()" style="cursor:pointer;padding:10px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:transparent;color:#c4cdd8;font-weight:700">Ver o que vai na ficha</button>
+  </div>
+  <div id="fc_status"></div>
+  <div id="fc_preview"></div>
+ </div>
+</div>
+
   <div class="page" id="page-cr04">
     <div class="calc-page-header">
       <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.18),rgba(234,179,8,0.10));"></div>
@@ -72797,6 +72882,643 @@ setTimeout(renderPrazos,600);
 })();
 </script>
 <script>
+/* ★ v925 · ITFE etapa 3 (fim) — Jornada do Empresário (v41 + v65 + v67 do ITFE v194), Pedir dados ao contador
+   (Ficha do Contador v51; o bloco "Como usar" v59 fica de fora: descrevia uma prévia que não existe) e o
+   Quadro Estratégico refeito. No ITFE, tudo que lista telas filtra pelo que o ITFE abre (LH_PCP_PODE). */
+</script>
+<script>
+/* ⬥ JORNADA DO EMPRESÁRIO v41 — adaptada da Jornada do Cliente (CORE), sem preço/LTV/marketing */
+(function(){
+ var YEARS=[2026,2027,2028,2029,2030,2031,2032,2033];
+ var WEIGHT={2026:1.00,2027:0.94,2028:0.84,2029:0.72,2030:0.60,2031:0.50,2032:0.42,2033:0.34};
+ // perfis de atividade (quando a frente "acende" ao longo dos anos)
+ function pico2026(){return {2026:100,2027:82,2028:60,2029:40,2030:22,2031:12,2032:6,2033:4};}
+ function perene(){return {2026:100,2027:95,2028:90,2029:85,2030:80,2031:75,2032:70,2033:62};}
+ function rampa(ini,fim){var d={};d[ini]=100;var i=0;YEARS.forEach(function(y){if(y>ini&&y<=fim){i++;d[y]=Math.max(100-12*i,45);}else if(y>fim){d[y]=42;}});if(!d[2026]&&ini>2026)d[2026]=55;return d;}
+ function janela(){return {2026:100,2027:70,2028:30,2029:12,2030:6};} // decisão urgente que passa
+ // CATÁLOGO empresário: cada frente aponta pra uma calculadora existente (pg)
+ var CAT=[
+  {n:'Decisão Simples: Dentro × Híbrido',pg:'dxh',setor:['varejo','atacado','industria','restaurante','hotel','servico','servprof','transporte','farmacia','agro','construcao'],reg:{simples:1,presumido:0.05,real:0},por:{micro:0.9,pequena:1,media:0.8,grande:0.4},act:janela()},
+  {n:'Auditor de Cadastro (cClassTrib)',pg:'auditorcad',setor:['varejo','atacado','industria','restaurante','hotel','servico','servprof','transporte','farmacia','agro','construcao'],reg:{simples:0.4,presumido:1,real:1},por:{micro:0.6,pequena:0.8,media:1,grande:1},act:rampa(2026,2028)},
+  {n:'Formação de Preço 2027-2033',pg:'formpreco',setor:['varejo','atacado','industria','restaurante','hotel','servico','servprof','transporte','farmacia','agro','construcao'],reg:{simples:0.7,presumido:0.9,real:1},por:{micro:0.7,pequena:0.9,media:1,grande:1},act:perene()},
+  {n:'Reprecificação de Contratos',pg:'formpreco',setor:['servico','servprof','transporte','construcao','hotel'],reg:{simples:0.6,presumido:0.9,real:1},por:{micro:0.5,pequena:0.9,media:1,grande:1},act:rampa(2027,2033)},
+  {n:'Split Payment: Gap de Caixa',pg:'c01',setor:['varejo','atacado','industria','restaurante','farmacia','servico','transporte'],reg:{simples:0.6,presumido:0.9,real:1},por:{micro:0.5,pequena:0.9,media:1,grande:1},act:rampa(2027,2033)},
+  {n:'Necessidade de Capital de Giro',pg:'n33',setor:['varejo','atacado','industria','restaurante','farmacia','construcao'],reg:{simples:0.5,presumido:0.9,real:1},por:{micro:0.4,pequena:0.8,media:1,grande:1},act:rampa(2027,2033)},
+  {n:'Créditos das compras (Cadeia de Crédito)',pg:'cadeia',setor:['varejo','atacado','industria','servico','transporte','farmacia','agro','construcao','hotel'],reg:{simples:0.2,presumido:0.8,real:1},por:{micro:0.3,pequena:0.8,media:1,grande:1},act:rampa(2027,2033)},
+  {n:'Risco de Fornecedor no Simples',pg:'calc03',setor:['varejo','atacado','industria','restaurante','farmacia','construcao','servico'],reg:{simples:0.3,presumido:0.9,real:1},por:{micro:0.4,pequena:0.8,media:1,grande:1},act:rampa(2027,2033)},
+  {n:'Conformidade PNCT (ressarcimento)',pg:'pnct',setor:['varejo','atacado','industria','servico','transporte','farmacia','agro','construcao','hotel','servprof','restaurante'],reg:{simples:0.4,presumido:0.8,real:0.9},por:{micro:0.4,pequena:0.8,media:1,grande:1},act:rampa(2027,2031)},
+  {n:'Recuperação Tema 69 (antes de expirar!)',pg:'cr01',setor:['varejo','atacado','industria','servico','farmacia','construcao','transporte'],reg:{simples:0.1,presumido:0.8,real:1},por:{micro:0.2,pequena:0.7,media:1,grande:1},act:pico2026()},
+  {n:'Regime específico do seu setor',pg:null,setor:['restaurante','hotel','transporte','farmacia','agro','construcao'],reg:{simples:0.5,presumido:0.9,real:0.9},por:{micro:0.5,pequena:0.9,media:1,grande:0.9},act:perene()},
+  {n:'Renda do sócio: dividendos + IRPFM',pg:'c06',setor:['varejo','atacado','industria','restaurante','hotel','servico','servprof','transporte','farmacia','agro','construcao'],reg:{simples:0.3,presumido:0.8,real:0.9},por:{micro:0.4,pequena:0.8,media:1,grande:1},act:perene()},
+  {n:'Sucessão / Holding (antes do ITCMD subir)',pg:'n15',setor:['varejo','atacado','industria','restaurante','hotel','servico','servprof','transporte','farmacia','agro','construcao'],reg:{simples:0.3,presumido:0.8,real:0.9},por:{micro:0.2,pequena:0.6,media:1,grande:1},act:perene()}
+ ];
+ // mapa setor→regime específico correto (nome + página)
+ var REGESP={restaurante:{n:'Bares e Restaurantes (−40%)',pg:'bares'},hotel:{n:'Hotelaria & Turismo (−40%)',pg:'hotel'},transporte:{n:'Transporte de Passageiros',pg:'transpax'},farmacia:{n:'Medicamentos na Reforma',pg:'medicamento'},agro:{n:'Funrural · Receita × Folha',pg:'agro01'},construcao:{n:'Regime Imobiliário',pg:'imobref'}};
+ // afinidade setor: quais frentes acendem mais por setor
+ var SETOR_BOOST={
+  varejo:['Split','Matriz','Cadastro','Preço','Fornecedor'],
+  atacado:['Matriz','Cadastro','Fornecedor','Recuperação'],
+  industria:['Matriz','Cadastro','Fornecedor','Preço'],
+  restaurante:['específico','Preço','Cadastro','Split'],
+  hotel:['específico','Preço','Cadastro'],
+  servico:['Reprecificação','Preço','Matriz','Renda'],
+  servprof:['Renda','Sucessão','Preço','Cadastro'],
+  transporte:['específico','Reprecificação','Matriz','DIFAL'],
+  farmacia:['Cadastro','específico','Matriz','Recuperação'],
+  agro:['específico','Matriz','Cadastro','Sucessão'],
+  construcao:['específico','Reprecificação','Matriz','Sucessão']
+ };
+ window.jeCompute=function(){
+  var reg=document.getElementById('je_regime').value, por=document.getElementById('je_porte').value, setor=document.getElementById('je_setor').value;
+  var boost=SETOR_BOOST[setor]||[];
+  // filtra frentes do setor + calcula afinidade
+  var rows=CAT.filter(function(c){return c.setor.indexOf(setor)>=0;}).map(function(c){
+   var aff=(c.reg[reg]||0)*(c.por[por]||0);
+   // bônus se o nome bate com o boost do setor
+   var bump=boost.some(function(b){return c.n.indexOf(b)>=0;})?1.5:1;
+   aff*=bump;
+   // resolve o "regime específico" pro nome/pg certo
+   var nome=c.n, pg=c.pg;
+   if(c.n.indexOf('Regime específico')>=0){ var re=REGESP[setor]; if(re){nome=re.n;pg=re.pg;} }
+   return {n:nome,pg:pg,aff:aff,act:c.act};
+  });
+  // remove frentes que não se aplicam ao perfil (afinidade zero)
+  rows=rows.filter(function(r){return r.aff>0 && (!window.LH_PCP_PODE||window.LH_PCP_PODE(r.pg));});   /* v925: no ITFE, só o que o ITFE abre */
+  var maxAff=Math.max.apply(null,rows.map(function(r){return r.aff;}))||1;
+  // remove também as com afinidade irrelevante (< 12% do máximo) — ficariam com células fracas/vazias
+  rows=rows.filter(function(r){return r.aff/maxAff>=0.12;});
+  maxAff=Math.max.apply(null,rows.map(function(r){return r.aff;}))||1;
+  // prioridade = calor temporal ponderado × afinidade
+  rows.forEach(function(r){var soma=0;YEARS.forEach(function(y){soma+=(r.act[y]||0)*WEIGHT[y];});r.prio=soma*(r.aff/maxAff);});
+  rows.sort(function(a,b){return b.prio-a.prio;});
+  // ── TABELA ──
+  var head='<thead><tr><th style="background:#1f242e;color:#e0b93a;text-align:left;padding:9px 13px;font-size:.72rem">Frente · por prioridade</th>'+YEARS.map(function(y){return '<th style="background:#1f242e;color:#e0b93a;padding:9px 5px;font-size:.72rem;font-family:monospace">'+y+'</th>';}).join('')+'</tr></thead>';
+  var body='<tbody>';
+  var yearTot={}; YEARS.forEach(function(y){yearTot[y]=0;});
+  rows.forEach(function(r,idx){
+   var cells='';
+   YEARS.forEach(function(y){
+    var a=r.act[y];
+    if(!a){cells+='<td style="border:1px solid rgba(0,0,0,.3);background:repeating-linear-gradient(45deg,transparent,transparent 4px,rgba(255,255,255,.02) 4px,rgba(255,255,255,.02) 8px)"></td>';return;}
+    var v=Math.round(a*(r.aff/maxAff)); yearTot[y]+=v;
+    if(v<5){cells+='<td style="border:1px solid rgba(0,0,0,.3);background:repeating-linear-gradient(45deg,transparent,transparent 4px,rgba(255,255,255,.02) 4px,rgba(255,255,255,.02) 8px)"></td>';return;}
+    var op=0.12+v/100*0.62, txt=v>=60?'#2a1f0a':'#e9d3a0';
+    cells+='<td style="border:1px solid rgba(0,0,0,.3);text-align:center;font-family:monospace;font-weight:700;font-size:.78rem;background:rgba(226,184,90,'+op.toFixed(2)+');color:'+txt+'">'+v+'</td>';
+   });
+   body+='<tr><td style="border:1px solid rgba(0,0,0,.3);text-align:left;padding:7px 9px 7px 13px;color:#e8eaed;font-weight:500;white-space:nowrap;background:#161a21"><span style="display:inline-block;min-width:18px;height:18px;line-height:18px;text-align:center;font-size:.68rem;font-weight:700;color:#e0b93a;background:rgba(201,163,92,.12);border-radius:5px;margin-right:9px;font-family:monospace">'+(idx+1)+'</span>'+r.n+'</td>'+cells+'</tr>';
+  });
+  body+='</tbody>';
+  document.getElementById('je_tabela').innerHTML=head+body;
+  // ── PERFIL ──
+  var LB={simples:'Simples Nacional',presumido:'Lucro Presumido',real:'Lucro Real'},PB={micro:'Micro',pequena:'Pequena',media:'Média',grande:'Grande'};
+  var SB={varejo:'Comércio/Varejo',atacado:'Atacado',industria:'Indústria',restaurante:'Bar/Restaurante',hotel:'Hotel/Turismo',servico:'Serviços',servprof:'Serviços profissionais',transporte:'Transporte',farmacia:'Farmácia',agro:'Agro',construcao:'Construção/Imobiliário'};
+  document.getElementById('je_perfil').innerHTML='Perfil: <b style="color:#e0b93a">'+LB[reg]+'</b> · <b style="color:#e0b93a">'+PB[por]+'</b> · <b style="color:#e0b93a">'+SB[setor]+'</b> — '+rows.length+' frentes ativas na sua jornada';
+  // ── BARRAS: frentes ativas por ano ──
+  var contA=YEARS.map(function(y){return rows.filter(function(r){return (r.act[y]||0)*(r.aff/maxAff)>=40;}).length;});
+  var maxB=Math.max.apply(null,contA)||1;
+  var barHtml='<div style="font-size:.72rem;color:#9aa7b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Frentes que exigem sua atenção — por ano</div>';
+  barHtml+='<div style="display:flex;gap:6px;align-items:flex-end;height:80px;padding:10px;background:rgba(255,255,255,.02);border:1px solid var(--line,rgba(201,162,39,.2));border-radius:10px">';
+  YEARS.forEach(function(y,i){
+   var h=Math.max(contA[i]/maxB*100,4);
+   barHtml+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%"><div style="width:58%;background:linear-gradient(180deg,#e0b93a,#c9a227);border-radius:3px 3px 0 0;height:'+h+'%;min-height:3px"></div><div style="font-size:.62rem;color:#9aa7b8;margin-top:3px">\''+String(y).slice(2)+'</div><div style="font-size:.6rem;color:#e0b93a;font-weight:700">'+contA[i]+'</div></div>';
+  });
+  barHtml+='</div>';
+  var pk=0,apk=YEARS[0];contA.forEach(function(c,i){if(c>pk){pk=c;apk=YEARS[i];}});
+  barHtml+='<div style="font-size:.82rem;color:#c4cdd8;line-height:1.6;margin-top:10px;padding:11px 14px;background:linear-gradient(135deg,rgba(201,162,39,.08),rgba(201,162,39,.02));border:1px solid var(--line,rgba(201,162,39,.26));border-radius:10px"><b style="color:#e0b93a">Sua leitura:</b> a jornada começa com <b>'+contA[0]+' frentes quentes em 2026</b>, chega ao pico de <b>'+pk+' em '+apk+'</b> e ainda mantém <b>'+contA[YEARS.length-1]+' em 2033</b>. É aqui que você concentra energia e orçamento ao longo da transição.</div>';
+  document.getElementById('je_barras').innerHTML=barHtml;
+  // ── FOCO DO ANO ATUAL (2026): top 5 clicáveis ──
+  var top=rows.slice(0).sort(function(a,b){return (b.act[2026]||0)*(b.aff/maxAff)-(a.act[2026]||0)*(a.aff/maxAff);}).slice(0,5);
+  var focoHtml='<div style="font-weight:800;color:#fff;margin-bottom:10px">◎ Foco agora (2026) — por onde começar</div>';
+  top.forEach(function(r,i){
+   var clickable=r.pg?'onclick="abrirPagina(\''+r.pg+'\',null)" style="cursor:pointer"':'style="opacity:.7"';
+   focoHtml+='<div '+clickable+' style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(255,255,255,.03);border-left:3px solid var(--gold2,#e0b93a);border-radius:0 8px 8px 0;padding:10px 13px;margin:6px 0;cursor:'+(r.pg?'pointer':'default')+'"><div style="font-size:.85rem;color:#d4dce6"><b style="color:var(--gold2,#e0b93a)">'+(i+1)+'.</b> '+r.n+'</div>'+(r.pg?'<span style="font-size:.72rem;color:#9ec5f2;white-space:nowrap">abrir →</span>':'')+'</div>';
+  });
+  document.getElementById('je_foco').innerHTML=focoHtml;
+ };
+ function init(){ if(document.getElementById('je_regime')) jeCompute(); }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+ setTimeout(init,700);
+ var _ap=window.abrirPagina;
+ var tm=setInterval(function(){ if(window.abrirPagina){clearInterval(tm);
+   var o=window.abrirPagina; window.abrirPagina=function(){var r=o.apply(this,arguments); if(arguments[0]==='jornadaemp')setTimeout(init,200); return r;};
+ }},150);
+})();
+</script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   v65 — JORNADA DO EMPRESÁRIO: cobertura completa + setor num só lugar
+   Antes: a matriz de calor mostrava 10 frentes quentes mas NÃO linkava
+   nenhuma calculadora (0 links) — o dono via a urgência e não sabia onde
+   clicar. E os 17 Regimes Específicos não apareciam em lugar nenhum.
+   Agora:
+     (1) cada linha da matriz abre a(s) calculadora(s) daquela frente;
+     (2) UM bloco único "O regime do seu setor" mostra só as calculadoras
+         setoriais do setor escolhido (e não a lista de 17);
+     (3) um painel de cobertura lista todas as ferramentas, agrupadas.
+   ═══════════════════════════════════════════════════════════════════ */
+(function(){
+ var FRENTE = {"Medicamentos":["medicamento","monofasico"],"Reprecificação de Contratos":["c02","formpreco"],"Agroindústria":["agroins","credpresumido","coop"],"Crédito Presumido":["credpresumido","agroins"],"Transporte de Passageiros":["transpax","logcarga"],"Formação de Preço": ["formpreco", "c02", "classif", "c04", "simnotas", "raiox360"], "Split Payment": ["c01", "c11"], "Matriz de Créditos": ["matcred", "cr04"], "Risco de Fornecedor": ["calc03", "n04"], "Auditor de Cadastro": ["auditorcad"], "Renda do sócio": ["c06", "c08", "n29", "c07"], "Sucessão": ["grupoemp"], "Necessidade de Capital": ["n33"], "Conformidade PNCT": ["pnct"], "Recuperação Tema 69": ["cr01", "monofasico", "credpresumido"]};
+ var SETOR  = {"varejo": [["classif", "Alíquota Efetiva por Produto (Mix)"], ["medicamento", "Medicamentos & Dispositivos"], ["monofasico", "Monofásico · PIS/COFINS revenda"]], "atacado": [["classif", "Alíquota Efetiva por Produto (Mix)"], ["logcarga", "Logística & Cargas"], ["monofasico", "Monofásico · PIS/COFINS revenda"]], "restaurante": [["bares", "Bares & Restaurantes (−40%)"], ["seletivo", "Imposto Seletivo (bebida alcoólica)"]], "hotel": [["hotel", "Hotelaria & Parques (−40%)"], ["hotelev", "Hotel × Eventos — a segregação"], ["agviagem", "Agências de Viagem & Turismo"], ["antecip", "Pagamentos Antecipados"]], "servico": [["telecom", "Telecom & Energia (como consumidor)"], ["c04", "Alíquota Efetiva por Setor"]], "servprof": [["psaude", "Planos de Saúde (Operadoras)"], ["c04", "Alíquota Efetiva por Setor"], ["fatorR", "Fator R — Anexo III × V"]], "transporte": [["logcarga", "Logística & Cargas"], ["transpax", "Transporte de Passageiros"], ["combustivel", "Combustíveis (frota)"]], "farmacia": [["medicamento", "Medicamentos & Dispositivos"], ["monofasico", "Monofásico · PIS/COFINS revenda"]], "agro": [["agro01", "Funrural · Receita × Folha"], ["agro12", "Cooperativa · Ato × Terceiro"], ["agro08", "Sucessão Rural"], ["agroins", "Insumos Agro & Produtor Rural"], ["coop", "Cooperativas"]], "industria": [["capex", "CAPEX · crédito do investimento"], ["ind09", "Fundopem & Fundo de Compensação"], ["ind02", "Subvenção"], ["export", "Exportação"], ["ind07", "Ex-Tarifário"], ["seletivo", "Imposto Seletivo"]], "construcao": [["c02", "Reprecificação de Contratos"], ["matcred", "Matriz de Créditos por Despesa"]]};
+ var SETORIAIS = [["bares", "Bares & Restaurantes"], ["hotel", "Hotelaria & Parques"], ["hotelev", "Hotel × Eventos"], ["agviagem", "Agências de Viagem"], ["antecip", "Pagamentos Antecipados"], ["transpax", "Transporte de Passageiros"], ["psaude", "Planos de Saúde"], ["logcarga", "Logística & Cargas"], ["medicamento", "Medicamentos & Dispositivos"], ["monofasico", "Monofásico · revenda"], ["coop", "Cooperativas"], ["agroins", "Insumos Agro & Produtor Rural"], ["apostas", "Apostas + SAF"], ["telecom", "Telecom & Energia"], ["financeiro", "Serviços Financeiros"], ["combustivel", "Combustíveis"], ["credpresumido", "Crédito Presumido · Agroindústria"]];
+ var GRUPOS = [["Preço & Margem", [["formpreco", "Formação de Preço 2027-33"], ["c02", "Reprecificação de Contratos"], ["simnotas", "Simulador de Notas"], ["classif", "Alíquota Efetiva por Produto (Mix)"], ["c04", "Alíquota Efetiva por Setor"], ["raiox360", "Raio-X 360° do Produto"]]], ["Caixa & Capital de Giro", [["c01", "Split Payment Cash Gap"], ["c11", "Split por Operação"], ["n33", "NCG Split Payment"], ["calc03", "Risco Fornecedor SN"]]], ["Regime & Enquadramento", [["c05", "Regime Ótimo (Simples/LP/LR)"], ["fatorR", "Fator R — III × V"], ["sublimite", "Sublimite Simples"], ["n04", "SN → Regime Regular"], ["dxh", "Dentro × Híbrido 2027"]]], ["Sócio & Tributos Extras", [["c08", "Pró-labore Ótimo"], ["c06", "Tributação de Dividendos"], ["n29", "JCP vs. Dividendos"], ["seletivo", "Imposto Seletivo"], ["c07", "PF vs PJ — Pejotização"]]], ["Pauta p/ o Contador", [["matcred", "Matriz de Créditos por Despesa"], ["cr04", "Créditos Plenos CBS/IBS"], ["pnct", "Conformidade PNCT"], ["fichacontador", "Ficha do Contador (Excel)"], ["pedidos", "Pedidos ao Contador"]]], ["Urgente 2026", [["dxh", "Dentro × Híbrido 2027"], ["auditorcad", "Auditor de Cadastro"], ["prazos", "Radar de Prazos"], ["cr01", "Tema 69 — recupere antes de expirar"]]], ["Estratégia & Gestão", [["grupoemp", "Meu Grupo (Matriz & Filiais)"], ["intelfin", "DRE · Fluxo · Indicadores"], ["swot", "Quadro SWOT"], ["plano", "Plano de Ação (5W2H)"], ["score", "Score Lionheart"]]]];
+
+ /* NUNCA montar seletor com aspas escapadas — o CSS rejeita e lança exceção.
+    Varre os itens e casa o pid pela regex, como no Guia. */
+ function navDe(pid){
+   var achou=null;
+   document.querySelectorAll('.nav-item[onclick]').forEach(function(x){
+     var m=(x.getAttribute('onclick')||'').match(/abrirPagina\('([a-z0-9_]+)'/i);
+     if(m && m[1]===pid) achou=x;
+   });
+   return achou;
+ }
+ function nomeDe(pid){
+   var it=navDe(pid);
+   if(it){ var l=it.querySelector('.ni-label'); if(l) return l.textContent.trim(); }
+   return pid;
+ }
+ function existe(pid){ return !!document.getElementById('page-'+pid) && (!window.LH_PCP_PODE||window.LH_PCP_PODE(pid)); }   /* v925: no ITFE, só o que o ITFE abre */
+
+ function chip(pid, rotulo){
+   if(!existe(pid)) return '';
+   return '<span class="je-chip" data-pid="'+pid+'">'+(rotulo||nomeDe(pid))+' <b>→</b></span>';
+ }
+
+ /* ── 1. LINKAR as linhas da matriz de calor ── */
+ function linkarMatriz(){
+  var t=document.getElementById('je_tabela'); if(!t) return;
+  t.querySelectorAll('tr').forEach(function(tr){
+    var c=tr.querySelector('td,th'); if(!c) return;
+    if(c.dataset.lhLink==='1') return;
+    var txt=(c.textContent||'').trim();
+    var alvo=null;
+    Object.keys(FRENTE).forEach(function(k){ if(txt.indexOf(k)>=0) alvo=FRENTE[k]; });
+    /* a frente SETORIAL muda de nome conforme o setor escolhido (ex.: "Hotelaria &
+       Turismo (−40%)"), então não bate com nenhuma chave fixa: resolvemos pelo setor. */
+    if(!alvo){
+      var sel=document.getElementById('je_setor');
+      var lst=sel ? (SETOR[sel.value]||[]) : [];
+      if(lst.length && /−40%|-40%|regime|específic|setor/i.test(txt)) alvo=lst.map(function(x){return x[0];});
+    }
+    if(!alvo) return;
+    var vivos=alvo.filter(existe);
+    if(!vivos.length) return;
+    c.dataset.lhLink='1';
+    var d=document.createElement('div');
+    d.style.cssText='margin-top:5px;display:flex;flex-wrap:wrap;gap:4px';
+    d.innerHTML=vivos.map(function(p){ return chip(p); }).join('');
+    c.appendChild(d);
+  });
+ }
+
+ /* ── 2. O SETOR num local ÚNICO (os 17 regimes específicos não viram lista) ── */
+ function blocoSetor(){
+  var pg=document.getElementById('page-jornadaemp'); if(!pg) return;
+  var sel=document.getElementById('je_setor'); if(!sel) return;
+  var alvo=document.getElementById('je_setor_bloco');
+  if(!alvo){
+    alvo=document.createElement('div');
+    alvo.id='je_setor_bloco';
+    alvo.className='je-bloco';
+    var foco=document.getElementById('je_foco');
+    if(foco && foco.parentNode) foco.parentNode.insertBefore(alvo, foco.nextSibling);
+    else pg.appendChild(alvo);
+  }
+  var v=sel.value;
+  var lista=SETOR[v]||[];
+  var nomeSetor=(sel.options[sel.selectedIndex]||{}).text||'';
+  var vivos=lista.filter(function(x){ return existe(x[0]); });
+  if(!vivos.length){
+    alvo.innerHTML='<div class="je-h">⌂ O regime do seu setor</div>'
+      +'<div class="je-p">Para <b>'+nomeSetor+'</b> não há regime específico próprio — sua carga segue a regra geral. Use a <span class="je-chip" data-pid="c04">Alíquota Efetiva por Setor <b>→</b></span> como referência.</div>';
+    return;
+  }
+  alvo.innerHTML='<div class="je-h">⌂ O regime do seu setor — <span style="color:var(--text,#e8edf5)">'+nomeSetor+'</span></div>'
+    +'<div class="je-p">Estas são as análises do seu setor:</div>'
+    +'<div class="je-chips">'+vivos.map(function(x){ return chip(x[0], x[1]); }).join('')+'</div>'
+    +'<div class="je-nota">Elas também ficam no menu, em <b>Seu Segmento</b>.</div>';
+ }
+
+ /* ── 3. PAINEL DE COBERTURA: todas as ferramentas, agrupadas ── */
+ function cobertura(){
+  var pg=document.getElementById('page-jornadaemp'); if(!pg) return;
+  if(document.getElementById('je_cobertura')) return;
+  var d=document.createElement('details');
+  d.id='je_cobertura';
+  d.className='je-cob';
+  var h='<summary class="je-cob-h">▣ Todas as ferramentas da jornada <span class="je-cob-n">ver as '+
+        GRUPOS.reduce(function(a,g){return a+g[1].length;},0)+'</span></summary><div class="je-cob-b">'
+     +'<div class="je-p">A matriz acima mostra <b>quando</b> cada frente esquenta. Aqui está o arsenal completo, por tema — nada fica escondido.</div>';
+  GRUPOS.forEach(function(g){
+    var vivos=g[1].filter(function(x){ return existe(x[0]); });
+    if(!vivos.length) return;
+    h+='<div class="je-grp">'+g[0]+' <span style="opacity:.55;font-weight:600">('+vivos.length+')</span></div>'
+     +'<div class="je-chips">'+vivos.map(function(x){ return chip(x[0], x[1]); }).join('')+'</div>';
+  });
+  /* os 17 Regimes Específicos: o bloco acima mostra só os DO SEU SETOR (é o ponto —
+     o dono não precisa ver os 17). Aqui ficam todos, para nada ser inalcançável. */
+  var st=SETORIAIS.filter(function(x){ return existe(x[0]); });
+  if(st.length){
+    h+='<div class="je-grp">Regimes Específicos — todos <span style="opacity:.55;font-weight:600">('+st.length+')</span></div>'
+     +'<div class="je-p" style="font-size:.8rem;margin:2px 0 6px">Acima, no bloco azul, estão apenas os que valem para o SEU setor. Esta é a lista completa.</div>'
+     +'<div class="je-chips">'+st.map(function(x){ return chip(x[0], x[1]); }).join('')+'</div>';
+  }
+  h+='</div>';
+  d.innerHTML=h;
+  pg.appendChild(d);
+ }
+
+ function montar(){
+  var pg=document.getElementById('page-jornadaemp'); if(!pg) return;
+  linkarMatriz(); blocoSetor(); cobertura();
+  if(pg.dataset.lhClick!=='1'){
+    pg.dataset.lhClick='1';
+    pg.addEventListener('click', function(ev){
+      var c=ev.target.closest('.je-chip'); if(!c) return;
+      var p=c.getAttribute('data-pid'); if(!p) return;
+      abrirPagina(p, navDe(p));
+      window.scrollTo(0,0);
+    });
+    var sel=document.getElementById('je_setor');
+    if(sel) sel.addEventListener('change', function(){
+      setTimeout(function(){
+        /* a matriz é redesenhada pelo app: limpa os marcadores para re-linkar */
+        var t=document.getElementById('je_tabela');
+        if(t) t.querySelectorAll('[data-lh-link]').forEach(function(c){ c.removeAttribute('data-lh-link'); });
+        blocoSetor(); linkarMatriz();
+      }, 400);
+    });
+  }
+ }
+
+ var _ap=window.abrirPagina;
+ window.abrirPagina=function(id,el){
+   var r=_ap.apply(this,arguments);
+   if(id==='jornadaemp'){ setTimeout(montar,200); setTimeout(montar,900); }
+   return r;
+ };
+ [4000, 6000].forEach(function(t){ setTimeout(montar,t); });
+})();
+</script>
+
+<style id="lh-jornada-v65">
+.je-chip{display:inline-flex;align-items:center;gap:4px;cursor:pointer;
+  background:rgba(201,162,39,.10);border:1px solid rgba(201,162,39,.38);
+  color:#e0b93a;border-radius:6px;padding:4px 9px;font-size:.78rem;font-weight:700;
+  transition:all .14s;line-height:1.3}
+.je-chip:hover{background:rgba(201,162,39,.22);border-color:#c9a227}
+.je-chip b{opacity:.7;font-weight:600}
+.je-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.je-bloco{max-width:1050px;margin:16px auto;background:rgba(96,140,214,.06);
+  border:1px solid rgba(96,140,214,.32);border-left:3px solid #608cd6;
+  border-radius:0 12px 12px 0;padding:16px 20px}
+.je-h{font-weight:800;color:#8fb0e8;font-size:.98rem;margin-bottom:6px}
+.je-p{color:var(--text2,#c4cdd8);font-size:.86rem;line-height:1.65}
+.je-nota{margin-top:8px;font-size:.78rem;color:var(--text3,#9aa7b8)}
+.je-cob{max-width:1050px;margin:16px auto;border:1px solid rgba(201,162,39,.28);border-radius:12px;overflow:hidden}
+.je-cob-h{cursor:pointer;list-style:none;padding:13px 18px;background:rgba(201,162,39,.09);
+  font-weight:800;color:#e0b93a;font-size:.95rem;display:flex;justify-content:space-between;gap:10px}
+.je-cob summary::-webkit-details-marker{display:none}
+.je-cob-n{font-size:.76rem;opacity:.65;font-weight:600}
+.je-cob-b{padding:14px 18px 18px}
+.je-grp{margin:14px 0 2px;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;
+  font-weight:800;color:var(--text3,#9aa7b8);border-bottom:1px solid rgba(255,255,255,.07);padding-bottom:4px}
+html[data-theme="claro"] .je-bloco{background:#f4f7fd;border-color:#c6d6ef}
+html[data-theme="claro"] .je-cob{background:#fff;border-color:#e6e0d4}
+</style>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   v67 — JORNADA: MATRIZ COMPLETA NO PADRÃO CORE
+   O CORE (Jornada do Cliente) lista TODOS os serviços numa tabela única,
+   ranqueados por prioridade, com célula dourada de intensidade por ano.
+   A ITFE mostrava só ~10 frentes agregadas. Agora: todas as calculadoras,
+   uma embaixo da outra, com o MESMO visual e a MESMA mecânica do CORE:
+     · rank numérico à esquerda
+     · célula = rgba(226,184,90, 0.12 + v/100*0.62), texto escuro se v>=60
+     · v<5 = célula vazia · ordenação por prioridade do ano corrente
+     · o perfil (regime + porte + setor) recalibra as prioridades
+   ═══════════════════════════════════════════════════════════════════════ */
+(function(){
+ var YEARS=[2026,2027,2028,2029,2030,2031,2032,2033];
+ var CALCS=[["capex", "CAPEX — crédito do investimento", 74, "perene", {}, ["industria"]], ["ind09", "Fundopem — a queda do incentivo", 72, "longa", {}, ["industria"]], ["ind02", "Subvenção — o imposto sobre o incentivo", 70, "perene", {}, ["industria"]], ["export", "Exportação — crédito que vira dinheiro", 70, "rampa27", {}, ["industria"]], ["agro01", "Funrural — receita × folha", 78, "perene", {}, ["agro"]], ["agro12", "Cooperativa — ato × terceiro", 72, "rampa27", {}, ["agro"]], ["agro08", "Sucessão rural — o custo de esperar", 66, "perene", {}, ["agro"]], ["formpreco", "Formação de Preço 2027-2033", 95, "longa", {}, []], ["c01", "Split Payment — Gap de Caixa", 92, "rampa27", {"simples": -18}, []], ["auditorcad", "Auditor de Cadastro (cClassTrib)", 96, "pico26", {}, []], ["dxh", "Dentro × Híbrido 2027 (decisão até 30/10)", 97, "pico26", {"presumido": -55, "real": -55}, []], ["cr01", "Tema 69 — recupere antes de expirar", 90, "pis", {"simples": -25}, []], ["cadeia", "Cadeia de Crédito · compro × vendo", 85, "longa", {"simples": -15}, []], ["calc03", "Risco Fornecedor Simples Nacional", 82, "rampa27", {}, []], ["n33", "NCG Ajustada ao Split", 84, "rampa27", {"simples": -12}, []], ["c11", "Split Payment por Operação", 78, "rampa27", {"simples": -12}, []], ["c02", "Reprecificação de Contratos", 83, "longa", {}, ["construcao"]], ["c06", "Dividendos 2026", 86, "perene", {}, []], ["c08", "Pró-labore Ótimo", 74, "perene", {}, []], ["n29", "JCP vs. Dividendos", 72, "perene", {"simples": -40, "presumido": -20}, []], ["c07", "PF vs PJ — Pejotização", 66, "perene", {}, []], ["seletivo", "Imposto Seletivo (IS)", 60, "rampa27", {}, ["restaurante", "industria"]], ["grupoemp", "Meu Grupo — Matriz & Filiais", 76, "perene", {}, []], ["c05", "Regime Ótimo (Simples/LP/LR)", 80, "longa", {}, []], ["fatorR", "Fator R — Anexo III × V", 70, "perene", {"presumido": -50, "real": -50}, ["servprof", "servico"]], ["sublimite", "Sublimite do Simples", 68, "perene", {"presumido": -50, "real": -50}, []], ["n04", "SN → Regime Regular (migração)", 71, "rampa27", {"presumido": -45, "real": -45}, []], ["classif", "Alíquota Efetiva por Produto (Mix)", 79, "longa", {}, ["varejo", "atacado", "farmacia"]], ["c04", "Alíquota Efetiva por Setor / Atividade", 77, "longa", {}, []], ["simnotas", "Simulador de Notas (emissor)", 64, "longa", {}, []], ["raiox360", "Raio-X 360° do Produto", 62, "longa", {}, ["varejo", "atacado"]], ["cr04", "Créditos Plenos CBS/IBS", 75, "rampa27", {"simples": -20}, []], ["pnct", "Conformidade PNCT (ressarcimento)", 63, "rampa27", {}, []], ["monofasico", "Monofásico — PIS/COFINS revenda", 73, "pis", {}, ["farmacia", "varejo"]], ["credpresumido", "Crédito Presumido — Agroindústria", 69, "pis", {}, ["agro"]], ["prazos", "Radar de Prazos", 65, "perene", {}, []], ["pedidos", "Pedidos ao Contador", 58, "pico26", {}, []], ["fichacontador", "Ficha do Contador (Excel)", 57, "pico26", {}, []], ["fin_dre", "DRE e Fluxo de Caixa 2026-2033", 67, "perene", {}, []], ["swot", "Quadro Estratégico (SWOT)", 55, "pico26", {}, []], ["plano", "Plano de Ação (5W2H)", 56, "longa", {}, []], ["score", "Score Lionheart", 54, "perene", {}, []], ["bares", "Bares & Restaurantes (−40%)", 88, "rampa27", {}, ["restaurante"]], ["hotel", "Hotelaria & Parques (−40%)", 88, "rampa27", {}, ["hotel"]], ["hotelev", "Hotel × Eventos — segregação 40/60", 84, "rampa27", {}, ["hotel"]], ["agviagem", "Agências de Viagem & Turismo", 82, "rampa27", {}, ["hotel"]], ["antecip", "Pagamentos Antecipados (turismo)", 78, "pico27", {}, ["hotel"]], ["transpax", "Transporte de Passageiros", 84, "rampa27", {}, ["transporte"]], ["logcarga", "Logística & Cargas", 84, "rampa27", {}, ["transporte", "atacado"]], ["psaude", "Planos de Saúde (Operadoras)", 80, "rampa27", {}, ["servprof"]], ["medicamento", "Medicamentos & Dispositivos", 84, "rampa27", {}, ["farmacia", "varejo"]], ["coop", "Cooperativas — Regime Específico", 76, "rampa27", {}, ["agro"]], ["agroins", "Insumos Agro & Produtor Rural", 84, "rampa27", {}, ["agro"]], ["apostas", "Apostas / Prognósticos + SAF", 58, "rampa27", {}, []], ["telecom", "Telecom & Energia (crédito)", 70, "rampa27", {}, ["servico"]], ["financeiro", "Serviços Financeiros (Spread)", 62, "rampa27", {}, []], ["combustivel", "Combustíveis (monofásico ad rem)", 72, "rampa27", {}, ["transporte"]]];
+
+ /* curvas de atividade (mesma família do CORE) */
+ function curva(tipo){
+   var d={};
+   if(tipo==='pis'){ d={2026:100,2027:80,2028:60,2029:40,2030:20,2031:10}; }
+   else if(tipo==='perene'){ YEARS.forEach(function(y){ d[y]= y===2026?100:90; }); }
+   else if(tipo==='longa'){ d={2026:100,2027:95,2028:90,2029:85,2030:80,2031:75,2032:70,2033:60}; }
+   else if(tipo==='rampa27'){ d={2026:55,2027:100,2028:88,2029:76,2030:64,2031:52,2032:42,2033:36}; }
+   else if(tipo==='pico26'){ d={2026:100,2027:70,2028:42,2029:42,2030:42,2031:42,2032:42,2033:42}; }
+   else if(tipo==='pico27'){ d={2026:40,2027:100,2028:60,2029:40,2030:30,2031:25,2032:20,2033:18}; }
+   else { YEARS.forEach(function(y){ d[y]=70; }); }
+   return d;
+ }
+
+ function perfil(){
+   var reg=(document.getElementById('je_regime')||{}).value||'';
+   var setor=(document.getElementById('je_setor')||{}).value||'';
+   var porte=(document.getElementById('je_porte')||{}).value||'';
+   return {reg:reg.toLowerCase(), setor:setor, porte:porte};
+ }
+
+ function montarMatriz(){
+   var alvo=document.getElementById('je_matriz_core');
+   var tabelaVelha=document.getElementById('je_tabela');
+   if(!alvo){
+     if(!tabelaVelha) return;
+     alvo=document.createElement('div');
+     alvo.id='je_matriz_core';
+     tabelaVelha.parentNode.insertBefore(alvo, tabelaVelha);
+     tabelaVelha.style.display='none';       /* a matriz agregada dá lugar à completa */
+     var bar=document.getElementById('je_barras'); /* o gráfico antigo continua */
+   }
+   var pf=perfil();
+
+   /* prioridade efetiva = base ± regime ± setor */
+   var linhas=CALCS.map(function(c){
+     var pid=c[0], nome=c[1], base=c[2], tipo=c[3], ajReg=c[4]||{}, setores=c[5]||[];
+     if(!document.getElementById('page-'+pid) || !(!window.LH_PCP_PODE||window.LH_PCP_PODE(pid))) return null;   /* v925: no ITFE, só o que o ITFE abre */
+     var prio=base;
+     Object.keys(ajReg).forEach(function(k){ if(pf.reg.indexOf(k)>=0) prio+=ajReg[k]; });
+     var doSetor = setores.length && setores.indexOf(pf.setor)>=0;
+     if(setores.length){
+       prio += doSetor ? 14 : -55;      /* setorial só brilha no próprio setor */
+     }
+     if(prio<8) return null;                                  /* fora do radar deste perfil */
+     var act=curva(tipo);
+     /* a calculadora DO SETOR do dono é prioridade de agora: sobe a atividade de 2026,
+        senão a rampa27 (que nasce em 55) a enterraria no fim da tabela até 2027 */
+     if(doSetor){ act=Object.assign({}, act); act[2026]=Math.max(act[2026]||0, 92); }
+     return {pid:pid, nome:nome, prio:Math.max(5,Math.min(100,prio)), act:act};
+   }).filter(Boolean);
+
+   var maxP=Math.max.apply(null, linhas.map(function(r){return r.prio;}))||1;
+   /* valor da célula = atividade do ano × prioridade normalizada (fórmula do CORE) */
+   linhas.forEach(function(r){
+     r.cel={};
+     YEARS.forEach(function(y){
+       var a=r.act[y]||0;
+       r.cel[y]=Math.round(a*(r.prio/maxP));
+     });
+     r.chave=r.cel[2026]*1000 + r.prio;       /* ordena pelo agora, desempata pela prioridade */
+   });
+   linhas.sort(function(a,b){ return b.chave-a.chave; });
+
+   var html='<div class="jm-scale"><span>frio</span><div class="jm-scbar"></div><span>quente</span>'
+     +'<span class="jm-note">cada célula = intensidade da frente naquele ano</span></div>'
+     +'<div class="jm-wrap"><table class="jm-t"><thead><tr>'
+     +'<th class="jm-h1">Frentes ('+linhas.length+') · por prioridade</th>';
+   YEARS.forEach(function(y){ html+='<th>'+y+'</th>'; });
+   html+='</tr></thead><tbody>';
+
+   linhas.forEach(function(r, i){
+     html+='<tr><td class="jm-svc" data-pid="'+r.pid+'"><span class="jm-rk">'+(i+1)+'</span>'+r.nome+'</td>';
+     YEARS.forEach(function(y){
+       var v=r.cel[y];
+       if(!v || v<5){ html+='<td class="jm-empty"></td>'; return; }
+       var op=(0.12+v/100*0.62).toFixed(2);
+       var txt=v>=60?'#2a1f0a':'#e9d3a0';
+       html+='<td class="jm-c" style="background:rgba(226,184,90,'+op+');color:'+txt+'">'+v+'</td>';
+     });
+     html+='</tr>';
+   });
+   html+='</tbody></table></div>'
+     +'<div class="jm-legenda">Toque no nome de qualquer frente para abrir a calculadora. A ordem muda conforme o seu perfil (regime · porte · setor).</div>';
+   alvo.innerHTML=html;
+
+   /* clique no nome abre a calculadora */
+   alvo.onclick=function(ev){
+     var td=ev.target.closest('.jm-svc'); if(!td) return;
+     var p=td.getAttribute('data-pid'); if(!p) return;
+     var navIt=null;
+     document.querySelectorAll('.nav-item[onclick]').forEach(function(x){
+       var m=(x.getAttribute('onclick')||'').match(/abrirPagina\('([a-z0-9_]+)'/i);
+       if(m && m[1]===p) navIt=x;
+     });
+     abrirPagina(p, navIt);
+     window.scrollTo(0,0);
+   };
+ }
+
+ function ligar(){
+   ['je_regime','je_porte','je_setor'].forEach(function(id){
+     var el=document.getElementById(id);
+     if(el && !el.dataset.jmLig){
+       el.dataset.jmLig='1';
+       el.addEventListener('change', function(){ setTimeout(montarMatriz, 420); });
+     }
+   });
+ }
+
+ var _ap=window.abrirPagina;
+ window.abrirPagina=function(id,el){
+   var r=_ap.apply(this,arguments);
+   if(id==='jornadaemp'){ setTimeout(function(){ montarMatriz(); ligar(); }, 350);
+                          setTimeout(function(){ montarMatriz(); ligar(); }, 1200); }
+   return r;
+ };
+ [4500, 6500].forEach(function(t){ setTimeout(function(){ montarMatriz(); ligar(); }, t); });
+})();
+</script>
+
+<style id="lh-jm-v67">
+/* matriz padrão CORE */
+.jm-scale{display:flex;align-items:center;gap:8px;font-size:.72rem;color:var(--text3,#9aa7b8);margin:12px 0 6px;max-width:1050px;margin-left:auto;margin-right:auto}
+.jm-scbar{width:120px;height:8px;border-radius:4px;background:linear-gradient(90deg,rgba(226,184,90,.10),rgba(226,184,90,.75))}
+.jm-note{margin-left:auto;color:var(--text3,#9aa7b8)}
+.jm-wrap{max-width:1050px;margin:0 auto;overflow-x:auto;border:1px solid rgba(201,162,39,.25);border-radius:12px}
+.jm-t{border-collapse:collapse;width:100%;min-width:760px;font-size:.8rem}
+.jm-t thead th{background:rgba(20,28,42,.95);color:#e0b93a;font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:.72rem;font-weight:700;padding:9px 8px;text-align:center;position:sticky;top:0}
+.jm-t thead th.jm-h1{text-align:left;padding-left:14px}
+.jm-svc{padding:8px 10px 8px 14px;color:var(--text,#e8edf5);font-weight:600;cursor:pointer;white-space:nowrap;
+  border-top:1px solid rgba(255,255,255,.05);max-width:380px;overflow:hidden;text-overflow:ellipsis}
+.jm-svc:hover{color:#e0b93a}
+.jm-rk{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-right:9px;
+  border-radius:5px;background:rgba(226,184,90,.14);border:1px solid rgba(226,184,90,.30);
+  color:#e0b93a;font-family:ui-monospace,monospace;font-size:.68rem;font-weight:800}
+.jm-c{width:52px;text-align:center;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.74rem;
+  font-weight:700;padding:8px 4px;border-top:1px solid rgba(255,255,255,.05)}
+.jm-empty{border-top:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.015)}
+.jm-legenda{max-width:1050px;margin:8px auto 0;font-size:.76rem;color:var(--text3,#9aa7b8)}
+html[data-theme="claro"] .jm-t thead th{background:#f2ecd9;color:#7a5f13}
+html[data-theme="claro"] .jm-svc{color:#21252b}
+html[data-theme="claro"] .jm-empty{background:#f7f5ef}
+</style>
+
+<script>
+/* FICHA DO CONTADOR v51 - Excel de ida e volta (padrao _meta do CORE) */
+(function(){
+ var VERSAO='v1.0-itfe';
+ function toast(msg,cor){
+  var el=document.getElementById('fc_status'); if(!el)return;
+  el.innerHTML='<div style="background:rgba(255,255,255,.04);border-left:3px solid '+(cor||'#3ecf8e')+';border-radius:0 10px 10px 0;padding:11px 15px;margin:8px 0;color:#e8eaed;font-size:.88rem">'+msg+'</div>';
+ }
+ function colher(){
+  var out=[], vistos={}, pular=['fichacontador','dashcalc','trilhacurso','guiasistema','basetecnica','videos','tour','auditoria','glossario'];
+  document.querySelectorAll('.page').forEach(function(pg){
+   var pid=(pg.id||'').replace(/^page-/,'');
+   if(!pid || pular.indexOf(pid)>=0) return;
+   if(window.LH_PCP_PODE && !window.LH_PCP_PODE(pid)) return;   /* v925: no ITFE, só as telas do ITFE (o CORE tem ~1.000 campos) */
+   var navIt=document.querySelector('nav.nav-section .nav-item[onclick*="\''+pid+'\'"]');
+   var tituloPg=navIt?((navIt.querySelector('.ni-label')||navIt).textContent||'').trim().slice(0,45):'';
+   if(!tituloPg) tituloPg=((pg.querySelector('h1,h2')||{}).textContent||pid).trim().slice(0,45);
+   pg.querySelectorAll('input[type=number], input[type=text], select').forEach(function(el){
+    if(!el.id || vistos[el.id]) return;
+    if(el.id.indexOf('_busca')>=0 || el.id.indexOf('dc_q')>=0 || el.id.indexOf('glossario')>=0) return;
+    var grp=el.closest('.input-group')||el.parentElement;
+    var lab=grp?grp.querySelector('label'):null;
+    var rot=lab?lab.textContent.replace(/[?\u{1F464}]/gu,'').trim():'';
+    if(!rot || rot.length<3) return;
+    var sp=grp?grp.querySelector('.lh-hint, [title]'):null;
+    var hint=sp?((sp.getAttribute('data-hint')||sp.getAttribute('title')||'')).replace(/^[?\u{1F464}]\s*/u,'').slice(0,240):'';
+    var contador=(sp&&sp.classList&&sp.classList.contains('lh-hint-contador'))||/SPED|PGDAS|ECD|ECF|balancete|PER\/DCOMP/i.test(hint)?'SIM':'';
+    vistos[el.id]=1;
+    out.push({aba:tituloPg,pid:pid,id:el.id,campo:rot.slice(0,60),valor:el.value,contador:contador,onde:hint});
+   });
+  });
+  return out;
+ }
+ window.fcPreview=function(){
+  var c=colher(), dc=c.filter(function(x){return x.contador==='SIM';});
+  document.getElementById('fc_preview').innerHTML=
+   '<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:14px 16px;margin:10px 0">'
+   +'<div style="font-weight:800;color:#e0b93a;margin-bottom:8px">Aba <b>Ficha</b>: campos essenciais (inclui '+dc.length+' dados do contador) - Aba <b>Completa</b>: '+c.length+' campos</div>'
+   +'<div style="max-height:340px;overflow:auto;font-size:.8rem;color:#c4cdd8">'
+   +c.slice(0,45).map(function(x){return '<div style="padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)"><b>'+x.aba+'</b> - '+x.campo+(x.contador==='SIM'?' <span style="color:#9ec5f2">&#128100;</span>':'')+'</div>';}).join('')
+   +(c.length>45?'<div style="padding:6px 0;color:#8a97a8">... e mais '+(c.length-45)+' campos</div>':'')
+   +'</div></div>';
+ };
+ window.fcExportar=function(){
+  if(typeof XLSX==='undefined'){toast('A biblioteca de Excel ainda nao carregou. Aguarde 2 segundos e tente de novo.','#f59e0b');return;}
+  var campos=colher();
+  var wb=XLSX.utils.book_new();
+  var meta=[['versao_planilha',VERSAO],['gerado_em',new Date().toISOString().slice(0,10)],['linhaInicioDados',2],['ferramenta','Lionheart ITFE - Inteligencia Tributaria e Financeira Empresarial'],['instrucao','Preencha SOMENTE a coluna VALOR. Nao altere a coluna ID.']];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(meta), '_meta');
+  var CHAVE=['fin_dados','cadeia','dxh','formpreco','c02','c01','n33','matcred','simnotas','auditorcad','grupoemp','hotelev','sublimite','c05','mixprod','antecip'];
+  var essenciais=campos.filter(function(x){ return x.contador==='SIM' || CHAVE.indexOf(x.pid)>=0; });
+  var CAB=['ABA / CALCULADORA','CAMPO','VALOR (preencher)','ONDE ENCONTRAR ESTE DADO','DADO DO CONTADOR?','ID (nao alterar)'];
+  function mk(lista){
+   var aoa=[CAB]; lista.forEach(function(x){ aoa.push([x.aba,x.campo,x.valor,x.onde,x.contador,x.id]); });
+   var ws=XLSX.utils.aoa_to_sheet(aoa);
+   ws['!cols']=[{wch:32},{wch:42},{wch:18},{wch:64},{wch:16},{wch:22}];
+   return ws;
+  }
+  XLSX.utils.book_append_sheet(wb, mk(essenciais), 'Ficha');
+  XLSX.utils.book_append_sheet(wb, mk(campos), 'Completa');
+  XLSX.writeFile(wb,'Lionheart_Ficha_do_Contador_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  toast('Ficha exportada. A aba <b>Ficha</b> tem os <b>'+essenciais.length+' campos essenciais</b> (o que realmente move as decisoes); a aba <b>Completa</b> tem todos os '+campos.length+'. Mande ao contador: ele preenche a coluna VALOR e voce importa de volta.');
+ };
+ window.fcAplicar=function(rows){
+  var n=0, faltando=0;
+  rows.slice(1).forEach(function(r){
+   var id=r[5], val=r[2];
+   if(!id) return;
+   if(val===undefined||val===null||String(val).trim()===''){faltando++;return;}
+   var el=document.getElementById(String(id).trim());
+   if(!el) return;
+   el.value=String(val).trim();
+   try{el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}catch(x){}
+   n++;
+  });
+  return {n:n,faltando:faltando};
+ };
+ window.fcImportar=function(){
+  if(typeof XLSX==='undefined'){toast('A biblioteca de Excel ainda nao carregou. Aguarde e tente de novo.','#f59e0b');return;}
+  var inp=document.createElement('input'); inp.type='file'; inp.accept='.xlsx,.xls';
+  inp.onchange=function(ev){
+   var f=ev.target.files[0]; if(!f)return;
+   var rd=new FileReader();
+   rd.onload=function(e){
+    try{
+     var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+     var ok=false;
+     if(wb.Sheets['_meta']) XLSX.utils.sheet_to_json(wb.Sheets['_meta'],{header:1}).forEach(function(r){ if(r[0]==='versao_planilha'&&/^v1\./.test(String(r[1]||'')))ok=true; });
+     if(!ok && !confirm('Esta planilha nao tem a identificacao da Ficha Lionheart. Importar mesmo assim?'))return;
+     var sh=wb.Sheets['Ficha']||wb.Sheets[wb.SheetNames[0]];
+     var res=fcAplicar(XLSX.utils.sheet_to_json(sh,{header:1}));
+     toast('<b>'+res.n+' campos preenchidos</b> automaticamente'+(res.faltando?' - '+res.faltando+' vieram em branco':'')+'. Abra as calculadoras e clique em Calcular.');
+    }catch(err){ toast('Nao consegui ler o arquivo: '+err.message,'#dc2626'); }
+   };
+   rd.readAsArrayBuffer(f);
+  };
+  inp.click();
+ };
+})();
+</script>
+
+<script>
+/* ★ v925 · QUADRO ESTRATÉGICO (SWOT) — refeito. O do ITFE v194 lia as chaves LHDIAG::<ramo> do diagnóstico
+   antigo, que não existe mais: Forças e Fraquezas saíam sempre vazias. Aqui as quatro caixas vêm de fontes vivas:
+     · FORÇAS e FRAQUEZAS: as notas por frente do LH_DIAG2 (≥ 60% força · < 40% fraqueza) e as ações que faltam;
+     · OPORTUNIDADES e AMEAÇAS: o que a Reforma muda no setor escolhido no diagnóstico (tabela do v194 + agro). */
+(function(){
+ var OP={
+  _univ:['Crédito amplo: o imposto pago nas compras volta como crédito','Exportação continua sem imposto e o crédito das compras pode virar dinheiro'],
+  comercio:['Crédito na cadeia com fornecedores preparados','O cliente empresa aproveita o seu crédito — argumento de venda'],
+  servico:['Cliente empresa credita o imposto pago a você — vantagem no B2B','Apuração mais simples que o modelo atual'],
+  turismo:['Regime do setor com imposto reduzido','Formalização ganha vantagem sobre o concorrente informal'],
+  industria:['Crédito de insumo, energia e máquinas reduz o custo efetivo','Decidir produzir ou comprar com a conta nova'],
+  agro:['Insumos agropecuários com alíquota reduzida','Cooperativa e venda direta reorganizadas com a conta nova']
+ };
+ var AM={
+  _univ:['O split payment retira capital de giro — aperto no caixa','A carga muda ano a ano até 2033: o preço precisa acompanhar'],
+  comercio:['Fim da substituição tributária muda a formação de preço','Comprar de fornecedor do Simples gera menos crédito'],
+  servico:['Folha de pagamento não gera crédito: o preço tende a subir','Concorrente com folha menor ganha espaço'],
+  turismo:['Sazonalidade e split payment apertam o caixa da baixa temporada','Concorrente informal na mesma praça'],
+  industria:['Imposto Seletivo em produtos específicos','Incentivos estaduais diminuem a partir de 2029'],
+  agro:['O caixa da safra aperta com o split payment','O comprador passa a escolher fornecedor pelo crédito que recebe']
+ };
+ function setor(){
+  var s=''; try{ s=(JSON.parse(localStorage.getItem('lh_diag2')||'{}')||{}).setor||''; }catch(e){}
+  if(!s && typeof window.LH_DIAG_SETOR_PADRAO==='function') s=window.LH_DIAG_SETOR_PADRAO()||'';
+  return s||'comercio';
+ }
+ function quad(tit,ic,cor,itens,vazio){
+  return '<div class="sw-q" style="border-color:'+cor+';border-top-color:'+cor+'"><div class="sw-t" style="color:'+cor+'">'+ic+' '+tit+'</div>'
+   +(itens.length?itens.map(function(x){ return '<div class="sw-i"><span style="color:'+cor+'">•</span>'+x+'</div>'; }).join(''):'<div class="sw-v">'+vazio+'</div>')+'</div>';
+ }
+ function render(){
+  var grid=document.getElementById('swotGrid'); if(!grid) return;
+  var D=window.LH_DIAG2, sc=D?D.score():null, B=D?D.blocos:{};
+  var fortes=[], fracas=[];
+  if(sc && sc.respondidas>0){
+   Object.keys(sc.porBloco).forEach(function(b){ var x=sc.porBloco[b], nm=(B[b]||{}).n||b, p=Math.round(x.pct);
+    if(!x.respondidas) return;
+    if(p>=60) fortes.push('<b>'+nm+'</b> bem encaminhada ('+p+'%)');
+    else if(p<40) fracas.push('<b>'+nm+'</b> atrasada ('+p+'%)'); });
+   var pl=D.plano();
+   pl.slice(0,4).forEach(function(a){ fracas.push('Falta: '+a.txt); });
+   if(!fortes.length) fortes.push('Nenhuma frente acima de 60% ainda — o plano de ação mostra por onde começar.');
+  }
+  var s=setor();
+  var op=(OP[s]||[]).concat(OP._univ), am=(AM[s]||[]).concat(AM._univ);
+  var resp=sc && sc.respondidas>0;
+  document.getElementById('swotAviso').innerHTML=resp
+   ? '✓ Forças e Fraquezas vêm do seu Diagnóstico ('+sc.respondidas+' de '+sc.perguntas+' perguntas respondidas). <a href="#" onclick="abrirPagina(\'plano\',null);return false" style="color:var(--gold,#c9a227)">Ver o Plano de Ação →</a>'
+   : '✧ Responda o <a href="#" onclick="abrirPagina(\'diagnostico\',null);return false" style="color:var(--gold,#c9a227)">Diagnóstico da empresa</a> para Forças e Fraquezas se preencherem. Oportunidades e Ameaças já refletem o seu setor.';
+  grid.innerHTML=quad('FORÇAS','▲','#3ecf8e',fortes,'Responda o diagnóstico')+quad('FRAQUEZAS','⚠','#e0a83a',fracas,'Responda o diagnóstico')
+   +quad('OPORTUNIDADES','▸','#4a9eff',op,'')+quad('AMEAÇAS','⬥','#c0653e',am,'');
+ }
+ var _ap=window.abrirPagina;
+ window.abrirPagina=function(id){ var r=_ap.apply(this,arguments); if(id==='swot') setTimeout(render,150); return r; };
+ window.LH_SWOT={render:render};
+ setTimeout(render,1500);
+})();
+</script>
+<style id="lh-v925-swot">
+.sw-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:720px){.sw-grid{grid-template-columns:1fr}}
+.sw-q{background:rgba(255,255,255,.03);border:1px solid;border-top:3px solid;border-radius:12px;padding:14px}
+.sw-t{font-weight:800;margin-bottom:8px}
+.sw-i{font-size:.84rem;color:#d4dce6;padding:4px 0 4px 14px;position:relative;line-height:1.5}
+.sw-i span{position:absolute;left:0}
+.sw-v{font-size:.8rem;color:#6b7a90;font-style:italic}
+</style>
+<script>
 /* ★ v911 · PRODUTO "INTELIGÊNCIA DE CADASTRO E PREÇOS" (v912: nome definitivo + Boas-Vindas) — o CORE vestido como produto próprio.
    Entra por app.html?produto=preco (ou preco.html, que redireciona). Sem o parâmetro,
    nada aqui roda e o CORE fica exatamente como era.
@@ -72892,10 +73614,11 @@ setTimeout(renderPrazos,600);
       { t:'Aprendizado', itens:[ ['videos','Vídeos Tutoriais'] ]},
       /* v924 · etapa 3: o obrigatório, o medidor e a execução (trazidos do ITFE v194) */
       { t:'Diagnóstico & Plano', itens:[
-        ['piso','O que é obrigatório'], ['diagnostico','Diagnóstico da empresa'],
-        ['plano','Plano de Ação (5W2H)'], ['prazos','Radar de Prazos'] ]},
+        ['jornadaemp','Jornada até 2033'], ['piso','O que é obrigatório'], ['diagnostico','Diagnóstico da empresa'],
+        ['swot','Quadro Estratégico (SWOT)'], ['plano','Plano de Ação (5W2H)'], ['prazos','Radar de Prazos'] ]},   /* v925: + Jornada e Quadro Estratégico */
       { t:'Minha Empresa', itens:[
-        ['@cadcliente','Cadastrar minha empresa'], ['importsped','Importar documentos (XML · SPED)'] ]},
+        ['@cadcliente','Cadastrar minha empresa'], ['importsped','Importar documentos (XML · SPED)'],
+        ['fichacontador','Pedir dados ao contador (Excel)'] ]},   /* v925 */
       { t:'Cadastro & Crédito', itens:[
         ['auditorcad','Auditor de Cadastro'], ['classmassa','Classificador em Massa'], ['cadeia','Cadeia de Crédito · compro × vendo'] ]},
       { t:'Regime', itens:[
@@ -73681,6 +74404,26 @@ setTimeout(renderPrazos,600);
     if(v==='servicos') return sb==='turismo' ? 'turismo' : 'servico';
     return ({comercio:'comercio', industria:'industria', agro:'agro'})[v] || ''; }
   window.LH_DIAG_SETOR_PADRAO=ramoDiag;
+  window.LH_PCP_PODE=function(id){ return !!PERMITIDAS[id]; };   /* v925 */
+  /* v925 · a Jornada abre no perfil da empresa: setor pelo segmento/sub-ramo, regime pelos Dados da Empresa
+     (até a pessoa mudar o select na própria tela) */
+  function jornadaPerfil(){
+    var v=segLer(), sb=subLer(v), st='';
+    if(v==='comercio') st = sb==='farmacia' ? 'farmacia' : 'varejo';
+    else if(v==='servicos') st = ({liberal:'servprof', saude:'servprof', alimentacao:'restaurante', turismo:'hotel', transporte:'transporte'})[sb] || 'servico';
+    else if(v==='industria') st='industria'; else if(v==='agro') st='agro';
+    var rg=''; try{ var d=window.LH_FIN && LH_FIN.get().dados; rg=d && d.regime; }catch(e){}
+    rg = (rg==='hibrido') ? 'simples' : rg;
+    var mudou=false;
+    [['je_setor',st],['je_regime',rg]].forEach(function(x){ var el=document.getElementById(x[0]);
+      if(!el || !x[1] || el.dataset.pcpManual) return;
+      if(!el.dataset.pcpLig){ el.dataset.pcpLig='1'; el.addEventListener('change',function(ev){ if(ev.isTrusted) el.dataset.pcpManual='1'; }); }
+      if(el.querySelector('option[value="'+x[1]+'"]') && el.value!==x[1]){ el.value=x[1]; mudou=true; } });
+    if(mudou){ try{ if(typeof window.jeCompute==='function') window.jeCompute(); var s=document.getElementById('je_setor'); if(s) s.dispatchEvent(new Event('change')); }catch(e){} }
+  }
+  (function(){ var ap=window.abrirPagina; if(typeof ap!=='function' || ap.__pcpJe) return;
+    var novo=function(id){ var r=ap.apply(this,arguments); if(id==='jornadaemp') setTimeout(jornadaPerfil,60); return r; };
+    novo.__pcpJe=1; window.abrirPagina=novo; })();
   (function(){ var ap=window.abrirPagina; if(typeof ap!=='function' || ap.__pcpRamo) return;
     var novo=function(id){ if(id==='piso' && !window.__psRamoManual){ var r=ramoDiag(); if(r) window.LH_ADEQ_RAMO=r; } return ap.apply(this,arguments); };
     novo.__pcpRamo=1; window.abrirPagina=novo; })();

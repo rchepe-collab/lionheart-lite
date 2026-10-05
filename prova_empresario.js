@@ -74,7 +74,7 @@ setTimeout(() => {
   ex('trocar de segmento limpa o sub-ramo', (() => { E.LH_EMP_SEGMENTO('agro'); return !d.querySelector('#pcp-subramos button.on'); })());
   E.LH_EMP_SEGMENTO('agro'); E.LH_EMP_SUBRAMO('leite');
   ex('título do pilar diz segmento e sub-ramo', /SEU SEGMENTO · AGRO · LEITE/.test(d.getElementById('pcp-seg-titulo').textContent), d.getElementById('pcp-seg-titulo').textContent);
-  ex('com segmento e sub-ramo, o empresário vê até 36 abas (v924: +4 do Diagnóstico & Plano)', (() => { const n = ids().length; return n >= 28 && n <= 36; })(), String(ids().length));
+  ex('com segmento e sub-ramo, o empresário vê até 40 abas (v924/v925: +7 do Diagnóstico & Plano e a ficha)', (() => { const n = ids().length; return n >= 30 && n <= 40; })(), String(ids().length));
 
   ex('seletor de tema no topo (4 temas)', d.querySelectorAll('#pcp-temas button[data-tema]').length === 4);
   E.LH_EMP_TEMA('musgo'); ex('tema verde musgo aplica no ITFE', d.documentElement.getAttribute('data-pcp-tema') === 'musgo' && d.querySelector('#pcp-temas button.on').getAttribute('data-tema') === 'musgo');
