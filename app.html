@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO='v925';</script>
+<body><script>window.LH_VERSAO='v926';</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -11172,6 +11172,56 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
   <div id="fc_status"></div>
   <div id="fc_preview"></div>
  </div>
+</div>
+
+<!-- v926 · ITFE etapa 4 · InvestPRO: excesso de caixa, saúde financeira e compra de bens (só no menu do ITFE) -->
+<div class="page" id="page-inv_caixa">
+  <div class="calc-page-header"><div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.16),rgba(62,207,142,0.12));">◈</div>
+    <div><h2>Excesso de caixa · quanto pode render e quanto precisa ficar</h2>
+    <p>A partir do Fluxo de Caixa 2026–2033: quanto do saldo é reserva (caixa mínimo e o capital de giro que a empresa ainda vai precisar) e quanto realmente sobra para aplicar, investir na empresa ou distribuir.</p></div></div>
+  <div class="input-card"><div class="input-grid-3">
+    <div class="input-group"><label>Rendimento líquido do dinheiro aplicado (% ao ano)</label><input type="number" id="inv_c_taxa" value="9" step="0.1"><span class="lh-hint" data-hint="Premissa sua: o rendimento já descontado do imposto. A ferramenta não indica produto de investimento — só mede quanto o excedente pode render." onclick="lhHint(event,this)">?</span></div>
+  </div>
+  <button class="btn-calcular" onclick="LH_INVEST.renderCaixa()">Calcular</button>
+  <button class="btn-secondary" onclick="abrirPagina('fin_fluxo')">≋ Fluxo de Caixa</button>
+  <button class="btn-secondary" onclick="abrirPagina('fin_dados')">▣ Dados da Empresa</button></div>
+  <div id="inv_caixa_res"></div>
+</div>
+<div class="page" id="page-inv_saude">
+  <div class="calc-page-header"><div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.16),rgba(62,207,142,0.12));">♥</div>
+    <div><h2>Saúde financeira · os sinais vitais da empresa, hoje e em 2033</h2>
+    <p>Seis indicadores tirados do DRE e do Fluxo de Caixa, cada um com o seu sinal (verde, amarelo ou vermelho), e uma nota de 0 a 100 para hoje, para 2033 e para o ano mais apertado.</p></div></div>
+  <div class="input-card"><button class="btn-calcular" onclick="LH_INVEST.renderSaude()">Calcular</button>
+  <button class="btn-secondary" onclick="abrirPagina('fin_dre')">▦ DRE 2026–2033</button>
+  <button class="btn-secondary" onclick="abrirPagina('fin_dados')">▣ Dados da Empresa</button></div>
+  <div id="inv_saude_res"></div>
+</div>
+<div class="page" id="page-inv_ativos">
+  <div class="calc-page-header"><div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(201,162,39,0.16),rgba(62,207,142,0.12));">⛟</div>
+    <div><h2>Comprar um bem · à vista, financiado ou consórcio</h2>
+    <p>Máquina, veículo, equipamento ou imóvel: as três formas de comprar, comparadas em dinheiro de hoje — o que sai do caixa, quando o bem chega e quanto do imposto do bem volta como crédito na Reforma.</p></div></div>
+  <div class="input-card"><h3>O bem</h3><div class="input-grid-3">
+    <div class="input-group"><label>Valor do bem (R$)</label><input type="number" id="inv_a_valor" placeholder="ex: 300.000"></div>
+    <div class="input-group"><label>Ano da compra</label><select id="inv_a_ano"><option>2026</option><option selected>2027</option><option>2028</option><option>2029</option><option>2030</option><option>2031</option><option>2032</option><option>2033</option></select></div>
+    <div class="input-group"><label>Rendimento do dinheiro parado (% ao mês, líquido)</label><input type="number" id="inv_a_rend" value="0.8" step="0.05"><span class="lh-hint" data-hint="É o quanto o dinheiro renderia se ficasse aplicado. Serve para comparar as três opções em dinheiro de hoje." onclick="lhHint(event,this)">?</span></div>
+    <div class="input-group"><label>Empresa no regime regular (Presumido ou Real)?</label><select id="inv_a_reg"><option value="sim">Sim — o imposto do bem volta como crédito</option><option value="nao">Não — Simples Nacional</option></select></div>
+  </div></div>
+  <div class="input-card"><h3>À vista</h3><div class="input-grid-3">
+    <div class="input-group"><label>Desconto para pagar à vista (%)</label><input type="number" id="inv_a_desc" value="5" step="0.5"></div>
+  </div></div>
+  <div class="input-card"><h3>Financiamento</h3><div class="input-grid-3">
+    <div class="input-group"><label>Entrada (% do valor)</label><input type="number" id="inv_a_ent" value="20" step="1"></div>
+    <div class="input-group"><label>Juros (% ao mês)</label><input type="number" id="inv_a_juros" value="1.4" step="0.05"></div>
+    <div class="input-group"><label>Prazo (meses)</label><input type="number" id="inv_a_nf" value="48"></div>
+  </div></div>
+  <div class="input-card"><h3>Consórcio</h3><div class="input-grid-3">
+    <div class="input-group"><label>Taxa de administração (% total)</label><input type="number" id="inv_a_adm" value="16" step="0.5"></div>
+    <div class="input-group"><label>Fundo de reserva (% total)</label><input type="number" id="inv_a_fundo" value="2" step="0.5"></div>
+    <div class="input-group"><label>Prazo (meses)</label><input type="number" id="inv_a_nc" value="80"></div>
+    <div class="input-group"><label>Mês em que espera ser contemplado</label><input type="number" id="inv_a_cont" value="24"><span class="lh-hint" data-hint="Consórcio não tem data garantida: a contemplação é por sorteio ou lance. Use uma estimativa realista." onclick="lhHint(event,this)">?</span></div>
+  </div>
+  <button class="btn-calcular" onclick="LH_INVEST.renderAtivos()">Comparar as três</button></div>
+  <div id="inv_ativos_res"></div>
 </div>
 
   <div class="page" id="page-cr04">
@@ -73519,6 +73569,163 @@ html[data-theme="claro"] .jm-empty{background:#f7f5ef}
 .sw-v{font-size:.8rem;color:#6b7a90;font-style:italic}
 </style>
 <script>
+/* ★ v926 · ITFE ETAPA 4 · InvestPRO — três telas do empresário em cima do motor financeiro que já existe:
+     · Excesso de caixa  → LH_FIN.fluxo(): saldo − caixa mínimo − giro que ainda vai ser preciso = o que sobra;
+     · Saúde financeira  → LH_FIN.dre() + fluxo(): 6 indicadores com sinal e nota 0–100 (hoje, 2033, pior ano);
+     · Comprar um bem    → à vista × financiamento (Price) × consórcio, em valor presente ao rendimento do caixa,
+                           com o crédito de IBS/CBS do bem (valor × t/(1+t), t = getAliq(ano).total — a mesma
+                           conta do servidor fn_capex) no mês em que o bem chega.
+   Não indica produto de investimento: mede. As telas existem no app.html; o menu só no ITFE. */
+window.LH_INVEST=(function(){
+  var F=function(v){ return 'R$ '+Math.round(+v||0).toLocaleString('pt-BR'); };
+  var P=function(v,c){ return (+v||0).toLocaleString('pt-BR',{maximumFractionDigits:(c==null?1:c)})+'%'; };
+  var num=function(id,d){ var e=document.getElementById(id); var v=e?parseFloat(String(e.value).replace(',','.')):NaN; return isNaN(v)?d:v; };
+  var MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  function semDados(){ return '<div class="input-card"><h3 style="color:var(--gold)">Faltam os Dados da Empresa</h3><div style="color:var(--text2);font-size:.9rem">Esta conta sai do DRE e do Fluxo de Caixa. Preencha ao menos faturamento, regime, compras, custos fixos e prazos em <a href="#" onclick="abrirPagina(\'fin_dados\');return false" style="color:var(--gold)">Dados da Empresa</a>.</div></div>'; }
+  function temDados(){ try{ return window.LH_FIN && +(LH_FIN.get().dados||{}).fat>0; }catch(e){ return false; } }
+  function leitura(t, fr, ac){ return '<div class="pcp-dono"><div class="eb">Para você, dono</div><h4>'+t+'</h4>'+fr.map(function(x){ return '<p>'+x+'</p>'; }).join('')
+    +(ac&&ac.length?'<div class="faz"><b class="t">O que fazer</b><ul>'+ac.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul></div>':'')+'</div>'; }
+  function kpi(l,v,s,cor){ return '<div class="kpi-card"><div class="kpi-label">'+l+'</div><div class="kpi-value"'+(cor?' style="color:'+cor+'"':'')+'>'+v+'</div>'+(s?'<div class="kpi-sub">'+s+'</div>':'')+'</div>'; }
+
+  /* ── 1. EXCESSO DE CAIXA ── */
+  function caixa(taxa){
+    var S=LH_FIN.fluxo(), out=[];
+    S.forEach(function(y,i){
+      var maxF=y.ncg; for(var j=i;j<S.length;j++) maxF=Math.max(maxF,S[j].ncg);
+      var giro=Math.max(0,maxF-y.ncg), min=y.alvo||0, ex=y.saldo-min-giro;
+      out.push({ano:y.ano, saldo:y.saldo, minimo:min, giro:giro, excedente:ex, rende:Math.max(0,ex)*(taxa/100)});
+    });
+    out.capital=S.capital; return out;
+  }
+  function renderCaixa(){
+    var box=document.getElementById('inv_caixa_res'); if(!box) return;
+    if(!temDados()){ box.innerHTML=semDados(); return; }
+    var tx=num('inv_c_taxa',9), C=caixa(tx), a=C[0], z=C[7], pior=C[0]; C.forEach(function(y){ if(y.excedente<pior.excedente) pior=y; });
+    var h='<div class="input-card"><div class="kpi-grid" id="inv_caixa_kpis">'
+      +kpi('Sobra para aplicar em 2026', F(Math.max(0,a.excedente)), a.excedente<0?'faltam '+F(-a.excedente)+' para a reserva':'depois das reservas', a.excedente<0?'#e05a4d':'#16c47c')
+      +kpi('Caixa mínimo (2026)', F(a.minimo), 'saídas do mês × meses de reserva')
+      +kpi('Reserva para o giro', F(a.giro), 'o aumento do capital de giro até 2033')
+      +kpi('Rende em 1 ano', F(a.rende), 'a '+P(tx)+' ao ano, líquido')
+      +kpi('Ano mais apertado', pior.ano+' · '+F(pior.excedente), pior.excedente<0?'abaixo das reservas':'ainda sobra', pior.excedente<0?'#e05a4d':'')+'</div>';
+    h+='<div style="overflow-x:auto;margin-top:12px"><table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead><tr><th style="text-align:left;padding:6px 8px;color:var(--gold)">R$ por ano</th>'+C.map(function(y){ return '<th style="text-align:right;padding:6px 8px;color:var(--gold)">'+y.ano+'</th>'; }).join('')+'</tr></thead><tbody>';
+    [['Saldo de caixa','saldo'],['(−) Caixa mínimo','minimo'],['(−) Reserva para o giro','giro'],['= Sobra para aplicar','excedente'],['Rendimento em 1 ano','rende']].forEach(function(l){
+      h+='<tr><td style="padding:6px 8px;'+(l[1]==='excedente'?'font-weight:700':'')+'">'+l[0]+'</td>'+C.map(function(y){ var v=y[l[1]]; return '<td style="text-align:right;padding:6px 8px;'+(v<0?'color:#e05a4d;':'')+(l[1]==='excedente'?'font-weight:700':'')+'">'+F(v)+'</td>'; }).join('')+'</tr>'; });
+    h+='</tbody></table></div></div>';
+    var fr=[], ac=[];
+    if(a.excedente>0){
+      fr.push('Hoje a empresa tem <b>'+F(a.saldo)+'</b> em caixa. Desse valor, <b>'+F(a.minimo)+'</b> é o caixa mínimo para o dia a dia e <b>'+F(a.giro)+'</b> é o capital de giro que a empresa ainda vai precisar com o crescimento e o split payment.');
+      fr.push('Sobram <b>'+F(a.excedente)+'</b>. Aplicados a '+P(tx)+' ao ano, rendem cerca de <b>'+F(a.rende)+'</b> em 12 meses.');
+      ac.push('O caixa mínimo fica onde o dinheiro sai no mesmo dia: é ele que paga as contas do mês.');
+      ac.push('A reserva do giro pode ter prazo, desde que vença antes do ano em que o giro vai precisar dela.');
+      ac.push('A sobra pode ir para prazo mais longo, para investir na própria empresa ou para distribuir aos sócios — veja em Comprar um bem se vale pagar à vista.');
+    } else {
+      fr.push('Hoje o caixa de <b>'+F(a.saldo)+'</b> não cobre as reservas: faltam <b>'+F(-a.excedente)+'</b> para o caixa mínimo e o giro que a empresa vai precisar.');
+      ac.push('Antes de aplicar ou distribuir, recomponha a reserva.'); ac.push('Veja no Fluxo de Caixa quanto de capital a empresa precisa e quando.');
+    }
+    if(pior.excedente<0 && pior.ano!==2026) fr.push('Atenção: em <b>'+pior.ano+'</b> o caixa fica <b>'+F(-pior.excedente)+'</b> abaixo das reservas. O dinheiro aplicado hoje precisa estar disponível até lá.');
+    h+=leitura('Quanto do caixa pode trabalhar para você', fr, ac);
+    box.innerHTML=h;
+  }
+
+  /* ── 2. SAÚDE FINANCEIRA ── */
+  var REGUA=[
+    {k:'margem', n:'Margem líquida', f:function(d,c){ return d.margemPct; }, fmt:function(v){ return P(v); }, bom:10, ruim:3, maior:true, dica:'lucro ÷ receita'},
+    {k:'folga', n:'Folga sobre o ponto de equilíbrio', f:function(d,c){ return (d.pe>0)?(d.receita/d.pe-1)*100:null; }, fmt:function(v){ return P(v,0); }, bom:30, ruim:10, maior:true, dica:'quanto a venda pode cair antes do prejuízo'},
+    {k:'cobertura', n:'Cobertura de caixa', f:function(d,c){ return c.cobertura; }, fmt:function(v){ var x=Math.round(v*10)/10; return x.toLocaleString('pt-BR')+(x===1?' mês':' meses'); }, bom:3, ruim:1, maior:true, dica:'quantos meses de saídas o caixa paga'},
+    {k:'geracao', n:'Geração de caixa', f:function(d,c){ return c.geracao; }, fmt:function(v){ return P(v); }, bom:8, ruim:2, maior:true, dica:'caixa do ano ÷ receita'},
+    {k:'giro', n:'Dinheiro parado no giro', f:function(d,c){ return c.dias; }, fmt:function(v){ return Math.round(v)+' dias'; }, bom:30, ruim:60, maior:false, dica:'dias de venda presos em estoque e prazos'},
+    {k:'carga', n:'Carga de impostos', f:function(d,c){ return d.cargaTotal; }, fmt:function(v){ return P(v); }, bom:null, ruim:null, maior:false, dica:'consumo + IRPJ/CSLL sobre a receita (só informa)'}
+  ];
+  function sinal(r,v){ if(v==null||isNaN(v)||r.bom==null) return null; if(r.maior) return v>=r.bom?2:(v>=r.ruim?1:0); return v<=r.bom?2:(v<=r.ruim?1:0); }
+  function saude(){
+    var D=LH_FIN.dre(), S=LH_FIN.fluxo(), anos=[];
+    D.forEach(function(d,i){ var c=S[i], it={}, pts=[], n=0;
+      REGUA.forEach(function(r){ var v=r.f(d,c), s=sinal(r,v); it[r.k]={v:v,s:s}; if(s!=null){ pts.push(s*50); } });
+      anos.push({ano:d.ano, it:it, nota:pts.length?Math.round(pts.reduce(function(a,b){return a+b;},0)/pts.length):null}); });
+    var pior=anos[0]; anos.forEach(function(y){ if(y.nota<pior.nota) pior=y; });
+    return {anos:anos, hoje:anos[0], z:anos[7], pior:pior, falta:(S.capital||{}).falta||0};
+  }
+  function renderSaude(){
+    var box=document.getElementById('inv_saude_res'); if(!box) return;
+    if(!temDados()){ box.innerHTML=semDados(); return; }
+    var R=saude(), COR=['#e05a4d','#e8b93a','#16c47c'], ROT=['vermelho','amarelo','verde'];
+    var nt=function(v){ return v==null?'—':v+'/100'; }, cn=function(v){ return v==null?'':(v>=70?COR[2]:v>=40?COR[1]:COR[0]); };
+    var h='<div class="input-card"><div class="kpi-grid" id="inv_saude_kpis">'+kpi('Nota hoje (2026)',nt(R.hoje.nota),'',cn(R.hoje.nota))+kpi('Nota em 2033',nt(R.z.nota),'',cn(R.z.nota))+kpi('Ano mais fraco',R.pior.ano+' · '+nt(R.pior.nota),'',cn(R.pior.nota))+'</div>';
+    h+='<div style="overflow-x:auto;margin-top:12px"><table style="width:100%;border-collapse:collapse;font-size:.84rem"><thead><tr><th style="text-align:left;padding:7px 8px;color:var(--gold)">Indicador</th><th style="padding:7px 8px;color:var(--gold)">Hoje</th><th style="padding:7px 8px;color:var(--gold)">2033</th><th style="text-align:left;padding:7px 8px;color:var(--gold)">Régua</th></tr></thead><tbody>';
+    REGUA.forEach(function(r){ var a=R.hoje.it[r.k], b=R.z.it[r.k];
+      var cel=function(x){ return '<td style="text-align:center;padding:7px 8px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:'+(x.s==null?'#8a97a8':COR[x.s])+'"></span>'+(x.v==null?'—':r.fmt(x.v))+'</td>'; };
+      h+='<tr><td style="padding:7px 8px"><b>'+r.n+'</b><div style="font-size:.72rem;color:#8a97a8">'+r.dica+'</div></td>'+cel(a)+cel(b)+'<td style="padding:7px 8px;font-size:.75rem;color:#8a97a8">'+(r.bom==null?'informativo':(r.maior?'verde ≥ '+r.fmt(r.bom)+' · vermelho < '+r.fmt(r.ruim):'verde ≤ '+r.fmt(r.bom)+' · vermelho > '+r.fmt(r.ruim)))+'</td></tr>'; });
+    h+='</tbody></table></div></div>';
+    var piores=REGUA.filter(function(r){ return R.z.it[r.k].s===0; }).map(function(r){ return r.n.toLowerCase(); });
+    var caiu=REGUA.filter(function(r){ var a=R.hoje.it[r.k].s, b=R.z.it[r.k].s; return a!=null && b!=null && b<a; }).map(function(r){ return r.n.toLowerCase(); });
+    var fr=['A nota da empresa hoje é <b>'+nt(R.hoje.nota)+'</b> e, com a Reforma, vai a <b>'+nt(R.z.nota)+'</b> em 2033.'];
+    if(R.pior.ano!==2026 && R.pior.nota<R.hoje.nota) fr.push('O ano mais fraco é <b>'+R.pior.ano+'</b> ('+nt(R.pior.nota)+'): é para ele que a empresa precisa se preparar.');
+    if(caiu.length) fr.push('Pioram até 2033: <b>'+caiu.join(', ')+'</b>.');
+    if(piores.length) fr.push('No vermelho em 2033: <b>'+piores.join(', ')+'</b>.');
+    if(R.falta>0) fr.push('O Fluxo de Caixa mostra que a empresa precisa de <b>'+F(R.falta)+'</b> de reforço para não ficar abaixo do caixa mínimo.');
+    var ac=[]; if(caiu.indexOf('margem líquida')>=0 || piores.indexOf('margem líquida')>=0) ac.push('Margem caindo: reveja preços na Precificação em Massa.');
+    if(caiu.indexOf('dinheiro parado no giro')>=0 || piores.indexOf('dinheiro parado no giro')>=0) ac.push('Giro pesado: encurte prazos de recebimento e reveja o estoque.');
+    if(caiu.indexOf('cobertura de caixa')>=0 || piores.indexOf('cobertura de caixa')>=0) ac.push('Pouco caixa: monte a reserva antes de investir ou distribuir lucros.');
+    ac.push('Refaça esta conta sempre que atualizar os Dados da Empresa.');
+    h+=leitura('Os sinais vitais da empresa', fr, ac);
+    box.innerHTML=h;
+  }
+
+  /* ── 3. COMPRAR UM BEM ── */
+  function vp(pmt,r,n,ini){ /* parcelas de 1..n meses, a partir do mês ini+1 */ var s=0; for(var t=1;t<=n;t++) s+=pmt/Math.pow(1+r,t+(ini||0)); return s; }
+  function ativos(p){
+    var V=+p.valor||0, r=(+p.rend||0)/100, ano=+p.ano||2027, reg=!!p.regular;
+    var t=0; try{ t=(window.getAliq?getAliq(ano).total:0)||0; }catch(e){}
+    var credDe=function(base){ return reg ? base*t/(1+t) : 0; };
+    /* à vista */
+    var pagoAV=V*(1-(+p.desc||0)/100), crAV=credDe(pagoAV);
+    var av={nome:'À vista', saidaHoje:pagoAV, parcela:0, n:0, total:pagoAV, vp:pagoAV, chega:0, credito:crAV, vpCred:crAV};
+    /* financiamento (Price) */
+    var E=V*(+p.ent||0)/100, PV0=V-E, i=(+p.juros||0)/100, n=Math.max(1,Math.round(+p.nf||1));
+    var pmt= i>0 ? PV0*i/(1-Math.pow(1+i,-n)) : PV0/n, crFI=credDe(V);
+    var fi={nome:'Financiado', saidaHoje:E, parcela:pmt, n:n, total:E+pmt*n, vp:E+vp(pmt,r,n), chega:0, credito:crFI, vpCred:crFI, juros:E+pmt*n-V};
+    /* consórcio */
+    var nc=Math.max(1,Math.round(+p.nc||1)), k=Math.max(0,Math.min(nc,Math.round(+p.cont||0)));
+    var parc=V*(1+((+p.adm||0)+(+p.fundo||0))/100)/nc, crCO=credDe(V);
+    var co={nome:'Consórcio', saidaHoje:0, parcela:parc, n:nc, total:parc*nc, vp:vp(parc,r,nc), chega:k, credito:crCO, vpCred:crCO/Math.pow(1+r,k)};
+    [av,fi,co].forEach(function(o){ o.liquido=o.vp-o.vpCred; });
+    var ord=[av,fi,co].slice().sort(function(a,b){ return a.liquido-b.liquido; });
+    return {av:av, fi:fi, co:co, melhor:ord[0], segundo:ord[1], aliq:t, ano:ano, regular:reg, valor:V};
+  }
+  function lerAtivos(){ return {valor:num('inv_a_valor',0), ano:num('inv_a_ano',2027), rend:num('inv_a_rend',0.8), regular:(document.getElementById('inv_a_reg')||{}).value!=='nao',
+    desc:num('inv_a_desc',0), ent:num('inv_a_ent',20), juros:num('inv_a_juros',1.4), nf:num('inv_a_nf',48), adm:num('inv_a_adm',16), fundo:num('inv_a_fundo',2), nc:num('inv_a_nc',80), cont:num('inv_a_cont',24)}; }
+  function renderAtivos(){
+    var box=document.getElementById('inv_ativos_res'); if(!box) return;
+    var p=lerAtivos(); if(!(p.valor>0)){ box.innerHTML='<div class="input-card" style="color:var(--text2)">Informe o valor do bem.</div>'; return; }
+    var R=ativos(p), L=[R.av,R.fi,R.co];
+    var h='<div class="input-card"><div class="kpi-grid" id="inv_ativos_kpis">'+L.map(function(o){ return kpi(o.nome+(o===R.melhor?' · mais barato':''), F(o.liquido), 'custo em dinheiro de hoje'+(o.credito?' (já com '+F(o.vpCred)+' de crédito)':''), o===R.melhor?'#16c47c':''); }).join('')+'</div>';
+    h+='<div style="overflow-x:auto;margin-top:12px"><table style="width:100%;border-collapse:collapse;font-size:.84rem"><thead><tr><th style="text-align:left;padding:7px 8px;color:var(--gold)"></th>'+L.map(function(o){ return '<th style="text-align:right;padding:7px 8px;color:var(--gold)">'+o.nome+'</th>'; }).join('')+'</tr></thead><tbody>';
+    [['Sai do caixa hoje',function(o){ return F(o.saidaHoje); }],['Parcela',function(o){ return o.n?F(o.parcela)+' × '+o.n:'—'; }],['Total pago',function(o){ return F(o.total); }],
+     ['O bem chega',function(o){ return o.chega?'no mês '+o.chega+' (sem data garantida)':'na hora'; }],['Imposto do bem que volta como crédito',function(o){ return o.credito?F(o.credito):'—'; }],
+     ['Custo em dinheiro de hoje',function(o){ return '<b>'+F(o.liquido)+'</b>'; }]].forEach(function(l){ h+='<tr><td style="padding:7px 8px">'+l[0]+'</td>'+L.map(function(o){ return '<td style="text-align:right;padding:7px 8px">'+l[1](o)+'</td>'; }).join('')+'</tr>'; });
+    h+='</tbody></table></div></div>';
+    var m=R.melhor, s=R.segundo, fr=['Para um bem de <b>'+F(R.valor)+'</b>, a forma mais barata em dinheiro de hoje é <b>'+m.nome.toLowerCase()+'</b>: '+F(m.liquido)+', '+F(s.liquido-m.liquido)+' a menos que '+s.nome.toLowerCase()+'.'];
+    fr.push('Financiado, a empresa paga '+F(R.fi.juros)+' de juros ao longo de '+R.fi.n+' meses.');
+    fr.push('No consórcio o bem só chega '+(R.co.chega?'por volta do mês '+R.co.chega:'na contemplação')+', e a data não é garantida. Até lá, a empresa paga sem ter o bem.');
+    if(R.regular && R.av.credito>0) fr.push('No regime regular, em '+R.ano+', cerca de <b>'+F(R.fi.credito)+'</b> do preço é imposto que volta como crédito'+(R.ano<2033?' (o crédito sobe até 2033, junto com a alíquota)':'')+'.');
+    else if(!R.regular) fr.push('No Simples, o imposto embutido no preço do bem não volta como crédito.');
+    var ac=['Confira no Excesso de caixa se pagar à vista não come a reserva da empresa.','Pergunte ao banco e à administradora o custo efetivo total (CET) e use esse número aqui.'];
+    if(m===R.co) ac.push('Consórcio só compensa se a empresa pode esperar o bem: sem pressa, ele costuma sair mais barato.');
+    h+=leitura('Qual forma de compra pesa menos', fr, ac);
+    box.innerHTML=h;
+  }
+  /* re-desenha ao abrir a tela */
+  var _ap=window.abrirPagina;
+  window.abrirPagina=function(id){ var r=_ap.apply(this,arguments);
+    try{ if(id==='inv_caixa') setTimeout(renderCaixa,120); if(id==='inv_saude') setTimeout(renderSaude,120);
+         if(id==='inv_ativos'){ var reg=document.getElementById('inv_a_reg'); if(reg && !reg.dataset.pcpManual && window.LH_FIN){ var rg=(LH_FIN.get().dados||{}).regime; if(rg) reg.value=(rg==='presumido'||rg==='real')?'sim':'nao'; }
+                               if(reg && !reg.dataset.pcpLig){ reg.dataset.pcpLig='1'; reg.addEventListener('change',function(ev){ if(ev.isTrusted) reg.dataset.pcpManual='1'; }); } } }catch(e){}
+    return r; };
+  return {caixa:caixa, saude:saude, ativos:ativos, renderCaixa:renderCaixa, renderSaude:renderSaude, renderAtivos:renderAtivos, regua:REGUA};
+})();
+</script>
+
+<script>
 /* ★ v911 · PRODUTO "INTELIGÊNCIA DE CADASTRO E PREÇOS" (v912: nome definitivo + Boas-Vindas) — o CORE vestido como produto próprio.
    Entra por app.html?produto=preco (ou preco.html, que redireciona). Sem o parâmetro,
    nada aqui roda e o CORE fica exatamente como era.
@@ -73633,6 +73840,9 @@ html[data-theme="claro"] .jm-empty{background:#f7f5ef}
       { t:'Financeiro', itens:[
         ['fin_dados','Dados da Empresa'], ['fin_cred','Impostos ano a ano'],
         ['fin_dre','DRE 2026–2033'], ['fin_fluxo','Fluxo de Caixa 2026–2033'] ]},
+      /* v926 · etapa 4 · InvestPRO */
+      { t:'Investimento', itens:[
+        ['inv_caixa','Excesso de caixa'], ['inv_saude','Saúde financeira'], ['inv_ativos','Comprar um bem: à vista, financiado ou consórcio'] ]},
       { t:'Seu Segmento', seg:true, itens:[
         /* comércio (Fecomércio) */
         ['classif','Alíquota por produto (mix)','comercio'], ['raiox360','Raio-X do Produto','comercio'],
