@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v926";</script>
+<body><script>window.LH_VERSAO="v927";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -6350,6 +6350,9 @@ function lhTrocarSenha(){
     <div class="nav-item nav-calc-p5b" onclick="abrirPagina('cadeia',this)" title="de quem você compra e para quem você vende — a parcela das compras que gera crédito e a fatia das vendas em que o cliente recupera o IBS/CBS; alimenta Regime Ótimo, Dentro × Híbrido e Precificação">
       <span class="ni-icon">⛓</span><span class="ni-label">Cadeia de Crédito · entradas × saídas</span>
     </div>
+    <div class="nav-item nav-calc-p5b" onclick="abrirPagina('fornecedores',this)" title="todos os fornecedores das notas de compra: o custo de cada um depois dos créditos, de 2027 a 2033, e com quem renegociar">
+      <span class="ni-icon">▤</span><span class="ni-label">Mapa de Fornecedores · custo depois do crédito</span>
+    </div>
 <div class="nav-item" onclick="abrirPagina('matrizdoc',this)"><span class="ni-icon">⊞</span><span class="ni-label">Matriz de Inputs Automáticos</span></div>
 <div class="nav-item" onclick="abrirPagina('formpreco',this)"><span class="ni-icon">◆</span><span class="ni-label">Formação de Preço 2027-33</span></div>
 <div class="nav-item" onclick="abrirPagina('precmassa',this)"><span class="ni-icon">◆</span><span class="ni-label">Precificação em Massa 2027-33</span><span class="ni-pill" style="background:rgba(201,162,39,.15);color:#c9a227">novo</span></div>
@@ -8756,9 +8759,9 @@ function lhTrocarSenha(){
           </select>
         </div>
         <div class="input-group">
-          <label>Parcela CBS/IBS no DAS do fornecedor SN (%)</label>
-          <input type="number" id="calc03_parcela_das" min="0" max="30" step="0.5" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text);font-family:inherit;font-size:0.92em;" placeholder="15.5">
-          <small style="color:var(--text-dim);font-size:0.78em;">Fração de CBS/IBS recolhida no DAS — crédito que o comprador aproveita (LC 214/2025)</small>
+          <label>Fatia de IBS/CBS no DAS (deixe vazio para usar a tabela do ano)</label>
+          <input type="number" id="calc03_parcela_das" min="0" max="30" step="0.5" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text);font-family:inherit;font-size:0.92em;" placeholder="tabela do ano">
+          <small style="color:var(--text-dim);font-size:0.78em;">Parte do DAS que é IBS/CBS (%). Vazio: o servidor usa a fatia da tabela do ano e o anexo/faturamento presumidos do fornecedor. O crédito do comprador é a alíquota efetiva do Simples × essa fatia (LC 214/2025 art. 47 §9º II).</small>
         </div>
       </div>
 
@@ -8788,7 +8791,7 @@ function lhTrocarSenha(){
     </div>
 
     <div id="res-calc03" class="result-card">
-      <div class="kpi-grid" id="kpi-calc03"></div><div class="chart-card">
+      <div class="kpi-grid" id="kpi-calc03"></div><div id="calc03-simples"></div><div class="chart-card">
         <h4>Custo Real: SN vs LP (incluindo crédito perdido)</h4>
         <div class="chart-wrap"><canvas id="chart-calc03"></canvas></div>
       </div><details class="lh-acc t-info" open style="margin-top:12px;"><summary>📊 Análise de Resultados</summary><div class="lh-acc-body"><div id="recs-calc03"></div></div></details>
@@ -10857,6 +10860,33 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
        v30.11.26 — CR04 · CRÉDITOS PLENOS CBS/IBS
        PROSPECTIVA (não recuperação). Adaptado V21 Gap 6 · LC 214/2025
        ══════════════════════════════════════════════ -->
+<!-- MAPA DE FORNECEDORES · página (TR13 §5) — encaixar no grupo Cadastro & Preço, ao lado da Cadeia de Crédito -->
+<div class="page" id="page-fornecedores">
+  <div class="calc-page-header">
+    <div>
+      <h2>Mapa de Fornecedores</h2>
+      <p>Quanto cada fornecedor vai custar depois dos créditos, de 2027 a 2033 — e com quem renegociar. Usa as notas de compra já importadas na Central.</p>
+    </div>
+  </div>
+  <div class="input-grid-3">
+    <div class="input-group"><label>Regime da empresa compradora</label>
+      <select id="mf_regime"><option value="">Escolha…</option><option value="LR">Lucro Real</option><option value="LP">Lucro Presumido</option><option value="SN">Simples Nacional (dentro do DAS)</option><option value="SN_HIBRIDO">Simples híbrido (IBS/CBS por fora)</option></select></div>
+    <div class="input-group"><label>Ano em foco</label>
+      <select id="mf_ano"><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option><option value="2031">2031</option><option value="2032">2032</option><option value="2033">2033</option></select></div>
+    <div class="input-group"><label>Cenário de alíquota</label>
+      <select id="mf_cenario"><option value="A">A · teto legal (projeção)</option><option value="B">B · estimativa oficial</option></select></div>
+    <div class="input-group"><label><input type="checkbox" id="mf_icms" checked> A empresa toma crédito de ICMS nas compras</label></div>
+    <div class="input-group"><label>Fornecedor do Simples · anexo presumido</label>
+      <select id="mf_anexo"><option value="">Anexo I (comércio) — padrão</option><option value="II">Anexo II (indústria)</option><option value="III">Anexo III (serviços)</option><option value="IV">Anexo IV</option><option value="V">Anexo V</option></select></div>
+    <div class="input-group"><label>Fornecedor do Simples · faturamento anual presumido (R$)</label>
+      <input type="number" id="mf_rbt12" min="0" step="1000" placeholder="540000"><small>Vazio = R$ 540 mil. Muda a alíquota efetiva e o crédito.</small></div>
+    <div class="input-group"><label>Crédito presumido do agro (%) — estimativa</label>
+      <input type="number" id="mf_pf" min="0" max="30" step="0.1" placeholder="aguardando o percentual oficial"><small>Compras de produtor rural pessoa física. Vazio = pendente.</small></div>
+  </div>
+  <button type="button" class="btn-calcular" onclick="LH_MAPA_FORN.executar()">Montar o mapa</button>
+  <div id="mf_res" class="resultado-section visible"></div>
+</div>
+
   <div class="page" id="page-cadeia">
     <div class="calc-page-header">
       <div class="calc-page-icon" style="background:linear-gradient(135deg,rgba(22,196,124,0.16),rgba(201,162,39,0.12));">⛓</div>
@@ -31841,7 +31871,7 @@ function aplicarBenchmarkSetorial() {
 /* ★ v815 · o índice do Ctrl+K ganha as 98 perguntas. Quem digita "preço"
    passa a achar tanto a calculadora quanto a dúvida que leva até ela —
    e a dúvida é o que a pessoa realmente tem na cabeça. */
-window.BUSCA_INDEX = [{"tipo":"aba","id":"perguntas","nome":"Perguntas que a ferramenta responde","cat":"Encontre pela dúvida","atalho":"perguntas"},{"tipo":"calc","id":"c01","nome":"Quanto de caixa o Split Payment vai tirar do meu cliente?","cat":"Pergunta · O caixa do meu cliente","atalho":"Split Payment Cash Gap"},{"tipo":"calc","id":"n33","nome":"Ele vai precisar de mais capital de giro? Quanto?","cat":"Pergunta · O caixa do meu cliente","atalho":"NCG Split Payment"},{"tipo":"calc","id":"c11","nome":"Em que mês exato o caixa dele aperta?","cat":"Pergunta · O caixa do meu cliente","atalho":"Split por Operação"},{"tipo":"calc","id":"c01","nome":"A empresa aguenta a transição sem tomar empréstimo?","cat":"Pergunta · O caixa do meu cliente","atalho":"Split Payment Cash Gap"},{"tipo":"calc","id":"antecip","nome":"Pagamento antecipado muda alguma coisa para ele?","cat":"Pergunta · O caixa do meu cliente","atalho":"Pagamentos Antecipados"},{"tipo":"calc","id":"formpreco","nome":"Ele vai ter que aumentar o preço? Em quanto?","cat":"Pergunta · Preço e margem","atalho":"Formação de Preço 2027-33"},{"tipo":"calc","id":"formpreco","nome":"Se segurar o preço, quanto perde de margem?","cat":"Pergunta · Preço e margem","atalho":"Formação de Preço 2027-33"},{"tipo":"calc","id":"c02","nome":"Os contratos antigos vão dar prejuízo?","cat":"Pergunta · Preço e margem","atalho":"Reprecificação de Contratos"},{"tipo":"calc","id":"formpreco","nome":"Ele cobra o mesmo de empresa e de pessoa física?","cat":"Pergunta · Preço e margem","atalho":"Formação de Preço 2027-33"},{"tipo":"calc","id":"calc03","nome":"O concorrente vai poder cobrar menos que ele?","cat":"Pergunta · Preço e margem","atalho":"Risco Fornecedor SN"},{"tipo":"calc","id":"c02","nome":"Como reajustar contrato de prazo longo sem perder o cliente?","cat":"Pergunta · Preço e margem","atalho":"Reprecificação de Contratos"},{"tipo":"calc","id":"c04","nome":"Ele vai pagar mais ou menos imposto do que hoje?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"classif","nome":"Qual é a alíquota de verdade, produto por produto?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Produto (Mix)"},{"tipo":"calc","id":"raiox360","nome":"O produto dele tem desconto de 60%? De 40%? Zero?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Raio-X 360° do Produto"},{"tipo":"calc","id":"c04","nome":"Quanto muda em cada ano da transição?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"seletivo","nome":"O Imposto Seletivo pega o produto dele?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Imposto Seletivo (IS)"},{"tipo":"calc","id":"classif","nome":"Qual a alíquota efetiva considerando o mix inteiro?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Produto (Mix)"},{"tipo":"calc","id":"aliqref","nome":"E se a alíquota de referência subir? Qual o risco?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota de Referência · risco"},{"tipo":"calc","id":"c05","nome":"Ele está no regime certo? Quanto economiza mudando?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Regime Ótimo (Simples/LP/LR)"},{"tipo":"calc","id":"c07","nome":"Vale continuar no Simples depois da reforma?","cat":"Pergunta · Regime: continuar ou sair","atalho":"PF vs PJ — Pejotização"},{"tipo":"calc","id":"dxh","nome":"Dentro ou híbrido: qual custa menos para ele?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"fatorR","nome":"O fator R joga ele no Anexo III ou no V?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Fator R · III vs V"},{"tipo":"calc","id":"sublimite","nome":"Ele está perto de estourar o sublimite?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Sublimite Simples"},{"tipo":"calc","id":"c07","nome":"Compensa abrir PJ ou continuar como pessoa física?","cat":"Pergunta · Regime: continuar ou sair","atalho":"PF vs PJ — Pejotização"},{"tipo":"calc","id":"art127","nome":"Profissão regulamentada muda a conta? (art. 127)","cat":"Pergunta · Regime: continuar ou sair","atalho":"Profissões Regulamentadas · art. 127"},{"tipo":"calc","id":"dxh","nome":"Se ele sair do Simples, o que acontece com o crédito da cadeia?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"dxh","nome":"O cliente dele vai deixar de comprar por causa do crédito?","cat":"Pergunta · Fornecedores e clientes","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"n04","nome":"Fornecedor no Simples vira problema para ele?","cat":"Pergunta · Fornecedores e clientes","atalho":"SN → Regime Regular"},{"tipo":"calc","id":"dxh","nome":"Vale trocar de fornecedor? Quanto isso rende?","cat":"Pergunta · Fornecedores e clientes","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"difal","nome":"Ele vende para outro estado — o DIFAL muda?","cat":"Pergunta · Fornecedores e clientes","atalho":"DIFAL · Interestadual"},{"tipo":"calc","id":"calc03","nome":"Vender para consumidor final ou para empresa: o que muda?","cat":"Pergunta · Fornecedores e clientes","atalho":"Risco Fornecedor SN"},{"tipo":"calc","id":"central-c5","nome":"Ele tem crédito para recuperar? Quanto?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":""},{"tipo":"calc","id":"cr01","nome":"ICMS na base do PIS/COFINS — cabe no caso dele? (Tema 69)","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Tema 69 · ICMS na base PIS/COFINS"},{"tipo":"calc","id":"icmsst1125","nome":"E o ICMS-ST? (Tema 1125)","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"ICMS-ST na base PIS/COFINS · Tema 1125"},{"tipo":"calc","id":"monofasico","nome":"Pagou a maior em produto monofásico?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Monofásico · PIS/COFINS revenda"},{"tipo":"calc","id":"ins","nome":"Tem crédito de INSS ou de ISS parado?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Insumos PIS/COFINS · Tema 779"},{"tipo":"calc","id":"s962","nome":"Existe saldo credor acumulado que ninguém pediu?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"IRPJ/CSLL sobre Selic · Tema 962"},{"tipo":"calc","id":"dup","nome":"Pagou alguma guia em duplicidade?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Pagamento em Duplicidade · scanner"},{"tipo":"calc","id":"ret","nome":"Retenção na fonte que nunca foi compensada?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Retenções na Fonte · não aproveitadas"},{"tipo":"calc","id":"credpresumido","nome":"Crédito presumido do setor dele está sendo usado?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Crédito Presumido · Agroindústria"},{"tipo":"calc","id":"capex","nome":"CAPEX: o investimento gera crédito?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"CAPEX · Crédito de Investimentos"},{"tipo":"calc","id":"c06","nome":"Pró-labore ou distribuição: o que sai mais barato?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Tributação de Dividendos"},{"tipo":"calc","id":"c08","nome":"A tributação de dividendos de 2026 pega ele?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Pró-labore Ótimo"},{"tipo":"calc","id":"c06","nome":"Quanto ele deve retirar por mês, considerando tudo?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Tributação de Dividendos"},{"tipo":"calc","id":"stockoptions","nome":"Stock options fazem sentido no caso dele?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Stock Options · Tema 1.226"},{"tipo":"calc","id":"aluguelpfpj","nome":"Aluguel do imóvel: pessoa física ou jurídica?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Aluguel PF vs PJ"},{"tipo":"calc","id":"n15","nome":"Vale montar uma holding para a família dele?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Holding Patrimonial 2026"},{"tipo":"calc","id":"sucessorio","nome":"Quanto custa não planejar a sucessão?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Sucessório Completo"},{"tipo":"calc","id":"n16","nome":"O ITCMD progressivo do estado dele muda a conta?","cat":"Pergunta · Patrimônio e sucessão","atalho":"ITCMD Progressivo por Estado"},{"tipo":"calc","id":"valuation","nome":"Quanto vale a empresa dele hoje?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Valuation Empresarial"},{"tipo":"calc","id":"offshore","nome":"Estrutura no exterior faz sentido ou é só custo?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Offshores & Fundos"},{"tipo":"calc","id":"ma","nome":"Reorganização societária: quanto economiza?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Custo Tributário de M&A"},{"tipo":"calc","id":"decisor","nome":"Ele foi autuado — discute ou paga?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Decisor · discutir, transacionar ou pagar"},{"tipo":"calc","id":"multajuros","nome":"Quanto é a multa e o juros de verdade?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Multas & Juros · custo do débito"},{"tipo":"calc","id":"prescricao","nome":"Essa dívida já prescreveu?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Prescrição & Decadência"},{"tipo":"calc","id":"transacao","nome":"A transação da PGFN vale a pena para ele?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Transação PGFN 6/2026 · prazo 30/09"},{"tipo":"calc","id":"compensacao","nome":"Dá para compensar em vez de pagar?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Compensação · PER/DCOMP"},{"tipo":"calc","id":"cp02","nome":"Denúncia espontânea sai mais barato que a autuação?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Denúncia Espontânea × Autuação"},{"tipo":"calc","id":"cp01","nome":"Qual o custo de não se adequar a tempo?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Custo do Descumprimento"},{"tipo":"calc","id":"auditorcad","nome":"O cadastro dele está pronto para 2026?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Auditor de Cadastro (cClassTrib)"},{"tipo":"calc","id":"classmassa","nome":"Como classificar mil itens sem fazer no olho?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Classificador em Massa CBS/IBS"},{"tipo":"calc","id":"cadeia","nome":"De quem eu compro e para quem eu vendo: quanto da compra gera crédito?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Cadeia de Crédito · entradas × saídas"},{"tipo":"calc","id":"simnotas","nome":"A nota fiscal dele já sai no leiaute novo?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Simulador de Notas (emissor)"},{"tipo":"calc","id":"contrato","nome":"O que o contrato dele precisa prever?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Analisador de Contrato"},{"tipo":"calc","id":"matrizdoc","nome":"De onde vem cada informação que a ferramenta pede?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Matriz de Inputs Automáticos"},{"tipo":"calc","id":"agro01","nome":"Ele é do agro — o Funrural muda com a reforma?","cat":"Pergunta · O ramo do meu cliente","atalho":""},{"tipo":"calc","id":"coop","nome":"Cooperativa: o regime específico compensa?","cat":"Pergunta · O ramo do meu cliente","atalho":"Cooperativas (Regime Específico)"},{"tipo":"calc","id":"agro03","nome":"Produtor rural: vale se registrar como PJ?","cat":"Pergunta · O ramo do meu cliente","atalho":"Produtor PF × PJ Rural"},{"tipo":"calc","id":"agro02","nome":"Barter: insumo trocado por safra, como fica?","cat":"Pergunta · O ramo do meu cliente","atalho":"Barter — Insumo × Safra"},{"tipo":"calc","id":"ind01","nome":"Indústria: o crédito de estoque na virada?","cat":"Pergunta · O ramo do meu cliente","atalho":"Crédito de Estoque na Virada"},{"tipo":"calc","id":"ind04","nome":"Subvenção de ICMS ainda vale para ele?","cat":"Pergunta · O ramo do meu cliente","atalho":"Lei do Bem — P&D"},{"tipo":"calc","id":"bares","nome":"Bar ou restaurante: a cesta básica salva?","cat":"Pergunta · O ramo do meu cliente","atalho":"Bares & Restaurantes"},{"tipo":"calc","id":"hotel","nome":"Hotel e turismo têm regime próprio?","cat":"Pergunta · O ramo do meu cliente","atalho":"Hotelaria & Parques"},{"tipo":"calc","id":"psaude","nome":"Clínica ou consultório: como fica?","cat":"Pergunta · O ramo do meu cliente","atalho":"Planos de Saúde (Operadoras)"},{"tipo":"calc","id":"logcarga","nome":"Transporte de carga: o crédito do frete?","cat":"Pergunta · O ramo do meu cliente","atalho":"Logística & Cargas"},{"tipo":"calc","id":"transpax","nome":"Transporte de passageiros muda?","cat":"Pergunta · O ramo do meu cliente","atalho":"Transporte de Passageiros"},{"tipo":"calc","id":"combustivel","nome":"Posto de combustível: monofásico continua?","cat":"Pergunta · O ramo do meu cliente","atalho":"Combustíveis (Monofásico)"},{"tipo":"calc","id":"medicamento","nome":"Farmácia e medicamento: alíquota reduzida?","cat":"Pergunta · O ramo do meu cliente","atalho":"Medicamentos & Dispositivos"},{"tipo":"calc","id":"telecom","nome":"Telecom e tecnologia: o que muda?","cat":"Pergunta · O ramo do meu cliente","atalho":"Telecom & Energia"},{"tipo":"calc","id":"apostas","nome":"Casa de apostas: o Seletivo pega?","cat":"Pergunta · O ramo do meu cliente","atalho":"Apostas / Prognósticos + SAF"},{"tipo":"calc","id":"financeiro","nome":"Instituição financeira: regime específico?","cat":"Pergunta · O ramo do meu cliente","atalho":"Serviços Financeiros (Spread)"},{"tipo":"calc","id":"agviagem","nome":"Agência de viagem: base reduzida continua?","cat":"Pergunta · O ramo do meu cliente","atalho":"Agências de Viagem & Turismo"},{"tipo":"calc","id":"imob_ret","nome":"Construção e incorporação: o RET sobrevive?","cat":"Pergunta · O ramo do meu cliente","atalho":"Incorporação / RET"},{"tipo":"calc","id":"imobref","nome":"Aluguel de imóvel: como fica na reforma?","cat":"Pergunta · O ramo do meu cliente","atalho":"Regime Imobiliário da Reforma"},{"tipo":"calc","id":"import","nome":"Importar vai ficar mais caro para ele?","cat":"Pergunta · Importação e exportação","atalho":"Importação & Regimes"},{"tipo":"calc","id":"export","nome":"Exportador acumula crédito — como recupera?","cat":"Pergunta · Importação e exportação","atalho":"Exportação & Saldo Credor"},{"tipo":"calc","id":"drawback","nome":"Drawback continua valendo?","cat":"Pergunta · Importação e exportação","atalho":"Drawback & Aduaneiros"},{"tipo":"calc","id":"portos","nome":"Operação por porto de outro estado muda algo?","cat":"Pergunta · Importação e exportação","atalho":"Portos & Regimes Aduaneiros"},{"tipo":"calc","id":"jornada","nome":"Quais clientes da minha carteira dão mais trabalho até 2033?","cat":"Pergunta · O meu escritório","atalho":"Jornada do Cliente"},{"tipo":"calc","id":"ltv_carteira","nome":"Quanto cada cliente me rende de verdade?","cat":"Pergunta · O meu escritório","atalho":"LTV de Carteira"},{"tipo":"calc","id":"motor360","nome":"Onde está a oportunidade de honorário na minha base?","cat":"Pergunta · O meu escritório","atalho":"Motor 360°"},{"tipo":"calc","id":"proposta","nome":"Como faço uma proposta com o número na mão?","cat":"Pergunta · O meu escritório","atalho":"Proposta Comercial"},{"tipo":"calc","id":"c10","nome":"Quanto cobrar pela rotina de BPO que já entrego?","cat":"Pergunta · O meu escritório","atalho":"Precificação de Honorários"},{"tipo":"calc","id":"pdf","nome":"Como entrego isso com a minha marca?","cat":"Pergunta · O meu escritório","atalho":"Relatório PDF"},{"tipo":"calc","id":"c09","nome":"Por onde começo com um cliente novo?","cat":"Pergunta · O meu escritório","atalho":"Rentabilidade por Cliente"},{"tipo":"calc","id":"central-c1","nome":"O que muda já em 2026?","cat":"Pergunta · O que vence, e quando","atalho":""},{"tipo":"calc","id":"c04","nome":"Quando PIS e COFINS acabam de verdade?","cat":"Pergunta · O que vence, e quando","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"c04","nome":"Em que ano o ICMS e o ISS somem?","cat":"Pergunta · O que vence, e quando","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"cp03","nome":"O que meu cliente precisa fazer ainda este ano?","cat":"Pergunta · O que vence, e quando","atalho":"Compliance da Reforma 2026"}].concat([
+window.BUSCA_INDEX = [{"tipo":"aba","id":"perguntas","nome":"Perguntas que a ferramenta responde","cat":"Encontre pela dúvida","atalho":"perguntas"},{"tipo":"calc","id":"c01","nome":"Quanto de caixa o Split Payment vai tirar do meu cliente?","cat":"Pergunta · O caixa do meu cliente","atalho":"Split Payment Cash Gap"},{"tipo":"calc","id":"n33","nome":"Ele vai precisar de mais capital de giro? Quanto?","cat":"Pergunta · O caixa do meu cliente","atalho":"NCG Split Payment"},{"tipo":"calc","id":"c11","nome":"Em que mês exato o caixa dele aperta?","cat":"Pergunta · O caixa do meu cliente","atalho":"Split por Operação"},{"tipo":"calc","id":"c01","nome":"A empresa aguenta a transição sem tomar empréstimo?","cat":"Pergunta · O caixa do meu cliente","atalho":"Split Payment Cash Gap"},{"tipo":"calc","id":"antecip","nome":"Pagamento antecipado muda alguma coisa para ele?","cat":"Pergunta · O caixa do meu cliente","atalho":"Pagamentos Antecipados"},{"tipo":"calc","id":"formpreco","nome":"Ele vai ter que aumentar o preço? Em quanto?","cat":"Pergunta · Preço e margem","atalho":"Formação de Preço 2027-33"},{"tipo":"calc","id":"formpreco","nome":"Se segurar o preço, quanto perde de margem?","cat":"Pergunta · Preço e margem","atalho":"Formação de Preço 2027-33"},{"tipo":"calc","id":"c02","nome":"Os contratos antigos vão dar prejuízo?","cat":"Pergunta · Preço e margem","atalho":"Reprecificação de Contratos"},{"tipo":"calc","id":"formpreco","nome":"Ele cobra o mesmo de empresa e de pessoa física?","cat":"Pergunta · Preço e margem","atalho":"Formação de Preço 2027-33"},{"tipo":"calc","id":"calc03","nome":"O concorrente vai poder cobrar menos que ele?","cat":"Pergunta · Preço e margem","atalho":"Risco Fornecedor SN"},{"tipo":"calc","id":"c02","nome":"Como reajustar contrato de prazo longo sem perder o cliente?","cat":"Pergunta · Preço e margem","atalho":"Reprecificação de Contratos"},{"tipo":"calc","id":"c04","nome":"Ele vai pagar mais ou menos imposto do que hoje?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"classif","nome":"Qual é a alíquota de verdade, produto por produto?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Produto (Mix)"},{"tipo":"calc","id":"raiox360","nome":"O produto dele tem desconto de 60%? De 40%? Zero?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Raio-X 360° do Produto"},{"tipo":"calc","id":"c04","nome":"Quanto muda em cada ano da transição?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"seletivo","nome":"O Imposto Seletivo pega o produto dele?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Imposto Seletivo (IS)"},{"tipo":"calc","id":"classif","nome":"Qual a alíquota efetiva considerando o mix inteiro?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Produto (Mix)"},{"tipo":"calc","id":"aliqref","nome":"E se a alíquota de referência subir? Qual o risco?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota de Referência · risco"},{"tipo":"calc","id":"c05","nome":"Ele está no regime certo? Quanto economiza mudando?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Regime Ótimo (Simples/LP/LR)"},{"tipo":"calc","id":"c07","nome":"Vale continuar no Simples depois da reforma?","cat":"Pergunta · Regime: continuar ou sair","atalho":"PF vs PJ — Pejotização"},{"tipo":"calc","id":"dxh","nome":"Dentro ou híbrido: qual custa menos para ele?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"fatorR","nome":"O fator R joga ele no Anexo III ou no V?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Fator R · III vs V"},{"tipo":"calc","id":"sublimite","nome":"Ele está perto de estourar o sublimite?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Sublimite Simples"},{"tipo":"calc","id":"c07","nome":"Compensa abrir PJ ou continuar como pessoa física?","cat":"Pergunta · Regime: continuar ou sair","atalho":"PF vs PJ — Pejotização"},{"tipo":"calc","id":"art127","nome":"Profissão regulamentada muda a conta? (art. 127)","cat":"Pergunta · Regime: continuar ou sair","atalho":"Profissões Regulamentadas · art. 127"},{"tipo":"calc","id":"dxh","nome":"Se ele sair do Simples, o que acontece com o crédito da cadeia?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"dxh","nome":"O cliente dele vai deixar de comprar por causa do crédito?","cat":"Pergunta · Fornecedores e clientes","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"n04","nome":"Fornecedor no Simples vira problema para ele?","cat":"Pergunta · Fornecedores e clientes","atalho":"SN → Regime Regular"},{"tipo":"calc","id":"dxh","nome":"Vale trocar de fornecedor? Quanto isso rende?","cat":"Pergunta · Fornecedores e clientes","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"difal","nome":"Ele vende para outro estado — o DIFAL muda?","cat":"Pergunta · Fornecedores e clientes","atalho":"DIFAL · Interestadual"},{"tipo":"calc","id":"calc03","nome":"Vender para consumidor final ou para empresa: o que muda?","cat":"Pergunta · Fornecedores e clientes","atalho":"Risco Fornecedor SN"},{"tipo":"calc","id":"central-c5","nome":"Ele tem crédito para recuperar? Quanto?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":""},{"tipo":"calc","id":"cr01","nome":"ICMS na base do PIS/COFINS — cabe no caso dele? (Tema 69)","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Tema 69 · ICMS na base PIS/COFINS"},{"tipo":"calc","id":"icmsst1125","nome":"E o ICMS-ST? (Tema 1125)","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"ICMS-ST na base PIS/COFINS · Tema 1125"},{"tipo":"calc","id":"monofasico","nome":"Pagou a maior em produto monofásico?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Monofásico · PIS/COFINS revenda"},{"tipo":"calc","id":"ins","nome":"Tem crédito de INSS ou de ISS parado?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Insumos PIS/COFINS · Tema 779"},{"tipo":"calc","id":"s962","nome":"Existe saldo credor acumulado que ninguém pediu?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"IRPJ/CSLL sobre Selic · Tema 962"},{"tipo":"calc","id":"dup","nome":"Pagou alguma guia em duplicidade?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Pagamento em Duplicidade · scanner"},{"tipo":"calc","id":"ret","nome":"Retenção na fonte que nunca foi compensada?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Retenções na Fonte · não aproveitadas"},{"tipo":"calc","id":"credpresumido","nome":"Crédito presumido do setor dele está sendo usado?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Crédito Presumido · Agroindústria"},{"tipo":"calc","id":"capex","nome":"CAPEX: o investimento gera crédito?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"CAPEX · Crédito de Investimentos"},{"tipo":"calc","id":"c06","nome":"Pró-labore ou distribuição: o que sai mais barato?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Tributação de Dividendos"},{"tipo":"calc","id":"c08","nome":"A tributação de dividendos de 2026 pega ele?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Pró-labore Ótimo"},{"tipo":"calc","id":"c06","nome":"Quanto ele deve retirar por mês, considerando tudo?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Tributação de Dividendos"},{"tipo":"calc","id":"stockoptions","nome":"Stock options fazem sentido no caso dele?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Stock Options · Tema 1.226"},{"tipo":"calc","id":"aluguelpfpj","nome":"Aluguel do imóvel: pessoa física ou jurídica?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Aluguel PF vs PJ"},{"tipo":"calc","id":"n15","nome":"Vale montar uma holding para a família dele?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Holding Patrimonial 2026"},{"tipo":"calc","id":"sucessorio","nome":"Quanto custa não planejar a sucessão?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Sucessório Completo"},{"tipo":"calc","id":"n16","nome":"O ITCMD progressivo do estado dele muda a conta?","cat":"Pergunta · Patrimônio e sucessão","atalho":"ITCMD Progressivo por Estado"},{"tipo":"calc","id":"valuation","nome":"Quanto vale a empresa dele hoje?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Valuation Empresarial"},{"tipo":"calc","id":"offshore","nome":"Estrutura no exterior faz sentido ou é só custo?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Offshores & Fundos"},{"tipo":"calc","id":"ma","nome":"Reorganização societária: quanto economiza?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Custo Tributário de M&A"},{"tipo":"calc","id":"decisor","nome":"Ele foi autuado — discute ou paga?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Decisor · discutir, transacionar ou pagar"},{"tipo":"calc","id":"multajuros","nome":"Quanto é a multa e o juros de verdade?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Multas & Juros · custo do débito"},{"tipo":"calc","id":"prescricao","nome":"Essa dívida já prescreveu?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Prescrição & Decadência"},{"tipo":"calc","id":"transacao","nome":"A transação da PGFN vale a pena para ele?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Transação PGFN 6/2026 · prazo 30/09"},{"tipo":"calc","id":"compensacao","nome":"Dá para compensar em vez de pagar?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Compensação · PER/DCOMP"},{"tipo":"calc","id":"cp02","nome":"Denúncia espontânea sai mais barato que a autuação?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Denúncia Espontânea × Autuação"},{"tipo":"calc","id":"cp01","nome":"Qual o custo de não se adequar a tempo?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Custo do Descumprimento"},{"tipo":"calc","id":"auditorcad","nome":"O cadastro dele está pronto para 2026?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Auditor de Cadastro (cClassTrib)"},{"tipo":"calc","id":"classmassa","nome":"Como classificar mil itens sem fazer no olho?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Classificador em Massa CBS/IBS"},{"tipo":"calc","id":"cadeia","nome":"De quem eu compro e para quem eu vendo: quanto da compra gera crédito?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Cadeia de Crédito · entradas × saídas"},{"tipo":"calc","id":"fornecedores","nome":"Quanto cada fornecedor vai custar depois do crédito, e com quem renegociar?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Mapa de Fornecedores · custo depois do crédito"},{"tipo":"calc","id":"simnotas","nome":"A nota fiscal dele já sai no leiaute novo?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Simulador de Notas (emissor)"},{"tipo":"calc","id":"contrato","nome":"O que o contrato dele precisa prever?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Analisador de Contrato"},{"tipo":"calc","id":"matrizdoc","nome":"De onde vem cada informação que a ferramenta pede?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Matriz de Inputs Automáticos"},{"tipo":"calc","id":"agro01","nome":"Ele é do agro — o Funrural muda com a reforma?","cat":"Pergunta · O ramo do meu cliente","atalho":""},{"tipo":"calc","id":"coop","nome":"Cooperativa: o regime específico compensa?","cat":"Pergunta · O ramo do meu cliente","atalho":"Cooperativas (Regime Específico)"},{"tipo":"calc","id":"agro03","nome":"Produtor rural: vale se registrar como PJ?","cat":"Pergunta · O ramo do meu cliente","atalho":"Produtor PF × PJ Rural"},{"tipo":"calc","id":"agro02","nome":"Barter: insumo trocado por safra, como fica?","cat":"Pergunta · O ramo do meu cliente","atalho":"Barter — Insumo × Safra"},{"tipo":"calc","id":"ind01","nome":"Indústria: o crédito de estoque na virada?","cat":"Pergunta · O ramo do meu cliente","atalho":"Crédito de Estoque na Virada"},{"tipo":"calc","id":"ind04","nome":"Subvenção de ICMS ainda vale para ele?","cat":"Pergunta · O ramo do meu cliente","atalho":"Lei do Bem — P&D"},{"tipo":"calc","id":"bares","nome":"Bar ou restaurante: a cesta básica salva?","cat":"Pergunta · O ramo do meu cliente","atalho":"Bares & Restaurantes"},{"tipo":"calc","id":"hotel","nome":"Hotel e turismo têm regime próprio?","cat":"Pergunta · O ramo do meu cliente","atalho":"Hotelaria & Parques"},{"tipo":"calc","id":"psaude","nome":"Clínica ou consultório: como fica?","cat":"Pergunta · O ramo do meu cliente","atalho":"Planos de Saúde (Operadoras)"},{"tipo":"calc","id":"logcarga","nome":"Transporte de carga: o crédito do frete?","cat":"Pergunta · O ramo do meu cliente","atalho":"Logística & Cargas"},{"tipo":"calc","id":"transpax","nome":"Transporte de passageiros muda?","cat":"Pergunta · O ramo do meu cliente","atalho":"Transporte de Passageiros"},{"tipo":"calc","id":"combustivel","nome":"Posto de combustível: monofásico continua?","cat":"Pergunta · O ramo do meu cliente","atalho":"Combustíveis (Monofásico)"},{"tipo":"calc","id":"medicamento","nome":"Farmácia e medicamento: alíquota reduzida?","cat":"Pergunta · O ramo do meu cliente","atalho":"Medicamentos & Dispositivos"},{"tipo":"calc","id":"telecom","nome":"Telecom e tecnologia: o que muda?","cat":"Pergunta · O ramo do meu cliente","atalho":"Telecom & Energia"},{"tipo":"calc","id":"apostas","nome":"Casa de apostas: o Seletivo pega?","cat":"Pergunta · O ramo do meu cliente","atalho":"Apostas / Prognósticos + SAF"},{"tipo":"calc","id":"financeiro","nome":"Instituição financeira: regime específico?","cat":"Pergunta · O ramo do meu cliente","atalho":"Serviços Financeiros (Spread)"},{"tipo":"calc","id":"agviagem","nome":"Agência de viagem: base reduzida continua?","cat":"Pergunta · O ramo do meu cliente","atalho":"Agências de Viagem & Turismo"},{"tipo":"calc","id":"imob_ret","nome":"Construção e incorporação: o RET sobrevive?","cat":"Pergunta · O ramo do meu cliente","atalho":"Incorporação / RET"},{"tipo":"calc","id":"imobref","nome":"Aluguel de imóvel: como fica na reforma?","cat":"Pergunta · O ramo do meu cliente","atalho":"Regime Imobiliário da Reforma"},{"tipo":"calc","id":"import","nome":"Importar vai ficar mais caro para ele?","cat":"Pergunta · Importação e exportação","atalho":"Importação & Regimes"},{"tipo":"calc","id":"export","nome":"Exportador acumula crédito — como recupera?","cat":"Pergunta · Importação e exportação","atalho":"Exportação & Saldo Credor"},{"tipo":"calc","id":"drawback","nome":"Drawback continua valendo?","cat":"Pergunta · Importação e exportação","atalho":"Drawback & Aduaneiros"},{"tipo":"calc","id":"portos","nome":"Operação por porto de outro estado muda algo?","cat":"Pergunta · Importação e exportação","atalho":"Portos & Regimes Aduaneiros"},{"tipo":"calc","id":"jornada","nome":"Quais clientes da minha carteira dão mais trabalho até 2033?","cat":"Pergunta · O meu escritório","atalho":"Jornada do Cliente"},{"tipo":"calc","id":"ltv_carteira","nome":"Quanto cada cliente me rende de verdade?","cat":"Pergunta · O meu escritório","atalho":"LTV de Carteira"},{"tipo":"calc","id":"motor360","nome":"Onde está a oportunidade de honorário na minha base?","cat":"Pergunta · O meu escritório","atalho":"Motor 360°"},{"tipo":"calc","id":"proposta","nome":"Como faço uma proposta com o número na mão?","cat":"Pergunta · O meu escritório","atalho":"Proposta Comercial"},{"tipo":"calc","id":"c10","nome":"Quanto cobrar pela rotina de BPO que já entrego?","cat":"Pergunta · O meu escritório","atalho":"Precificação de Honorários"},{"tipo":"calc","id":"pdf","nome":"Como entrego isso com a minha marca?","cat":"Pergunta · O meu escritório","atalho":"Relatório PDF"},{"tipo":"calc","id":"c09","nome":"Por onde começo com um cliente novo?","cat":"Pergunta · O meu escritório","atalho":"Rentabilidade por Cliente"},{"tipo":"calc","id":"central-c1","nome":"O que muda já em 2026?","cat":"Pergunta · O que vence, e quando","atalho":""},{"tipo":"calc","id":"c04","nome":"Quando PIS e COFINS acabam de verdade?","cat":"Pergunta · O que vence, e quando","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"c04","nome":"Em que ano o ICMS e o ISS somem?","cat":"Pergunta · O que vence, e quando","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"cp03","nome":"O que meu cliente precisa fazer ainda este ano?","cat":"Pergunta · O que vence, e quando","atalho":"Compliance da Reforma 2026"}].concat([
   // Calculadoras
   {tipo:'calc',id:'fin_dados',nome:'Dados Estratégicos — a empresa em 41 campos (DRE e Fluxo 2026–2033)',cat:'Inteligência Financeira',atalho:'fin_dados'},
   {tipo:'calc',id:'fin_cred',nome:'Identificador de Créditos — quanto de IBS/CBS vou dever, quanto recupero, o que sobra',cat:'Inteligência Financeira',atalho:'fin_cred'},
@@ -39843,44 +39873,52 @@ function calcularN04(){
 let chartCalc03;
 /* ═══ v744 · CUTOVER — calcularCalc03: ler entradas · calcular (chaves do servidor) · desenhar ═══ */
 function calc03LerEntradas(){
+  /* ★ v927 · TR13 §4 — a calc03 é só do servidor (fn_calc03 v2; escritor único fn_sn_credito_pct,
+     o mesmo do Mapa de Fornecedores). A tela lê as entradas e desenha; não há fórmula de crédito aqui.
+     Fatia vazia = o servidor usa a tabela do ano (o valor legado 15,5 também). */
   var regimeComprador = document.getElementById('calc03_regime_comprador').value;
   var ano = parseInt(document.getElementById('calc03_ano').value)||2027;
-  var parcelaDAS = (parseFloat((document.getElementById('calc03_parcela_das')||{value:'15.5'}).value)||15.5)/100;
+  var _fatia = String((document.getElementById('calc03_parcela_das')||{value:''}).value||'').trim();
+  var parcelaDAS = _fatia==='' ? null : (isNaN(parseFloat(_fatia.replace(',','.'))) ? null : parseFloat(_fatia.replace(',','.')));
   var compraSN = parseFloat(document.getElementById('calc03_compra_sn').value)||0;
   var compraLP = parseFloat(document.getElementById('calc03_compra_lp').value)||0;
 
   if(compraSN<=0 || compraLP<=0){ mostrarToast('Informe os valores das compras','error'); return null; }
 
-  var aliqCBSIBS = (typeof getAliq === 'function') ? getAliq(ano).total : 0.088;
-
   // Regime de cada fornecedor (A×B genérico)
   var regA = (document.getElementById('calc03_regime_a')||{value:'SN'}).value;
   var regB = (document.getElementById('calc03_regime_b')||{value:'LP'}).value;
-  // Aproveitamento do COMPRADOR: LR pleno (100%), LP conservador (95%) — premissa do mestre calc03 B12
-  var pctCredito = (String(regimeComprador).toUpperCase()==='LR') ? 1.00 : 0.95;
 
-  /* crédito que CADA fornecedor gera ao comprador, conforme SEU regime:
-     · Regular (LP/LR): destaca CBS/IBS pleno → crédito = compra × alíq × aproveitamento
-     · Importação: paga CBS/IBS na entrada à alíquota nacional → credita igual ao Regular (art. 47 §9º; 63/21 III)
-     · Simples (SN): NÃO destaca pleno → só a fatia do DAS (parcelaDAS), a partir de 2027 */
-
-  return { compra_a:compraSN, compra_b:compraLP, regime_a:regA, regime_b:regB, regime_comprador:regimeComprador, ano:ano, parcela_das:parcelaDAS*100, cenario:'A', _parcelaDAS:parcelaDAS };
+  return { compra_a:compraSN, compra_b:compraLP, regime_a:regA, regime_b:regB, regime_comprador:regimeComprador, ano:ano, parcela_das:parcelaDAS, cenario:'A' };
 }
 function calc03CalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
 function calc03Render(r, ent, motivo){
   var _box=document.getElementById('kpi-calc03'); if(!_box) return;
   if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
   if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
-  var compraSN=ent.compra_a, compraLP=ent.compra_b, regA=ent.regime_a, regB=ent.regime_b, regimeComprador=ent.regime_comprador, ano=ent.ano, parcelaDAS=ent._parcelaDAS;
-  var aliqCBSIBS=(typeof getAliq==='function')?getAliq(ano).total:0.088; var pctCredito=(String(regimeComprador).toUpperCase()==='LR')?1.00:0.95;
-  var regimeComprador=ent.regime_comprador, ano=ent.ano, parcelaDAS=ent._parcelaDAS, compraSN=ent.compra_a, compraLP=ent.compra_b, regA=ent.regime_a, regB=ent.regime_b; var aliqCBSIBS=(+r.aliquota_pct)/100, pctCredito=(+r.comprador.aproveitamento_pct)/100; var creditoSN=+r.fornecedor_a.credito, creditoLP=+r.fornecedor_b.credito; var _nomeReg={SN:'Simples',LP:'L. Presumido',LR:'L. Real',IMP:'Importação'}; var nomeA=_nomeReg[String(regA).toUpperCase()]||regA, nomeB=_nomeReg[String(regB).toUpperCase()]||regB; var custoLiqSN=+r.fornecedor_a.custo_liquido, custoLiqLP=+r.fornecedor_b.custo_liquido; var vantagemSN=custoLiqLP-custoLiqSN, vantagemSNAnual=vantagemSN*12; var desagioMaxAbsoluto=creditoLP-creditoSN, desagioMaxPct=(compraLP>0?desagioMaxAbsoluto/compraLP*100:0), creditoPerdido=creditoLP-creditoSN;
+  /* ★ v927 · TR13 §4 — tudo o que é número vem do servidor (calc03 v2); a tela só compara e escreve. */
+  var regimeComprador=String((r.comprador&&r.comprador.regime)||ent.regime_comprador||'').toUpperCase(), ano=+r.ano||ent.ano;
+  var compraSN=+r.fornecedor_a.compra, compraLP=+r.fornecedor_b.compra, regA=r.fornecedor_a.regime||ent.regime_a, regB=r.fornecedor_b.regime||ent.regime_b;
+  var aliqCBSIBS=(+r.aliquota_pct)/100, pctCredito=(+r.comprador.aproveitamento_pct)/100;
+  var creditoSN=+r.fornecedor_a.credito, creditoLP=+r.fornecedor_b.credito;
+  var _nomeReg={SN:'Simples',LP:'L. Presumido',LR:'L. Real',IMP:'Importação'};
+  var nomeA=_nomeReg[String(regA).toUpperCase()]||regA, nomeB=_nomeReg[String(regB).toUpperCase()]||regB;
+  var custoLiqSN=+r.fornecedor_a.custo_liquido, custoLiqLP=+r.fornecedor_b.custo_liquido;
+  var vantagemSN=custoLiqLP-custoLiqSN, vantagemSNAnual=vantagemSN*12, creditoPerdido=creditoLP-creditoSN;
+  /* desconto de indiferença: o do servidor (sobre o custo líquido, o que de fato empata) — achado de 04/10 */
+  var desagioMaxPct=Math.max(0,+r.desconto_de_indiferenca_pct||0);
+  var _caro=(custoLiqSN<=custoLiqLP)?r.fornecedor_b:r.fornecedor_a, _nomeCaro=(_caro===r.fornecedor_a)?nomeA:nomeB;
+  var precoEmpate=(+_caro.compra)*(1-desagioMaxPct/100);
+  var pctCredA=compraSN>0?creditoSN/compraSN*100:0, pctCredB=compraLP>0?creditoLP/compraLP*100:0;
+  var SNB=r.simples||null;
+  _calc03Simples(r, nomeA, nomeB);
   // KPIs
   var _kpi3=document.getElementById('kpi-calc03'); if(_kpi3) _kpi3.innerHTML =
     '<div class="kpi-card '+(vantagemSN>=0?'kpi-ok':'kpi-alerta')+'"><div class="kpi-label">Decisão recomendada</div><div class="kpi-value" style="font-size:1.05em">'+(vantagemSN>=0?('Fornec. A ('+nomeA+')'):('Fornec. B ('+nomeB+')'))+'</div><div class="kpi-sub">Saldo: '+fmtR(Math.abs(vantagemSN))+'/mês</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Custo Líquido — Fornec. A</div><div class="kpi-value">'+fmtR(custoLiqSN)+'</div><div class="kpi-sub">Preço − crédito ('+fmtR(creditoSN)+')</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Custo Líquido — Fornec. B</div><div class="kpi-value">'+fmtR(custoLiqLP)+'</div><div class="kpi-sub">Preço − crédito ('+fmtR(creditoLP)+')</div></div>'+
     '<div class="kpi-card kpi-alerta"><div class="kpi-label">Crédito CBS/IBS Perdido</div><div class="kpi-value">'+fmtR(creditoPerdido)+'/mês</div><div class="kpi-sub">'+fmtR(creditoPerdido*12)+'/ano</div></div>'+
-    '<div class="kpi-card kpi-destaque"><div class="kpi-label">Deságio Máximo Aceitável</div><div class="kpi-value">'+fmtPct(desagioMaxPct)+'</div><div class="kpi-sub">'+nomeA+' precisa dar de deságio pra empatar</div></div>'+
+    '<div class="kpi-card kpi-destaque"><div class="kpi-label">Deságio Máximo Aceitável</div><div class="kpi-value">'+fmtPct(desagioMaxPct)+'</div><div class="kpi-sub">'+_nomeCaro+' precisa dar de desconto pra empatar</div></div>'+
     '<div class="kpi-card '+(vantagemSNAnual>=0?'kpi-ok':'kpi-alerta')+'"><div class="kpi-label">Impacto Anual</div><div class="kpi-value">'+(vantagemSNAnual>=0?'+':'−')+fmtR(Math.abs(vantagemSNAnual))+'</div><div class="kpi-sub">Diferença total no ano '+ano+'</div></div>';
 
   // v30.11.98 — Memória de Cálculo Calc03
@@ -39892,8 +39930,8 @@ function calc03Render(r, ent, motivo){
     premissas:[
       {label:'Regime do comprador', valor: regimeComprador},
       {label:'Ano de simulação', valor: String(ano)},
-      {label:'Compra de fornecedor SN', valor: fmtR(compraSN)},
-      {label:'Compra de fornecedor LP', valor: fmtR(compraLP)},
+      {label:'Compra do fornecedor A ('+nomeA+')', valor: fmtR(compraSN)},
+      {label:'Compra do fornecedor B ('+nomeB+')', valor: fmtR(compraLP)},
       {label:'Alíquota CBS/IBS', valor: fmtPct(aliqCBSIBS*100)}
     ],
     nota:'Viabilidade: o fornecedor de menor custo líquido (já com o crédito) custa '+fmtR(Math.min(custoLiqSN,custoLiqLP))+', diferença de '+fmtR(Math.abs(custoLiqSN-custoLiqLP))+' frente ao outro — o crédito de CBS/IBS é o fator decisivo.'
@@ -39903,7 +39941,8 @@ function calc03Render(r, ent, motivo){
         aliquotas:[
           {label:'Regime do comprador', valor:(regimeComprador||'—')},
           {label:'Alíquota CBS+IBS', valor:fmtPct(aliqCBSIBS*100)},
-          {label:'% de crédito transferível (SN)', valor:fmtPct(pctCredito*100)},
+          {label:'Crédito do fornecedor do Simples (% do valor)', valor:(SNB?fmtPct(+SNB.credito_pct_do_valor):'—')},
+          {label:'Aproveitamento do comprador', valor:fmtPct(pctCredito*100)},
           {label:'Deságio máximo aceitável', valor:fmtPct(desagioMaxPct)},
           {label:'Impacto anual', valor:fmtR(vantagemSNAnual)}
         ],
@@ -39918,7 +39957,7 @@ function calc03Render(r, ent, motivo){
   chartCalc03 = new Chart(document.getElementById('chart-calc03').getContext('2d'), {
     type:'bar',
     data:{
-      labels:['Fornecedor SN','Fornecedor LP'],
+      labels:['Fornecedor A ('+nomeA+')','Fornecedor B ('+nomeB+')'],
       datasets:[
         {label:'Preço pago', data:[compraSN, compraLP], backgroundColor:'rgba(201,162,39,0.85)', borderRadius:6},
         {label:'Crédito recuperado', data:[-creditoSN, -creditoLP], backgroundColor:'rgba(16,185,129,0.85)', borderRadius:6}
@@ -39933,7 +39972,7 @@ function calc03Render(r, ent, motivo){
   // Tabela
   document.querySelector('#tabela-calc03 tbody').innerHTML =
     '<tr><td>Preço bruto mensal</td><td>'+fmtR(compraSN)+'</td><td>'+fmtR(compraLP)+'</td><td>'+(compraSN<compraLP?'SN '+fmtR(compraLP-compraSN)+' mais barato':'LP '+fmtR(compraSN-compraLP)+' mais barato')+'</td></tr>'+
-    '<tr><td>% Crédito CBS/IBS</td><td>'+fmtPct(parcelaDAS*100)+'</td><td>'+fmtPct(pctCredito*100)+'</td><td>LP +'+fmtPct((pctCredito-parcelaDAS)*100)+'</td></tr>'+
+    '<tr><td>Crédito IBS/CBS (% do valor)</td><td>'+fmtPct(pctCredA)+'</td><td>'+fmtPct(pctCredB)+'</td><td>'+(pctCredB>=pctCredA?'B +':'A +')+fmtPct(Math.abs(pctCredB-pctCredA))+'</td></tr>'+
     '<tr><td>Crédito recuperado</td><td>'+fmtR(creditoSN)+'</td><td>'+fmtR(creditoLP)+'</td><td>LP +'+fmtR(creditoLP-creditoSN)+'</td></tr>'+
     '<tr style="background:rgba(201,162,39,0.08);font-weight:700"><td><strong>Custo líquido mensal</strong></td><td>'+fmtR(custoLiqSN)+'</td><td>'+fmtR(custoLiqLP)+'</td><td style="color:'+(vantagemSN>=0?'#10b981':'#ef4444')+'">'+(vantagemSN>=0?'SN melhor +':'LP melhor +')+fmtR(Math.abs(vantagemSN))+'</td></tr>'+
     '<tr><td><strong>Custo líquido ANUAL</strong></td><td>'+fmtR(custoLiqSN*12)+'</td><td>'+fmtR(custoLiqLP*12)+'</td><td style="color:'+(vantagemSNAnual>=0?'#10b981':'#ef4444')+'">'+fmtR(Math.abs(vantagemSNAnual))+'/ano</td></tr>';
@@ -39943,8 +39982,9 @@ function calc03Render(r, ent, motivo){
     (vantagemSN>=0
       ? '<div class="rec-card rec-oport"><h5>Recomendação: MANTER fornecedor SN</h5><p>Mesmo com o crédito CBS/IBS perdido ('+fmtR(creditoPerdido)+'/mês), o preço mais baixo do fornecedor SN compensa. Vantagem: <strong>'+fmtR(vantagemSN)+'/mês</strong> · <strong>'+fmtR(vantagemSNAnual)+'/ano</strong>.</p></div>'
       : '<div class="rec-card rec-atencao"><h5>Recomendação: TROCAR para fornecedor LP</h5><p>O crédito CBS/IBS perdido ('+fmtR(creditoPerdido)+'/mês) é maior que a vantagem de preço do SN. Trocar para LP economiza <strong>'+fmtR(Math.abs(vantagemSN))+'/mês</strong> · <strong>'+fmtR(Math.abs(vantagemSNAnual))+'/ano</strong>.</p></div>') +
-    '<div class="rec-card rec-info"><h5>Deságio negociado</h5><p>Para o fornecedor SN ficar competitivo com o LP, ele precisa cobrar no máximo <strong>'+fmtR(compraLP - desagioMaxAbsoluto)+'/mês</strong> (deságio de <strong>'+fmtPct(desagioMaxPct)+'</strong> sobre o preço do LP). Use isso como argumento de negociação.</p></div>'+
-    (ano >= 2027 ? '<div class="rec-card rec-info" style="border-left:4px solid #06b6d4"><h5>Hipótese: SN com destaque opcional CBS/IBS</h5><p>A partir de 2027, fornecedores SN podem OPCIONALMENTE destacar CBS/IBS (art. 28 LC 214) — isso permite ao comprador creditar ~30%. Sem essa opção, o crédito do SN seria zero. Confirme com o fornecedor se ele faz o destaque.</p></div>' : '');
+    (desagioMaxPct>0 ? '<div class="rec-card rec-info"><h5>Preço que empata</h5><p>Para empatar depois do crédito, o fornecedor '+_nomeCaro+' precisa cobrar no máximo <strong>'+fmtR(precoEmpate)+'/mês</strong> (desconto de <strong>'+fmtPct(desagioMaxPct)+'</strong> sobre o preço dele). Use isso como argumento de negociação.</p></div>' : '')+
+    (r.acao ? '<div class="rec-card rec-info"><h5>O que fazer</h5><p>'+_calc03Esc(String(r.acao))+'</p><p style="margin-top:8px"><button class="btn-secondary" onclick="abrirPagina(\'fornecedores\',null)">Ver a base inteira no Mapa de Fornecedores</button></p></div>' : '')+
+    (ano >= 2027 ? '<div class="rec-card rec-info" style="border-left:4px solid #06b6d4"><h5>Fornecedor do Simples no regime híbrido</h5><p>Se o fornecedor do Simples optar por recolher IBS/CBS por fora do DAS (LC 214/2025 art. 41 §3º), ele destaca o imposto na nota e o crédito do comprador passa a ser o destacado. Pergunte ao fornecedor se ele vai optar — o Mapa de Fornecedores simula essa troca.</p></div>' : '');
 
   document.getElementById('res-calc03').classList.add('visible');
 
@@ -39956,9 +39996,29 @@ function calc03Render(r, ent, motivo){
       valorAnual: vantagemSN < 0 ? Math.abs(vantagemSNAnual) : 0,
       valorReferencia: Math.abs(vantagemSNAnual),
       contexto: vantagemSN < 0 ? 'Trocar fornecedor SN por LP' : 'Manter fornecedor SN',
-      descricao: 'Análise fornecedor SN (R$ '+fmtN(compraSN)+'/mês) vs LP (R$ '+fmtN(compraLP)+'/mês) em '+ano+': '+(vantagemSN<0?'TROCAR por LP economiza '+fmtR(Math.abs(vantagemSNAnual))+'/ano':'MANTER SN é '+fmtR(vantagemSNAnual)+'/ano melhor')+'. Crédito CBS/IBS perdido com SN: '+fmtR(creditoPerdido*12)+'/ano. Deságio máximo aceitável do SN: '+fmtPct(desagioMaxPct)+'.'});
+      descricao: 'Análise fornecedor SN (R$ '+fmtN(compraSN)+'/mês) vs LP (R$ '+fmtN(compraLP)+'/mês) em '+ano+': '+(vantagemSN<0?'TROCAR por LP economiza '+fmtR(Math.abs(vantagemSNAnual))+'/ano':'MANTER SN é '+fmtR(vantagemSNAnual)+'/ano melhor')+'. Crédito CBS/IBS perdido com SN: '+fmtR(creditoPerdido*12)+'/ano. Desconto que empata ('+_nomeCaro+'): '+fmtPct(desagioMaxPct)+'.'});
   }
 
+}
+/* ★ v927 · TR13 §4 — bloco "simples" e premissas da calc03 v2, como o servidor manda. Só desenha. */
+function _calc03Esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function _calc03Simples(r, nomeA, nomeB){
+  var box=document.getElementById('calc03-simples'); if(!box) return;
+  var sn=r&&r.simples, pr=(r&&Array.isArray(r.premissas))?r.premissas:[];
+  var linha=function(l,v){ return '<div style="display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><span style="color:var(--text2)">'+l+'</span><b>'+v+'</b></div>'; };
+  var h='';
+  if(sn){
+    h+='<div class="input-card" style="margin-top:12px"><h3 style="margin:0 0 8px">Fornecedor do Simples · de onde vem o crédito</h3>'+
+      linha('Anexo presumido', _calc03Esc(String(sn.anexo||'—')))+
+      linha('Faturamento (RBT12) presumido', fmtR(+sn.rbt12_presumido))+
+      linha('Alíquota efetiva do Simples', fmtPct(+sn.aliq_efetiva_pct))+
+      linha('Fatia de IBS/CBS no DAS', fmtPct(+sn.fatia_ibs_cbs_pct))+
+      linha('Crédito do comprador (% do valor)', fmtPct(+sn.credito_pct_do_valor))+
+      '<div style="font-size:.8em;color:var(--text2);margin-top:8px">Crédito = alíquota efetiva × fatia. Anexo e faturamento são presumidos: o comprador não sabe o faturamento do fornecedor.</div></div>';
+  }
+  if(r&&r.leitura) h+='<div class="input-card" style="margin-top:12px"><b>Leitura</b><div style="margin-top:4px;color:var(--text2)">'+_calc03Esc(String(r.leitura))+'</div></div>';
+  if(pr.length) h+='<div class="input-card" style="margin-top:12px"><b>Premissas</b><ul style="margin:6px 0 0 18px;color:var(--text2);font-size:.88em">'+pr.map(function(x){ return '<li>'+_calc03Esc(String(x))+'</li>'; }).join('')+'</ul>'+(r.base_legal?'<div style="font-size:.78em;color:var(--text-dim);margin-top:6px">'+_calc03Esc(String(r.base_legal))+'</div>':'')+'</div>';
+  box.innerHTML=h;
 }
 function calcularCalc03(){
   var ent=calc03LerEntradas(); if(!ent) return;
@@ -47317,6 +47377,10 @@ function parseNFeXML(xmlText){
     out.push({ cStat:_cSt, nNF:ide?txt(ide,'nNF'):'', dhEmi:ide?(txt(ide,'dhEmi')||txt(ide,'dEmi')):'', tpNF:ide?txt(ide,'tpNF'):'', mod:ide?txt(ide,'mod'):'',
       cfop:(function(){ try{ return (itens&&itens.length&&itens[0].cfop)?String(itens[0].cfop).replace(/\D/g,''):''; }catch(_e){ return ''; } })(),
       vIPI:(function(){ try{ var _s=0; for(var _k=0;_k<itens.length;_k++) _s+=(parseFloat(itens[_k].vIPI)||0); return _s; }catch(_e){ return 0; } })(),
+      /* ★ Mapa de Fornecedores (TR13) · crédito de ICMS que o optante do Simples destaca
+         (CSOSN 101/201/900: vCredICMSSN no item, LC 123 art. 23). Sem ele, o Mapa zerava esse crédito. */
+      vCredICMSSN:(function(){ try{ var _s=0; for(var _k=0;_k<dets.length;_k++){ var _e=dets[_k].getElementsByTagNameNS('*','vCredICMSSN');
+        if(_e&&_e.length) _s+=n(_e[0].textContent); } return Math.round(_s*100)/100; }catch(_e){ return 0; } })(),
       emitCNPJ:emit?String(txt(emit,'CNPJ')||'').replace(/\D/g,''):'', emitNome:emit?txt(emit,'xNome'):'', emitCRT:emit?txt(emit,'CRT'):'',
       emitUF:_ufE, destUF:_ufD, emitMun:_cMun, idDest:ide?txt(ide,'idDest'):'',
       /* v505 — perfil do destinatário e natureza do emitente:
@@ -47780,6 +47844,10 @@ function parseNFeXML(xmlText){
     out.push({ cStat:_cSt, nNF:ide?txt(ide,'nNF'):'', dhEmi:ide?(txt(ide,'dhEmi')||txt(ide,'dEmi')):'', tpNF:ide?txt(ide,'tpNF'):'', mod:ide?txt(ide,'mod'):'',
       cfop:(function(){ try{ return (itens&&itens.length&&itens[0].cfop)?String(itens[0].cfop).replace(/\D/g,''):''; }catch(_e){ return ''; } })(),
       vIPI:(function(){ try{ var _s=0; for(var _k=0;_k<itens.length;_k++) _s+=(parseFloat(itens[_k].vIPI)||0); return _s; }catch(_e){ return 0; } })(),
+      /* ★ Mapa de Fornecedores (TR13) · crédito de ICMS que o optante do Simples destaca
+         (CSOSN 101/201/900: vCredICMSSN no item, LC 123 art. 23). Sem ele, o Mapa zerava esse crédito. */
+      vCredICMSSN:(function(){ try{ var _s=0; for(var _k=0;_k<dets.length;_k++){ var _e=dets[_k].getElementsByTagNameNS('*','vCredICMSSN');
+        if(_e&&_e.length) _s+=n(_e[0].textContent); } return Math.round(_s*100)/100; }catch(_e){ return 0; } })(),
       emitCNPJ:emit?String(txt(emit,'CNPJ')||'').replace(/\D/g,''):'', emitNome:emit?txt(emit,'xNome'):'', emitCRT:emit?txt(emit,'CRT'):'',
       emitUF:_ufE, destUF:_ufD, emitMun:_cMun, idDest:ide?txt(ide,'idDest'):'',
       /* v505 — perfil do destinatário e natureza do emitente:
@@ -62520,7 +62588,9 @@ function lhBuscaCNAE(q){
        NÃO movem o resultado (no formpreco quem manda é o produto; no cr02 o patronal
        informado não altera a conta). Viraram GUARDA DE ESCOPO, que é o honesto. */
     /* camada 2 — SEGMENTO */
-    calc03:  {cam:'seg', preenche:{partilha:'calc03_parcela_das'},              calc:'calcularCalc03'},
+    /* v927 · TR13 §4 — calc03 saiu daqui: na calc03 v2 o campo é a FATIA de IBS/CBS no DAS do fornecedor
+       (vazio = tabela do ano no servidor). O 5,18 desta camada era o crédito em % do valor da v1 e,
+       preenchido, viraria fatia à mão errada. */
     iss118:  {cam:'seg', preenche:{iss:'iss-aliq'},                             calc:'calcularISS118'},
     c10:     {cam:'seg', preenche:{complex:'c10_complexidade'},                 calc:'calcularC10'}
   };
@@ -63793,8 +63863,8 @@ function lhBuscaCNAE(q){
     if(r.rpa) D.push({id:'sub_fat_mes',v:r.rpa/meses,nota:'receita media do periodo'},
                      {id:'gi_faturamento',v:r.rpa/meses,nota:'receita media do periodo'},
                      {id:'c01_faturamento',v:r.rpa/meses,nota:'receita media do periodo'});
-    if(r.parcelaConsumo) D.push({id:'calc03_parcela_das',v:r.parcelaConsumo*100,
-      nota:'PARCELA REAL de PIS+COFINS+ICMS+ISS dentro do DAS — substitui a estimativa de 5,18%'});
+    /* v927 · TR13 §4 — o extrato é do DAS da PRÓPRIA empresa; o campo da calc03 é a fatia do FORNECEDOR
+       do Simples (vazio = tabela do ano no servidor). Não preenche mais a calc03. */
     if(r.aliqEfetiva) D.push({id:'n04_aliq_sn',v:r.aliqEfetiva*100,nota:'aliquota efetiva do extrato'});
     if(r.cnpj) D.push({id:'gi_cnpj',v:r.cnpj,nota:'CNPJ do extrato'});
     if(r.razao) D.push({id:'gi_nome',v:r.razao,nota:'razao social do extrato'});
@@ -73726,6 +73796,190 @@ window.LH_INVEST=(function(){
 </script>
 
 <script>
+/* ★ v927 · TR13 §5 · MAPA DE FORNECEDORES — módulo da tela (só tela; o motor é fn_fornecedores_lote).
+   Cópia byte a byte de lab/fornecedores/mapa_fornecedores_tela.js (a prova confere). */
+/* ════════════════════════════════════════════════════════════════════
+ * MAPA DE FORNECEDORES · tela (TR13 §5) · 06/10/2026
+ * SÓ TELA: agrupa as notas de entrada, anonimiza o fornecedor, chama o
+ * servidor (fn_fornecedores_lote → 'fornecedores-lote') e desenha.
+ * Nenhuma fórmula tributária aqui (regra do TR11 / Portão 8):
+ *   - somas de campos do XML, agrupamento, hash, filtro, ordenação, CSV.
+ * Razão social e CNPJ/CPF ficam no navegador; ao servidor vão só números
+ * e um id = SHA-256(documento + sal da sessão).
+ * ════════════════════════════════════════════════════════════════════ */
+window.LH_MAPA_FORN = (function(){
+  'use strict';
+  var LOTE_MAX = 2000;
+  var estado = { nomes:{}, docs:{}, resultado:null, filtro:'todos', hibridos:{}, ignoradas:null, params:null };
+  var SAL = (function(){ try{ var a=new Uint8Array(16); (window.crypto||globalThis.crypto).getRandomValues(a);
+    return Array.prototype.map.call(a,function(b){return ('0'+b.toString(16)).slice(-2);}).join(''); }catch(e){ return String(Date.now()); } })();
+
+  function dig(s){ return String(s||'').replace(/\D/g,''); }
+  function num(v){ var n=parseFloat(v); return isNaN(n)?0:n; }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function brl(v){ return 'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function pct(v){ return (Number(v||0)*100).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'; }
+
+  /* 1 · agrupa as notas de ENTRADA por emitente (regra da casa: entrada = destinatário é a empresa) */
+  function agrupar(notas, meuCnpj, minhaRaiz){
+    var meu=dig(meuCnpj), raiz=String(minhaRaiz||meu.slice(0,8));
+    var g={}, ign={saidas:0, transferencias:0, outras:0, semEmitente:0};
+    (notas||[]).forEach(function(n){
+      var emit=dig(n.emitCNPJ), cpf=dig(n.emitCPF), dest=dig(n.destCNPJ);
+      if(emit && emit===meu){ ign.saidas++; return; }
+      if(dest!==meu){ ign.outras++; return; }
+      if(emit && raiz && emit.slice(0,8)===raiz){ ign.transferencias++; return; }
+      var doc = emit || cpf; if(!doc){ ign.semEmitente++; return; }
+      var crt = emit ? String(n.emitCRT||'3') : 'PF';
+      if(!g[doc]) g[doc]={doc:doc, nome:n.emitNome||'—', crt:crt, total:0, icms:0, pis:0, cofins:0, ipi:0, st:0, notas:0};
+      var f=g[doc];
+      /* Simples (CRT 1/2): o crédito de ICMS que o comprador aproveita é o vCredICMSSN destacado no item
+         (leitor de XML, TR13); no regime normal, o vICMS da nota. Só leitura de campo — nenhuma conta. */
+      var icmsNota = (crt==='1'||crt==='2') ? num(n.vCredICMSSN) : num(n.vICMS);
+      f.total += num(n.vNF)||num(n.vProd); f.icms += icmsNota; f.pis += num(n.vPIS);
+      f.cofins += num(n.vCOFINS); f.ipi += num(n.vIPI); f.st += num(n.vST); f.notas++;
+      if(n.emitNome && f.nome==='—') f.nome=n.emitNome;
+    });
+    return { lista:Object.keys(g).map(function(k){ return g[k]; }), ignoradas:ign };
+  }
+
+  /* 2 · id anônimo */
+  function sha256(txt){
+    var c=(window.crypto&&window.crypto.subtle)?window.crypto:globalThis.crypto;
+    return c.subtle.digest('SHA-256', new TextEncoder().encode(txt)).then(function(b){
+      return Array.prototype.map.call(new Uint8Array(b),function(x){return ('0'+x.toString(16)).slice(-2);}).join('');
+    });
+  }
+  function anonimizar(lista){
+    return Promise.all(lista.map(function(f){ return sha256(f.doc+'|'+SAL).then(function(h){ return h.slice(0,24); }); }))
+      .then(function(ids){
+        estado.nomes={}; estado.docs={};
+        return lista.map(function(f,i){
+          var id=ids[i]; estado.nomes[id]=f.nome; estado.docs[id]=f.doc;
+          var it={ id:id, crt:f.crt, total:+f.total.toFixed(2), icms:+f.icms.toFixed(2), pis:+f.pis.toFixed(2),
+                   cofins:+f.cofins.toFixed(2), ipi:+f.ipi.toFixed(2), st:+f.st.toFixed(2) };
+          if(estado.hibridos[f.doc]) it.sn_hibrido=true;
+          return it;
+        });
+      });
+  }
+
+  /* 3 · parâmetros da tela (campo em branco fica em branco: regime é obrigatório) */
+  function lerParams(){
+    function v(id){ var e=document.getElementById(id); return e?String(e.value||'').trim():''; }
+    var regime=v('mf_regime'); if(!regime) return { erro:'Escolha o regime da empresa compradora.' };
+    var foco=parseInt(v('mf_ano'),10)||2027;
+    var anos=[foco].concat([2027,2029,2033].filter(function(a){ return a!==foco; }));
+    var p={ regime:regime, cenario:v('mf_cenario')||'A', anos:anos,
+            credita_icms: !(document.getElementById('mf_icms') && document.getElementById('mf_icms').checked===false) };
+    if(v('mf_rbt12')) p.sn_rbt12=num(v('mf_rbt12'));
+    if(v('mf_anexo')) p.sn_anexo=v('mf_anexo');
+    if(v('mf_pf')) p.pf_credito_pct=num(v('mf_pf'))/100;
+    return p;
+  }
+
+  /* 4 · executar: pacotes de até 2.000, um resultado juntado */
+  function executar(){
+    var box=document.getElementById('mf_res'); if(!box) return Promise.resolve(null);
+    var P=window.LH_CENTRAL_PROC||{};
+    if(!dig(P.cnpj)){ box.innerHTML=cardErro('Não identificamos o CNPJ da empresa. Importe as notas na Central para que a ferramenta reconheça quais são compras.'); return Promise.resolve(null); }
+    var params=lerParams(); if(params.erro){ box.innerHTML=cardErro(params.erro); return Promise.resolve(null); }
+    var ag=agrupar(window.LH_XML_NOTAS||window._LH_XML_NOTAS||[], P.cnpj, P.raiz);
+    estado.ignoradas=ag.ignoradas; estado.params=params;
+    if(!ag.lista.length){ box.innerHTML=cardErro('Nenhuma nota de compra na Central. Importe os XML de entrada primeiro.'); return Promise.resolve(null); }
+    box.innerHTML=(window.LH_PONTE&&LH_PONTE.cardAguardando)?LH_PONTE.cardAguardando():'<div class="kpi-card">Calculando…</div>';
+    return anonimizar(ag.lista).then(function(itens){
+      var pac=[]; for(var i=0;i<itens.length;i+=LOTE_MAX) pac.push(itens.slice(i,i+LOTE_MAX));
+      return Promise.all(pac.map(function(p){ return window.LH_PONTE.chamar('fornecedores-lote',{itens:p, params:params}); }));
+    }).then(function(resps){
+      var falha=resps.filter(function(r){ return !r || !r.ok || !r.resultado || r.resultado.ok===false; })[0];
+      if(falha){ box.innerHTML=cardErro((falha&&(falha.motivo||(falha.resultado&&falha.resultado.motivo)))||'servidor indisponível'); return null; }
+      var base=resps[0].resultado, todos=[];
+      resps.forEach(function(r){ todos=todos.concat(r.resultado.fornecedores||[]); });
+      estado.resultado={ base:base, fornecedores:todos };
+      render(); return estado.resultado;
+    }).catch(function(e){ box.innerHTML=cardErro(String(e&&e.message||e)); return null; });
+  }
+
+  function cardErro(m){ return (window.LH_PONTE&&LH_PONTE.cardErro)?LH_PONTE.cardErro(m):'<div class="kpi-card"><div class="kpi-label">Não foi possível calcular</div><div class="kpi-value">'+esc(m)+'</div></div>'; }
+
+  var ROT_CLASSE={manter:'Manter', renegociar:'Renegociar', avaliar_substituir:'Avaliar trocar'};
+  var ROT_TIPO={SN:'Simples', MEI:'MEI', REG:'Regime normal', PF:'Produtor rural (PF)'};
+
+  /* 5 · desenho (só leitura do que o servidor devolveu) */
+  function render(){
+    var box=document.getElementById('mf_res'); var R=estado.resultado; if(!box||!R) return;
+    var foco=String(R.base.ano_foco), L=R.fornecedores.slice();
+    var tot_h=0, tot_f=0, cls={manter:0,renegociar:0,avaliar_substituir:0}, pend=0;
+    L.forEach(function(f){ tot_h+=f.custo_hoje; tot_f+=f.anos[foco].custo; cls[f.classe]=(cls[f.classe]||0)+1; if(f.credito_presumido==='pendente') pend++; });
+    L.sort(function(a,b){ return b.anos[foco].var - a.anos[foco].var; });
+    if(estado.filtro!=='todos') L=L.filter(function(f){ return f.classe===estado.filtro; });
+    var h='';
+    h+='<div class="kpi-grid" id="mf_kpis">'
+      +'<div class="kpi-card"><div class="kpi-label">Fornecedores</div><div class="kpi-value">'+R.fornecedores.length+'</div><div class="kpi-sub">'+cls.renegociar+' renegociar · '+cls.avaliar_substituir+' avaliar trocar</div></div>'
+      +'<div class="kpi-card"><div class="kpi-label">Custo das compras hoje</div><div class="kpi-value">'+brl(tot_h)+'</div><div class="kpi-sub">já descontados os créditos</div></div>'
+      +'<div class="kpi-card '+(tot_f>tot_h?'kpi-alerta':'kpi-ok')+'"><div class="kpi-label">Custo em '+foco+'</div><div class="kpi-value">'+brl(tot_f)+'</div><div class="kpi-sub">'+(tot_f>=tot_h?'+':'')+brl(tot_f-tot_h)+' ('+pct(tot_h?(tot_f-tot_h)/tot_h:0)+')</div></div>'
+      +'</div>';
+    if(pend) h+='<div class="rec-card rec-atencao"><h5>Crédito presumido do agro pendente</h5><p>'+pend+' fornecedor(es) produtor rural: o percentual oficial de '+foco+' ainda não foi publicado. O custo aparece sem esse crédito (superestimado). Informe um percentual estimado para simular.</p></div>';
+    h+='<div class="mf-filtros" style="margin:10px 0">'+['todos','avaliar_substituir','renegociar','manter'].map(function(k){
+        return '<button type="button" class="btn-sec'+(estado.filtro===k?' ativo':'')+'" data-mf-filtro="'+k+'">'+(k==='todos'?'Todos':ROT_CLASSE[k])+'</button>'; }).join(' ')
+      +' <button type="button" class="btn-sec" data-mf-csv="1">Exportar lista (CSV)</button></div>';
+    h+='<div class="tabela-wrap"><table class="tabela" id="mf_tabela"><thead><tr><th>Fornecedor</th><th>Tipo</th><th>Custo hoje</th><th>Custo '+foco+'</th><th>Variação</th><th>Preço-alvo</th><th>Desconto a pedir</th><th>Sugestão</th><th></th></tr></thead><tbody>';
+    L.forEach(function(f){
+      var y=f.anos[foco], doc=estado.docs[f.id];
+      h+='<tr data-mf-id="'+esc(f.id)+'"><td>'+esc(estado.nomes[f.id]||'—')+'</td><td>'+esc(ROT_TIPO[f.tipo]||f.tipo)
+        +(f.tipo==='SN'?' <label style="font-size:.8em"><input type="checkbox" data-mf-hib="'+esc(doc)+'"'+(f.sn_hibrido?' checked':'')+'> híbrido</label>':'')
+        +(f.credito_presumido==='pendente'?' <span class="selo">crédito presumido pendente</span>':'')+'</td>'
+        +'<td>'+brl(f.custo_hoje)+'</td><td>'+brl(y.custo)+'</td><td>'+(y.var>=0?'+':'')+pct(y.var_pct)+'</td>'
+        +'<td>'+brl(y.preco_alvo)+'</td><td>'+(y.desconto_pct>0?pct(y.desconto_pct):'—')+'</td><td>'+(ROT_CLASSE[f.classe]||f.classe)+'</td>'
+        +'<td>'+((f.tipo==='SN'||f.tipo==='REG')?'<a href="javascript:void(0)" data-mf-calc03="'+esc(f.id)+'">Comparar na calc03</a>':'')+'</td></tr>';
+    });
+    h+='</tbody></table></div>';
+    h+='<details class="mf-premissas" open><summary>Premissas do cálculo</summary><ul>'+(R.base.premissas||[]).map(function(p){ return '<li>'+esc(p)+'</li>'; }).join('')+'</ul></details>';
+    var ig=estado.ignoradas||{};
+    h+='<p class="nota">Notas fora do mapa: '+(ig.saidas||0)+' de venda, '+(ig.transferencias||0)+' transferências entre filiais, '+(ig.outras||0)+' de outro destinatário, '+(ig.semEmitente||0)+' sem emitente.</p>';
+    box.innerHTML=h;
+  }
+
+  function csv(){
+    var R=estado.resultado; if(!R) return '';
+    var foco=String(R.base.ano_foco);
+    var linhas=[['Fornecedor','Documento','Tipo','Custo hoje','Custo '+foco,'Variacao %','Preco-alvo','Desconto %','Sugestao']];
+    R.fornecedores.forEach(function(f){ var y=f.anos[foco];
+      linhas.push([estado.nomes[f.id]||'', estado.docs[f.id]||'', ROT_TIPO[f.tipo]||f.tipo, f.custo_hoje, y.custo, (y.var_pct*100).toFixed(2), y.preco_alvo, (y.desconto_pct*100).toFixed(2), ROT_CLASSE[f.classe]||f.classe]); });
+    return linhas.map(function(l){ return l.map(function(c){ c=String(c); return /[;"\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c; }).join(';'); }).join('\n');
+  }
+  function baixarCSV(){
+    var t=csv(); if(!t) return;
+    var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['﻿'+t],{type:'text/csv;charset=utf-8'}));
+    a.download='mapa_fornecedores.csv'; document.body.appendChild(a); a.click(); a.remove();
+  }
+  function compararNaCalc03(id){
+    var R=estado.resultado; if(!R) return; var f=R.fornecedores.filter(function(x){ return x.id===id; })[0]; if(!f) return;
+    function set(i,v){ var e=document.getElementById(i); if(e){ e.value=v; } }
+    set('calc03_regime_a', f.tipo==='REG'?'LP':'SN'); set('calc03_compra_sn', f.custo_hoje>0?f.anos[String(R.base.ano_foco)].preco.toFixed(2):'');
+    set('calc03_regime_comprador', estado.params&&estado.params.regime||'');
+    set('calc03_ano', String(R.base.ano_foco)); set('calc03_compra_lp',''); /* o fornecedor B quem escolhe é o usuário */
+    if(typeof window.abrirPagina==='function') window.abrirPagina('calc03');
+  }
+
+  /* eventos (delegados) */
+  document.addEventListener('click', function(ev){
+    var t=ev.target; if(!t||!t.getAttribute) return;
+    if(t.getAttribute('data-mf-filtro')){ estado.filtro=t.getAttribute('data-mf-filtro'); render(); }
+    else if(t.getAttribute('data-mf-csv')){ baixarCSV(); }
+    else if(t.getAttribute('data-mf-calc03')){ compararNaCalc03(t.getAttribute('data-mf-calc03')); }
+  });
+  document.addEventListener('change', function(ev){
+    var t=ev.target; if(!t||!t.getAttribute||!t.getAttribute('data-mf-hib')) return;
+    var d=t.getAttribute('data-mf-hib'); if(t.checked) estado.hibridos[d]=true; else delete estado.hibridos[d];
+    executar();
+  });
+
+  return { agrupar:agrupar, executar:executar, render:render, csv:csv, _estado:estado };
+})();
+</script>
+<script>
 /* ★ v911 · PRODUTO "INTELIGÊNCIA DE CADASTRO E PREÇOS" (v912: nome definitivo + Boas-Vindas) — o CORE vestido como produto próprio.
    Entra por app.html?produto=preco (ou preco.html, que redireciona). Sem o parâmetro,
    nada aqui roda e o CORE fica exatamente como era.
@@ -73827,7 +74081,7 @@ window.LH_INVEST=(function(){
         ['@cadcliente','Cadastrar minha empresa'], ['importsped','Importar documentos (XML · SPED)'],
         ['fichacontador','Pedir dados ao contador (Excel)'] ]},   /* v925 */
       { t:'Cadastro & Crédito', itens:[
-        ['auditorcad','Auditor de Cadastro'], ['classmassa','Classificador em Massa'], ['cadeia','Cadeia de Crédito · compro × vendo'] ]},
+        ['auditorcad','Auditor de Cadastro'], ['classmassa','Classificador em Massa'], ['cadeia','Cadeia de Crédito · compro × vendo'], ['fornecedores','Mapa de Fornecedores · com quem renegociar'] ]},
       { t:'Regime', itens:[
         ['dxh','Simples 2027: Dentro × Híbrido'], ['c05','Regime Ótimo'] ]},
       { t:'Preço', itens:[
@@ -74485,6 +74739,7 @@ window.LH_INVEST=(function(){
     'simnotas':'<path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
     'matrizdoc':'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
     'cadeia':'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+    'fornecedores':'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 13h8M8 17h5"/>',
     'formpreco':'<path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
     'precmassa':'<path d="M4 20V11M10 20V4M16 20v-6M2 20h20"/>',
     'contrato':'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>',
