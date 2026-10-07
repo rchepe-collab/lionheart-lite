@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v927";</script>
+<body><script>window.LH_VERSAO="v928";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3972,6 +3972,8 @@ window.LH_PONTE = (function(){
   }
 
   function chamar(calc, entradas){
+    /* ★ v928 · TR14 · com "Meu cenário" escolhido, a chave U-… vai no campo `cenario` (LH_MEU_CENARIO.rota) */
+    try { if (window.LH_MEU_CENARIO && typeof window.LH_MEU_CENARIO.rota === 'function') entradas = window.LH_MEU_CENARIO.rota(calc, entradas); } catch(_mc){}
     var t = token();
     if(!t) return Promise.resolve({ ok:false, recusa:'identidade', motivo:'sem token' });
     return fetch(URL_DESP, {
@@ -6092,6 +6094,9 @@ function lhTrocarSenha(){
     <div class="nav-item nav-calc-p1" onclick="abrirPagina('central-c1',this)" style="margin-top:4px;background:linear-gradient(90deg,rgba(201,162,39,.16),rgba(201,162,39,.04));border:1px solid rgba(201,162,39,.45);border-radius:8px">
       <span class="ni-icon">🦁</span><span class="ni-label" style="color:#c9a227;font-weight:800">Central da Reforma</span>
     </div>
+    <div class="nav-item nav-calc-p1" onclick="abrirPagina('meucenario',this)" title="a sua premissa de CBS e IBS, usada por todas as calculadoras com cenário, e o comparador A × B × Meu cenário">
+      <span class="ni-icon">％</span><span class="ni-label">Meu cenário de alíquota</span>
+    </div>
     
     
     <div class="nav-group-title" style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">Serviços · Comércio · Turismo</div>
@@ -7532,6 +7537,22 @@ function lhTrocarSenha(){
       <p><b>O que é:</b> lê a empresa ativa e o que já foi preenchido e aponta onde a Reforma <b>machuca o caixa</b> (split, prazos, IS) e onde <b>dá dinheiro</b> (créditos, deságio de fornecedor, ressarcimento de exportação) — cada item com a calculadora que aprofunda.</p></div></div>
     <div style="margin-bottom:10px"><button type="button" onclick="lhCentralReforma('pg_central_c1')" style="padding:9px 18px;background:#c9a227;border:none;border-radius:8px;color:#0a0a0a;font-weight:800;cursor:pointer">⚡ Gerar diagnóstico</button></div>
     <div id="pg_central_c1"></div>
+    <div style="margin-top:14px;padding:12px 16px;border:1px solid rgba(155,127,224,.35);border-radius:10px;font-size:.86rem;color:var(--text2)">
+      <b style="color:#9b7fe0">Meu cenário de alíquota</b> · teste a sua premissa de CBS e IBS em todas as calculadoras com cenário, e compare com A e B.
+      <a href="javascript:void(0)" onclick="abrirPagina('meucenario',null)" style="color:#e0b93a;font-weight:700">Definir meu cenário →</a></div>
+  </div>
+  <div class="page" id="page-meucenario">
+    <div class="calc-page-header"><div class="calc-page-icon" style="background:rgba(155,127,224,.14)">％</div>
+      <div><h2>Meu cenário de alíquota</h2>
+      <p><b>O que é:</b> a sua premissa de CBS e IBS de referência, para testar a alíquota que o Senado ainda vai fixar. O servidor monta a curva de 2026 a 2033 pelo calendário da lei, e todas as calculadoras com cenário passam a aceitar "Meu cenário" no seletor de alíquota.</p></div></div>
+    <div class="input-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end">
+      <div class="input-group"><label>CBS de referência (%)</label><input type="number" id="mc_cbs" step="0.01" min="1" max="20" placeholder="ex.: 9,5" oninput="LH_MEU_CENARIO.total()"></div>
+      <div class="input-group"><label>IBS de referência (%)</label><input type="number" id="mc_ibs" step="0.01" min="1" max="30" placeholder="ex.: 18,5" oninput="LH_MEU_CENARIO.total()"></div>
+      <div class="input-group"><label>Total de referência</label><div id="mc_total" style="padding:9px 0;font-weight:800;color:#e0b93a">—</div></div>
+    </div>
+    <div style="margin:12px 0"><button type="button" onclick="LH_MEU_CENARIO.salvar()" style="padding:9px 18px;background:#c9a227;border:none;border-radius:8px;color:#0a0a0a;font-weight:800;cursor:pointer">Salvar meu cenário</button></div>
+    <div id="mc_res"></div>
+    <p style="margin-top:14px;font-size:.78rem;color:#8a97a8">Com "Meu cenário" escolhido, os campos de alíquota total das calculadoras ficam em 26,5%: a alíquota vem do Meu cenário (evita contar o efeito duas vezes).</p>
   </div>
   <div class="page" id="page-central-c3">
     <div class="calc-page-header"><div class="calc-page-icon" style="background:rgba(201,162,39,.14)">🦁</div>
@@ -31871,7 +31892,7 @@ function aplicarBenchmarkSetorial() {
 /* ★ v815 · o índice do Ctrl+K ganha as 98 perguntas. Quem digita "preço"
    passa a achar tanto a calculadora quanto a dúvida que leva até ela —
    e a dúvida é o que a pessoa realmente tem na cabeça. */
-window.BUSCA_INDEX = [{"tipo":"aba","id":"perguntas","nome":"Perguntas que a ferramenta responde","cat":"Encontre pela dúvida","atalho":"perguntas"},{"tipo":"calc","id":"c01","nome":"Quanto de caixa o Split Payment vai tirar do meu cliente?","cat":"Pergunta · O caixa do meu cliente","atalho":"Split Payment Cash Gap"},{"tipo":"calc","id":"n33","nome":"Ele vai precisar de mais capital de giro? Quanto?","cat":"Pergunta · O caixa do meu cliente","atalho":"NCG Split Payment"},{"tipo":"calc","id":"c11","nome":"Em que mês exato o caixa dele aperta?","cat":"Pergunta · O caixa do meu cliente","atalho":"Split por Operação"},{"tipo":"calc","id":"c01","nome":"A empresa aguenta a transição sem tomar empréstimo?","cat":"Pergunta · O caixa do meu cliente","atalho":"Split Payment Cash Gap"},{"tipo":"calc","id":"antecip","nome":"Pagamento antecipado muda alguma coisa para ele?","cat":"Pergunta · O caixa do meu cliente","atalho":"Pagamentos Antecipados"},{"tipo":"calc","id":"formpreco","nome":"Ele vai ter que aumentar o preço? Em quanto?","cat":"Pergunta · Preço e margem","atalho":"Formação de Preço 2027-33"},{"tipo":"calc","id":"formpreco","nome":"Se segurar o preço, quanto perde de margem?","cat":"Pergunta · Preço e margem","atalho":"Formação de Preço 2027-33"},{"tipo":"calc","id":"c02","nome":"Os contratos antigos vão dar prejuízo?","cat":"Pergunta · Preço e margem","atalho":"Reprecificação de Contratos"},{"tipo":"calc","id":"formpreco","nome":"Ele cobra o mesmo de empresa e de pessoa física?","cat":"Pergunta · Preço e margem","atalho":"Formação de Preço 2027-33"},{"tipo":"calc","id":"calc03","nome":"O concorrente vai poder cobrar menos que ele?","cat":"Pergunta · Preço e margem","atalho":"Risco Fornecedor SN"},{"tipo":"calc","id":"c02","nome":"Como reajustar contrato de prazo longo sem perder o cliente?","cat":"Pergunta · Preço e margem","atalho":"Reprecificação de Contratos"},{"tipo":"calc","id":"c04","nome":"Ele vai pagar mais ou menos imposto do que hoje?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"classif","nome":"Qual é a alíquota de verdade, produto por produto?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Produto (Mix)"},{"tipo":"calc","id":"raiox360","nome":"O produto dele tem desconto de 60%? De 40%? Zero?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Raio-X 360° do Produto"},{"tipo":"calc","id":"c04","nome":"Quanto muda em cada ano da transição?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"seletivo","nome":"O Imposto Seletivo pega o produto dele?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Imposto Seletivo (IS)"},{"tipo":"calc","id":"classif","nome":"Qual a alíquota efetiva considerando o mix inteiro?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Produto (Mix)"},{"tipo":"calc","id":"aliqref","nome":"E se a alíquota de referência subir? Qual o risco?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota de Referência · risco"},{"tipo":"calc","id":"c05","nome":"Ele está no regime certo? Quanto economiza mudando?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Regime Ótimo (Simples/LP/LR)"},{"tipo":"calc","id":"c07","nome":"Vale continuar no Simples depois da reforma?","cat":"Pergunta · Regime: continuar ou sair","atalho":"PF vs PJ — Pejotização"},{"tipo":"calc","id":"dxh","nome":"Dentro ou híbrido: qual custa menos para ele?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"fatorR","nome":"O fator R joga ele no Anexo III ou no V?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Fator R · III vs V"},{"tipo":"calc","id":"sublimite","nome":"Ele está perto de estourar o sublimite?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Sublimite Simples"},{"tipo":"calc","id":"c07","nome":"Compensa abrir PJ ou continuar como pessoa física?","cat":"Pergunta · Regime: continuar ou sair","atalho":"PF vs PJ — Pejotização"},{"tipo":"calc","id":"art127","nome":"Profissão regulamentada muda a conta? (art. 127)","cat":"Pergunta · Regime: continuar ou sair","atalho":"Profissões Regulamentadas · art. 127"},{"tipo":"calc","id":"dxh","nome":"Se ele sair do Simples, o que acontece com o crédito da cadeia?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"dxh","nome":"O cliente dele vai deixar de comprar por causa do crédito?","cat":"Pergunta · Fornecedores e clientes","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"n04","nome":"Fornecedor no Simples vira problema para ele?","cat":"Pergunta · Fornecedores e clientes","atalho":"SN → Regime Regular"},{"tipo":"calc","id":"dxh","nome":"Vale trocar de fornecedor? Quanto isso rende?","cat":"Pergunta · Fornecedores e clientes","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"difal","nome":"Ele vende para outro estado — o DIFAL muda?","cat":"Pergunta · Fornecedores e clientes","atalho":"DIFAL · Interestadual"},{"tipo":"calc","id":"calc03","nome":"Vender para consumidor final ou para empresa: o que muda?","cat":"Pergunta · Fornecedores e clientes","atalho":"Risco Fornecedor SN"},{"tipo":"calc","id":"central-c5","nome":"Ele tem crédito para recuperar? Quanto?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":""},{"tipo":"calc","id":"cr01","nome":"ICMS na base do PIS/COFINS — cabe no caso dele? (Tema 69)","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Tema 69 · ICMS na base PIS/COFINS"},{"tipo":"calc","id":"icmsst1125","nome":"E o ICMS-ST? (Tema 1125)","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"ICMS-ST na base PIS/COFINS · Tema 1125"},{"tipo":"calc","id":"monofasico","nome":"Pagou a maior em produto monofásico?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Monofásico · PIS/COFINS revenda"},{"tipo":"calc","id":"ins","nome":"Tem crédito de INSS ou de ISS parado?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Insumos PIS/COFINS · Tema 779"},{"tipo":"calc","id":"s962","nome":"Existe saldo credor acumulado que ninguém pediu?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"IRPJ/CSLL sobre Selic · Tema 962"},{"tipo":"calc","id":"dup","nome":"Pagou alguma guia em duplicidade?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Pagamento em Duplicidade · scanner"},{"tipo":"calc","id":"ret","nome":"Retenção na fonte que nunca foi compensada?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Retenções na Fonte · não aproveitadas"},{"tipo":"calc","id":"credpresumido","nome":"Crédito presumido do setor dele está sendo usado?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Crédito Presumido · Agroindústria"},{"tipo":"calc","id":"capex","nome":"CAPEX: o investimento gera crédito?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"CAPEX · Crédito de Investimentos"},{"tipo":"calc","id":"c06","nome":"Pró-labore ou distribuição: o que sai mais barato?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Tributação de Dividendos"},{"tipo":"calc","id":"c08","nome":"A tributação de dividendos de 2026 pega ele?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Pró-labore Ótimo"},{"tipo":"calc","id":"c06","nome":"Quanto ele deve retirar por mês, considerando tudo?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Tributação de Dividendos"},{"tipo":"calc","id":"stockoptions","nome":"Stock options fazem sentido no caso dele?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Stock Options · Tema 1.226"},{"tipo":"calc","id":"aluguelpfpj","nome":"Aluguel do imóvel: pessoa física ou jurídica?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Aluguel PF vs PJ"},{"tipo":"calc","id":"n15","nome":"Vale montar uma holding para a família dele?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Holding Patrimonial 2026"},{"tipo":"calc","id":"sucessorio","nome":"Quanto custa não planejar a sucessão?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Sucessório Completo"},{"tipo":"calc","id":"n16","nome":"O ITCMD progressivo do estado dele muda a conta?","cat":"Pergunta · Patrimônio e sucessão","atalho":"ITCMD Progressivo por Estado"},{"tipo":"calc","id":"valuation","nome":"Quanto vale a empresa dele hoje?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Valuation Empresarial"},{"tipo":"calc","id":"offshore","nome":"Estrutura no exterior faz sentido ou é só custo?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Offshores & Fundos"},{"tipo":"calc","id":"ma","nome":"Reorganização societária: quanto economiza?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Custo Tributário de M&A"},{"tipo":"calc","id":"decisor","nome":"Ele foi autuado — discute ou paga?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Decisor · discutir, transacionar ou pagar"},{"tipo":"calc","id":"multajuros","nome":"Quanto é a multa e o juros de verdade?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Multas & Juros · custo do débito"},{"tipo":"calc","id":"prescricao","nome":"Essa dívida já prescreveu?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Prescrição & Decadência"},{"tipo":"calc","id":"transacao","nome":"A transação da PGFN vale a pena para ele?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Transação PGFN 6/2026 · prazo 30/09"},{"tipo":"calc","id":"compensacao","nome":"Dá para compensar em vez de pagar?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Compensação · PER/DCOMP"},{"tipo":"calc","id":"cp02","nome":"Denúncia espontânea sai mais barato que a autuação?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Denúncia Espontânea × Autuação"},{"tipo":"calc","id":"cp01","nome":"Qual o custo de não se adequar a tempo?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Custo do Descumprimento"},{"tipo":"calc","id":"auditorcad","nome":"O cadastro dele está pronto para 2026?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Auditor de Cadastro (cClassTrib)"},{"tipo":"calc","id":"classmassa","nome":"Como classificar mil itens sem fazer no olho?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Classificador em Massa CBS/IBS"},{"tipo":"calc","id":"cadeia","nome":"De quem eu compro e para quem eu vendo: quanto da compra gera crédito?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Cadeia de Crédito · entradas × saídas"},{"tipo":"calc","id":"fornecedores","nome":"Quanto cada fornecedor vai custar depois do crédito, e com quem renegociar?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Mapa de Fornecedores · custo depois do crédito"},{"tipo":"calc","id":"simnotas","nome":"A nota fiscal dele já sai no leiaute novo?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Simulador de Notas (emissor)"},{"tipo":"calc","id":"contrato","nome":"O que o contrato dele precisa prever?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Analisador de Contrato"},{"tipo":"calc","id":"matrizdoc","nome":"De onde vem cada informação que a ferramenta pede?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Matriz de Inputs Automáticos"},{"tipo":"calc","id":"agro01","nome":"Ele é do agro — o Funrural muda com a reforma?","cat":"Pergunta · O ramo do meu cliente","atalho":""},{"tipo":"calc","id":"coop","nome":"Cooperativa: o regime específico compensa?","cat":"Pergunta · O ramo do meu cliente","atalho":"Cooperativas (Regime Específico)"},{"tipo":"calc","id":"agro03","nome":"Produtor rural: vale se registrar como PJ?","cat":"Pergunta · O ramo do meu cliente","atalho":"Produtor PF × PJ Rural"},{"tipo":"calc","id":"agro02","nome":"Barter: insumo trocado por safra, como fica?","cat":"Pergunta · O ramo do meu cliente","atalho":"Barter — Insumo × Safra"},{"tipo":"calc","id":"ind01","nome":"Indústria: o crédito de estoque na virada?","cat":"Pergunta · O ramo do meu cliente","atalho":"Crédito de Estoque na Virada"},{"tipo":"calc","id":"ind04","nome":"Subvenção de ICMS ainda vale para ele?","cat":"Pergunta · O ramo do meu cliente","atalho":"Lei do Bem — P&D"},{"tipo":"calc","id":"bares","nome":"Bar ou restaurante: a cesta básica salva?","cat":"Pergunta · O ramo do meu cliente","atalho":"Bares & Restaurantes"},{"tipo":"calc","id":"hotel","nome":"Hotel e turismo têm regime próprio?","cat":"Pergunta · O ramo do meu cliente","atalho":"Hotelaria & Parques"},{"tipo":"calc","id":"psaude","nome":"Clínica ou consultório: como fica?","cat":"Pergunta · O ramo do meu cliente","atalho":"Planos de Saúde (Operadoras)"},{"tipo":"calc","id":"logcarga","nome":"Transporte de carga: o crédito do frete?","cat":"Pergunta · O ramo do meu cliente","atalho":"Logística & Cargas"},{"tipo":"calc","id":"transpax","nome":"Transporte de passageiros muda?","cat":"Pergunta · O ramo do meu cliente","atalho":"Transporte de Passageiros"},{"tipo":"calc","id":"combustivel","nome":"Posto de combustível: monofásico continua?","cat":"Pergunta · O ramo do meu cliente","atalho":"Combustíveis (Monofásico)"},{"tipo":"calc","id":"medicamento","nome":"Farmácia e medicamento: alíquota reduzida?","cat":"Pergunta · O ramo do meu cliente","atalho":"Medicamentos & Dispositivos"},{"tipo":"calc","id":"telecom","nome":"Telecom e tecnologia: o que muda?","cat":"Pergunta · O ramo do meu cliente","atalho":"Telecom & Energia"},{"tipo":"calc","id":"apostas","nome":"Casa de apostas: o Seletivo pega?","cat":"Pergunta · O ramo do meu cliente","atalho":"Apostas / Prognósticos + SAF"},{"tipo":"calc","id":"financeiro","nome":"Instituição financeira: regime específico?","cat":"Pergunta · O ramo do meu cliente","atalho":"Serviços Financeiros (Spread)"},{"tipo":"calc","id":"agviagem","nome":"Agência de viagem: base reduzida continua?","cat":"Pergunta · O ramo do meu cliente","atalho":"Agências de Viagem & Turismo"},{"tipo":"calc","id":"imob_ret","nome":"Construção e incorporação: o RET sobrevive?","cat":"Pergunta · O ramo do meu cliente","atalho":"Incorporação / RET"},{"tipo":"calc","id":"imobref","nome":"Aluguel de imóvel: como fica na reforma?","cat":"Pergunta · O ramo do meu cliente","atalho":"Regime Imobiliário da Reforma"},{"tipo":"calc","id":"import","nome":"Importar vai ficar mais caro para ele?","cat":"Pergunta · Importação e exportação","atalho":"Importação & Regimes"},{"tipo":"calc","id":"export","nome":"Exportador acumula crédito — como recupera?","cat":"Pergunta · Importação e exportação","atalho":"Exportação & Saldo Credor"},{"tipo":"calc","id":"drawback","nome":"Drawback continua valendo?","cat":"Pergunta · Importação e exportação","atalho":"Drawback & Aduaneiros"},{"tipo":"calc","id":"portos","nome":"Operação por porto de outro estado muda algo?","cat":"Pergunta · Importação e exportação","atalho":"Portos & Regimes Aduaneiros"},{"tipo":"calc","id":"jornada","nome":"Quais clientes da minha carteira dão mais trabalho até 2033?","cat":"Pergunta · O meu escritório","atalho":"Jornada do Cliente"},{"tipo":"calc","id":"ltv_carteira","nome":"Quanto cada cliente me rende de verdade?","cat":"Pergunta · O meu escritório","atalho":"LTV de Carteira"},{"tipo":"calc","id":"motor360","nome":"Onde está a oportunidade de honorário na minha base?","cat":"Pergunta · O meu escritório","atalho":"Motor 360°"},{"tipo":"calc","id":"proposta","nome":"Como faço uma proposta com o número na mão?","cat":"Pergunta · O meu escritório","atalho":"Proposta Comercial"},{"tipo":"calc","id":"c10","nome":"Quanto cobrar pela rotina de BPO que já entrego?","cat":"Pergunta · O meu escritório","atalho":"Precificação de Honorários"},{"tipo":"calc","id":"pdf","nome":"Como entrego isso com a minha marca?","cat":"Pergunta · O meu escritório","atalho":"Relatório PDF"},{"tipo":"calc","id":"c09","nome":"Por onde começo com um cliente novo?","cat":"Pergunta · O meu escritório","atalho":"Rentabilidade por Cliente"},{"tipo":"calc","id":"central-c1","nome":"O que muda já em 2026?","cat":"Pergunta · O que vence, e quando","atalho":""},{"tipo":"calc","id":"c04","nome":"Quando PIS e COFINS acabam de verdade?","cat":"Pergunta · O que vence, e quando","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"c04","nome":"Em que ano o ICMS e o ISS somem?","cat":"Pergunta · O que vence, e quando","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"cp03","nome":"O que meu cliente precisa fazer ainda este ano?","cat":"Pergunta · O que vence, e quando","atalho":"Compliance da Reforma 2026"}].concat([
+window.BUSCA_INDEX = [{"tipo":"aba","id":"perguntas","nome":"Perguntas que a ferramenta responde","cat":"Encontre pela dúvida","atalho":"perguntas"},{"tipo":"calc","id":"c01","nome":"Quanto de caixa o Split Payment vai tirar do meu cliente?","cat":"Pergunta · O caixa do meu cliente","atalho":"Split Payment Cash Gap"},{"tipo":"calc","id":"n33","nome":"Ele vai precisar de mais capital de giro? Quanto?","cat":"Pergunta · O caixa do meu cliente","atalho":"NCG Split Payment"},{"tipo":"calc","id":"c11","nome":"Em que mês exato o caixa dele aperta?","cat":"Pergunta · O caixa do meu cliente","atalho":"Split por Operação"},{"tipo":"calc","id":"c01","nome":"A empresa aguenta a transição sem tomar empréstimo?","cat":"Pergunta · O caixa do meu cliente","atalho":"Split Payment Cash Gap"},{"tipo":"calc","id":"antecip","nome":"Pagamento antecipado muda alguma coisa para ele?","cat":"Pergunta · O caixa do meu cliente","atalho":"Pagamentos Antecipados"},{"tipo":"calc","id":"formpreco","nome":"Ele vai ter que aumentar o preço? Em quanto?","cat":"Pergunta · Preço e margem","atalho":"Formação de Preço 2027-33"},{"tipo":"calc","id":"formpreco","nome":"Se segurar o preço, quanto perde de margem?","cat":"Pergunta · Preço e margem","atalho":"Formação de Preço 2027-33"},{"tipo":"calc","id":"c02","nome":"Os contratos antigos vão dar prejuízo?","cat":"Pergunta · Preço e margem","atalho":"Reprecificação de Contratos"},{"tipo":"calc","id":"formpreco","nome":"Ele cobra o mesmo de empresa e de pessoa física?","cat":"Pergunta · Preço e margem","atalho":"Formação de Preço 2027-33"},{"tipo":"calc","id":"calc03","nome":"O concorrente vai poder cobrar menos que ele?","cat":"Pergunta · Preço e margem","atalho":"Risco Fornecedor SN"},{"tipo":"calc","id":"c02","nome":"Como reajustar contrato de prazo longo sem perder o cliente?","cat":"Pergunta · Preço e margem","atalho":"Reprecificação de Contratos"},{"tipo":"calc","id":"c04","nome":"Ele vai pagar mais ou menos imposto do que hoje?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"classif","nome":"Qual é a alíquota de verdade, produto por produto?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Produto (Mix)"},{"tipo":"calc","id":"raiox360","nome":"O produto dele tem desconto de 60%? De 40%? Zero?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Raio-X 360° do Produto"},{"tipo":"calc","id":"c04","nome":"Quanto muda em cada ano da transição?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"seletivo","nome":"O Imposto Seletivo pega o produto dele?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Imposto Seletivo (IS)"},{"tipo":"calc","id":"classif","nome":"Qual a alíquota efetiva considerando o mix inteiro?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota Efetiva por Produto (Mix)"},{"tipo":"calc","id":"aliqref","nome":"E se a alíquota de referência subir? Qual o risco?","cat":"Pergunta · Quanto imposto vai pagar","atalho":"Alíquota de Referência · risco"},{"tipo":"calc","id":"c05","nome":"Ele está no regime certo? Quanto economiza mudando?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Regime Ótimo (Simples/LP/LR)"},{"tipo":"calc","id":"c07","nome":"Vale continuar no Simples depois da reforma?","cat":"Pergunta · Regime: continuar ou sair","atalho":"PF vs PJ — Pejotização"},{"tipo":"calc","id":"dxh","nome":"Dentro ou híbrido: qual custa menos para ele?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"fatorR","nome":"O fator R joga ele no Anexo III ou no V?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Fator R · III vs V"},{"tipo":"calc","id":"sublimite","nome":"Ele está perto de estourar o sublimite?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Sublimite Simples"},{"tipo":"calc","id":"c07","nome":"Compensa abrir PJ ou continuar como pessoa física?","cat":"Pergunta · Regime: continuar ou sair","atalho":"PF vs PJ — Pejotização"},{"tipo":"calc","id":"art127","nome":"Profissão regulamentada muda a conta? (art. 127)","cat":"Pergunta · Regime: continuar ou sair","atalho":"Profissões Regulamentadas · art. 127"},{"tipo":"calc","id":"dxh","nome":"Se ele sair do Simples, o que acontece com o crédito da cadeia?","cat":"Pergunta · Regime: continuar ou sair","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"dxh","nome":"O cliente dele vai deixar de comprar por causa do crédito?","cat":"Pergunta · Fornecedores e clientes","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"n04","nome":"Fornecedor no Simples vira problema para ele?","cat":"Pergunta · Fornecedores e clientes","atalho":"SN → Regime Regular"},{"tipo":"calc","id":"dxh","nome":"Vale trocar de fornecedor? Quanto isso rende?","cat":"Pergunta · Fornecedores e clientes","atalho":"Simples 2027: Dentro × Híbrido"},{"tipo":"calc","id":"difal","nome":"Ele vende para outro estado — o DIFAL muda?","cat":"Pergunta · Fornecedores e clientes","atalho":"DIFAL · Interestadual"},{"tipo":"calc","id":"calc03","nome":"Vender para consumidor final ou para empresa: o que muda?","cat":"Pergunta · Fornecedores e clientes","atalho":"Risco Fornecedor SN"},{"tipo":"calc","id":"central-c5","nome":"Ele tem crédito para recuperar? Quanto?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":""},{"tipo":"calc","id":"cr01","nome":"ICMS na base do PIS/COFINS — cabe no caso dele? (Tema 69)","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Tema 69 · ICMS na base PIS/COFINS"},{"tipo":"calc","id":"icmsst1125","nome":"E o ICMS-ST? (Tema 1125)","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"ICMS-ST na base PIS/COFINS · Tema 1125"},{"tipo":"calc","id":"monofasico","nome":"Pagou a maior em produto monofásico?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Monofásico · PIS/COFINS revenda"},{"tipo":"calc","id":"ins","nome":"Tem crédito de INSS ou de ISS parado?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Insumos PIS/COFINS · Tema 779"},{"tipo":"calc","id":"s962","nome":"Existe saldo credor acumulado que ninguém pediu?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"IRPJ/CSLL sobre Selic · Tema 962"},{"tipo":"calc","id":"dup","nome":"Pagou alguma guia em duplicidade?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Pagamento em Duplicidade · scanner"},{"tipo":"calc","id":"ret","nome":"Retenção na fonte que nunca foi compensada?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Retenções na Fonte · não aproveitadas"},{"tipo":"calc","id":"credpresumido","nome":"Crédito presumido do setor dele está sendo usado?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"Crédito Presumido · Agroindústria"},{"tipo":"calc","id":"capex","nome":"CAPEX: o investimento gera crédito?","cat":"Pergunta · Crédito e dinheiro de volta","atalho":"CAPEX · Crédito de Investimentos"},{"tipo":"calc","id":"c06","nome":"Pró-labore ou distribuição: o que sai mais barato?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Tributação de Dividendos"},{"tipo":"calc","id":"c08","nome":"A tributação de dividendos de 2026 pega ele?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Pró-labore Ótimo"},{"tipo":"calc","id":"c06","nome":"Quanto ele deve retirar por mês, considerando tudo?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Tributação de Dividendos"},{"tipo":"calc","id":"stockoptions","nome":"Stock options fazem sentido no caso dele?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Stock Options · Tema 1.226"},{"tipo":"calc","id":"aluguelpfpj","nome":"Aluguel do imóvel: pessoa física ou jurídica?","cat":"Pergunta · O sócio e a pessoa física","atalho":"Aluguel PF vs PJ"},{"tipo":"calc","id":"n15","nome":"Vale montar uma holding para a família dele?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Holding Patrimonial 2026"},{"tipo":"calc","id":"sucessorio","nome":"Quanto custa não planejar a sucessão?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Sucessório Completo"},{"tipo":"calc","id":"n16","nome":"O ITCMD progressivo do estado dele muda a conta?","cat":"Pergunta · Patrimônio e sucessão","atalho":"ITCMD Progressivo por Estado"},{"tipo":"calc","id":"valuation","nome":"Quanto vale a empresa dele hoje?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Valuation Empresarial"},{"tipo":"calc","id":"offshore","nome":"Estrutura no exterior faz sentido ou é só custo?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Offshores & Fundos"},{"tipo":"calc","id":"ma","nome":"Reorganização societária: quanto economiza?","cat":"Pergunta · Patrimônio e sucessão","atalho":"Custo Tributário de M&A"},{"tipo":"calc","id":"decisor","nome":"Ele foi autuado — discute ou paga?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Decisor · discutir, transacionar ou pagar"},{"tipo":"calc","id":"multajuros","nome":"Quanto é a multa e o juros de verdade?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Multas & Juros · custo do débito"},{"tipo":"calc","id":"prescricao","nome":"Essa dívida já prescreveu?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Prescrição & Decadência"},{"tipo":"calc","id":"transacao","nome":"A transação da PGFN vale a pena para ele?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Transação PGFN 6/2026 · prazo 30/09"},{"tipo":"calc","id":"compensacao","nome":"Dá para compensar em vez de pagar?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Compensação · PER/DCOMP"},{"tipo":"calc","id":"cp02","nome":"Denúncia espontânea sai mais barato que a autuação?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Denúncia Espontânea × Autuação"},{"tipo":"calc","id":"cp01","nome":"Qual o custo de não se adequar a tempo?","cat":"Pergunta · Autuação, dívida e discussão","atalho":"Custo do Descumprimento"},{"tipo":"calc","id":"auditorcad","nome":"O cadastro dele está pronto para 2026?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Auditor de Cadastro (cClassTrib)"},{"tipo":"calc","id":"classmassa","nome":"Como classificar mil itens sem fazer no olho?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Classificador em Massa CBS/IBS"},{"tipo":"calc","id":"cadeia","nome":"De quem eu compro e para quem eu vendo: quanto da compra gera crédito?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Cadeia de Crédito · entradas × saídas"},{"tipo":"calc","id":"fornecedores","nome":"Quanto cada fornecedor vai custar depois do crédito, e com quem renegociar?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Mapa de Fornecedores · custo depois do crédito"},{"tipo":"calc","id":"meucenario","nome":"E se a alíquota vier diferente? Testar a minha premissa de CBS e IBS","cat":"Pergunta · Alíquota e cenários","atalho":"Meu cenário de alíquota"},{"tipo":"calc","id":"simnotas","nome":"A nota fiscal dele já sai no leiaute novo?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Simulador de Notas (emissor)"},{"tipo":"calc","id":"contrato","nome":"O que o contrato dele precisa prever?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Analisador de Contrato"},{"tipo":"calc","id":"matrizdoc","nome":"De onde vem cada informação que a ferramenta pede?","cat":"Pergunta · Cadastro, nota e sistema","atalho":"Matriz de Inputs Automáticos"},{"tipo":"calc","id":"agro01","nome":"Ele é do agro — o Funrural muda com a reforma?","cat":"Pergunta · O ramo do meu cliente","atalho":""},{"tipo":"calc","id":"coop","nome":"Cooperativa: o regime específico compensa?","cat":"Pergunta · O ramo do meu cliente","atalho":"Cooperativas (Regime Específico)"},{"tipo":"calc","id":"agro03","nome":"Produtor rural: vale se registrar como PJ?","cat":"Pergunta · O ramo do meu cliente","atalho":"Produtor PF × PJ Rural"},{"tipo":"calc","id":"agro02","nome":"Barter: insumo trocado por safra, como fica?","cat":"Pergunta · O ramo do meu cliente","atalho":"Barter — Insumo × Safra"},{"tipo":"calc","id":"ind01","nome":"Indústria: o crédito de estoque na virada?","cat":"Pergunta · O ramo do meu cliente","atalho":"Crédito de Estoque na Virada"},{"tipo":"calc","id":"ind04","nome":"Subvenção de ICMS ainda vale para ele?","cat":"Pergunta · O ramo do meu cliente","atalho":"Lei do Bem — P&D"},{"tipo":"calc","id":"bares","nome":"Bar ou restaurante: a cesta básica salva?","cat":"Pergunta · O ramo do meu cliente","atalho":"Bares & Restaurantes"},{"tipo":"calc","id":"hotel","nome":"Hotel e turismo têm regime próprio?","cat":"Pergunta · O ramo do meu cliente","atalho":"Hotelaria & Parques"},{"tipo":"calc","id":"psaude","nome":"Clínica ou consultório: como fica?","cat":"Pergunta · O ramo do meu cliente","atalho":"Planos de Saúde (Operadoras)"},{"tipo":"calc","id":"logcarga","nome":"Transporte de carga: o crédito do frete?","cat":"Pergunta · O ramo do meu cliente","atalho":"Logística & Cargas"},{"tipo":"calc","id":"transpax","nome":"Transporte de passageiros muda?","cat":"Pergunta · O ramo do meu cliente","atalho":"Transporte de Passageiros"},{"tipo":"calc","id":"combustivel","nome":"Posto de combustível: monofásico continua?","cat":"Pergunta · O ramo do meu cliente","atalho":"Combustíveis (Monofásico)"},{"tipo":"calc","id":"medicamento","nome":"Farmácia e medicamento: alíquota reduzida?","cat":"Pergunta · O ramo do meu cliente","atalho":"Medicamentos & Dispositivos"},{"tipo":"calc","id":"telecom","nome":"Telecom e tecnologia: o que muda?","cat":"Pergunta · O ramo do meu cliente","atalho":"Telecom & Energia"},{"tipo":"calc","id":"apostas","nome":"Casa de apostas: o Seletivo pega?","cat":"Pergunta · O ramo do meu cliente","atalho":"Apostas / Prognósticos + SAF"},{"tipo":"calc","id":"financeiro","nome":"Instituição financeira: regime específico?","cat":"Pergunta · O ramo do meu cliente","atalho":"Serviços Financeiros (Spread)"},{"tipo":"calc","id":"agviagem","nome":"Agência de viagem: base reduzida continua?","cat":"Pergunta · O ramo do meu cliente","atalho":"Agências de Viagem & Turismo"},{"tipo":"calc","id":"imob_ret","nome":"Construção e incorporação: o RET sobrevive?","cat":"Pergunta · O ramo do meu cliente","atalho":"Incorporação / RET"},{"tipo":"calc","id":"imobref","nome":"Aluguel de imóvel: como fica na reforma?","cat":"Pergunta · O ramo do meu cliente","atalho":"Regime Imobiliário da Reforma"},{"tipo":"calc","id":"import","nome":"Importar vai ficar mais caro para ele?","cat":"Pergunta · Importação e exportação","atalho":"Importação & Regimes"},{"tipo":"calc","id":"export","nome":"Exportador acumula crédito — como recupera?","cat":"Pergunta · Importação e exportação","atalho":"Exportação & Saldo Credor"},{"tipo":"calc","id":"drawback","nome":"Drawback continua valendo?","cat":"Pergunta · Importação e exportação","atalho":"Drawback & Aduaneiros"},{"tipo":"calc","id":"portos","nome":"Operação por porto de outro estado muda algo?","cat":"Pergunta · Importação e exportação","atalho":"Portos & Regimes Aduaneiros"},{"tipo":"calc","id":"jornada","nome":"Quais clientes da minha carteira dão mais trabalho até 2033?","cat":"Pergunta · O meu escritório","atalho":"Jornada do Cliente"},{"tipo":"calc","id":"ltv_carteira","nome":"Quanto cada cliente me rende de verdade?","cat":"Pergunta · O meu escritório","atalho":"LTV de Carteira"},{"tipo":"calc","id":"motor360","nome":"Onde está a oportunidade de honorário na minha base?","cat":"Pergunta · O meu escritório","atalho":"Motor 360°"},{"tipo":"calc","id":"proposta","nome":"Como faço uma proposta com o número na mão?","cat":"Pergunta · O meu escritório","atalho":"Proposta Comercial"},{"tipo":"calc","id":"c10","nome":"Quanto cobrar pela rotina de BPO que já entrego?","cat":"Pergunta · O meu escritório","atalho":"Precificação de Honorários"},{"tipo":"calc","id":"pdf","nome":"Como entrego isso com a minha marca?","cat":"Pergunta · O meu escritório","atalho":"Relatório PDF"},{"tipo":"calc","id":"c09","nome":"Por onde começo com um cliente novo?","cat":"Pergunta · O meu escritório","atalho":"Rentabilidade por Cliente"},{"tipo":"calc","id":"central-c1","nome":"O que muda já em 2026?","cat":"Pergunta · O que vence, e quando","atalho":""},{"tipo":"calc","id":"c04","nome":"Quando PIS e COFINS acabam de verdade?","cat":"Pergunta · O que vence, e quando","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"c04","nome":"Em que ano o ICMS e o ISS somem?","cat":"Pergunta · O que vence, e quando","atalho":"Alíquota Efetiva por Setor / Atividade"},{"tipo":"calc","id":"cp03","nome":"O que meu cliente precisa fazer ainda este ano?","cat":"Pergunta · O que vence, e quando","atalho":"Compliance da Reforma 2026"}].concat([
   // Calculadoras
   {tipo:'calc',id:'fin_dados',nome:'Dados Estratégicos — a empresa em 41 campos (DRE e Fluxo 2026–2033)',cat:'Inteligência Financeira',atalho:'fin_dados'},
   {tipo:'calc',id:'fin_cred',nome:'Identificador de Créditos — quanto de IBS/CBS vou dever, quanto recupero, o que sobra',cat:'Inteligência Financeira',atalho:'fin_cred'},
@@ -68160,12 +68181,13 @@ window.fpLerEntradas=fpLerEntradas; window.fpCalcularLocal=fpCalcularLocal; wind
    d.innerHTML='<span>Alíquota de referência:</span>'
     +'<button type="button" data-v="26.5" class="lh-ref-btn" style="background:rgba(201,162,39,.18);color:#e0b93a;border:1px solid rgba(201,162,39,.5);border-radius:16px;padding:4px 12px;font-size:.74rem;cursor:pointer">26,5% · teto legal</button>'
     +'<button type="button" data-v="27.91" class="lh-ref-btn" style="background:transparent;color:#8a97a8;border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:4px 12px;font-size:.74rem;cursor:pointer">27,91% · CGIBS</button>'
-    +'<button type="button" data-v="28" class="lh-ref-btn" style="background:transparent;color:#8a97a8;border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:4px 12px;font-size:.74rem;cursor:pointer">28% · estresse</button>'
+    /* v928 · TR14: o botão 28% (estresse) saiu — o Meu cenário faz esse papel (decisão do Ricardo, 06/10) */
     +'<span style="font-size:.7rem">Nenhuma é lei ainda: a definitiva sai por <b>Resolução do Senado</b> (art. 349, cálculo do TCU). '
     +'<b>26,5%</b> é o <b>teto</b> do art. 18 — e funciona como gatilho, não como trava: se a estimativa o superar, o Executivo apenas <b>propõe</b> redução ao Congresso (art. 475, §11). '
     +'<b>27,91%</b> é a estimativa que o próprio Comitê Gestor adotou na <b>Resolução CGIBS nº 14, de 29/07/2026</b> — já 1,41 ponto acima do teto.</span>';
    d.querySelectorAll('.lh-ref-btn').forEach(function(b){
      b.addEventListener('click',function(){
+       try{ if(window.LH_MEU_CENARIO) window.LH_MEU_CENARIO.soltar(); }catch(_mc){}   /* v928 · TR14 */
        window.LH_ALIQ_REF=parseFloat(b.dataset.v);
        d.querySelectorAll('.lh-ref-btn').forEach(function(x){
          var on=(x===b);
@@ -68193,6 +68215,7 @@ window.fpLerEntradas=fpLerEntradas; window.fpCalcularLocal=fpCalcularLocal; wind
    sel.style.cssText='margin:2px 0 10px;font-size:.72rem;color:#8a97a8;line-height:1.45';
    d.appendChild(sel);
    if(btn&&btn.parentElement) btn.parentElement.insertBefore(d,btn); else pg.appendChild(d);
+   try{ if(window.LH_MEU_CENARIO) window.LH_MEU_CENARIO.decorar(d); }catch(_mc){}   /* v928 · TR14 */
    if(typeof window.LH_pintarSelo==='function') window.LH_pintarSelo();
  }
 
@@ -68220,6 +68243,7 @@ window.fpLerEntradas=fpLerEntradas; window.fpCalcularLocal=fpCalcularLocal; wind
      b.style.color=on?'#e0b93a':'#8a97a8';
      b.style.borderColor=on?'rgba(201,162,39,.5)':'rgba(255,255,255,.16)';
    });
+   try{ if(window.LH_MEU_CENARIO) window.LH_MEU_CENARIO.pintar(); }catch(_mc){}   /* v928 · TR14 */
  };
 
  /* v658 · ESPALHAMENTO — o seletor entra em TODA tela que responde ao cenario.
@@ -68227,9 +68251,11 @@ window.fpLerEntradas=fpLerEntradas; window.fpCalcularLocal=fpCalcularLocal; wind
     contador como trocar. Injecao preguicosa, na primeira abertura da pagina. */
  window.LH_TELAS_CENARIO=['c01','c02','c04','c05','c07','n04','n33','calc03','capex',
    'seletivo','raiox360','import','coop','psaude','financeiro','apostas',
-   'combustivel','agroins','dxh','formpreco'];
+   'combustivel','agroins','dxh','formpreco',
+   'contrato'];   /* v928 · TR14: o Analisador de Contrato também lê o cenário (fn_contrato) */
  (function(){
    function injetar(pid){
+     try{ if(window.LH_MEU_CENARIO) window.LH_MEU_CENARIO.aoAbrir(pid); }catch(_mc){}   /* v928 · TR14 */
      if(!pid||window.LH_TELAS_CENARIO.indexOf(pid)<0) return;
      try{ botaoEstresse(pid); }catch(e){}
    }
@@ -73980,6 +74006,267 @@ window.LH_MAPA_FORN = (function(){
 })();
 </script>
 <script>
+/* ★ v928 · TR14 §4 · MEU CENÁRIO DE ALÍQUOTA + COMPARADOR — módulo da tela (só tela; o motor é
+   cenario-salvar / cenario-ler / comparar-cenarios). Cópia byte a byte de lab/cenario/meu_cenario_tela.js. */
+/* ════════════════════════════════════════════════════════════════════
+ * MEU CENÁRIO DE ALÍQUOTA + COMPARADOR DE CENÁRIOS · tela (TR14 §4) · 06/10/2026
+ * SÓ TELA: o servidor guarda a premissa e monta a curva (cenario-salvar /
+ * cenario-ler) e roda a calculadora em A, B, C e Meu cenário
+ * (comparar-cenarios). Aqui só se lê campo, chama, guarda a chave na sessão
+ * e desenha. Nenhuma fórmula tributária (regra do TR11 / Portão 8).
+ *   - rota: o campo `cenario` das calculadoras que o usam (lista do catálogo)
+ *     leva a chave do cenário escolhido: U-… (Meu cenário) ou 'B' (27,91%);
+ *     26,5% e 28% (estresse, sem cenário no servidor) seguem em 'A';
+ *   - trava: campos de alíquota total ficam em 26,5 (dupla contagem, TR14 §3).
+ * ════════════════════════════════════════════════════════════════════ */
+window.LH_MEU_CENARIO = (function(){
+  'use strict';
+  /* calculadoras do catálogo com parâmetro `cenario` (vw_catalogo_calculadoras, 06/10/2026: 40) */
+  var CALCS = ['agro-decisor','agro02','agro09','agro11','agro12','agrosuper2','agrosuper4','agrosuper5','agrosuper6',
+    'aluguel-pfpj','antecip','art127','c01','c02','c02-matriz','c04','c11','calc03','capex','classificar-lote','contrato',
+    'cr04','dxh','formacao-preco','import','ind08','ind11','lucro-presumido','lucro-real','mix-efetiva','n04','n15','n33',
+    'pf-vs-pj','portos','reajuste-contrato','regime-otimo','seletivo','setor','simnotas'];
+  /* campos de alíquota total: com Meu cenário, ficam no valor-base (a alíquota vem do servidor) */
+  var TRAVAS = [ { id:'ind08_ibs', valor:'26.5' }, { id:'capex_aliq', valor:'' } ];
+  var NOTA_TRAVA = 'a alíquota vem do Meu cenário';
+  var estado = { meu:null, sel:false, lido:false, aviso:null, ultima:{} };
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function fmt(v,d){ var n=Number(v); if(v===null||v===undefined||v===''||isNaN(n)) return '—';
+    return n.toLocaleString('pt-BR',{minimumFractionDigits:(d==null?2:d),maximumFractionDigits:(d==null?2:d)}); }
+  function lerNum(id){ var e=document.getElementById(id); if(!e) return null; var t=String(e.value||'').trim().replace(',','.');
+    if(t==='') return null; var n=parseFloat(t); return isNaN(n)?null:n; }
+  function erro(m){ try{ return window.LH_PONTE.cardErro(m); }catch(e){ return '<div class="kpi-card"><div class="kpi-label">Não foi possível</div><div class="kpi-sub">'+esc(m)+'</div></div>'; } }
+  function rotulo(){ return 'Meu cenário ('+fmt(estado.meu.total_ref_pct)+'%)'; }
+
+  /* ── estado da sessão ─────────────────────────────────────────────── */
+  function guardar(r){
+    estado.meu = (r && r.ok && r.cenario && (r.existe!==false)) ? { cenario:String(r.cenario).toUpperCase(), cbs_ref_pct:r.cbs_ref_pct,
+      ibs_ref_pct:r.ibs_ref_pct, total_ref_pct:r.total_ref_pct, curva:r.curva||[], nome:r.nome||'Meu cenário' } : null;
+    window.LH_CENARIO_MEU = estado.meu;
+    estado.aviso = estado.meu ? (r.aviso || null) : null;   /* o aviso do art. 475 §11 vem do servidor (salvar e ler) */
+    if(!estado.meu && estado.sel) soltar();
+    atualizarTudo();
+  }
+  function ler(){
+    estado.lido = true;
+    return window.LH_PONTE.chamar('cenario-ler', {}).then(function(res){
+      var r = res && res.ok ? res.resultado : null;
+      if(r && r.ok){ guardar(r); painel(r, null); }
+      else painel(null, (r && r.motivo) || (res && res.motivo) || 'sem resposta do servidor');
+      return r;
+    });
+  }
+  function salvar(){
+    var cbs=lerNum('mc_cbs'), ibs=lerNum('mc_ibs');
+    var box=document.getElementById('mc_res');
+    if(box) box.innerHTML='<div class="kpi-card" data-lh-espera="1"><div class="kpi-label">Salvando no servidor…</div></div>';
+    return window.LH_PONTE.chamar('cenario-salvar', { cbs_ref:cbs, ibs_ref:ibs }).then(function(res){
+      var r = res && res.ok ? res.resultado : null;
+      if(!r || !r.ok){ if(box) box.innerHTML=erro((r && r.motivo) || (res && res.motivo) || 'sem resposta do servidor'); return r; }
+      guardar(r); painel(r, null);
+      return r;
+    });
+  }
+
+  /* ── painel "Meu cenário de alíquota" ─────────────────────────────── */
+  function total(){
+    var cbs=lerNum('mc_cbs'), ibs=lerNum('mc_ibs'), el=document.getElementById('mc_total');
+    if(el) el.textContent = (cbs===null||ibs===null) ? '—' : fmt(cbs+ibs)+'%';   /* só exibição */
+  }
+  function curvaHTML(curva){
+    if(!curva || !curva.length) return '';
+    return '<table class="mc-curva" style="width:100%;border-collapse:collapse;font-size:.82rem;margin-top:8px"><thead><tr>'
+      +'<th style="text-align:left">Ano</th><th style="text-align:right">CBS</th><th style="text-align:right">IBS</th><th style="text-align:right">Total</th></tr></thead><tbody>'
+      +curva.map(function(k){ return '<tr><td>'+esc(k.ano)+'</td><td style="text-align:right">'+fmt(k.cbs_pct)+'%</td><td style="text-align:right">'
+        +fmt(k.ibs_pct)+'%</td><td style="text-align:right"><b>'+fmt(k.total_pct)+'%</b></td></tr>'; }).join('')+'</tbody></table>';
+  }
+  function oficiaisHTML(of){
+    if(!of || !of.length) return '';
+    return '<div class="mc-oficiais" style="margin-top:10px;font-size:.78rem;color:#8a97a8">Cenários oficiais: '
+      +of.map(function(o){ return '<b>'+esc(o.cenario)+'</b> '+esc(o.nome)+' · '+fmt(o.total_ref_pct)+'%'; }).join(' &nbsp;·&nbsp; ')+'</div>';
+  }
+  function painel(r, motivo){
+    var box=document.getElementById('mc_res'); if(!box) return;
+    if(motivo){ box.innerHTML=erro(motivo); return; }
+    if(!r){ box.innerHTML=''; return; }
+    if(r.existe===false){
+      box.innerHTML='<div class="kpi-sub" style="margin:6px 0">'+esc(r.dica||'')+'</div>'+oficiaisHTML(r.oficiais); return;
+    }
+    var c=document.getElementById('mc_cbs'), i=document.getElementById('mc_ibs');
+    if(c && r.cbs_ref_pct!=null) c.value=r.cbs_ref_pct; if(i && r.ibs_ref_pct!=null) i.value=r.ibs_ref_pct; total();
+    box.innerHTML='<div class="kpi-grid"><div class="kpi-card"><div class="kpi-label">'+esc(r.nome||'Meu cenário')+'</div>'
+      +'<div class="kpi-value">'+fmt(r.total_ref_pct)+'%</div><div class="kpi-sub">CBS '+fmt(r.cbs_ref_pct)+'% + IBS '+fmt(r.ibs_ref_pct)+'% · chave '+esc(r.cenario)+'</div></div></div>'
+      +(r.aviso||estado.aviso ? '<div class="mc-aviso" style="margin:8px 0;padding:8px 12px;border-left:3px solid #c96a1f;color:#c96a1f;font-size:.82rem">⚠ '+esc(r.aviso||estado.aviso)+'</div>' : '')
+      +(r.como_usar ? '<div class="kpi-sub" style="margin:6px 0">'+esc(r.como_usar)+'</div>' : '')
+      +curvaHTML(r.curva)+oficiaisHTML(r.oficiais)
+      +(r.base_legal ? '<div style="margin-top:8px;font-size:.72rem;color:#8a97a8">'+esc(r.base_legal)+'</div>' : '');
+  }
+
+  /* ── seletor: botão "Meu cenário (X%)" nas barras de alíquota ─────── */
+  function estilo(b, on){
+    b.style.background=on?'rgba(201,162,39,.18)':'transparent'; b.style.color=on?'#e0b93a':'#8a97a8';
+    b.style.borderColor=on?'rgba(201,162,39,.5)':'rgba(255,255,255,.16)';
+  }
+  function decorar(barra){
+    if(!barra || barra.querySelector('.lh-meu-btn')) return;
+    var b=document.createElement('button'); b.type='button'; b.className='lh-meu-btn';
+    b.style.cssText='background:transparent;color:#8a97a8;border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:4px 12px;font-size:.74rem;cursor:pointer';
+    b.addEventListener('click', function(){ if(estado.meu) escolher(); else abrir(); });
+    var ult=[].slice.call(barra.querySelectorAll('.lh-ref-btn')).pop();
+    if(ult && ult.nextSibling) barra.insertBefore(b, ult.nextSibling); else barra.appendChild(b);
+    var pg=barra.closest ? barra.closest('.page') : null;
+    if(pg && !pg.querySelector('.lh-comparar')) comparadorBloco(pg);
+    pintarBotoes();
+  }
+  function pintarBotoes(){
+    document.querySelectorAll('.lh-meu-btn').forEach(function(b){
+      b.textContent = estado.meu ? rotulo() : '＋ Meu cenário';
+      b.title = estado.meu ? 'usar a sua premissa ('+estado.meu.cenario+')' : 'definir a sua premissa de CBS e IBS';
+      estilo(b, estado.sel && !!estado.meu);
+    });
+    document.querySelectorAll('select#mf_cenario').forEach(function(s){
+      var o=s.querySelector('option.lh-meu-opt');
+      if(!estado.meu){ if(o){ if(s.value===o.value) s.value='A'; s.removeChild(o); } return; }
+      if(!o){ o=document.createElement('option'); o.className='lh-meu-opt'; s.appendChild(o); }
+      o.value=estado.meu.cenario; o.textContent=rotulo();
+    });
+  }
+  function pintar(){
+    pintarBotoes();
+    if(!(estado.sel && estado.meu)){
+      if(trilhoAtivo()==='E') document.querySelectorAll('.lh-selo-cenario').forEach(function(el){
+        if(!el.querySelector('.lh-nota-estresse')) el.insertAdjacentHTML('beforeend','<br><span class="lh-nota-estresse" style="color:#9b7fe0">Os números do servidor seguem no cenário A (26,5%): o 28% de estresse não tem curva no servidor. Para testar 28%, use Meu cenário.</span>'); });
+      return;
+    }
+    document.querySelectorAll('.lh-ref-btn').forEach(function(b){ estilo(b, false); });
+    var txt='<span style="display:inline-block;padding:1px 8px;border-radius:10px;background:#5b3fa022;color:#9b7fe0;border:1px solid #5b3fa055;font-weight:700;font-size:.68rem">PREMISSA DO USUÁRIO — não é lei</span> <b>'
+      +fmt(estado.meu.total_ref_pct)+'%</b> · Meu cenário · CBS '+fmt(estado.meu.cbs_ref_pct)+'% + IBS '+fmt(estado.meu.ibs_ref_pct)+'%'
+      +(estado.aviso ? '<br><span style="color:#c96a1f">⚠ '+esc(estado.aviso)+'</span>' : '');
+    document.querySelectorAll('.lh-selo-cenario').forEach(function(el){ el.innerHTML=txt; });
+  }
+  function recalcular(){
+    try{ var pg=document.querySelector('.page.active'); var bc=pg && window.LH_btnCalc ? window.LH_btnCalc(pg) : null; if(bc) bc.click(); }catch(e){}
+  }
+  function escolher(){
+    if(!estado.meu) return false;
+    estado.sel=true; travar(); pintar(); recalcular();
+    try{ window.dispatchEvent(new CustomEvent('lh:cenario',{detail:{meu:estado.meu.cenario}})); }catch(e){}
+    return true;
+  }
+  function soltar(){ if(!estado.sel) return; estado.sel=false; destravar(); pintarBotoes(); }
+  function abrir(){ try{ window.abrirPagina('meucenario'); }catch(e){} }
+
+  /* ── trava da dupla contagem (TR14 §3) ───────────────────────────── */
+  function travar(){
+    TRAVAS.forEach(function(t){
+      var e=document.getElementById(t.id); if(!e || e.dataset.lhTrava==='1') return;
+      e.dataset.lhTrava='1'; e.dataset.lhAntes=e.value; e.value=t.valor; e.disabled=true;
+      var n=document.createElement('div'); n.className='lh-trava-nota'; n.style.cssText='font-size:.72rem;color:#9b7fe0;margin-top:3px';
+      n.textContent=NOTA_TRAVA; if(e.parentNode) e.parentNode.insertBefore(n, e.nextSibling);
+    });
+  }
+  function destravar(){
+    TRAVAS.forEach(function(t){
+      var e=document.getElementById(t.id); if(!e || e.dataset.lhTrava!=='1') return;
+      e.value=e.dataset.lhAntes||''; e.disabled=false; delete e.dataset.lhTrava; delete e.dataset.lhAntes;
+      var n=e.parentNode && e.parentNode.querySelector('.lh-trava-nota'); if(n) n.parentNode.removeChild(n);
+    });
+  }
+
+  /* ── rota: a chave U-… vai no campo `cenario` (chamada por LH_PONTE.chamar) ── */
+  function trilhoAtivo(){ try{ return window.LIONHEART_TABELAS.cenarios_aliquota.ativo; }catch(e){ return null; } }
+  /* chave que vai ao servidor: Meu cenário (U-…) ou o trilho B; nos demais, a tela segue com o seu 'A' */
+  function chaveServidor(){
+    if(estado.sel && estado.meu) return estado.meu.cenario;
+    return trilhoAtivo()==='B' ? 'B' : null;
+  }
+  function trocar(calc, ent, chave){
+    if(!ent || typeof ent!=='object' || CALCS.indexOf(String(calc))<0) return ent;
+    if(Array.isArray(ent)) return ent.map(function(e){ return trocar(calc, e, chave); });
+    var o={}; for(var k in ent) o[k]=ent[k]; o.cenario=chave; return o;
+  }
+  function rota(calc, ent){
+    if(CALCS.indexOf(String(calc))>=0 && ent && typeof ent==='object'){
+      var pg=document.querySelector('.page.active');
+      estado.ultima[pg ? pg.id : '?'] = { calc:String(calc), entradas:ent };
+    }
+    var chave=chaveServidor(); if(!chave) return ent;
+    if(calc==='lote' && ent && Array.isArray(ent.itens))
+      return { itens: ent.itens.map(function(it){ return { calc:it.calc, entradas:trocar(it.calc, it.entradas, chave) }; }) };
+    return trocar(calc, ent, chave);
+  }
+
+  /* ── comparador de cenários ──────────────────────────────────────── */
+  var NOMES = { custo:'custo', credito:'crédito', debito:'débito', preco:'preço', aliquota:'alíquota', liquido:'líquido',
+    receita:'receita', variacao:'variação', pct:'%', cbs:'CBS', ibs:'IBS', icms:'ICMS', das:'DAS', ganho:'ganho', fator:'fator',
+    por:'por', dentro:'dentro', hibrido:'híbrido', projetado:'projetado', decisao:'decisão', repassar:'repassar', segurar:'segurar',
+    novo:'novo', item:'do item', total:'total', imposto:'imposto', economia:'economia', diferenca:'diferença', saldo:'saldo',
+    anos:'ano', resumo:'resumo', atual:'hoje', residuo:'resíduo', alvo:'alvo', desconto:'desconto' };
+  function amigavel(caminho){
+    return String(caminho||'').split('.').map(function(parte){
+      var m=parte.match(/^([^\[]*)((?:\[\d+\])*)$/) || [null, parte, ''];
+      var ix=(m[2]||'').replace(/\[(\d+)\]/g,function(_,d){ return ' '+(parseInt(d,10)+1); });
+      return String(m[1]).split('_').map(function(w){ return NOMES[w]||w; }).join(' ')+ix;
+    }).join(' › ').replace(/^./,function(c){ return c.toUpperCase(); });
+  }
+  function pegar(obj, caminho){
+    var cur=obj, partes=String(caminho||'').replace(/\[(\d+)\]/g,'.$1').split('.');
+    for(var i=0;i<partes.length;i++){ if(cur==null) return null; cur=cur[partes[i]]; }
+    return cur;
+  }
+  function comparadorBloco(pg){
+    var d=document.createElement('div'); d.className='lh-comparar'; d.style.cssText='margin:14px 0 4px';
+    d.innerHTML='<button type="button" class="lh-comparar-btn" style="padding:7px 14px;background:transparent;border:1px solid rgba(201,162,39,.5);border-radius:8px;color:#e0b93a;font-weight:700;cursor:pointer">⇄ Comparar cenários</button>'
+      +'<div class="lh-comparar-res" style="margin-top:10px"></div>';
+    d.querySelector('.lh-comparar-btn').addEventListener('click', function(){ comparar(pg.id); });
+    pg.appendChild(d);
+  }
+  function semPrivados(ent){ var o={}; for(var k in ent){ if(k.charAt(0)!=='_') o[k]=ent[k]; } return o; }
+  function comparar(pageId){
+    var pg=document.getElementById(pageId), box=pg && pg.querySelector('.lh-comparar-res'); if(!box) return Promise.resolve(null);
+    var ativa=document.querySelector('.page.active');   /* telas com apelido (formpreco → precmassa) */
+    var u=estado.ultima[pageId] || (ativa ? estado.ultima[ativa.id] : null);
+    if(!u){ box.innerHTML='<div class="kpi-sub">Calcule primeiro: o comparador usa as mesmas entradas da calculadora.</div>'; return Promise.resolve(null); }
+    var ent=u.entradas, nota='';
+    if(Array.isArray(ent)){ nota=' · comparando a linha 1 de '+ent.length; ent=ent[0]||{}; }
+    box.innerHTML='<div class="kpi-card" data-lh-espera="1"><div class="kpi-label">Comparando no servidor…</div></div>';
+    return window.LH_PONTE.chamar('comparar-cenarios', { calc:u.calc, entradas:semPrivados(ent) }).then(function(res){
+      var r = res && res.ok ? res.resultado : null;
+      if(!r || !r.ok){ box.innerHTML=erro((r && r.motivo) || (res && res.motivo) || 'sem resposta do servidor'); return r; }
+      box.innerHTML=tabela(r, nota); return r;
+    });
+  }
+  function tabela(r, nota){
+    var cens=(r.cenarios||[]), vars=(r.variacoes||[]), kpis=vars.slice(0,8);
+    var cab='<tr><th style="text-align:left">Cenário</th>'+cens.map(function(c){
+      return '<th style="text-align:right">'+esc(c.nome)+'<br><span style="font-weight:400;color:#8a97a8">'+(c.total_ref_pct!=null?fmt(c.total_ref_pct)+'%':'—')+'</span></th>'; }).join('')+'</tr>';
+    var linhas=kpis.map(function(v){
+      return '<tr><td>'+esc(amigavel(v.caminho))+'</td>'+cens.map(function(c){
+        return '<td style="text-align:right">'+(c.ok===false ? '<span title="'+esc(c.motivo)+'">—</span>' : fmt(pegar(c.resultado, v.caminho)))+'</td>'; }).join('')+'</tr>'; }).join('');
+    var falhas=cens.filter(function(c){ return c.ok===false; }).map(function(c){ return '<div class="kpi-sub" style="color:#e07a7a">'+esc(c.nome)+': '+esc(c.motivo)+'</div>'; }).join('');
+    var lista=vars.length ? '<details style="margin-top:10px"><summary style="cursor:pointer;color:#e0b93a">Todas as variações ('+vars.length+')</summary><ul style="font-size:.8rem;margin:6px 0 0 18px">'
+      +vars.map(function(v){ return '<li>'+esc(amigavel(v.caminho))+': '+cens.map(function(c){ var x=v.valores?v.valores[c.cenario]:null;
+        return esc(c.nome)+' '+fmt(x); }).join(' · ')+(v.amplitude_pct_sobre_A!=null?' <span style="color:#8a97a8">('+fmt(v.amplitude_pct_sobre_A)+'% sobre o A)</span>':'')+'</li>'; }).join('')+'</ul></details>'
+      : '<div class="kpi-sub">Nenhum número muda entre os cenários com estas entradas.</div>';
+    return '<div class="lh-comparar-tab"><div class="kpi-sub" style="margin-bottom:6px">'+esc(r.leitura||'')+esc(nota)+'</div>'
+      +'<table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead>'+cab+'</thead><tbody>'+linhas+'</tbody></table>'
+      +falhas+lista+(r.dica?'<div class="kpi-sub" style="margin-top:8px">'+esc(r.dica)+'</div>':'')
+      +(r.base_legal?'<div style="margin-top:6px;font-size:.72rem;color:#8a97a8">'+esc(r.base_legal)+'</div>':'')+'</div>';
+  }
+
+  /* ── ganchos ─────────────────────────────────────────────────────── */
+  function atualizarTudo(){ document.querySelectorAll('.lh-estresse-v257').forEach(decorar); pintar(); }
+  function aoAbrir(pid){
+    if(!estado.lido && (pid==='meucenario' || (window.LH_TELAS_CENARIO||[]).indexOf(pid)>=0)) { try{ ler(); }catch(e){} }
+    setTimeout(atualizarTudo, 80);
+  }
+
+  return { ler:ler, salvar:salvar, total:total, decorar:decorar, pintar:pintar, escolher:escolher, soltar:soltar,
+    rota:rota, comparar:comparar, aoAbrir:aoAbrir, amigavel:amigavel, _estado:function(){ return estado; }, CALCS:CALCS, TRAVAS:TRAVAS };
+})();
+</script>
+<script>
 /* ★ v911 · PRODUTO "INTELIGÊNCIA DE CADASTRO E PREÇOS" (v912: nome definitivo + Boas-Vindas) — o CORE vestido como produto próprio.
    Entra por app.html?produto=preco (ou preco.html, que redireciona). Sem o parâmetro,
    nada aqui roda e o CORE fica exatamente como era.
@@ -74075,7 +74362,7 @@ window.LH_MAPA_FORN = (function(){
       { t:'Aprendizado', itens:[ ['videos','Vídeos Tutoriais'] ]},
       /* v924 · etapa 3: o obrigatório, o medidor e a execução (trazidos do ITFE v194) */
       { t:'Diagnóstico & Plano', itens:[
-        ['jornadaemp','Jornada até 2033'], ['piso','O que é obrigatório'], ['diagnostico','Diagnóstico da empresa'],
+        ['jornadaemp','Jornada até 2033'], ['meucenario','Meu cenário de alíquota'], ['piso','O que é obrigatório'], ['diagnostico','Diagnóstico da empresa'],
         ['swot','Quadro Estratégico (SWOT)'], ['plano','Plano de Ação (5W2H)'], ['prazos','Radar de Prazos'] ]},   /* v925: + Jornada e Quadro Estratégico */
       { t:'Minha Empresa', itens:[
         ['@cadcliente','Cadastrar minha empresa'], ['importsped','Importar documentos (XML · SPED)'],
@@ -74740,6 +75027,7 @@ window.LH_MAPA_FORN = (function(){
     'matrizdoc':'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
     'cadeia':'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
     'fornecedores':'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 13h8M8 17h5"/>',
+    'meucenario':'<path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/>',
     'formpreco':'<path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
     'precmassa':'<path d="M4 20V11M10 20V4M16 20v-6M2 20h20"/>',
     'contrato':'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>',
