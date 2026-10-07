@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v928";</script>
+<body><script>window.LH_VERSAO="v929";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -10894,8 +10894,8 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
     </div>
   </div>
   <div class="input-grid-3">
-    <div class="input-group"><label>Regime da empresa compradora</label>
-      <select id="mf_regime"><option value="">Escolha…</option><option value="LR">Lucro Real</option><option value="LP">Lucro Presumido</option><option value="SN">Simples Nacional (dentro do DAS)</option><option value="SN_HIBRIDO">Simples híbrido (IBS/CBS por fora)</option></select></div>
+    <div class="input-group"><label>Regime da empresa compradora <span style="font-weight:400;text-transform:none;color:#8a97a8">— vem do cliente da Central; o regime de cada fornecedor vem da própria nota (CRT do emitente)</span></label>
+      <select id="mf_regime"><option value="">Escolha…</option><option value="LR">Lucro Real</option><option value="LP">Lucro Presumido</option><option value="SN">Simples Nacional (dentro do DAS)</option><option value="SN_HIBRIDO">Simples híbrido (IBS/CBS por fora)</option></select><small id="mf_regime_origem"></small></div>
     <div class="input-group"><label>Ano em foco</label>
       <select id="mf_ano"><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option><option value="2031">2031</option><option value="2032">2032</option><option value="2033">2033</option></select></div>
     <div class="input-group"><label>Cenário de alíquota</label>
@@ -73850,11 +73850,33 @@ window.LH_MAPA_FORN = (function(){
   function brl(v){ return 'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
   function pct(v){ return (Number(v||0)*100).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'; }
 
+  /* v929 · quem é o comprador. A Central pode estar sem CNPJ (cadastro em rascunho) ou com o CNPJ de um
+     FORNECEDOR: com só XML de compra, o carimbo da Central toma o emitente das notas tpNF=1 — que, na compra,
+     é o fornecedor. Vale o CNPJ que for destinatário de alguma nota (Central → importação → cadastro);
+     se nenhum for, o destinatário que mais aparece nas notas, com aviso para conferir o cadastro. */
+  function fmtDoc(d){ d=dig(d); return d.length===14 ? d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5') : d; }
+  function cnpjCadastro(){ try{ var e=window.LH_GRUPO&&LH_GRUPO.getEntidadeAtiva?LH_GRUPO.getEntidadeAtiva():null; return dig(e&&e.cnpj); }catch(_e){ return ''; } }
+  function comprador(notas, P){
+    var cont={}, topo='', n=0;
+    (notas||[]).forEach(function(x){ var d=dig(x.destCNPJ); if(d.length!==14) return; cont[d]=(cont[d]||0)+1; if(cont[d]>n){ n=cont[d]; topo=d; } });
+    var central=dig(P&&P.cnpj), cand=[['Central',central],['importação',dig(window.LH_EMP_CNPJ)],['cadastro',cnpjCadastro()]];
+    var escolhido=null;
+    for(var i=0;i<cand.length;i++){ if(cand[i][1].length===14 && cont[cand[i][1]]){ escolhido={cnpj:cand[i][1], origem:cand[i][0]}; break; } }
+    if(!escolhido && topo) escolhido={cnpj:topo, origem:'notas'};
+    if(!escolhido) return null;
+    if(escolhido.cnpj!==central) escolhido.aviso='O cliente da Central '+(central?'está com o CNPJ '+fmtDoc(central)+', que não é destinatário de nenhuma nota':'está sem CNPJ')
+      +'. O mapa usou '+fmtDoc(escolhido.cnpj)+' ('+(escolhido.origem==='notas'?'o destinatário das notas':escolhido.origem)+'). Confira o cadastro do cliente.';
+    return escolhido;
+  }
+  /* a mesma nota importada duas vezes conta uma vez só (o leitor não guarda a chave de acesso) */
+  function chaveNota(n){ return [dig(n.emitCNPJ)||dig(n.emitCPF), String(n.mod||''), String(n.nNF||''), String(n.dhEmi||'').slice(0,10), String(n.vNF||'')].join('|'); }
+
   /* 1 · agrupa as notas de ENTRADA por emitente (regra da casa: entrada = destinatário é a empresa) */
   function agrupar(notas, meuCnpj, minhaRaiz){
     var meu=dig(meuCnpj), raiz=String(minhaRaiz||meu.slice(0,8));
-    var g={}, ign={saidas:0, transferencias:0, outras:0, semEmitente:0};
+    var g={}, ign={saidas:0, transferencias:0, outras:0, semEmitente:0, repetidas:0, lidas:(notas||[]).length}, vistas={};
     (notas||[]).forEach(function(n){
+      var ch=chaveNota(n); if(vistas[ch]){ ign.repetidas++; return; } vistas[ch]=1;
       var emit=dig(n.emitCNPJ), cpf=dig(n.emitCPF), dest=dig(n.destCNPJ);
       if(emit && emit===meu){ ign.saidas++; return; }
       if(dest!==meu){ ign.outras++; return; }
@@ -73897,7 +73919,7 @@ window.LH_MAPA_FORN = (function(){
   /* 3 · parâmetros da tela (campo em branco fica em branco: regime é obrigatório) */
   function lerParams(){
     function v(id){ var e=document.getElementById(id); return e?String(e.value||'').trim():''; }
-    var regime=v('mf_regime'); if(!regime) return { erro:'Escolha o regime da empresa compradora.' };
+    var regime=v('mf_regime'); if(!regime) return { erro:'Escolha o regime da empresa compradora: a Central não tem o regime deste cliente (cadastro, PGDAS-D ou EFD).' };
     var foco=parseInt(v('mf_ano'),10)||2027;
     var anos=[foco].concat([2027,2029,2033].filter(function(a){ return a!==foco; }));
     var p={ regime:regime, cenario:v('mf_cenario')||'A', anos:anos,
@@ -73912,11 +73934,17 @@ window.LH_MAPA_FORN = (function(){
   function executar(){
     var box=document.getElementById('mf_res'); if(!box) return Promise.resolve(null);
     var P=window.LH_CENTRAL_PROC||{};
-    if(!dig(P.cnpj)){ box.innerHTML=cardErro('Não identificamos o CNPJ da empresa. Importe as notas na Central para que a ferramenta reconheça quais são compras.'); return Promise.resolve(null); }
+    var notas=(window.LH_XML_NOTAS&&window.LH_XML_NOTAS.length)?window.LH_XML_NOTAS:(window._LH_XML_NOTAS||[]);
+    if(!notas.length){ box.innerHTML=cardErro('Nenhuma NF-e na Central. Importe os XML de compra primeiro.'); return Promise.resolve(null); }
+    var cp=comprador(notas, P); estado.comprador=cp;
+    if(!cp){ box.innerHTML=cardErro('As '+notas.length+' notas da Central não têm destinatário com CNPJ: não dá para saber quais são compras. Confira os XML.'); return Promise.resolve(null); }
+    preencherRegime();
     var params=lerParams(); if(params.erro){ box.innerHTML=cardErro(params.erro); return Promise.resolve(null); }
-    var ag=agrupar(window.LH_XML_NOTAS||window._LH_XML_NOTAS||[], P.cnpj, P.raiz);
+    var ag=agrupar(notas, cp.cnpj, cp.cnpj.slice(0,8));
     estado.ignoradas=ag.ignoradas; estado.params=params;
-    if(!ag.lista.length){ box.innerHTML=cardErro('Nenhuma nota de compra na Central. Importe os XML de entrada primeiro.'); return Promise.resolve(null); }
+    if(!ag.lista.length){ var ig=ag.ignoradas;
+      box.innerHTML=cardErro('Nenhuma nota de compra para '+fmtDoc(cp.cnpj)+' entre as '+ig.lidas+' notas da Central: '+ig.saidas+' de venda, '+ig.transferencias+' transferências, '
+        +ig.outras+' de outro destinatário, '+ig.repetidas+' repetidas, '+ig.semEmitente+' sem emitente.'); return Promise.resolve(null); }
     box.innerHTML=(window.LH_PONTE&&LH_PONTE.cardAguardando)?LH_PONTE.cardAguardando():'<div class="kpi-card">Calculando…</div>';
     return anonimizar(ag.lista).then(function(itens){
       var pac=[]; for(var i=0;i<itens.length;i+=LOTE_MAX) pac.push(itens.slice(i,i+LOTE_MAX));
@@ -73967,7 +73995,8 @@ window.LH_MAPA_FORN = (function(){
     h+='</tbody></table></div>';
     h+='<details class="mf-premissas" open><summary>Premissas do cálculo</summary><ul>'+(R.base.premissas||[]).map(function(p){ return '<li>'+esc(p)+'</li>'; }).join('')+'</ul></details>';
     var ig=estado.ignoradas||{};
-    h+='<p class="nota">Notas fora do mapa: '+(ig.saidas||0)+' de venda, '+(ig.transferencias||0)+' transferências entre filiais, '+(ig.outras||0)+' de outro destinatário, '+(ig.semEmitente||0)+' sem emitente.</p>';
+    h+='<p class="nota">Notas fora do mapa: '+(ig.saidas||0)+' de venda, '+(ig.transferencias||0)+' transferências entre filiais, '+(ig.outras||0)+' de outro destinatário, '+(ig.repetidas||0)+' repetidas (contadas uma vez), '+(ig.semEmitente||0)+' sem emitente.</p>';
+    if(estado.comprador && estado.comprador.aviso) h='<div class="mf-aviso-comprador" style="margin:0 0 10px;padding:8px 12px;border-left:3px solid #c96a1f;color:#e0a83a;font-size:.84rem">⚠ '+esc(estado.comprador.aviso)+'</div>'+h;
     box.innerHTML=h;
   }
 
@@ -73993,6 +74022,34 @@ window.LH_MAPA_FORN = (function(){
     if(typeof window.abrirPagina==='function') window.abrirPagina('calc03');
   }
 
+  /* v929 · o regime da compradora vem do cliente da Central (o mesmo que as outras telas usam:
+     PGDAS-D → Simples; EFD 0110 → Presumido/Real; senão, o cadastro). O usuário só muda para simular. */
+  function regimeDaCentral(){
+    try{ var pg=window.LH_IMPORT_PGDAS; if(pg && pg.ok) return { valor:'SN', origem:'PGDAS-D' }; }catch(_e){}
+    try{ var ef=window.LH_IMPORT_EFD||window.LH_IMPORT, ri=ef&&ef.regimeInc!=null?String(ef.regimeInc).trim():'';
+      if(ri==='1') return { valor:'LP', origem:'EFD-Contribuições (0110)' }; if(ri==='2') return { valor:'LR', origem:'EFD-Contribuições (0110)' }; }catch(_e){}
+    try{ var e=window.LH_GRUPO&&LH_GRUPO.getEntidadeAtiva?LH_GRUPO.getEntidadeAtiva():null, r=String(e&&e.regime||'').toLowerCase();
+      var mapa=[[/h[ií]brido/,'SN_HIBRIDO'],[/simples|^sn$|mei/,'SN'],[/presumido|^lp$/,'LP'],[/real|^lr$/,'LR']];
+      for(var i=0;i<mapa.length;i++){ if(mapa[i][0].test(r)) return { valor:mapa[i][1], origem:'cadastro do cliente' }; } }catch(_e){}
+    return null;
+  }
+  var ROT_REG={LR:'Lucro Real', LP:'Lucro Presumido', SN:'Simples Nacional', SN_HIBRIDO:'Simples híbrido'};
+  function preencherRegime(){
+    var sel=document.getElementById('mf_regime'), nota=document.getElementById('mf_regime_origem'); if(!sel) return null;
+    if(sel.dataset.lhUsuario==='1'){ if(nota) nota.textContent='Regime escolhido por você (simulação). O do cliente da Central'+(estado.regCentral?' é '+ROT_REG[estado.regCentral.valor]+' ('+estado.regCentral.origem+')':' não foi encontrado')+'.'; return null; }
+    var r=regimeDaCentral(); estado.regCentral=r;
+    if(r){ sel.value=r.valor; if(nota) nota.textContent='Do cliente da Central ('+r.origem+'). Mude só para simular outro regime.'; }
+    else if(nota) nota.textContent='A Central não tem o regime deste cliente (cadastro, PGDAS-D ou EFD): escolha.';
+    return r;
+  }
+  function aoAbrir(){ preencherRegime(); }
+  /* a página pode abrir por vários caminhos (menu, busca, tela inicial): observa a própria página */
+  function observarPagina(){
+    var pg=document.getElementById('page-fornecedores'); if(!pg || typeof MutationObserver==='undefined') return;
+    new MutationObserver(function(){ if(pg.classList.contains('active')) preencherRegime(); }).observe(pg,{ attributes:true, attributeFilter:['class'] });
+  }
+  if(document.getElementById('page-fornecedores')) observarPagina(); else document.addEventListener('DOMContentLoaded', observarPagina);
+
   /* eventos (delegados) */
   document.addEventListener('click', function(ev){
     var t=ev.target; if(!t||!t.getAttribute) return;
@@ -74001,12 +74058,13 @@ window.LH_MAPA_FORN = (function(){
     else if(t.getAttribute('data-mf-calc03')){ compararNaCalc03(t.getAttribute('data-mf-calc03')); }
   });
   document.addEventListener('change', function(ev){
-    var t=ev.target; if(!t||!t.getAttribute||!t.getAttribute('data-mf-hib')) return;
+    var t=ev.target; if(t && t.id==='mf_regime'){ t.dataset.lhUsuario = (!t.value || (estado.regCentral && t.value===estado.regCentral.valor)) ? '' : '1'; preencherRegime(); return; }
+    if(!t||!t.getAttribute||!t.getAttribute('data-mf-hib')) return;
     var d=t.getAttribute('data-mf-hib'); if(t.checked) estado.hibridos[d]=true; else delete estado.hibridos[d];
     executar();
   });
 
-  return { agrupar:agrupar, executar:executar, render:render, csv:csv, _estado:estado };
+  return { agrupar:agrupar, executar:executar, render:render, csv:csv, comprador:comprador, regimeDaCentral:regimeDaCentral, aoAbrir:aoAbrir, _estado:estado };
 })();
 </script>
 <script>
