@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v930";</script>
+<body><script>window.LH_VERSAO="v931";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -10887,6 +10887,29 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
        ══════════════════════════════════════════════ -->
 <!-- MAPA DE FORNECEDORES · página (TR13 §5) — encaixar no grupo Cadastro & Preço, ao lado da Cadeia de Crédito -->
 <div class="page" id="page-fornecedores">
+  <style>/* v931 · layout do Mapa: a tabela, os filtros e as notas usavam classes que o CORE não tem */
+    #page-fornecedores .tabela-wrap{overflow-x:auto;margin-top:6px;border:1px solid var(--border);border-radius:10px}
+    #page-fornecedores #mf_tabela{min-width:860px}
+    #page-fornecedores #mf_tabela td,#page-fornecedores #mf_tabela th{padding:8px 10px}
+    #page-fornecedores #mf_tabela .mf-num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+    #page-fornecedores #mf_tabela .mf-alta{color:var(--red)} #page-fornecedores #mf_tabela .mf-baixa{color:var(--green)}
+    #page-fornecedores .mf-classe{display:inline-block;padding:2px 9px;border-radius:12px;font-size:.78em;font-weight:700;white-space:nowrap;border:1px solid var(--border)}
+    #page-fornecedores .mf-avaliar_substituir{color:var(--red);border-color:rgba(220,38,38,.45)}
+    #page-fornecedores .mf-renegociar{color:var(--gold2);border-color:rgba(212,168,42,.5)}
+    #page-fornecedores .mf-manter{color:var(--green);border-color:rgba(14,159,110,.45)}
+    #page-fornecedores .mf-filtros{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+    #page-fornecedores .mf-filtros button{background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:16px;padding:5px 13px;font-size:.78rem;cursor:pointer}
+    #page-fornecedores .mf-filtros button.ativo{color:var(--gold2);border-color:var(--gold2);font-weight:700}
+    #page-fornecedores .mf-filtros button[data-mf-csv]{margin-left:auto}
+    #page-fornecedores a[data-mf-calc03]{color:var(--gold2);text-decoration:none;white-space:nowrap;font-size:.85em}
+    #page-fornecedores a[data-mf-calc03]:hover{text-decoration:underline}
+    #page-fornecedores .selo{display:inline-block;margin-left:4px;padding:1px 7px;border-radius:10px;font-size:.72em;color:#e0a83a;border:1px solid rgba(224,168,58,.45)}
+    #page-fornecedores .mf-premissas{margin-top:14px;font-size:.84rem;color:var(--text2)}
+    #page-fornecedores .mf-premissas summary{cursor:pointer;font-weight:700;color:var(--gold2)}
+    #page-fornecedores .mf-premissas ul{margin:6px 0 0 18px;line-height:1.55}
+    #page-fornecedores #mf_res .nota{margin-top:10px;font-size:.8rem;color:var(--text2)}
+    #page-fornecedores #mf_kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  </style>
   <div class="calc-page-header">
     <div>
       <h2>Mapa de Fornecedores</h2>
@@ -59669,7 +59692,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var r={f:f,c:c}, y33=c.anos[2033], y27=c.anos[2027];
    /* os três caminhos da Formação de Preço, com o motor: segurar = manter o preço; repassar = a estratégia escolhida; dividir = repasse 50% */
    var seg=window.lhPreco({trat:f.trat,preco:f.preco,icms:f.icms,st:f.st,pis:c.pisUsado,ipi:null,custo:f.custo,custoNovo:c.custoNovo,icmsSt:f.icmsSt},2033,cfg,'preco');
-   try{ window.LH_PMI_ULTIMO={ resultado:{ok:true, f:{desc:f.desc, preco:f.preco, custo:f.custo}, y27:y27, y33:y33, seg:seg, estr:cfg.estr}, quando:String(Date.now()) }; }catch(_e){}   /* v919 · só leitura: a leitura do dono do ITFE lê daqui */
+   try{ window.LH_PMI_ULTIMO={ resultado:{ok:true, f:{desc:f.desc, preco:f.preco, custo:f.custo, custoNovo:f.custoNovo, icmsSt:f.icmsSt, trat:f.trat}, y27:y27, y33:y33, seg:seg, estr:cfg.estr, regime:cfg.regime, pis:c.pisUsado, icms:c.icmsUsado}, quando:String(Date.now()) }; }catch(_e){}   /* v919 · só leitura: a leitura do dono do ITFE lê daqui */
    var cam=function(tit,cor,txt){ return '<div style="background:rgba(255,255,255,.03);border:1px solid '+cor+';border-radius:12px;padding:12px 14px"><div style="font-weight:800;color:'+cor+';font-size:.86rem">'+tit+'</div><div style="font-size:.8rem;color:#d4dce6;margin-top:6px;line-height:1.55">'+txt+'</div></div>'; };
    var dF=y33.dFica, dP=y33.dFinal;
    var h='<div class="kpi-grid">';
@@ -59687,6 +59710,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    h+='<div style="margin-top:12px;overflow-x:auto">'+window.lhPmContaHTML(r,cfg)+'</div>';
    h+=window.lhPmPremissasHTML(cfg,{});   /* v885 */
    res.innerHTML=h;
+   try{ if(window.LH_FP_COMPARAR) LH_FP_COMPARAR.atualizar(); }catch(_e){}   /* v931 · Comparar cenários no cartão */
  };
  (function(){ var sel=document.getElementById('pmi_uf'); if(sel && window.FP_UF_ICMS){ Object.keys(FP_UF_ICMS).forEach(function(uf){ var o=document.createElement('option'); o.value=uf; o.textContent=uf+' · '+FP_UF_ICMS[uf]+'%'; sel.appendChild(o); }); } })();
 
@@ -73951,7 +73975,7 @@ window.LH_INVEST=(function(){
 window.LH_MAPA_FORN = (function(){
   'use strict';
   var LOTE_MAX = 2000;
-  var estado = { nomes:{}, docs:{}, resultado:null, filtro:'todos', hibridos:{}, ignoradas:null, params:null };
+  var estado = { nomes:{}, docs:{}, resultado:null, filtro:'todos', hibridos:{}, ignoradas:null, params:null, vez:0, pediu:false };
   var SAL = (function(){ try{ var a=new Uint8Array(16); (window.crypto||globalThis.crypto).getRandomValues(a);
     return Array.prototype.map.call(a,function(b){return ('0'+b.toString(16)).slice(-2);}).join(''); }catch(e){ return String(Date.now()); } })();
 
@@ -74049,6 +74073,7 @@ window.LH_MAPA_FORN = (function(){
   /* 4 · executar: pacotes de até 2.000, um resultado juntado */
   function executar(){
     var box=document.getElementById('mf_res'); if(!box) return Promise.resolve(null);
+    estado.pediu=true;
     var P=window.LH_CENTRAL_PROC||{};
     var notas=(window.LH_XML_NOTAS&&window.LH_XML_NOTAS.length)?window.LH_XML_NOTAS:(window._LH_XML_NOTAS||[]);
     if(!notas.length){ box.innerHTML=cardErro('Nenhuma NF-e na Central. Importe os XML de compra primeiro.'); return Promise.resolve(null); }
@@ -74062,17 +74087,19 @@ window.LH_MAPA_FORN = (function(){
       box.innerHTML=cardErro('Nenhuma nota de compra para '+fmtDoc(cp.cnpj)+' entre as '+ig.lidas+' notas da Central: '+ig.saidas+' de venda, '+ig.transferencias+' transferências, '
         +ig.outras+' de outro destinatário, '+ig.repetidas+' repetidas, '+ig.semEmitente+' sem emitente.'); return Promise.resolve(null); }
     box.innerHTML=(window.LH_PONTE&&LH_PONTE.cardAguardando)?LH_PONTE.cardAguardando():'<div class="kpi-card">Calculando…</div>';
+    var vez=++estado.vez;   /* v931 · trocas rápidas: só a última resposta desenha */
     return anonimizar(ag.lista).then(function(itens){
       var pac=[]; for(var i=0;i<itens.length;i+=LOTE_MAX) pac.push(itens.slice(i,i+LOTE_MAX));
       return Promise.all(pac.map(function(p){ return window.LH_PONTE.chamar('fornecedores-lote',{itens:p, params:params}); }));
     }).then(function(resps){
+      if(vez!==estado.vez) return null;
       var falha=resps.filter(function(r){ return !r || !r.ok || !r.resultado || r.resultado.ok===false; })[0];
       if(falha){ box.innerHTML=cardErro((falha&&(falha.motivo||(falha.resultado&&falha.resultado.motivo)))||'servidor indisponível'); return null; }
       var base=resps[0].resultado, todos=[];
       resps.forEach(function(r){ todos=todos.concat(r.resultado.fornecedores||[]); });
       estado.resultado={ base:base, fornecedores:todos };
       render(); return estado.resultado;
-    }).catch(function(e){ box.innerHTML=cardErro(String(e&&e.message||e)); return null; });
+    }).catch(function(e){ if(vez===estado.vez) box.innerHTML=cardErro(String(e&&e.message||e)); return null; });
   }
 
   function cardErro(m){ return (window.LH_PONTE&&LH_PONTE.cardErro)?LH_PONTE.cardErro(m):'<div class="kpi-card"><div class="kpi-label">Não foi possível calcular</div><div class="kpi-value">'+esc(m)+'</div></div>'; }
@@ -74084,8 +74111,8 @@ window.LH_MAPA_FORN = (function(){
   function render(){
     var box=document.getElementById('mf_res'); var R=estado.resultado; if(!box||!R) return;
     var foco=String(R.base.ano_foco), L=R.fornecedores.slice();
-    var tot_h=0, tot_f=0, cls={manter:0,renegociar:0,avaliar_substituir:0}, pend=0;
-    L.forEach(function(f){ tot_h+=f.custo_hoje; tot_f+=f.anos[foco].custo; cls[f.classe]=(cls[f.classe]||0)+1; if(f.credito_presumido==='pendente') pend++; });
+    var tot_h=0, tot_f=0, cr_h=0, cr_f=0, cls={manter:0,renegociar:0,avaliar_substituir:0}, pend=0;
+    L.forEach(function(f){ tot_h+=f.custo_hoje; tot_f+=f.anos[foco].custo; cr_h+=Number(f.credito_hoje||0); cr_f+=Number(f.anos[foco].credito||0); cls[f.classe]=(cls[f.classe]||0)+1; if(f.credito_presumido==='pendente') pend++; });
     L.sort(function(a,b){ return b.anos[foco].var - a.anos[foco].var; });
     if(estado.filtro!=='todos') L=L.filter(function(f){ return f.classe===estado.filtro; });
     var h='';
@@ -74093,19 +74120,20 @@ window.LH_MAPA_FORN = (function(){
       +'<div class="kpi-card"><div class="kpi-label">Fornecedores</div><div class="kpi-value">'+R.fornecedores.length+'</div><div class="kpi-sub">'+cls.renegociar+' renegociar · '+cls.avaliar_substituir+' avaliar trocar</div></div>'
       +'<div class="kpi-card"><div class="kpi-label">Custo das compras hoje</div><div class="kpi-value">'+brl(tot_h)+'</div><div class="kpi-sub">já descontados os créditos</div></div>'
       +'<div class="kpi-card '+(tot_f>tot_h?'kpi-alerta':'kpi-ok')+'"><div class="kpi-label">Custo em '+foco+'</div><div class="kpi-value">'+brl(tot_f)+'</div><div class="kpi-sub">'+(tot_f>=tot_h?'+':'')+brl(tot_f-tot_h)+' ('+pct(tot_h?(tot_f-tot_h)/tot_h:0)+')</div></div>'
+      +'<div class="kpi-card" id="mf_kpi_credito"><div class="kpi-label">Crédito em '+foco+'</div><div class="kpi-value">'+brl(cr_f)+'</div><div class="kpi-sub">hoje '+brl(cr_h)+'</div></div>'   /* v931 · soma do que o servidor devolveu */
       +'</div>';
     if(pend) h+='<div class="rec-card rec-atencao"><h5>Crédito presumido do agro pendente</h5><p>'+pend+' fornecedor(es) produtor rural: o percentual oficial de '+foco+' ainda não foi publicado. O custo aparece sem esse crédito (superestimado). Informe um percentual estimado para simular.</p></div>';
     h+='<div class="mf-filtros" style="margin:10px 0">'+['todos','avaliar_substituir','renegociar','manter'].map(function(k){
         return '<button type="button" class="btn-sec'+(estado.filtro===k?' ativo':'')+'" data-mf-filtro="'+k+'">'+(k==='todos'?'Todos':ROT_CLASSE[k])+'</button>'; }).join(' ')
       +' <button type="button" class="btn-sec" data-mf-csv="1">Exportar lista (CSV)</button></div>';
-    h+='<div class="tabela-wrap"><table class="tabela" id="mf_tabela"><thead><tr><th>Fornecedor</th><th>Tipo</th><th>Custo hoje</th><th>Custo '+foco+'</th><th>Variação</th><th>Preço-alvo</th><th>Desconto a pedir</th><th>Sugestão</th><th></th></tr></thead><tbody>';
+    h+='<div class="tabela-wrap"><table class="tabela result-table" id="mf_tabela"><thead><tr><th>Fornecedor</th><th>Tipo</th><th class="mf-num">Custo hoje</th><th class="mf-num">Custo '+foco+'</th><th class="mf-num">Variação</th><th class="mf-num">Preço-alvo</th><th class="mf-num">Desconto a pedir</th><th>Sugestão</th><th></th></tr></thead><tbody>';
     L.forEach(function(f){
       var y=f.anos[foco], doc=estado.docs[f.id];
       h+='<tr data-mf-id="'+esc(f.id)+'"><td>'+esc(estado.nomes[f.id]||'—')+'</td><td>'+esc(ROT_TIPO[f.tipo]||f.tipo)
         +(f.tipo==='SN'?' <label style="font-size:.8em"><input type="checkbox" data-mf-hib="'+esc(doc)+'"'+(f.sn_hibrido?' checked':'')+'> híbrido</label>':'')
         +(f.credito_presumido==='pendente'?' <span class="selo">crédito presumido pendente</span>':'')+'</td>'
-        +'<td>'+brl(f.custo_hoje)+'</td><td>'+brl(y.custo)+'</td><td>'+(y.var>=0?'+':'')+pct(y.var_pct)+'</td>'
-        +'<td>'+brl(y.preco_alvo)+'</td><td>'+(y.desconto_pct>0?pct(y.desconto_pct):'—')+'</td><td>'+(ROT_CLASSE[f.classe]||f.classe)+'</td>'
+        +'<td class="mf-num">'+brl(f.custo_hoje)+'</td><td class="mf-num">'+brl(y.custo)+'</td><td class="mf-num mf-'+(y.var>0?'alta':y.var<0?'baixa':'igual')+'">'+(y.var>=0?'+':'')+pct(y.var_pct)+'</td>'
+        +'<td class="mf-num">'+brl(y.preco_alvo)+'</td><td class="mf-num">'+(y.desconto_pct>0?pct(y.desconto_pct):'—')+'</td><td><span class="mf-classe mf-'+esc(f.classe)+'">'+esc(ROT_CLASSE[f.classe]||f.classe)+'</span></td>'
         +'<td>'+((f.tipo==='SN'||f.tipo==='REG')?'<a href="javascript:void(0)" data-mf-calc03="'+esc(f.id)+'">Comparar na calc03</a>':'')+'</td></tr>';
     });
     h+='</tbody></table></div>';
@@ -74173,14 +74201,18 @@ window.LH_MAPA_FORN = (function(){
     else if(t.getAttribute('data-mf-csv')){ baixarCSV(); }
     else if(t.getAttribute('data-mf-calc03')){ compararNaCalc03(t.getAttribute('data-mf-calc03')); }
   });
+  /* v931 · com o mapa já montado, trocar ano, cenário, regime (ou outra premissa) refaz o mapa sozinho */
+  var REFAZ={ mf_regime:1, mf_ano:1, mf_cenario:1, mf_icms:1, mf_anexo:1, mf_rbt12:1, mf_pf:1 };
+  function refazer(){ if(estado.pediu) return executar(); return Promise.resolve(null); }
   document.addEventListener('change', function(ev){
-    var t=ev.target; if(t && t.id==='mf_regime'){ t.dataset.lhUsuario = (!t.value || (estado.regCentral && t.value===estado.regCentral.valor)) ? '' : '1'; preencherRegime(); return; }
+    var t=ev.target; if(t && t.id==='mf_regime'){ t.dataset.lhUsuario = (!t.value || (estado.regCentral && t.value===estado.regCentral.valor)) ? '' : '1'; preencherRegime(); refazer(); return; }
+    if(t && REFAZ[t.id]){ refazer(); return; }
     if(!t||!t.getAttribute||!t.getAttribute('data-mf-hib')) return;
     var d=t.getAttribute('data-mf-hib'); if(t.checked) estado.hibridos[d]=true; else delete estado.hibridos[d];
     executar();
   });
 
-  return { agrupar:agrupar, executar:executar, render:render, csv:csv, comprador:comprador, regimeDaCentral:regimeDaCentral, aoAbrir:aoAbrir, _estado:estado };
+  return { agrupar:agrupar, executar:executar, render:render, csv:csv, comprador:comprador, regimeDaCentral:regimeDaCentral, aoAbrir:aoAbrir, refazer:refazer, _estado:estado };
 })();
 </script>
 <script>
@@ -74408,8 +74440,13 @@ window.LH_MEU_CENARIO = (function(){
     if(!u){ box.innerHTML='<div class="kpi-sub">Calcule primeiro: o comparador usa as mesmas entradas da calculadora.</div>'; return Promise.resolve(null); }
     var ent=u.entradas, nota='';
     if(Array.isArray(ent)){ nota=' · comparando a linha 1 de '+ent.length; ent=ent[0]||{}; }
+    return compararCom(box, u.calc, ent, nota);
+  }
+  /* v931 · o mesmo comparador para quem monta as entradas fora da ponte (cartão "um item" da Formação de Preço) */
+  function compararCom(box, calc, ent, nota){
+    nota=nota||'';
     box.innerHTML='<div class="kpi-card" data-lh-espera="1"><div class="kpi-label">Comparando no servidor…</div></div>';
-    return window.LH_PONTE.chamar('comparar-cenarios', { calc:u.calc, entradas:semPrivados(ent) }).then(function(res){
+    return window.LH_PONTE.chamar('comparar-cenarios', { calc:calc, entradas:semPrivados(ent||{}) }).then(function(res){
       var r = res && res.ok ? res.resultado : null;
       if(!r || !r.ok){ box.innerHTML=erro((r && r.motivo) || (res && res.motivo) || 'sem resposta do servidor'); return r; }
       box.innerHTML=tabela(r, nota); return r;
@@ -74441,7 +74478,72 @@ window.LH_MEU_CENARIO = (function(){
   }
 
   return { ler:ler, salvar:salvar, total:total, decorar:decorar, pintar:pintar, escolher:escolher, soltar:soltar,
-    rota:rota, comparar:comparar, aoAbrir:aoAbrir, amigavel:amigavel, _estado:function(){ return estado; }, CALCS:CALCS, TRAVAS:TRAVAS };
+    rota:rota, comparar:comparar, compararCom:compararCom, aoAbrir:aoAbrir, amigavel:amigavel, _estado:function(){ return estado; }, CALCS:CALCS, TRAVAS:TRAVAS };
+})();
+</script>
+<script>
+/* ════════════════════════════════════════════════════════════════════
+ * v931 · COMPARAR CENÁRIOS no cartão "um item" da Formação de Preço (08/10/2026)
+ * A tela "Formação de Preço" é o cartão "um item" da Precificação em Massa,
+ * que ainda calcula no navegador (o motor vai ao servidor na Fase 4 do TR11).
+ * O comparador pergunta ao servidor: comparar-cenarios com a calc
+ * formacao-preco-pct (fn_formacao_preco_pct: PIS/COFINS e ICMS em % da venda).
+ * SÓ TELA: lê o último item calculado, monta as entradas e desenha a tabela
+ * do comparador do TR14 (LH_MEU_CENARIO.compararCom). Nenhuma conta aqui.
+ * Só aparece no caso que o servidor reproduz (alíquota geral, sem custo novo,
+ * sem ICMS-ST, "Manter o que fica com você", Presumido ou Real); nos outros,
+ * a nota aprovada ("Os demais casos entram em breve").
+ * ════════════════════════════════════════════════════════════════════ */
+window.LH_FP_COMPARAR = (function(){
+  'use strict';
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function ultimo(){ var u=window.LH_PMI_ULTIMO; return (u && u.resultado && u.resultado.ok && u.resultado.f) ? u.resultado : null; }
+  function foraDoCaso(R){
+    var m=[];
+    if(R.f.trat!=='cheia') m.push('tratamento com redução ou alíquota zero');
+    if(Number(R.f.custoNovo)>0) m.push('custo de compra novo');
+    if(Number(R.f.icmsSt)>0) m.push('ICMS-ST na compra');
+    if(R.estr!=='fica') m.push('outra estratégia de preço');
+    if(R.regime!=='presumido' && R.regime!=='real') m.push('Simples Nacional');
+    return m;
+  }
+  function entradas(R){
+    var cli=document.getElementById('pm_cliente');
+    return { venda_bruta:R.f.preco, pis_cofins_pct:R.pis, icms_pct:R.icms, aliq_plena:26.5, ano:2033,
+             perfil:(cli && cli.value==='pj') ? 'b2b' : 'b2c', sn_dentro:false };
+  }
+  function bloco(){
+    var b=document.getElementById('pmi_comparar'); if(b) return b;
+    var res=document.getElementById('pmi_res'); if(!res || !res.parentNode) return null;
+    b=document.createElement('div'); b.id='pmi_comparar'; b.className='lh-comparar'; b.style.cssText='margin:14px 0 4px;display:none';
+    b.innerHTML='<button type="button" class="lh-comparar-btn" style="padding:7px 14px;background:transparent;border:1px solid rgba(201,162,39,.5);border-radius:8px;color:#e0b93a;font-weight:700;cursor:pointer">⇄ Comparar cenários</button>'
+      +' <span class="pmi-comparar-sub" style="font-size:.78rem;color:var(--text2)">o preço deste item em 2033 com 26,5% · 27,91% · Meu cenário, calculado no servidor</span>'
+      +'<div class="pmi-comparar-nota" style="display:none;font-size:.8rem;color:var(--text2);line-height:1.5"></div>'
+      +'<div class="lh-comparar-res" style="margin-top:10px"></div>';
+    b.querySelector('.lh-comparar-btn').addEventListener('click', function(){ comparar(); });
+    res.parentNode.insertBefore(b, res.nextSibling);
+    return b;
+  }
+  function atualizar(){
+    var b=bloco(); if(!b) return null; var R=ultimo();
+    var btn=b.querySelector('.lh-comparar-btn'), sub=b.querySelector('.pmi-comparar-sub'), nota=b.querySelector('.pmi-comparar-nota'), box=b.querySelector('.lh-comparar-res');
+    box.innerHTML='';
+    if(!R){ b.style.display='none'; return null; }
+    b.style.display='';
+    var m=foraDoCaso(R), ok=!m.length;
+    btn.style.display=ok?'':'none'; sub.style.display=ok?'':'none'; nota.style.display=ok?'none':'';
+    /* texto aprovado pelo Ricardo (08/10) */
+    if(!ok) nota.innerHTML='<b style="color:var(--gold2)">Comparar cenários:</b> este item tem '+esc(m.join(', '))+'. Por enquanto, o comparador cobre itens na alíquota geral, sem custo novo, sem ICMS-ST e na estratégia "Manter o que fica com você". Os demais casos entram em breve.';
+    return ok;
+  }
+  function comparar(){
+    var b=bloco(), R=ultimo(); if(!b || !R) return Promise.resolve(null);
+    if(foraDoCaso(R).length){ atualizar(); return Promise.resolve(null); }
+    var box=b.querySelector('.lh-comparar-res');
+    if(!window.LH_MEU_CENARIO || !LH_MEU_CENARIO.compararCom){ box.innerHTML='<div class="kpi-sub">Comparador indisponível nesta versão.</div>'; return Promise.resolve(null); }
+    return LH_MEU_CENARIO.compararCom(box, 'formacao-preco-pct', entradas(R), ' · item: '+(R.f.desc||'')+' · 2033');
+  }
+  return { atualizar:atualizar, comparar:comparar, entradas:entradas, foraDoCaso:foraDoCaso };
 })();
 </script>
 <script>
