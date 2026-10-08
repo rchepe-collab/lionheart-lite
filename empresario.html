@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v929";</script>
+<body><script>window.LH_VERSAO="v930";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -14136,6 +14136,13 @@ window.LH_CUSTODIA = (function(){
     var m = String(texto||'').match(/<CNPJ>(\d{14})<\/CNPJ>/) || String(texto||'').match(/(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})/);
     return m ? String(m[1]).replace(/\D/g,'') : '';
   }
+  /* v930 · todos os CNPJ do documento (emitente, destinatário…) */
+  function cnpjsDe(texto){
+    var out=[], re=/<CNPJ>(\d{14})<\/CNPJ>/g, m;
+    while((m=re.exec(String(texto||'')))) if(out.indexOf(m[1])<0) out.push(m[1]);
+    if(!out.length){ var c=cnpjDe(texto); if(c) out.push(c); }
+    return out;
+  }
   function ler(cnpjDono){
     try{ var raw=localStorage.getItem(CHAVE+(cnpjDono||'geral')); return raw? JSON.parse(raw) : {}; }catch(e){ return {}; }
   }
@@ -14166,7 +14173,8 @@ window.LH_CUSTODIA = (function(){
       var item = { nome:l.nome, impressao:imp, recebido:agora, competencia:comp, cnpj:cnpj,
                    bytes:(l.file && l.file.size)||0, tipo:l.tipoDetectado||'' };
       if(reg[imp]){ repetidos.push(Object.assign({}, item, {jaRecebidoEm:reg[imp].recebido, nomeAnterior:reg[imp].nome})); return; }
-      if(cnpjDono && cnpj && cnpj.slice(0,8)!==String(cnpjDono).replace(/\D/g,'').slice(0,8)){ deOutro.push(item); }
+      /* ★ v930 · na NF-e de compra o dono é o destinatário: "de outro CNPJ" só quando nenhum CNPJ do documento é da raiz do dono */
+      if(cnpjDono && cnpj && !cnpjsDe(l.texto).some(function(c){ return c.slice(0,8)===String(cnpjDono).replace(/\D/g,'').slice(0,8); })){ deOutro.push(item); }
       reg[imp]=item; novos.push(item);
     });
     gravar(chaveDono, reg);
@@ -65566,7 +65574,110 @@ try{ (function(){ var _c=localStorage.getItem('lh_cnpj_ativo')||'';
     window.LH_CENTRAL_PROC.cnpj=_c; window.LH_CENTRAL_PROC.raiz=_c.slice(0,8);
   } })(); }catch(_e){}
 
+/* ★ v930 · dono das notas, por RAIZ (8 dígitos): matriz e filiais são a mesma empresa.
+   1) a raiz que participa de mais notas, como emitente ou destinatário (uma vez por nota);
+   2) dentro dela, o CNPJ que mais aparece; no empate, a matriz (/0001). */
+window.lhCentralDonoDasNotas = function(nt){
+  var porRaiz={}, porCnpj={}, topR='', n=0;
+  (nt||[]).forEach(function(x){
+    var vistasR={}, vistos={};
+    [x.emitCNPJ, x.destCNPJ].forEach(function(v){ var c=String(v||'').replace(/\D/g,''); if(c.length!==14) return;
+      if(!vistos[c]){ vistos[c]=1; porCnpj[c]=(porCnpj[c]||0)+1; }
+      var r=c.slice(0,8); if(vistasR[r]) return; vistasR[r]=1; porRaiz[r]=(porRaiz[r]||0)+1; if(porRaiz[r]>n){ n=porRaiz[r]; topR=r; } });
+  });
+  if(!topR) return '';
+  var top='', k=-1;
+  Object.keys(porCnpj).forEach(function(c){ if(c.slice(0,8)!==topR) return;
+    var q=porCnpj[c]; if(q>k || (q===k && c.slice(8,12)==='0001')){ k=q; top=c; } });
+  return top;
+};
+/* ★ v930 · MIGRAÇÃO: o dossiê gravado com o CNPJ de um FORNECEDOR passa para o dono certo.
+   Só migra quando o CNPJ antigo é, nas notas, emitente de notas destinadas ao novo dono e
+   nunca destinatário (era fornecedor dele) — troca de cliente de verdade não mexe em nada.
+   · protocolo de entrega (lh_custodia_) e campos guardados (lh_central_): somam no dossiê certo;
+   · razão fiscal (lh_razao_): foi classificada com o dono errado (venda × compra), então vai para
+     uma cópia de segurança e é refeita para o dono certo a partir das notas da sessão. */
+window.lhCentralMigrarDossie = function(de, para, nt){
+  de=String(de||'').replace(/\D/g,''); para=String(para||'').replace(/\D/g,'');
+  if(de.length!==14 || para.length!==14 || de===para) return null;
+  if(de.slice(0,8)===para.slice(0,8)) return null;   /* filial e matriz são a mesma empresa: não migra */
+  var forn=0, dest=0, rDe=de.slice(0,8), rPara=para.slice(0,8);
+  (nt||[]).forEach(function(x){ var e=String(x.emitCNPJ||'').replace(/\D/g,'').slice(0,8), d=String(x.destCNPJ||'').replace(/\D/g,'').slice(0,8);
+    if(e===rDe && d===rPara) forn++; if(d===rDe) dest++; });
+  if(!forn || dest) return null;
+  var LS=window.localStorage, quando=new Date().toISOString(), rel={ de:de, para:para, quando:quando, custodia:0, central:false, razao:'' };
+  try{ var cOld=JSON.parse(LS.getItem('lh_custodia_'+de)||'null');
+    if(cOld){ var cNew=JSON.parse(LS.getItem('lh_custodia_'+para)||'{}');
+      Object.keys(cOld).forEach(function(k){ if(!cNew[k]){ cNew[k]=cOld[k]; rel.custodia++; } });
+      LS.setItem('lh_custodia_'+para, JSON.stringify(cNew)); LS.removeItem('lh_custodia_'+de); } }catch(_e){}
+  try{ var zOld=JSON.parse(LS.getItem('lh_central_'+de)||'null');
+    if(zOld){ var zNew=JSON.parse(LS.getItem('lh_central_'+para)||'null')||{ campos:{} };
+      zNew.campos=Object.assign({}, zOld.campos||{}, zNew.campos||{}); zNew.cnpj=para; zNew.raiz=para.slice(0,8);
+      if(!zNew.aliqEf && zOld.aliqEf) zNew.aliqEf=zOld.aliqEf; zNew.quando=quando;
+      LS.setItem('lh_central_'+para, JSON.stringify(zNew)); LS.removeItem('lh_central_'+de); rel.central=true; } }catch(_e){}
+  try{ var rOld=LS.getItem('lh_razao_'+de);
+    if(rOld){ rel.razao='lh_razao_copia_'+de+'_'+quando.slice(0,10); LS.setItem(rel.razao, rOld); LS.removeItem('lh_razao_'+de); } }catch(_e){}
+  try{ var log=JSON.parse(LS.getItem('lh_migracoes')||'[]'); log.push(rel); LS.setItem('lh_migracoes', JSON.stringify(log)); }catch(_e){}
+  window.LH_ULTIMA_MIGRACAO=rel;
+  try{ LS.setItem('lh_aviso_migracao', JSON.stringify({ de:de, para:para, quando:quando, visto:false })); }catch(_e){}
+  try{ if(typeof mostrarToast==='function') mostrarToast('Dossiê corrigido. Veja o aviso na Central.','info'); }catch(_e){}
+  try{ window.lhCentralAvisos(); }catch(_e){}
+  return rel;
+};
+
+/* ★ v930 · AVISOS DO DOSSIÊ na Central (textos aprovados pelo Ricardo, 07/10). Ficam até "Entendi".
+   · migração: o dossiê estava no CNPJ de um fornecedor e foi corrigido;
+   · aviso único para quem já tinha dossiê antes da v930 (não dá para saber, pelos dados guardados,
+     se ele nasceu no CNPJ de um fornecedor: o protocolo antigo guarda só o primeiro CNPJ do arquivo). */
+window.lhFmtCnpj = function(c){ c=String(c||'').replace(/\D/g,''); return c.length===14 ? c.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5') : c; };
+window.lhCentralAvisos = function(){
+  var LS=window.localStorage, avisos=[];
+  try{ var m=JSON.parse(LS.getItem('lh_aviso_migracao')||'null');
+    if(m && !m.visto) avisos.push({ tipo:'migracao', texto:'Dossiê corrigido. As notas deste cliente estavam guardadas no CNPJ '+window.lhFmtCnpj(m.de)
+      +', que é de um fornecedor, e agora estão no CNPJ '+window.lhFmtCnpj(m.para)+'. O protocolo de entrega e os campos preenchidos vieram junto. '
+      +'A razão fiscal antiga tinha sido montada com o dono errado e foi refeita com as notas desta importação; uma cópia da antiga ficou guardada só neste navegador. '
+      +'Para recompor os meses anteriores, importe de novo os XML desses meses. Nada foi apagado.' }); }catch(_e){}
+  try{ if(LS.getItem('lh_aviso_v930')==='1') avisos.push({ tipo:'v930', texto:'Se você importou só XML de compra antes de 07/10, importe esses XML de novo para conferir o CNPJ do cliente. Nada é apagado.' }); }catch(_e){}
+  ['page-importsped','page-central-c1'].forEach(function(pid){
+    var pg=document.getElementById(pid); if(!pg) return;
+    [].slice.call(pg.querySelectorAll('.lh-aviso-dossie')).forEach(function(x){ x.parentNode.removeChild(x); });
+    var cab=pg.querySelector('.calc-page-header'), pai=cab?cab.parentNode:pg, ref=cab?cab.nextSibling:pg.firstChild;
+    avisos.forEach(function(a){
+      var d=document.createElement('div'); d.className='lh-aviso-dossie'; d.setAttribute('data-tipo',a.tipo);
+      d.style.cssText='margin:10px 0;padding:12px 15px;border-radius:10px;background:rgba(224,138,46,.09);border:1px solid rgba(224,138,46,.4);font-size:.86rem;color:#f0c088;line-height:1.5';
+      var t=document.createElement('span'); t.className='lh-aviso-texto'; t.textContent=a.texto; d.appendChild(t);
+      var b=document.createElement('button'); b.type='button'; b.className='lh-aviso-entendi'; b.textContent='Entendi';
+      b.style.cssText='margin-left:10px;padding:4px 12px;background:transparent;border:1px solid rgba(224,138,46,.6);border-radius:8px;color:#f0c088;cursor:pointer';
+      b.addEventListener('click', function(){ window.lhCentralAvisoVisto(a.tipo); }); d.appendChild(b);
+      pai.insertBefore(d, ref);
+    });
+  });
+  return avisos.length;
+};
+window.lhCentralAvisoVisto = function(tipo){
+  var LS=window.localStorage;
+  try{ if(tipo==='migracao'){ var m=JSON.parse(LS.getItem('lh_aviso_migracao')||'null'); if(m){ m.visto=true; LS.setItem('lh_aviso_migracao', JSON.stringify(m)); } }
+       if(tipo==='v930') LS.setItem('lh_aviso_v930','visto'); }catch(_e){}
+  window.lhCentralAvisos();
+};
+/* primeira abertura com a v930: quem já tinha dossiê (CNPJ ativo ou protocolo guardado) recebe o aviso único */
+window.lhCentralAvisoLegado = function(){
+  var LS=window.localStorage;
+  try{ if(LS.getItem('lh_v930_inicio')) return false;
+    var legado=!!LS.getItem('lh_cnpj_ativo');
+    for(var i=0;i<LS.length;i++){ if(/^lh_custodia_/.test(LS.key(i)||'')) legado=true; }
+    LS.setItem('lh_v930_inicio', new Date().toISOString());
+    if(legado && !LS.getItem('lh_aviso_v930')) LS.setItem('lh_aviso_v930','1');
+    return legado; }catch(_e){ return false; }
+};
+(function(){
+  try{ window.lhCentralAvisoLegado(); }catch(_e){}
+  function pintar(){ try{ window.lhCentralAvisos(); }catch(_e){} }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', pintar); else pintar();
+})();
+
 window.lhCentralCarimbar = function(){
+  var _antes=''; try{ _antes=String((window.LH_CENTRAL_PROC&&window.LH_CENTRAL_PROC.cnpj)||localStorage.getItem('lh_cnpj_ativo')||'').replace(/\D/g,''); }catch(_e){}   /* v930 */
   var P = { cnpj:'', raiz:'', nome:'', periodo:'', docs:[], em:Date.now() };
   function reg(nome, cnpj, ini, fim){
     if(nome) P.docs.push(nome);
@@ -65585,18 +65696,18 @@ window.lhCentralCarimbar = function(){
     var nt=window._LH_XML_NOTAS||[];
     if(nt.length){
       P.docs.push('NF-e ('+nt.length+')');
-      /* a empresa é o emitente que domina as SAÍDAS */
-      var cc={}, top='', n=0;
-      for(var i=0;i<nt.length;i++){
-        if(String(nt[i].tpNF||'')!=='1') continue;
-        var c=String(nt[i].emitCNPJ||'').replace(/\D/g,'');
-        if(c.length===14){ cc[c]=(cc[c]||0)+1; if(cc[c]>n){ n=cc[c]; top=c; } }
-      }
+      /* ★ v930 · a empresa é o CNPJ que PARTICIPA de mais notas — como emitente (venda) ou como
+         destinatário (compra). Antes era o emitente que dominava as notas tpNF=1: com só XML de
+         compra, quem emite é o fornecedor, e a Central ficava com o CNPJ dele (defeito de 06/10). */
+      var top=window.lhCentralDonoDasNotas(nt);
       if(top && !P.cnpj){ P.cnpj=top; P.raiz=top.slice(0,8); }
     }
   }catch(_e){}
   try{ P.transferencias = window._LH_TRANSF_INTERNAS||0; }catch(_e){ P.transferencias=0; }
   window.LH_CENTRAL_PROC = P;
+  /* ★ v930 · dossiê que nasceu no CNPJ de um fornecedor: migra e refaz a razão para o dono certo */
+  try{ if(_antes && P.cnpj && _antes!==P.cnpj && window.lhCentralMigrarDossie(_antes, P.cnpj, window._LH_XML_NOTAS||window.LH_XML_NOTAS||[])){
+    if(window.LH_RAZAO && window.LH_RAZAO.consolidar) window._LH_RAZAO_ATUAL=window.LH_RAZAO.consolidar(P.cnpj); } }catch(_e){}
   /* ★ v636 · CNPJ ATIVO SOBREVIVE AO F5 — achado nº 1 da auditoria.
      A razão fiscal é gravada por CNPJ, mas após o reload o PROC voltava vazio e toda
      leitura ia para 'geral': 23 campos e 7 teses viravam zero na tela, com o dado
@@ -73857,14 +73968,17 @@ window.LH_MAPA_FORN = (function(){
   function fmtDoc(d){ d=dig(d); return d.length===14 ? d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5') : d; }
   function cnpjCadastro(){ try{ var e=window.LH_GRUPO&&LH_GRUPO.getEntidadeAtiva?LH_GRUPO.getEntidadeAtiva():null; return dig(e&&e.cnpj); }catch(_e){ return ''; } }
   function comprador(notas, P){
-    var cont={}, topo='', n=0;
-    (notas||[]).forEach(function(x){ var d=dig(x.destCNPJ); if(d.length!==14) return; cont[d]=(cont[d]||0)+1; if(cont[d]>n){ n=cont[d]; topo=d; } });
+    /* por RAIZ: nota destinada a uma filial é compra da mesma empresa (v930) */
+    var cont={}, porCnpj={}, topoR='', n=0, topo='', k=-1;
+    (notas||[]).forEach(function(x){ var d=dig(x.destCNPJ); if(d.length!==14) return; var r=d.slice(0,8);
+      porCnpj[d]=(porCnpj[d]||0)+1; cont[r]=(cont[r]||0)+1; if(cont[r]>n){ n=cont[r]; topoR=r; } });
+    Object.keys(porCnpj).forEach(function(d){ if(d.slice(0,8)===topoR && (porCnpj[d]>k || (porCnpj[d]===k && d.slice(8,12)==='0001'))){ k=porCnpj[d]; topo=d; } });
     var central=dig(P&&P.cnpj), cand=[['Central',central],['importação',dig(window.LH_EMP_CNPJ)],['cadastro',cnpjCadastro()]];
     var escolhido=null;
-    for(var i=0;i<cand.length;i++){ if(cand[i][1].length===14 && cont[cand[i][1]]){ escolhido={cnpj:cand[i][1], origem:cand[i][0]}; break; } }
+    for(var i=0;i<cand.length;i++){ if(cand[i][1].length===14 && cont[cand[i][1].slice(0,8)]){ escolhido={cnpj:cand[i][1], origem:cand[i][0]}; break; } }
     if(!escolhido && topo) escolhido={cnpj:topo, origem:'notas'};
     if(!escolhido) return null;
-    if(escolhido.cnpj!==central) escolhido.aviso='O cliente da Central '+(central?'está com o CNPJ '+fmtDoc(central)+', que não é destinatário de nenhuma nota':'está sem CNPJ')
+    if(escolhido.cnpj.slice(0,8)!==central.slice(0,8)) escolhido.aviso='O cliente da Central '+(central?'está com o CNPJ '+fmtDoc(central)+', que não é destinatário de nenhuma nota':'está sem CNPJ')
       +'. O mapa usou '+fmtDoc(escolhido.cnpj)+' ('+(escolhido.origem==='notas'?'o destinatário das notas':escolhido.origem)+'). Confira o cadastro do cliente.';
     return escolhido;
   }
@@ -73878,9 +73992,11 @@ window.LH_MAPA_FORN = (function(){
     (notas||[]).forEach(function(n){
       var ch=chaveNota(n); if(vistas[ch]){ ign.repetidas++; return; } vistas[ch]=1;
       var emit=dig(n.emitCNPJ), cpf=dig(n.emitCPF), dest=dig(n.destCNPJ);
-      if(emit && emit===meu){ ign.saidas++; return; }
-      if(dest!==meu){ ign.outras++; return; }
-      if(emit && raiz && emit.slice(0,8)===raiz){ ign.transferencias++; return; }
+      /* v930 · por RAIZ: matriz e filiais são a mesma empresa */
+      var daCasa = emit && raiz && emit.slice(0,8)===raiz, paraCasa = dest && raiz && dest.slice(0,8)===raiz;
+      if(daCasa && paraCasa){ ign.transferencias++; return; }
+      if(daCasa){ ign.saidas++; return; }
+      if(!paraCasa){ ign.outras++; return; }
       var doc = emit || cpf; if(!doc){ ign.semEmitente++; return; }
       var crt = emit ? String(n.emitCRT||'3') : 'PF';
       if(!g[doc]) g[doc]={doc:doc, nome:n.emitNome||'—', crt:crt, total:0, icms:0, pis:0, cofins:0, ipi:0, st:0, notas:0};
