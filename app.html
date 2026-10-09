@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v931";</script>
+<body><script>window.LH_VERSAO="v932";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -4118,11 +4118,13 @@ window.LH_PONTE = (function(){
     _voo: {}, _seq: {},
     ultimo: {},   /* ★ v892 · último resultado estruturado por função — a Inteligência Financeira (TR08) lê daqui, nunca do texto da tela */
     _disparar: function(nomeFn, m, ent, seq){
+      LH_PONTE._fnAtual = nomeFn;   /* v932 · o comparador guarda as entradas na página dona da função (a cascata não troca a tela aberta) */
       var promessa = Array.isArray(ent)
         ? Promise.all(ent.map(function(e){ return chamar(m.calc, e); })).then(function(lista){
             var ruim = null; lista.forEach(function(r){ if(!ruim && (!r || !r.ok)) ruim = r; });
             return ruim ? { ok:false, motivo:(ruim && ruim.motivo) || 'sem resposta em uma das chamadas' } : { ok:true, resultado:lista.map(function(r){ return r.resultado; }) }; })
         : chamar(m.calc, ent);
+      LH_PONTE._fnAtual = null;
       promessa.then(function(res){
         var v = LH_PONTE._voo[nomeFn]; if (v) v.emVoo = false;
         if (LH_PONTE._seq[nomeFn] !== seq) return;   /* chegou atrasada: outra chamada já a substituiu */
@@ -6059,6 +6061,10 @@ function lhTrocarSenha(){
          4. RESULTADO ESTRATÉGICO — Consolidação e entregáveis
          ════════════════════════════════════════════════════════════════ -->
     <div class="nav-group-title" style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">Reforma Tributária</div>
+    <!-- v932 · Meu cenário de alíquota: a primeira aba do grupo, em destaque; a Central da Reforma continua a última -->
+    <div class="nav-item nav-calc-p1 lh-nav-meucenario" onclick="abrirPagina('meucenario',this)" title="as suas premissas de CBS e IBS (Meu cenário 1 e 2), usadas por todas as calculadoras com cenário, e o comparador de cenários" style="margin:4px 0 6px;background:linear-gradient(90deg,rgba(22,196,124,.18),rgba(155,127,224,.10));border:1px solid rgba(22,196,124,.5);border-radius:8px;font-size:1.06em">
+      <span class="ni-icon">％</span><span class="ni-label" style="color:#16c47c;font-weight:800">Meu cenário de alíquota</span>
+    </div>
     <div class="nav-item nav-calc-p1" onclick="abrirPagina('c01',this)">
       <span class="ni-icon"></span><span class="ni-label">Split Payment Cash Gap</span>
     </div><div class="nav-item nav-calc-p1" onclick="abrirPagina('seletivo',this)"><span class="ni-icon"></span><span class="ni-label">Imposto Seletivo (IS)</span></div>
@@ -6093,9 +6099,6 @@ function lhTrocarSenha(){
     </div>
     <div class="nav-item nav-calc-p1" onclick="abrirPagina('central-c1',this)" style="margin-top:4px;background:linear-gradient(90deg,rgba(201,162,39,.16),rgba(201,162,39,.04));border:1px solid rgba(201,162,39,.45);border-radius:8px">
       <span class="ni-icon">🦁</span><span class="ni-label" style="color:#c9a227;font-weight:800">Central da Reforma</span>
-    </div>
-    <div class="nav-item nav-calc-p1" onclick="abrirPagina('meucenario',this)" title="a sua premissa de CBS e IBS, usada por todas as calculadoras com cenário, e o comparador A × B × Meu cenário">
-      <span class="ni-icon">％</span><span class="ni-label">Meu cenário de alíquota</span>
     </div>
     
     
@@ -7544,15 +7547,31 @@ function lhTrocarSenha(){
   <div class="page" id="page-meucenario">
     <div class="calc-page-header"><div class="calc-page-icon" style="background:rgba(155,127,224,.14)">％</div>
       <div><h2>Meu cenário de alíquota</h2>
-      <p><b>O que é:</b> a sua premissa de CBS e IBS de referência, para testar a alíquota que o Senado ainda vai fixar. O servidor monta a curva de 2026 a 2033 pelo calendário da lei, e todas as calculadoras com cenário passam a aceitar "Meu cenário" no seletor de alíquota.</p></div></div>
-    <div class="input-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end">
-      <div class="input-group"><label>CBS de referência (%)</label><input type="number" id="mc_cbs" step="0.01" min="1" max="20" placeholder="ex.: 9,5" oninput="LH_MEU_CENARIO.total()"></div>
-      <div class="input-group"><label>IBS de referência (%)</label><input type="number" id="mc_ibs" step="0.01" min="1" max="30" placeholder="ex.: 18,5" oninput="LH_MEU_CENARIO.total()"></div>
-      <div class="input-group"><label>Total de referência</label><div id="mc_total" style="padding:9px 0;font-weight:800;color:#e0b93a">—</div></div>
+      <p><b>O que é:</b> a sua premissa de CBS e IBS de referência, para testar a alíquota que o Senado ainda vai fixar. Você pode guardar duas (Meu cenário 1 e Meu cenário 2). O servidor monta a curva de 2026 a 2033 pelo calendário da lei, e todas as calculadoras com cenário passam a aceitar as duas no seletor de alíquota.</p></div></div>
+    <div class="mc-blocos">
+      <div class="input-card mc-bloco" id="mc_bloco1" style="border-top:4px solid #16c47c">
+        <h3 style="color:#16c47c;margin-top:0">Meu cenário 1</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;align-items:end">
+          <div class="input-group"><label>CBS de referência (%)</label><input type="number" id="mc_cbs" step="0.01" min="1" max="20" placeholder="ex.: 9,5" oninput="LH_MEU_CENARIO.total()"></div>
+          <div class="input-group"><label>IBS de referência (%)</label><input type="number" id="mc_ibs" step="0.01" min="1" max="30" placeholder="ex.: 18,5" oninput="LH_MEU_CENARIO.total()"></div>
+          <div class="input-group"><label>Total de referência</label><div id="mc_total" style="padding:9px 0;font-weight:800;color:#16c47c">—</div></div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button type="button" onclick="LH_MEU_CENARIO.salvar('1')" style="padding:9px 18px;background:#16c47c;border:none;border-radius:8px;color:#06140d;font-weight:800;cursor:pointer">Salvar Meu cenário 1</button><span id="mc_chave" class="kpi-sub"></span></div>
+        <div id="mc_status" style="margin-top:6px"></div>
+      </div>
+      <div class="input-card mc-bloco" id="mc_bloco2" style="border-top:4px solid #ff7a59">
+        <h3 style="color:#ff7a59;margin-top:0">Meu cenário 2</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;align-items:end">
+          <div class="input-group"><label>CBS de referência (%)</label><input type="number" id="mc2_cbs" step="0.01" min="1" max="20" placeholder="ex.: 9,5" oninput="LH_MEU_CENARIO.total()"></div>
+          <div class="input-group"><label>IBS de referência (%)</label><input type="number" id="mc2_ibs" step="0.01" min="1" max="30" placeholder="ex.: 18,5" oninput="LH_MEU_CENARIO.total()"></div>
+          <div class="input-group"><label>Total de referência</label><div id="mc2_total" style="padding:9px 0;font-weight:800;color:#ff7a59">—</div></div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button type="button" onclick="LH_MEU_CENARIO.salvar('2')" style="padding:9px 18px;background:#ff7a59;border:none;border-radius:8px;color:#1a0a05;font-weight:800;cursor:pointer">Salvar Meu cenário 2</button><span id="mc2_chave" class="kpi-sub"></span></div>
+        <div id="mc2_status" style="margin-top:6px"></div>
+      </div>
     </div>
-    <div style="margin:12px 0"><button type="button" onclick="LH_MEU_CENARIO.salvar()" style="padding:9px 18px;background:#c9a227;border:none;border-radius:8px;color:#0a0a0a;font-weight:800;cursor:pointer">Salvar meu cenário</button></div>
     <div id="mc_res"></div>
-    <p style="margin-top:14px;font-size:.78rem;color:#8a97a8">Com "Meu cenário" escolhido, os campos de alíquota total das calculadoras ficam em 26,5%: a alíquota vem do Meu cenário (evita contar o efeito duas vezes).</p>
+    <p style="margin-top:14px;font-size:.78rem;color:#8a97a8">Com "Meu cenário" 1 ou 2 escolhido, os campos de alíquota total das calculadoras ficam em 26,5%: a alíquota vem do Meu cenário (evita contar o efeito duas vezes).</p>
   </div>
   <div class="page" id="page-central-c3">
     <div class="calc-page-header"><div class="calc-page-icon" style="background:rgba(201,162,39,.14)">🦁</div>
@@ -64103,7 +64122,9 @@ function lhBuscaCNAE(q){
           /* já existe no destino? é duplicata (o CAPEX era) */
           var _rep = _id && _destino.querySelector('[onclick*="abrirPagina(\'' + _id + '\'"]');
           if(_rep){ if(el.parentNode) el.parentNode.removeChild(el); return; }
-          _destino.appendChild(el);
+          /* v932 · a Central da Reforma continua a última aba do grupo: os itens que chegam entram antes dela */
+          var _central = _destino.querySelector('[onclick*="abrirPagina(\'central-c1\'"]');
+          if(_central) _destino.insertBefore(el, _central); else _destino.appendChild(el);
         });
         if(_descubra.parentNode) _descubra.parentNode.removeChild(_descubra);
         /* o "Regimes específicos" perde a razão de existir: virou o bloco inteiro */
@@ -74216,42 +74237,71 @@ window.LH_MAPA_FORN = (function(){
    cenario-salvar / cenario-ler / comparar-cenarios). Cópia byte a byte de lab/cenario/meu_cenario_tela.js. */
 /* ════════════════════════════════════════════════════════════════════
  * MEU CENÁRIO DE ALÍQUOTA + COMPARADOR DE CENÁRIOS · tela (TR14 §4) · 06/10/2026
- * SÓ TELA: o servidor guarda a premissa e monta a curva (cenario-salvar /
- * cenario-ler) e roda a calculadora em A, B, C e Meu cenário
- * (comparar-cenarios). Aqui só se lê campo, chama, guarda a chave na sessão
- * e desenha. Nenhuma fórmula tributária (regra do TR11 / Portão 8).
+ * v932 (08/10): Meu cenário 2, tabela e gráfico 2026–2033 de A · B · Meu 1 · Meu 2,
+ * e o comparador em formato de painel (Leitura estratégica, cartões, "O que mais muda",
+ * tabela recolhida), com cores fixas por cenário.
+ * SÓ TELA: o servidor guarda as premissas e monta as curvas (cenario-salvar,
+ * cenario-salvar2, cenario-ler) e roda a calculadora em todos os cenários
+ * (comparar-cenarios, que também devolve as variações e a Leitura estratégica).
+ * Aqui só se lê campo, chama, guarda a chave na sessão e desenha. Nenhuma fórmula
+ * tributária e nenhuma frase de estratégia nasce aqui (regra do TR11 / Portão 8).
  *   - rota: o campo `cenario` das calculadoras que o usam (lista do catálogo)
- *     leva a chave do cenário escolhido: U-… (Meu cenário) ou 'B' (27,91%);
- *     26,5% e 28% (estresse, sem cenário no servidor) seguem em 'A';
+ *     leva a chave do cenário escolhido: U-… (Meu cenário 1 ou 2) ou 'B' (27,91%);
+ *     26,5% segue em 'A';
  *   - trava: campos de alíquota total ficam em 26,5 (dupla contagem, TR14 §3).
  * ════════════════════════════════════════════════════════════════════ */
 window.LH_MEU_CENARIO = (function(){
   'use strict';
-  /* calculadoras do catálogo com parâmetro `cenario` (vw_catalogo_calculadoras, 06/10/2026: 40) */
+  /* as 42 calculadoras que o servidor aceita em comparar-cenarios (vw_catalogo_calculadoras, 08/10/2026):
+     as 40 com parâmetro `cenario` + formacao-preco-pct (v931) + fornecedores-lote (cenário dentro de params) */
   var CALCS = ['agro-decisor','agro02','agro09','agro11','agro12','agrosuper2','agrosuper4','agrosuper5','agrosuper6',
     'aluguel-pfpj','antecip','art127','c01','c02','c02-matriz','c04','c11','calc03','capex','classificar-lote','contrato',
-    'cr04','dxh','formacao-preco','import','ind08','ind11','lucro-presumido','lucro-real','mix-efetiva','n04','n15','n33',
-    'pf-vs-pj','portos','reajuste-contrato','regime-otimo','seletivo','setor','simnotas'];
-  /* campos de alíquota total: com Meu cenário, ficam no valor-base (a alíquota vem do servidor) */
+    'cr04','dxh','formacao-preco','formacao-preco-pct','fornecedores-lote','import','ind08','ind11','lucro-presumido','lucro-real',
+    'mix-efetiva','n04','n15','n33','pf-vs-pj','portos','reajuste-contrato','regime-otimo','seletivo','setor','simnotas'];
+  /* o Mapa escolhe o cenário no próprio seletor (params.cenario): a barra não troca a chave dele */
+  var SEM_TROCA = ['fornecedores-lote'];
+  /* telas que não são calculadoras (ou têm o próprio comparador): não ganham o botão */
+  var SEM_PAINEL = ['page-precmassa','page-meucenario','page-home','page-importsped','page-central-c1'];
+  /* campos de alíquota total: com Meu cenário (1 ou 2), ficam no valor-base (a alíquota vem do servidor) */
   var TRAVAS = [ { id:'ind08_ibs', valor:'26.5' }, { id:'capex_aliq', valor:'' } ];
   var NOTA_TRAVA = 'a alíquota vem do Meu cenário';
-  var estado = { meu:null, sel:false, lido:false, aviso:null, ultima:{} };
+  /* cores fixas por cenário em toda a ferramenta (tema escuro e claro) */
+  var COR = { A:'#d4a82a', B:'#4a9eff', C:'#b07cf0', M1:'#16c47c', M2:'#ff7a59' };
+  var estado = { meu:null, meu2:null, sel:false, lido:false, aviso:null, aviso2:null, ultima:{}, oficiais:[], curvas:{} };
 
+  /* estilos do painel e da página (grade de cartões; no celular, um embaixo do outro) */
+  (function estilos(){
+    if(document.getElementById('lh-cmp-estilos')) return;
+    var st=document.createElement('style'); st.id='lh-cmp-estilos';
+    st.textContent='.lh-cmp-cartoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}'
+      +'.mc-blocos{display:grid;grid-template-columns:1fr 1fr;gap:14px}'
+      +'@media (max-width:640px){.lh-cmp-cartoes{grid-template-columns:1fr}.mc-blocos{grid-template-columns:1fr}}';
+    (document.head||document.documentElement).appendChild(st);
+  })();
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function fmt(v,d){ var n=Number(v); if(v===null||v===undefined||v===''||isNaN(n)) return '—';
     return n.toLocaleString('pt-BR',{minimumFractionDigits:(d==null?2:d),maximumFractionDigits:(d==null?2:d)}); }
   function lerNum(id){ var e=document.getElementById(id); if(!e) return null; var t=String(e.value||'').trim().replace(',','.');
     if(t==='') return null; var n=parseFloat(t); return isNaN(n)?null:n; }
   function erro(m){ try{ return window.LH_PONTE.cardErro(m); }catch(e){ return '<div class="kpi-card"><div class="kpi-label">Não foi possível</div><div class="kpi-sub">'+esc(m)+'</div></div>'; } }
-  function rotulo(){ return 'Meu cenário ('+fmt(estado.meu.total_ref_pct)+'%)'; }
+  function meuDe(q){ return q==='2' ? estado.meu2 : estado.meu; }
+  function escolhido(){ return estado.sel ? meuDe(estado.sel) : null; }
+  function nomeMeu(q){ return estado.meu2 ? 'Meu cenário '+(q||'1') : 'Meu cenário'; }
+  function rotulo(q){ var m=meuDe(q); return nomeMeu(q)+' ('+fmt(m.total_ref_pct)+'%)'; }
 
   /* ── estado da sessão ─────────────────────────────────────────────── */
+  function ficha(r, nome){
+    return (r && r.cenario && (r.existe!==false)) ? { cenario:String(r.cenario).toUpperCase(), cbs_ref_pct:r.cbs_ref_pct,
+      ibs_ref_pct:r.ibs_ref_pct, total_ref_pct:r.total_ref_pct, curva:r.curva||[], nome:nome } : null;
+  }
   function guardar(r){
-    estado.meu = (r && r.ok && r.cenario && (r.existe!==false)) ? { cenario:String(r.cenario).toUpperCase(), cbs_ref_pct:r.cbs_ref_pct,
-      ibs_ref_pct:r.ibs_ref_pct, total_ref_pct:r.total_ref_pct, curva:r.curva||[], nome:r.nome||'Meu cenário' } : null;
-    window.LH_CENARIO_MEU = estado.meu;
-    estado.aviso = estado.meu ? (r.aviso || null) : null;   /* o aviso do art. 475 §11 vem do servidor (salvar e ler) */
-    if(!estado.meu && estado.sel) soltar();
+    estado.meu = (r && r.ok) ? ficha(r, r.nome||'Meu cenário') : null;
+    estado.meu2 = (estado.meu && r.cenario2) ? ficha(r.cenario2, 'Meu cenário 2') : null;
+    window.LH_CENARIO_MEU = estado.meu; window.LH_CENARIO_MEU2 = estado.meu2;
+    estado.aviso = estado.meu ? (r.aviso || null) : null;   /* o aviso do art. 475 §11 vem do servidor */
+    estado.aviso2 = estado.meu2 ? (r.cenario2.aviso || null) : null;
+    estado.oficiais = (r && r.oficiais) || estado.oficiais; estado.curvas = (r && r.curvas_oficiais) || estado.curvas;
+    if(estado.sel && !escolhido()) soltar();
     atualizarTudo();
   }
   function ler(){
@@ -74263,101 +74313,158 @@ window.LH_MEU_CENARIO = (function(){
       return r;
     });
   }
-  function salvar(){
-    var cbs=lerNum('mc_cbs'), ibs=lerNum('mc_ibs');
-    var box=document.getElementById('mc_res');
-    if(box) box.innerHTML='<div class="kpi-card" data-lh-espera="1"><div class="kpi-label">Salvando no servidor…</div></div>';
-    return window.LH_PONTE.chamar('cenario-salvar', { cbs_ref:cbs, ibs_ref:ibs }).then(function(res){
+  /* q = '1' (cenario-salvar) ou '2' (cenario-salvar2); depois relê tudo do servidor */
+  function salvar(q){
+    q = (q==='2') ? '2' : '1';
+    var pre = q==='2' ? 'mc2_' : 'mc_', cbs=lerNum(pre+'cbs'), ibs=lerNum(pre+'ibs');
+    var st=document.getElementById(pre+'status'), box=document.getElementById('mc_res');
+    if(st) st.innerHTML='<span class="kpi-sub" data-lh-espera="1">Salvando no servidor…</span>';
+    else if(box) box.innerHTML='<div class="kpi-card" data-lh-espera="1"><div class="kpi-label">Salvando no servidor…</div></div>';
+    return window.LH_PONTE.chamar(q==='2' ? 'cenario-salvar2' : 'cenario-salvar', { cbs_ref:cbs, ibs_ref:ibs }).then(function(res){
       var r = res && res.ok ? res.resultado : null;
-      if(!r || !r.ok){ if(box) box.innerHTML=erro((r && r.motivo) || (res && res.motivo) || 'sem resposta do servidor'); return r; }
-      guardar(r); painel(r, null);
-      return r;
+      if(!r || !r.ok){ var m=(r && r.motivo) || (res && res.motivo) || 'sem resposta do servidor';
+        if(st) st.innerHTML=erro(m); else if(box) box.innerHTML=erro(m); return r; }
+      if(st) st.innerHTML='';
+      return ler().then(function(){ return r; });   /* o cenario-ler devolve as duas premissas e as curvas oficiais */
     });
   }
 
-  /* ── painel "Meu cenário de alíquota" ─────────────────────────────── */
+  /* ── página "Meu cenário de alíquota" ─────────────────────────────── */
   function total(){
-    var cbs=lerNum('mc_cbs'), ibs=lerNum('mc_ibs'), el=document.getElementById('mc_total');
-    if(el) el.textContent = (cbs===null||ibs===null) ? '—' : fmt(cbs+ibs)+'%';   /* só exibição */
+    [['mc_','mc_total'],['mc2_','mc2_total']].forEach(function(p){
+      var cbs=lerNum(p[0]+'cbs'), ibs=lerNum(p[0]+'ibs'), el=document.getElementById(p[1]);
+      if(el) el.textContent = (cbs===null||ibs===null) ? '—' : fmt(cbs+ibs)+'%';   /* só exibição */
+    });
   }
-  function curvaHTML(curva){
-    if(!curva || !curva.length) return '';
-    return '<table class="mc-curva" style="width:100%;border-collapse:collapse;font-size:.82rem;margin-top:8px"><thead><tr>'
-      +'<th style="text-align:left">Ano</th><th style="text-align:right">CBS</th><th style="text-align:right">IBS</th><th style="text-align:right">Total</th></tr></thead><tbody>'
-      +curva.map(function(k){ return '<tr><td>'+esc(k.ano)+'</td><td style="text-align:right">'+fmt(k.cbs_pct)+'%</td><td style="text-align:right">'
-        +fmt(k.ibs_pct)+'%</td><td style="text-align:right"><b>'+fmt(k.total_pct)+'%</b></td></tr>'; }).join('')+'</tbody></table>';
+  /* as séries da tela, na ordem fixa: A · B · (C) · Meu 1 · Meu 2 — tudo como veio do cenario-ler */
+  function series(r){
+    var s=[], cv=(r && r.curvas_oficiais) || {}, of=(r && r.oficiais) || [];
+    ['A','B','C'].forEach(function(k){ if(cv[k] && cv[k].length){ var o=of.filter(function(x){ return x.cenario===k; })[0];
+      s.push({ chave:k, cor:COR[k], nome:k, sub:o ? o.nome : '', total:o ? o.total_ref_pct : null, curva:cv[k] }); } });
+    if(r && r.existe!==false && r.curva && r.curva.length) s.push({ chave:'M1', cor:COR.M1, nome:(r.cenario2 && r.cenario2.existe) ? 'Meu 1' : 'Meu cenário', total:r.total_ref_pct, curva:r.curva });
+    if(r && r.cenario2 && r.cenario2.existe && r.cenario2.curva) s.push({ chave:'M2', cor:COR.M2, nome:'Meu 2', total:r.cenario2.total_ref_pct, curva:r.cenario2.curva });
+    return s;
+  }
+  function ponto(curva, ano){ for(var i=0;i<curva.length;i++){ if(String(curva[i].ano)===String(ano)) return curva[i]; } return null; }
+  function curvaHTML(r){
+    var S=series(r); if(!S.length) return '';
+    var anos=S[0].curva.map(function(k){ return k.ano; });
+    return '<div class="mc-tabela-wrap" style="overflow-x:auto;margin-top:12px"><table class="mc-curva result-table" style="width:100%;min-width:520px"><thead><tr><th>Ano</th>'
+      +S.map(function(s){ return '<th style="text-align:right"><span class="mc-ponto" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+s.cor+';margin-right:5px"></span>'+esc(s.nome)+'</th>'; }).join('')
+      +'</tr></thead><tbody>'
+      +anos.map(function(a){ return '<tr><td>'+esc(a)+'</td>'+S.map(function(s){ var p=ponto(s.curva,a); if(!p) return '<td style="text-align:right">—</td>';
+          return '<td style="text-align:right"><b>'+fmt(p.total_pct)+'%</b><div class="mc-detalhe" style="font-size:.72em;color:var(--text2);white-space:nowrap">CBS '+fmt(p.cbs_pct)+' · IBS '+fmt(p.ibs_pct)+'</div></td>'; }).join('')+'</tr>'; }).join('')
+      +'</tbody></table></div>';
+  }
+  /* gráfico de linhas: só posiciona no desenho os totais que o servidor devolveu */
+  function graficoCurvas(r){
+    var S=series(r); if(!S.length) return '';
+    var anos=S[0].curva.map(function(k){ return k.ano; }), W=640, H=240, ml=38, mr=12, mt=12, mb=26, max=0;
+    S.forEach(function(s){ s.curva.forEach(function(p){ if(Number(p.total_pct)>max) max=Number(p.total_pct); }); });
+    var topo=Math.ceil(max/5)*5||5, x=function(i){ return ml+(W-ml-mr)*(anos.length>1?i/(anos.length-1):0); }, y=function(v){ return mt+(H-mt-mb)*(1-Number(v)/topo); };
+    var g='', t;
+    for(t=0;t<=topo;t+=5) g+='<line x1="'+ml+'" x2="'+(W-mr)+'" y1="'+y(t)+'" y2="'+y(t)+'" stroke="currentColor" stroke-opacity=".12"/><text x="'+(ml-6)+'" y="'+(y(t)+4)+'" text-anchor="end" font-size="10" fill="currentColor" fill-opacity=".6">'+t+'%</text>';
+    anos.forEach(function(a,i){ g+='<text x="'+x(i)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity=".6">'+esc(a)+'</text>'; });
+    S.forEach(function(s){
+      var pts=anos.map(function(a,i){ var p=ponto(s.curva,a); return p ? x(i)+','+y(p.total_pct) : null; }).filter(Boolean).join(' ');
+      g+='<polyline class="mc-linha" data-serie="'+s.chave+'" points="'+pts+'" fill="none" stroke="'+s.cor+'" stroke-width="2.4" stroke-linejoin="round"/>';
+    });
+    var leg=S.map(function(s){ return '<span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px;font-size:.78rem"><span style="width:14px;height:3px;border-radius:2px;background:'+s.cor+'"></span>'+esc(s.nome)+(s.total!=null?' · '+fmt(s.total)+'%':'')+'</span>'; }).join('');
+    return '<div class="mc-grafico" style="margin-top:14px"><div style="font-weight:700;margin-bottom:6px">Alíquota total de referência, 2026–2033</div>'
+      +'<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Alíquota total por ano em cada cenário" style="width:100%;max-width:760px;height:auto;color:var(--text,#e8e0c8)">'+g+'</svg>'
+      +'<div class="mc-legenda" style="margin-top:4px">'+leg+'</div></div>';
   }
   function oficiaisHTML(of){
     if(!of || !of.length) return '';
     return '<div class="mc-oficiais" style="margin-top:10px;font-size:.78rem;color:#8a97a8">Cenários oficiais: '
       +of.map(function(o){ return '<b>'+esc(o.cenario)+'</b> '+esc(o.nome)+' · '+fmt(o.total_ref_pct)+'%'; }).join(' &nbsp;·&nbsp; ')+'</div>';
   }
+  function avisoHTML(t){ return t ? '<div class="mc-aviso" style="margin:8px 0;padding:8px 12px;border-left:3px solid #c96a1f;color:#c96a1f;font-size:.82rem">⚠ '+esc(t)+'</div>' : ''; }
+  function preencher(pre, f){
+    var c=document.getElementById(pre+'cbs'), i=document.getElementById(pre+'ibs');
+    if(f && c && f.cbs_ref_pct!=null) c.value=f.cbs_ref_pct; if(f && i && f.ibs_ref_pct!=null) i.value=f.ibs_ref_pct;
+  }
   function painel(r, motivo){
     var box=document.getElementById('mc_res'); if(!box) return;
     if(motivo){ box.innerHTML=erro(motivo); return; }
     if(!r){ box.innerHTML=''; return; }
     if(r.existe===false){
-      box.innerHTML='<div class="kpi-sub" style="margin:6px 0">'+esc(r.dica||'')+'</div>'+oficiaisHTML(r.oficiais); return;
+      box.innerHTML='<div class="kpi-sub" style="margin:6px 0">'+esc(r.dica||'')+'</div>'+curvaHTML(r)+graficoCurvas(r)+oficiaisHTML(r.oficiais); return;
     }
-    var c=document.getElementById('mc_cbs'), i=document.getElementById('mc_ibs');
-    if(c && r.cbs_ref_pct!=null) c.value=r.cbs_ref_pct; if(i && r.ibs_ref_pct!=null) i.value=r.ibs_ref_pct; total();
-    box.innerHTML='<div class="kpi-grid"><div class="kpi-card"><div class="kpi-label">'+esc(r.nome||'Meu cenário')+'</div>'
-      +'<div class="kpi-value">'+fmt(r.total_ref_pct)+'%</div><div class="kpi-sub">CBS '+fmt(r.cbs_ref_pct)+'% + IBS '+fmt(r.ibs_ref_pct)+'% · chave '+esc(r.cenario)+'</div></div></div>'
-      +(r.aviso||estado.aviso ? '<div class="mc-aviso" style="margin:8px 0;padding:8px 12px;border-left:3px solid #c96a1f;color:#c96a1f;font-size:.82rem">⚠ '+esc(r.aviso||estado.aviso)+'</div>' : '')
+    preencher('mc_', r); if(r.cenario2 && r.cenario2.existe) preencher('mc2_', r.cenario2); total();
+    var k1=document.getElementById('mc_chave'), k2=document.getElementById('mc2_chave');
+    if(k1) k1.textContent='chave '+(r.cenario||''); if(k2) k2.textContent=(r.cenario2 && r.cenario2.existe) ? 'chave '+r.cenario2.cenario : '';
+    box.innerHTML=avisoHTML(r.aviso||estado.aviso)
+      +((r.cenario2 && r.cenario2.existe && r.cenario2.aviso && r.cenario2.aviso!==(r.aviso||estado.aviso)) ? avisoHTML(r.cenario2.aviso) : '')
       +(r.como_usar ? '<div class="kpi-sub" style="margin:6px 0">'+esc(r.como_usar)+'</div>' : '')
-      +curvaHTML(r.curva)+oficiaisHTML(r.oficiais)
+      +curvaHTML(r)+graficoCurvas(r)+oficiaisHTML(r.oficiais)
       +(r.base_legal ? '<div style="margin-top:8px;font-size:.72rem;color:#8a97a8">'+esc(r.base_legal)+'</div>' : '');
   }
 
-  /* ── seletor: botão "Meu cenário (X%)" nas barras de alíquota ─────── */
-  function estilo(b, on){
-    b.style.background=on?'rgba(201,162,39,.18)':'transparent'; b.style.color=on?'#e0b93a':'#8a97a8';
-    b.style.borderColor=on?'rgba(201,162,39,.5)':'rgba(255,255,255,.16)';
+  /* ── seletor: botões "Meu cenário 1 (X%)" e "Meu cenário 2 (X%)" nas barras de alíquota ── */
+  function estilo(b, on, cor){
+    b.style.background=on?(cor||'#c9a227')+'2e':'transparent'; b.style.color=on?(cor||'#e0b93a'):'#8a97a8';
+    b.style.borderColor=on?(cor||'#c9a227')+'88':'rgba(255,255,255,.16)';
+  }
+  function botao(barra, cls, q){
+    var b=document.createElement('button'); b.type='button'; b.className=cls; b.dataset.meu=q;
+    b.style.cssText='background:transparent;color:#8a97a8;border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:4px 12px;font-size:.74rem;cursor:pointer';
+    b.addEventListener('click', function(){ if(meuDe(q)) escolher(q); else abrir(); });
+    var ult=[].slice.call(barra.querySelectorAll('.lh-ref-btn,.lh-meu-btn')).pop();
+    if(ult && ult.nextSibling) barra.insertBefore(b, ult.nextSibling); else barra.appendChild(b);
+    return b;
   }
   function decorar(barra){
-    if(!barra || barra.querySelector('.lh-meu-btn')) return;
-    var b=document.createElement('button'); b.type='button'; b.className='lh-meu-btn';
-    b.style.cssText='background:transparent;color:#8a97a8;border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:4px 12px;font-size:.74rem;cursor:pointer';
-    b.addEventListener('click', function(){ if(estado.meu) escolher(); else abrir(); });
-    var ult=[].slice.call(barra.querySelectorAll('.lh-ref-btn')).pop();
-    if(ult && ult.nextSibling) barra.insertBefore(b, ult.nextSibling); else barra.appendChild(b);
+    if(!barra) return;
+    if(!barra.querySelector('.lh-meu-btn')) botao(barra, 'lh-meu-btn', '1');
+    if(!barra.querySelector('.lh-meu2-btn')) botao(barra, 'lh-meu2-btn', '2');
     var pg=barra.closest ? barra.closest('.page') : null;
     if(pg && !pg.querySelector('.lh-comparar')) comparadorBloco(pg);
     pintarBotoes();
   }
   function pintarBotoes(){
     document.querySelectorAll('.lh-meu-btn').forEach(function(b){
-      b.textContent = estado.meu ? rotulo() : '＋ Meu cenário';
+      b.textContent = estado.meu ? rotulo('1') : '＋ Meu cenário';
       b.title = estado.meu ? 'usar a sua premissa ('+estado.meu.cenario+')' : 'definir a sua premissa de CBS e IBS';
-      estilo(b, estado.sel && !!estado.meu);
+      estilo(b, estado.sel==='1' && !!estado.meu, COR.M1);
+    });
+    document.querySelectorAll('.lh-meu2-btn').forEach(function(b){
+      b.style.display = estado.meu2 ? '' : 'none';
+      if(estado.meu2){ b.textContent=rotulo('2'); b.title='usar a sua segunda premissa ('+estado.meu2.cenario+')'; }
+      estilo(b, estado.sel==='2' && !!estado.meu2, COR.M2);
     });
     document.querySelectorAll('select#mf_cenario').forEach(function(s){
-      var o=s.querySelector('option.lh-meu-opt');
-      if(!estado.meu){ if(o){ if(s.value===o.value) s.value='A'; s.removeChild(o); } return; }
-      if(!o){ o=document.createElement('option'); o.className='lh-meu-opt'; s.appendChild(o); }
-      o.value=estado.meu.cenario; o.textContent=rotulo();
+      [['1','lh-meu-opt'],['2','lh-meu2-opt']].forEach(function(p){
+        var m=meuDe(p[0]), o=s.querySelector('option.'+p[1]);
+        if(!m){ if(o){ if(s.value===o.value) s.value='A'; s.removeChild(o); } return; }
+        if(!o){ o=document.createElement('option'); o.className=p[1]; s.appendChild(o); }
+        o.value=m.cenario; o.textContent=rotulo(p[0]);
+      });
     });
   }
   function pintar(){
     pintarBotoes();
-    if(!(estado.sel && estado.meu)){
+    var m=escolhido();
+    if(!m){
       if(trilhoAtivo()==='E') document.querySelectorAll('.lh-selo-cenario').forEach(function(el){
         if(!el.querySelector('.lh-nota-estresse')) el.insertAdjacentHTML('beforeend','<br><span class="lh-nota-estresse" style="color:#9b7fe0">Os números do servidor seguem no cenário A (26,5%): o 28% de estresse não tem curva no servidor. Para testar 28%, use Meu cenário.</span>'); });
       return;
     }
     document.querySelectorAll('.lh-ref-btn').forEach(function(b){ estilo(b, false); });
+    var av = estado.sel==='2' ? estado.aviso2 : estado.aviso;
     var txt='<span style="display:inline-block;padding:1px 8px;border-radius:10px;background:#5b3fa022;color:#9b7fe0;border:1px solid #5b3fa055;font-weight:700;font-size:.68rem">PREMISSA DO USUÁRIO — não é lei</span> <b>'
-      +fmt(estado.meu.total_ref_pct)+'%</b> · Meu cenário · CBS '+fmt(estado.meu.cbs_ref_pct)+'% + IBS '+fmt(estado.meu.ibs_ref_pct)+'%'
-      +(estado.aviso ? '<br><span style="color:#c96a1f">⚠ '+esc(estado.aviso)+'</span>' : '');
+      +fmt(m.total_ref_pct)+'%</b> · '+nomeMeu(estado.sel)+' · CBS '+fmt(m.cbs_ref_pct)+'% + IBS '+fmt(m.ibs_ref_pct)+'%'
+      +(av ? '<br><span style="color:#c96a1f">⚠ '+esc(av)+'</span>' : '');
     document.querySelectorAll('.lh-selo-cenario').forEach(function(el){ el.innerHTML=txt; });
   }
   function recalcular(){
     try{ var pg=document.querySelector('.page.active'); var bc=pg && window.LH_btnCalc ? window.LH_btnCalc(pg) : null; if(bc) bc.click(); }catch(e){}
   }
-  function escolher(){
-    if(!estado.meu) return false;
-    estado.sel=true; travar(); pintar(); recalcular();
-    try{ window.dispatchEvent(new CustomEvent('lh:cenario',{detail:{meu:estado.meu.cenario}})); }catch(e){}
+  function escolher(q){
+    q = (q==='2') ? '2' : '1';
+    if(!meuDe(q)) return false;
+    estado.sel=q; travar(); pintar(); recalcular();
+    try{ window.dispatchEvent(new CustomEvent('lh:cenario',{detail:{meu:meuDe(q).cenario}})); }catch(e){}
     return true;
   }
   function soltar(){ if(!estado.sel) return; estado.sel=false; destravar(); pintarBotoes(); }
@@ -74380,22 +74487,33 @@ window.LH_MEU_CENARIO = (function(){
     });
   }
 
-  /* ── rota: a chave U-… vai no campo `cenario` (chamada por LH_PONTE.chamar) ── */
+  /* ── rota: a chave vai no campo `cenario` (chamada por LH_PONTE.chamar) ── */
   function trilhoAtivo(){ try{ return window.LIONHEART_TABELAS.cenarios_aliquota.ativo; }catch(e){ return null; } }
-  /* chave que vai ao servidor: Meu cenário (U-…) ou o trilho B; nos demais, a tela segue com o seu 'A' */
+  /* chave que vai ao servidor: Meu cenário 1 ou 2 (U-…) ou o trilho B; nos demais, a tela segue com o seu 'A' */
   function chaveServidor(){
-    if(estado.sel && estado.meu) return estado.meu.cenario;
+    var m=escolhido(); if(m) return m.cenario;
     return trilhoAtivo()==='B' ? 'B' : null;
   }
   function trocar(calc, ent, chave){
-    if(!ent || typeof ent!=='object' || CALCS.indexOf(String(calc))<0) return ent;
+    if(!ent || typeof ent!=='object' || CALCS.indexOf(String(calc))<0 || SEM_TROCA.indexOf(String(calc))>=0) return ent;
     if(Array.isArray(ent)) return ent.map(function(e){ return trocar(calc, e, chave); });
     var o={}; for(var k in ent) o[k]=ent[k]; o.cenario=chave; return o;
   }
+  /* a página dona da função que chamou (LH_PONTE._fnAtual): o botão dela tem onclick="fn(…)" */
+  var DONAS={};
+  function paginaDe(fn){
+    if(!fn) return null;
+    if(DONAS[fn]!==undefined) return DONAS[fn] ? document.getElementById(DONAS[fn]) : null;
+    var b=null; try{ b=document.querySelector('[onclick*="'+fn+'("]'); }catch(e){}
+    var pg=b && b.closest ? b.closest('.page') : null; DONAS[fn]=pg ? pg.id : ''; return pg;
+  }
   function rota(calc, ent){
     if(CALCS.indexOf(String(calc))>=0 && ent && typeof ent==='object'){
-      var pg=document.querySelector('.page.active');
+      var fn=null; try{ fn=window.LH_PONTE && window.LH_PONTE._fnAtual; }catch(e){}
+      var pg=paginaDe(fn) || document.querySelector('.page.active');
       estado.ultima[pg ? pg.id : '?'] = { calc:String(calc), entradas:ent };
+      /* v932 · o painel vale para as 42: a tela que chamou ganha o botão, mesmo sem barra de alíquota */
+      if(pg && SEM_PAINEL.indexOf(pg.id)<0 && !pg.querySelector('.lh-comparar')) comparadorBloco(pg);
     }
     var chave=chaveServidor(); if(!chave) return ent;
     if(calc==='lote' && ent && Array.isArray(ent.itens))
@@ -74403,7 +74521,7 @@ window.LH_MEU_CENARIO = (function(){
     return trocar(calc, ent, chave);
   }
 
-  /* ── comparador de cenários ──────────────────────────────────────── */
+  /* ── comparador de cenários (painel) ─────────────────────────────── */
   var NOMES = { custo:'custo', credito:'crédito', debito:'débito', preco:'preço', aliquota:'alíquota', liquido:'líquido',
     receita:'receita', variacao:'variação', pct:'%', cbs:'CBS', ibs:'IBS', icms:'ICMS', das:'DAS', ganho:'ganho', fator:'fator',
     por:'por', dentro:'dentro', hibrido:'híbrido', projetado:'projetado', decisao:'decisão', repassar:'repassar', segurar:'segurar',
@@ -74420,6 +74538,37 @@ window.LH_MEU_CENARIO = (function(){
     var cur=obj, partes=String(caminho||'').replace(/\[(\d+)\]/g,'.$1').split('.');
     for(var i=0;i<partes.length;i++){ if(cur==null) return null; cur=cur[partes[i]]; }
     return cur;
+  }
+  /* rótulos da tela: lab/cenario/rotulos_comparador.js (window.LH_CMP_ROTULOS); sem rótulo, o caminho não entra no gráfico */
+  function rotulos(calc){ var R=window.LH_CMP_ROTULOS||{}; return R[calc] || null; }
+  /* v932 · o servidor passa a mandar, em cada variação, o rótulo da tela (rotulo), o tipo (valor | pct),
+     o padrão do caminho e os índices; o mapa local (rotulos_comparador.js) fica de reserva */
+  function varDe(r, caminho){ return ((r && r.variacoes) || []).filter(function(x){ return x.caminho===caminho; })[0] || null; }
+  function nomeFornecedor(r, i){
+    try{ var f=r.cenarios[0].resultado.fornecedores[i], E=window.LH_MAPA_FORN && LH_MAPA_FORN._estado; return (f && E && E.nomes && E.nomes[f.id]) || ''; }catch(e){ return ''; }
+  }
+  function numero(calc, caminho, v, r){
+    var m=rotulos(calc), u=m && m.unid ? m.unid[caminho] : null, x=varDe(r, caminho);
+    if(v===null || v===undefined || isNaN(Number(v))) return '—';
+    return u==='R$' ? 'R$ '+fmt(v) : (u==='%' ? fmt(v)+'%' : fmt(v));
+  }
+  function rotuloDe(calc, caminho, r){
+    var x=varDe(r, caminho);
+    if(x && x.rotulo){   /* o nome do fornecedor nunca vai ao servidor: a tela acrescenta pelo índice */
+      var nome = (calc==='fornecedores-lote' && x.indices && x.indices.length) ? nomeFornecedor(r, x.indices[0]) : '';
+      return String(x.rotulo)+(nome ? ' · '+nome : '');
+    }
+    var m=rotulos(calc); if(!m) return null;
+    if(m.rotulos && m.rotulos[caminho]) return m.rotulos[caminho];
+    if(typeof m.dinamico==='function'){ try{ return m.dinamico(caminho, r) || null; }catch(e){ return null; } }
+    return null;
+  }
+  function corDe(c){
+    var k=String(c.cenario||'').toUpperCase();
+    if(k==='A'||k==='B'||k==='C') return COR[k];
+    if(estado.meu2 && k===estado.meu2.cenario) return COR.M2;
+    if(estado.meu && k===estado.meu.cenario) return COR.M1;
+    return /2$/.test(String(c.nome||'')) ? COR.M2 : COR.M1;
   }
   function comparadorBloco(pg){
     var d=document.createElement('div'); d.className='lh-comparar'; d.style.cssText='margin:14px 0 4px';
@@ -74445,24 +74594,112 @@ window.LH_MEU_CENARIO = (function(){
     return window.LH_PONTE.chamar('comparar-cenarios', { calc:calc, entradas:semPrivados(ent||{}) }).then(function(res){
       var r = res && res.ok ? res.resultado : null;
       if(!r || !r.ok){ box.innerHTML=erro((r && r.motivo) || (res && res.motivo) || 'sem resposta do servidor'); return r; }
-      box.innerHTML=tabela(r, nota); return r;
+      box.innerHTML=painelComparador(r, nota, r.calc || calc); return r;
     });
   }
-  function tabela(r, nota){
-    var cens=(r.cenarios||[]), vars=(r.variacoes||[]), kpis=vars.slice(0,8);
-    var cab='<tr><th style="text-align:left">Cenário</th>'+cens.map(function(c){
-      return '<th style="text-align:right">'+esc(c.nome)+'<br><span style="font-weight:400;color:#8a97a8">'+(c.total_ref_pct!=null?fmt(c.total_ref_pct)+'%':'—')+'</span></th>'; }).join('')+'</tr>';
-    var linhas=kpis.map(function(v){
-      return '<tr><td>'+esc(amigavel(v.caminho))+'</td>'+cens.map(function(c){
-        return '<td style="text-align:right">'+(c.ok===false ? '<span title="'+esc(c.motivo)+'">—</span>' : fmt(pegar(c.resultado, v.caminho)))+'</td>'; }).join('')+'</tr>'; }).join('');
-    var falhas=cens.filter(function(c){ return c.ok===false; }).map(function(c){ return '<div class="kpi-sub" style="color:#e07a7a">'+esc(c.nome)+': '+esc(c.motivo)+'</div>'; }).join('');
-    var lista=vars.length ? '<details style="margin-top:10px"><summary style="cursor:pointer;color:#e0b93a">Todas as variações ('+vars.length+')</summary><ul style="font-size:.8rem;margin:6px 0 0 18px">'
-      +vars.map(function(v){ return '<li>'+esc(amigavel(v.caminho))+': '+cens.map(function(c){ var x=v.valores?v.valores[c.cenario]:null;
-        return esc(c.nome)+' '+fmt(x); }).join(' · ')+(v.amplitude_pct_sobre_A!=null?' <span style="color:#8a97a8">('+fmt(v.amplitude_pct_sobre_A)+'% sobre o A)</span>':'')+'</li>'; }).join('')+'</ul></details>'
-      : '<div class="kpi-sub">Nenhum número muda entre os cenários com estas entradas.</div>';
-    return '<div class="lh-comparar-tab"><div class="kpi-sub" style="margin-bottom:6px">'+esc(r.leitura||'')+esc(nota)+'</div>'
-      +'<table style="width:100%;border-collapse:collapse;font-size:.82rem"><thead>'+cab+'</thead><tbody>'+linhas+'</tbody></table>'
-      +falhas+lista+(r.dica?'<div class="kpi-sub" style="margin-top:8px">'+esc(r.dica)+'</div>':'')
+  /* (a) Leitura estratégica: só se o servidor mandar; nenhuma frase nasce aqui */
+  function estrategiaHTML(e){
+    if(!e || typeof e!=='object' || !e.titulo) return '';
+    var SELO = { robusta:'decisão robusta', sensivel:'decisão sensível à alíquota', estavel:'pouco sensível à alíquota' };
+    var verde = e.veredito==='robusta' || e.veredito==='estavel', cor = verde ? '#16c47c' : '#e0a83a';
+    var selo = SELO[e.veredito] ? '<span class="lh-est-selo" style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:.7rem;font-weight:800;color:'+cor+';border:1px solid '+cor+'88;background:'+cor+'1f;vertical-align:middle">'
+      +SELO[e.veredito]+'</span>' : '';
+    var acoes=(e.acoes||[]).map(function(a){ return '<li style="margin:4px 0">'+esc(a.texto)
+      +(a.prazo ? ' <span style="color:#e0b93a;font-size:.8em;white-space:nowrap">· '+esc(a.prazo)+'</span>' : '')
+      +(a.base_legal ? '<div class="lh-est-base" style="color:#8a97a8;font-size:.76em">'+esc(a.base_legal)+'</div>' : '')+'</li>'; }).join('');
+    var fontes=(e.fontes||[]).filter(function(f){ return f && (f.url || f.link || f.curso || f.titulo); });
+    var curso=fontes.length ? '<div class="lh-est-fontes" style="margin-top:6px">'+fontes.map(function(f){ var u=f.url||f.link||f.curso;
+        return u ? '<a href="'+esc(u)+'" target="_blank" rel="noopener" style="color:#e0b93a;font-size:.8rem">ver no curso'+(f.titulo ? ' · '+esc(f.titulo) : '')+' →</a>'
+                 : '<span style="color:#8a97a8;font-size:.8rem">Fonte: '+esc(f.titulo)+'</span>'; }).join(' &nbsp; ')+'</div>' : '';
+    return '<div class="lh-estrategia" data-veredito="'+esc(e.veredito||'')+'" style="border:1px solid '+cor+'66;border-left:4px solid '+cor+';border-radius:12px;padding:12px 14px;margin-bottom:12px;background:rgba(255,255,255,.02)">'
+      +'<div style="font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#8a97a8;margin-bottom:4px">Leitura estratégica</div>'
+      +'<div class="lh-est-titulo" style="font-weight:800;font-size:1.05rem;line-height:1.35">'+esc(e.titulo)+' '+selo+'</div>'
+      +(e.resumo ? '<div class="lh-est-resumo" style="margin-top:6px;font-size:.88rem;line-height:1.5">'+esc(e.resumo)+'</div>' : '')
+      +((e.custo_por_ponto && typeof e.custo_por_ponto==='object')
+          ? (e.custo_por_ponto.texto ? '<div class="lh-est-ponto" style="margin-top:6px;font-size:.84rem">'+esc(e.custo_por_ponto.texto)+'</div>' : '')
+          : (e.custo_por_ponto!=null ? '<div class="lh-est-ponto" style="margin-top:6px;font-size:.84rem">cada 1 p.p. de alíquota = <b>R$ '+fmt(e.custo_por_ponto)+'/ano</b></div>' : ''))
+      +(acoes ? '<ul class="lh-est-acoes" style="margin:8px 0 0 18px;font-size:.86rem;line-height:1.45">'+acoes+'</ul>' : '')
+      +curso+'</div>';
+  }
+  /* "+x% vs A" vem do servidor (variacoes[].vs_a_pct); sem o campo, o selo não aparece */
+  function vsA(r, caminho, cen){
+    var v=(r.variacoes||[]).filter(function(x){ return x.caminho===caminho; })[0];
+    if(!v || !v.vs_a_pct || v.vs_a_pct[cen]==null) return null;
+    return Number(v.vs_a_pct[cen]);
+  }
+  /* nome curto para as barras: A · 26,50% / Meu 1 */
+  function curto(c){
+    var k=String(c.cenario||'').toUpperCase();
+    if(k==='A'||k==='B'||k==='C') return k+(c.total_ref_pct!=null ? ' · '+fmt(c.total_ref_pct)+'%' : '');
+    return String(c.nome||'').replace(/^Meu cenário/,'Meu').trim() || 'Meu';
+  }
+  function seloVsA(p){
+    if(p==null || isNaN(p)) return '';
+    var cor = '#c9d1dc';   /* neutro: subir pode ser bom (crédito) ou ruim (custo) */
+    return '<span class="lh-vs-a" style="display:inline-block;margin-top:6px;padding:1px 8px;border-radius:10px;font-size:.72rem;font-weight:700;color:'+cor+';border:1px solid '+cor+'66">'
+      +(p>0?'+':'')+fmt(p)+'% vs A</span>';
+  }
+  /* (b) cartões, um por cenário */
+  function cartoesHTML(r, calc){
+    var m=rotulos(calc), pr=m && m.principal, x=pr ? varDe(r, pr) : null, ep=r.estrategia && r.estrategia.principal;
+    /* rótulo do número principal: o da variação (servidor) → o da Leitura estratégica (servidor) → o mapa local */
+    var rot = (x && x.rotulo) || (ep && ep.rotulo) || (pr ? rotuloDe(calc, pr, r) : null);
+    if(rot) rot = String(rot).replace(/^./, function(c){ return c.toUpperCase(); });
+    return '<div class="lh-cmp-cartoes">'+(r.cenarios||[]).map(function(c){
+      var cor=corDe(c), base=String(c.cenario).toUpperCase()==='A';
+      var num = (c.ok===false) ? '<div class="kpi-sub" style="color:#e07a7a">'+esc(c.motivo||'não calculou')+'</div>'
+        : (pr ? '<div class="lh-cmp-num" style="font-size:1.35rem;font-weight:800;margin-top:6px">'+numero(calc, pr, pegar(c.resultado, pr), r)+'</div><div class="kpi-sub">'+esc(rot||'')+'</div>' : '');
+      return '<div class="lh-cmp-cartao" data-cenario="'+esc(c.cenario)+'" style="border:1px solid '+cor+'55;border-top:4px solid '+cor+';border-radius:12px;padding:12px 14px;background:'+cor+'0d">'
+        +'<div style="font-weight:800;color:'+cor+'">'+esc(c.nome)+'</div>'
+        +'<div class="kpi-sub">'+(c.total_ref_pct!=null ? fmt(c.total_ref_pct)+'% de referência' : '')+'</div>'
+        +num+(base ? '<span class="lh-vs-a" style="display:inline-block;margin-top:6px;padding:1px 8px;border-radius:10px;font-size:.72rem;color:#8a97a8;border:1px solid #8a97a866">base da comparação</span>'
+                   : (pr && c.ok!==false ? seloVsA(vsA(r, pr, c.cenario)) : ''))
+        +'</div>'; }).join('')+'</div>';
+  }
+  /* (c) "O que mais muda": as 5 maiores variações que têm rótulo de tela, na ordem do servidor */
+  function graficoMuda(r, calc){
+    var cens=(r.cenarios||[]).filter(function(c){ return c.ok!==false; });
+    var vistos={};   /* o mesmo número pode vir em dois caminhos (gap_2033 e projecao[7]): cada rótulo entra uma vez */
+    var L=(r.variacoes||[]).map(function(v){ return { v:v, rot:rotuloDe(calc, v.caminho, r) }; })
+      .filter(function(x){ if(!x.rot || vistos[x.rot]) return false; vistos[x.rot]=1; return true; }).slice(0,5);
+    if(!L.length || !cens.length) return '';
+    var grupos=L.map(function(x){
+      var usaPct = !!(x.v.vs_a_pct && typeof x.v.vs_a_pct==='object');
+      var vals=cens.map(function(c){ var k=c.cenario, val = usaPct ? (String(k).toUpperCase()==='A' ? 0 : x.v.vs_a_pct[k]) : (x.v.valores ? x.v.valores[k] : null);
+        return { c:c, val:(val==null?null:Number(val)) }; });
+      var max=0; vals.forEach(function(o){ if(o.val!=null && Math.abs(o.val)>max) max=Math.abs(o.val); });
+      return '<div class="lh-muda-grupo" style="margin:10px 0 12px"><div class="lh-muda-rotulo" style="font-size:.84rem;font-weight:700;margin-bottom:4px">'+esc(x.rot)+'</div>'
+        +'<div class="lh-muda-modo" style="font-size:.72rem;color:var(--text2);margin:-2px 0 4px">'+(usaPct ? 'diferença sobre o cenário A' : 'valor em cada cenário')+'</div>'
+        +vals.map(function(o){ var w = (o.val==null||!max) ? 0 : Math.max(1.5, Math.abs(o.val)/max*100);
+          var txt = o.val==null ? '—' : (usaPct ? ((o.val>0?'+':'')+fmt(o.val)+'%') : numero(calc, x.v.caminho, o.val, r));
+          return '<div class="lh-muda-barra" data-cenario="'+esc(o.c.cenario)+'" style="display:grid;grid-template-columns:104px 1fr 86px;gap:8px;align-items:center;font-size:.76rem;margin:2px 0">'
+            +'<span style="color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+esc(o.c.nome)+'">'+esc(curto(o.c))+'</span>'
+            +'<span style="display:block;height:12px;background:rgba(255,255,255,.05);border-radius:6px"><span style="display:block;height:12px;width:'+w.toFixed(1)+'%;background:'+corDe(o.c)+';border-radius:6px"></span></span>'
+            +'<span style="text-align:right;font-variant-numeric:tabular-nums">'+txt+'</span></div>'; }).join('')+'</div>';
+    }).join('');
+    return '<div class="lh-muda" style="margin-top:14px"><div style="font-weight:800;margin-bottom:2px">O que mais muda</div>'
+      +grupos+'</div>';
+  }
+  /* (d) tabela completa, recolhida */
+  function tabelaHTML(r, calc){
+    var cens=(r.cenarios||[]), vars=(r.variacoes||[]);
+    if(!vars.length) return '<div class="kpi-sub" style="margin-top:10px">Nenhum número muda entre os cenários com estas entradas.</div>';
+    return '<details class="lh-cmp-tabela" style="margin-top:12px"><summary style="cursor:pointer;color:#e0b93a">Todas as variações ('+vars.length+')</summary>'
+      +'<div style="overflow-x:auto"><table class="result-table" style="width:100%;min-width:480px;font-size:.8rem"><thead><tr><th style="text-align:left">Número</th>'
+      +cens.map(function(c){ return '<th style="text-align:right;color:'+corDe(c)+'">'+esc(c.nome)+'<br><span style="font-weight:400;color:#8a97a8">'+(c.total_ref_pct!=null?fmt(c.total_ref_pct)+'%':'—')+'</span></th>'; }).join('')
+      +'</tr></thead><tbody>'
+      +vars.map(function(v){ var rt=rotuloDe(calc, v.caminho, r);
+        return '<tr><td>'+(rt ? esc(rt) : '<span style="color:#8a97a8">'+esc(amigavel(v.caminho))+'</span>')+'</td>'+cens.map(function(c){
+          var x = v.valores ? v.valores[c.cenario] : null; return '<td style="text-align:right">'+(c.ok===false ? '—' : numero(calc, v.caminho, x, r))+'</td>'; }).join('')+'</tr>'; }).join('')
+      +'</tbody></table></div></details>';
+  }
+  function painelComparador(r, nota, calc){
+    var falhas=(r.cenarios||[]).filter(function(c){ return c.ok===false; }).map(function(c){ return '<div class="kpi-sub" style="color:#e07a7a">'+esc(c.nome)+': '+esc(c.motivo)+'</div>'; }).join('');
+    return '<div class="lh-comparar-tab lh-cmp-painel">'
+      +estrategiaHTML(r.estrategia)
+      +'<div class="kpi-sub" style="margin-bottom:8px">'+esc(r.leitura||'')+esc(nota||'')+'</div>'
+      +cartoesHTML(r, calc)+falhas+graficoMuda(r, calc)+tabelaHTML(r, calc)
+      +(r.dica?'<div class="kpi-sub" style="margin-top:8px">'+esc(r.dica)+'</div>':'')
       +(r.base_legal?'<div style="margin-top:6px;font-size:.72rem;color:#8a97a8">'+esc(r.base_legal)+'</div>':'')+'</div>';
   }
 
@@ -74474,7 +74711,65 @@ window.LH_MEU_CENARIO = (function(){
   }
 
   return { ler:ler, salvar:salvar, total:total, decorar:decorar, pintar:pintar, escolher:escolher, soltar:soltar,
-    rota:rota, comparar:comparar, compararCom:compararCom, aoAbrir:aoAbrir, amigavel:amigavel, _estado:function(){ return estado; }, CALCS:CALCS, TRAVAS:TRAVAS };
+    rota:rota, comparar:comparar, compararCom:compararCom, aoAbrir:aoAbrir, amigavel:amigavel, _estado:function(){ return estado; },
+    CALCS:CALCS, TRAVAS:TRAVAS, COR:COR };
+})();
+</script>
+<script>
+/* ════════════════════════════════════════════════════════════════════
+ * v932 · RÓTULOS DO COMPARADOR — caminho do resultado do servidor → rótulo da tela
+ * Só texto: o painel do comparador (LH_MEU_CENARIO) usa estes rótulos nos cartões
+ * (número principal), no gráfico "O que mais muda" e na tabela. Caminho sem rótulo
+ * não entra no gráfico (na tabela aparece em cinza). Nenhuma conta aqui.
+ * Começa pelas 5 principais (Regime Ótimo, Dentro × Híbrido, Formação de Preço,
+ * Mapa de Fornecedores, Split Payment); as outras 37 entram com a lista do Ricardo.
+ * ════════════════════════════════════════════════════════════════════ */
+window.LH_CMP_ROTULOS = (function(){
+  'use strict';
+  /* caminhos de série anual (projecao[i].campo): o ano vem do próprio resultado do servidor */
+  function anoDe(r, lista, i){ try{ var c=(r.cenarios||[])[0]; return c && c.resultado && c.resultado[lista] && c.resultado[lista][i] ? c.resultado[lista][i].ano : null; }catch(e){ return null; } }
+  function serie(lista, campos){
+    return function(caminho, r){
+      var m=String(caminho).match(new RegExp('^'+lista+'\\[(\\d+)\\]\\.([a-z_]+)$')); if(!m || !campos[m[2]]) return null;
+      var a=anoDe(r, lista, +m[1]); return a ? campos[m[2]]+' em '+a : null;
+    };
+  }
+  var FP = { principal:'decisao.repassar_preco_novo',
+    rotulos:{ 'decisao.repassar_preco_novo':'Preço novo (repassar)', 'decisao.segurar_preco_ganho':'Segurar o preço: ganho por item',
+      'decisao.repassar_variacao_pct':'Reajuste para repassar', 'projetado.receita_liquida':'Receita líquida em 2033',
+      'projetado.cbs_ibs':'IBS/CBS no preço', 'projetado.variacao_pct':'Variação da receita líquida', 'aliquota_item':'Alíquota do item' },
+    unid:{ 'decisao.repassar_preco_novo':'R$', 'decisao.segurar_preco_ganho':'R$', 'decisao.repassar_variacao_pct':'%', 'projetado.receita_liquida':'R$',
+      'projetado.cbs_ibs':'R$', 'projetado.variacao_pct':'%', 'aliquota_item':'%' } };
+  var C01_SERIE = serie('projecao', { gap_de_caixa_mensal:'Gap de caixa por mês', custo_anual:'Custo financeiro no ano', imposto_mensal:'Imposto por mês',
+    custo_mensal_para_repor:'Custo mensal para repor o caixa', aliquota_pct:'Alíquota' });
+  var CAMPO_FORN = { credito:'Crédito', preco:'Preço', preco_alvo:'Preço-alvo', custo:'Custo', 'var':'Variação' };
+  return {
+    'formacao-preco': FP,
+    'formacao-preco-pct': FP,
+    'dxh': { principal:'hibrido.total',
+      rotulos:{ 'hibrido.total':'Custo do híbrido', 'dentro.custo_absorvido':'Custo dentro do DAS', 'comparacao.diferenca':'Diferença híbrido × dentro',
+        'hibrido.ibs_cbs_liquido':'IBS/CBS líquido no híbrido', 'hibrido.debito':'IBS/CBS destacado na venda', 'hibrido.credito_cliente':'Crédito do cliente PJ',
+        'hibrido.credito_compras':'Crédito das compras', 'hibrido.custo_absorvido':'Custo absorvido no híbrido' },
+      unid:{ 'hibrido.total':'R$', 'dentro.custo_absorvido':'R$', 'comparacao.diferenca':'R$', 'hibrido.ibs_cbs_liquido':'R$', 'hibrido.debito':'R$',
+        'hibrido.credito_cliente':'R$', 'hibrido.credito_compras':'R$', 'hibrido.custo_absorvido':'R$' } },
+    'regime-otimo': { principal:'melhor_total',
+      rotulos:{ 'melhor_total':'Carga do melhor regime (ano)', 'economia_vs_pior':'Economia vs o pior regime', 'lucro_presumido.cbs_ibs':'CBS/IBS no Lucro Presumido',
+        'lucro_real.cbs_ibs':'CBS/IBS no Lucro Real', 'simples_hibrido.total_anual':'Total anual no Simples híbrido',
+        'simples_hibrido.detalhe.ibs_cbs_liquido':'IBS/CBS líquido no Simples híbrido', 'lucro_real.total_anual':'Total anual no Lucro Real',
+        'lucro_presumido.total_anual':'Total anual no Lucro Presumido' },
+      unid:{ 'melhor_total':'R$', 'economia_vs_pior':'R$', 'lucro_presumido.cbs_ibs':'R$', 'lucro_real.cbs_ibs':'R$', 'simples_hibrido.total_anual':'R$',
+        'simples_hibrido.detalhe.ibs_cbs_liquido':'R$', 'lucro_real.total_anual':'R$', 'lucro_presumido.total_anual':'R$' } },
+    'c01': { principal:'gap_2033',
+      rotulos:{ 'gap_2033':'Gap de caixa por mês em 2033', 'gap_2027':'Gap de caixa por mês em 2027' },
+      unid:{ 'gap_2033':'R$', 'gap_2027':'R$' }, dinamico:C01_SERIE },
+    'fornecedores-lote': { principal:'resumo.custo_ano_foco',
+      rotulos:{ 'resumo.custo_ano_foco':'Custo das compras no ano em foco', 'resumo.var':'Variação do custo das compras' },
+      unid:{ 'resumo.custo_ano_foco':'R$', 'resumo.var':'R$' },
+      dinamico:function(caminho, r){ var m=String(caminho).match(/^fornecedores\[(\d+)\]\.anos\.(\d{4})\.([a-z_]+)$/); if(!m || !CAMPO_FORN[m[3]]) return null;
+        var nome='';
+        try{ var f=r.cenarios[0].resultado.fornecedores[+m[1]], E=window.LH_MAPA_FORN && LH_MAPA_FORN._estado; nome = (f && E && E.nomes && E.nomes[f.id]) || ''; }catch(e){}
+        return CAMPO_FORN[m[3]]+' '+m[2]+(nome ? ' · '+nome : ''); } }
+  };
 })();
 </script>
 <script>
