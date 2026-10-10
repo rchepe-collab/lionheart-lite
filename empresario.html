@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v932";</script>
+<body><script>window.LH_VERSAO="v933";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3108,7 +3108,8 @@ window.LH_PONTE = (function(){
       calc: 'seletivo',
       entradas: function(G){ var f=function(id){ var v=parseFloat(String((G.el(id)||{}).value||'0')); return isNaN(v)?0:v; };
         return { receita:f('seletivo_receita'), aliquota_is:f('seletivo_aliq'), produto:((G.el('seletivo_produto')||{}).value||'outro'),
-                 ano:parseInt((G.el('seletivo_ano')||{}).value,10)||2033, tem_tese:(((G.el('seletivo_tese')||{}).value)==='S'), honorario_pct:20 }; },
+                 ano:parseInt((G.el('seletivo_ano')||{}).value,10)||2033, tem_tese:(((G.el('seletivo_tese')||{}).value)==='S'), honorario_pct:20,
+                 ipi_pct:f('seletivo_ipi'), inicio_is:((G.el('seletivo_inicio')||{}).value||undefined), zfm:(((G.el('seletivo_zfm')||{}).value)==='S') }; },
       esperado: function(r){ return r ? { is:Number(r.imposto_seletivo), cascata:Number(r.efeito_cascata), total:Number(r.carga_total) } : null; },
       /* kpi-seletivo: [0] IS · [1] cascata · [2] total · [3] % receita · [4] honorário (se tese) */
       local: function(){ return { is:LH_PONTE._kpiNum('kpi-seletivo',0), cascata:LH_PONTE._kpiNum('kpi-seletivo',1), total:LH_PONTE._kpiNum('kpi-seletivo',2) }; },
@@ -4072,6 +4073,9 @@ window.LH_PONTE = (function(){
     MAPA: MAPA,   /* ★ v786 · exposto para quem precisa da LISTA de telas convertidas (o Fluxo Completo deriva o MAP daqui em vez de manter lista à mão) */
     /* ★ v783 · chamada genérica ao despachante para módulos que não são calcular* (radar de teses) */
     chamar: function(calc, ent){ return chamar(calc, ent); },
+    /* ★ v933 · leitor das entradas de uma tela convertida (o mesmo do MAPA): o comparador usa quando a tela ainda não foi calculada nesta sessão */
+    lerEntradas: function(nomeFn){ var m = MAPA[nomeFn]; if(!m || typeof m.entradas !== 'function') return null;
+      try { var e = m.entradas(G); return e ? { calc: m.calc, entradas: e } : null; } catch(_e){ return null; } },
     /* ★ v784 · LOTE — uma requisição para N telas (Fluxo Completo do Diagnóstico dispara até 31).
        Modo COLETA: enquanto _coleta é uma lista, executar() não dispara — anota {tela, m, ent}. Cada
        calcularX() continua rodando o PRÓPRIO LerEntradas; só o transporte muda. Depois: uma chamada
@@ -7706,23 +7710,28 @@ function lhTrocarSenha(){
     <div class="input-group">
         <label>Ano da simulação <span class="lh-hint" data-hint="O efeito cascata (IS na base do IBS/CBS) usa a alíquota do ANO escolhido pela curva de transição — não o teto de 2033. O IS em si só vigora a partir de 2027 (art. 409)." onclick="lhHint(event,this)">?</span></label>
         <select id="seletivo_ano" style="width:100%;padding:9px;background:var(--onyx,#14161A);border:1px solid var(--line,#2E323B);border-radius:8px;color:var(--ink,#EDEDE9)">
-          <option value="2027">2027 (8,80%)</option><option value="2029">2029 (10,57%)</option>
+          <option value="2026">2026 (ano-teste · sem IS)</option><option value="2027">2027 (8,80%)</option><option value="2028">2028 (8,80%)</option><option value="2029">2029 (10,57%)</option>
           <option value="2030">2030 (12,34%)</option><option value="2031">2031 (14,11%)</option>
           <option value="2032">2032 (15,88%)</option><option value="2033" selected>2033 (26,50% — teto)</option>
         </select>
       </div>
-<div class="input-group"><label>Alíquota de IS aplicável (%)</label><input type="number" id="seletivo_aliq" value="20" step="0.1"><div style="font-size:.72rem;color:#e0b93a;margin-top:3px">⚠ Alíquota ESTIMADA — as definitivas virão em lei ordinária (Anexo XVII por NCM). Ajuste quando publicadas.</div>
-      <div style="font-size:0.75em;color:var(--text3);margin-top:3px;">Referência das discussões legislativas — <b>alíquota final pendente de lei ordinária</b> (edite conforme seu cenário) · minerais: teto legal 0,25%</div></div>
+<div class="input-group"><label>Alíquota de IS aplicável (%)</label><input type="number" id="seletivo_aliq" value="20" step="0.1"><div style="font-size:.72rem;color:#e0b93a;margin-top:3px">⚠ Alíquota ESTIMADA — as definitivas virão por medida provisória (calibradas para espelhar a carga atual do IPI). Ajuste quando publicadas.</div>
+      <div style="font-size:0.75em;color:var(--text3);margin-top:3px;">Ponto de partida sugerido: a alíquota de IPI do produto hoje — <b>alíquota final pendente da MP</b> (edite conforme seu cenário) · minerais: teto legal 0,25%</div></div>
+    <div class="input-group"><label>Início do IS <span class="lh-hint" data-hint="As alíquotas virão por medida provisória depois do 2º turno. A noventena de 02/10/2026 passou: o IS não começa em janeiro de 2027. Fevereiro de 2027 se a MP for convertida até 31/12; senão, 2028 (CF art. 62 §2º)." onclick="lhHint(event,this)">?</span></label>
+      <select id="seletivo_inicio"><option value="2027-02-01" selected>Fevereiro de 2027 (MP convertida até 31/12)</option><option value="2028-01-01">Janeiro de 2028 (MP não convertida no ano)</option></select></div>
+    <div class="input-group"><label>IPI de hoje sobre o produto (%) <span class="lh-hint" data-hint="O IPI vai a zero em janeiro de 2027, exceto na Zona Franca de Manaus (ADCT art. 126). Informe a alíquota de hoje para ver a carga antes × depois." onclick="lhHint(event,this)">?</span></label><input type="number" id="seletivo_ipi" value="0" step="0.1"></div>
+    <div class="input-group"><label>Produto fabricado na Zona Franca de Manaus?</label><select id="seletivo_zfm"><option value="N">Não</option><option value="S">Sim (IPI continua)</option></select></div>
     <div class="input-group"><label>Incide na importação?</label><select id="seletivo_import"><option value="S">Sim</option><option value="N">Não</option></select></div>
     <div class="input-group"><label>Há tese de não-enquadramento?</label><select id="seletivo_tese"><option value="N">Não</option><option value="S">Sim</option></select></div>
   </div>
+  <div id="seletivo-status" class="lh-aviso-v933" style="margin:10px 0 12px;background:rgba(224,168,58,.08);border:1px solid rgba(224,168,58,.45);color:var(--text2);border-radius:10px;padding:11px 14px;font-size:.88em;line-height:1.45"><b style="color:#e0b93a">📅 Situação em 09/10/2026.</b> <span>As alíquotas do IS virão por <b>medida provisória</b>, com envio anunciado para depois do 2º turno. A noventena de 02/10 passou: o IS <b>não começa em janeiro de 2027</b>. O mais cedo é fevereiro de 2027, se a MP for convertida em lei até 31/12; senão, 2028. O IPI zera em janeiro de 2027 fora da Zona Franca. Toda alíquota aqui é cenário.</span></div>
   <button class="btn-calcular" onclick="calcularSeletivo()">⚡ Calcular Imposto Seletivo</button>
   <div class="resultado-section" id="res-seletivo">
     <div class="kpi-grid" id="kpi-seletivo"></div>
     <div class="chart-card"><h4>📊 Composição da carga: IS + efeito cascata CBS</h4><div class="chart-wrapper"><canvas id="chart-seletivo"></canvas></div></div>
     <div id="recs-seletivo"></div>
     <div id="mem-seletivo"></div>
-    <div id="viab-seletivo"></div><div class="rec-card rec-info" style="margin-top:14px;"><h5>📋 Categorias do IS — LC 214/2025 (alíquotas pendentes de lei ordinária)</h5>
+    <div id="viab-seletivo"></div><div class="rec-card rec-info" style="margin-top:14px;"><h5>📋 Categorias do IS — LC 214/2025 (alíquotas pendentes da medida provisória)</h5>
 <table style="width:100%;font-size:0.85em;border-collapse:collapse;">
 <tr style="color:var(--gold2);text-align:left;"><th style="padding:4px 6px;">Categoria</th><th>Situação da alíquota</th></tr>
 <tr><td style="padding:3px 6px;">Veículos (critérios de emissão/eficiência)</td><td>a fixar em lei ordinária · premissa</td></tr>
@@ -7733,7 +7742,7 @@ function lhTrocarSenha(){
 <tr><td style="padding:3px 6px;">Bens minerais extraídos</td><td><b>teto de 0,25% já fixado na LC 214</b> (dentro do limite de 1% da CF)</td></tr>
 <tr><td style="padding:3px 6px;">Carvão mineral</td><td>a fixar · premissa</td></tr><tr><td style="padding:3px 6px;">Prognósticos e fantasy games</td><td>a fixar · premissa</td></tr>
 </table>
-<p style="font-size:0.8em;color:var(--text3);margin:8px 0 0;">📅 <b>Status (jul/2026):</b> alíquotas dependem de lei ordinária ainda não enviada — prazo prático out/2026 (após isso, via MP); PLP 42/2026 propõe teto de 0-5%; vigência mantida para 01/01/2027. ⚠ Insumos agrícolas NÃO integram o IS — têm redução de 60% no IBS/CBS. O IS é cumulativo (não gera crédito) e integra a base do IBS/CBS. <b>Premissa Lionheart · validação do tributarista pendente.</b></p></div>
+<p style="font-size:0.8em;color:var(--text3);margin:8px 0 0;">📅 <b>Status (out/2026):</b> alíquotas por medida provisória após o 2º turno; sem a noventena de 02/10, o IS começa em fevereiro de 2027 (MP convertida até 31/12) ou em 2028. ⚠ Insumos agrícolas NÃO integram o IS — têm redução de 60% no IBS/CBS. O IS é cumulativo (não gera crédito) e integra a base do IBS/CBS. <b>Premissa Lionheart · validação do tributarista pendente.</b></p></div>
   </div>
 </div>
 <div class="page" id="page-raiox360">
@@ -9483,7 +9492,7 @@ function lhTrocarSenha(){
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;">
         <button onclick="adicionarLinhaCNAE()" style="padding:9px 16px;background:rgba(201,162,39,0.12);color:#c9a227;border:1px solid rgba(201,162,39,0.25);border-radius:7px;font-weight:700;cursor:pointer;">+ Adicionar CNAE</button>
         <button id="btn-importar-cnaes" onclick="importarCNAEsDoCNPJ()" style="display:none;padding:9px 16px;background:rgba(16,185,129,0.12);color:#16c47c;border:1px solid rgba(16,185,129,0.35);border-radius:7px;font-weight:700;cursor:pointer;">Importar CNAEs do CNPJ</button>
-        <button onclick="compararSegregacaoCNAE()" style="padding:9px 20px;background:linear-gradient(135deg,#c9a227,#c9a227);color:#fff;border:none;border-radius:7px;font-weight:800;cursor:pointer;">Comparar Cenários</button>
+        <button onclick="compararSegregacaoCNAE()" style="padding:9px 20px;background:linear-gradient(135deg,#c9a227,#c9a227);color:#fff;border:none;border-radius:7px;font-weight:800;cursor:pointer;">Comparar segregação por CNAE</button>
       </div>
       <div id="cnae-resultado" style="margin-top:16px;"></div>
     </div>
@@ -10526,7 +10535,7 @@ function lhTrocarSenha(){
     <div class="calc-page-icon"></div>
     <div>
       <h2>Central de Documentos</h2>
-      <p><b>O que é:</b> Recuperação de crédito tributário ("Tese do Século" e afins): estima o crédito de PIS/COFINS pago a maior sobre base indevida, dentro do prazo de 5 anos.. <b>Para que serve:</b> O crédito recuperável é o valor pago a maior de PIS/COFINS sobre base indevida (ex: ICMS na base, "Tese do Século"), limitado aos últimos 5 anos não prescritos. A compensação depende de decisão judicial transitada em jul… <b>O que analisar:</b> compare o cenário atual com a projeção 2026-2033, observe o ano de virada e leve o resultado como base da orientação ao cliente.</p><div class="calc-page-links"><span class="links-intro">Quer dominar esta ferramenta? </span><a onclick="window.LH_formacao_home()">Formação Lionheart</a><span class="sep">·</span><a onclick="abrirPagina('basetecnica',null)">Glossário de termos</a></div>
+      <p><b>O que é:</b> a porta de entrada dos documentos do cliente. Lê PGDAS-D, EFD ICMS/IPI, EFD-Contribuições, ECD, ECF, eSocial, DCTFWeb, EFD-REINF, XML de NF-e, NFS-e e CT-e, balancete, DI e conta de energia, e preenche sozinho os campos das calculadoras que usam esses dados. <b>Para que serve:</b> evitar redigitação e erro de transcrição: um arquivo importado alimenta dezenas de telas, guardado por CNPJ no próprio navegador (o CNPJ e o nome não vão ao servidor). <b>O que analisar:</b> confira o resumo de cada documento lido (período, faturamento, regime) antes de abrir as calculadoras; campo preenchido pela Central aparece marcado e pode ser corrigido à mão.</p><div class="calc-page-links"><span class="links-intro">Quer dominar esta ferramenta? </span><a onclick="window.LH_formacao_home()">Formação Lionheart</a><span class="sep">·</span><a onclick="abrirPagina('basetecnica',null)">Glossário de termos</a></div>
     </div>
   </div>
   <div class="input-card">
@@ -13067,7 +13076,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
       <div class="input-group"><label>Perfil do produtor</label><select id="agro02_perfil"><option value="PFnc" selected>PF não contribuinte</option><option value="PJreg">PJ no regime regular</option></select></div><div class="input-group"><label>Insumos vêm com diferimento (art. 138)?</label><select id="agro02_dif"><option value="Sim" selected>Sim — Anexo IX diferido</option><option value="Nao">Não — destaque no ato</option></select><span class="lh-hint" data-hint="Art. 138 §2º: no fornecimento de insumo do Anexo IX por contribuinte regular ao produtor, o tributo é DIFERIDO — não há destaque nem crédito no ato. Ver Mapa do Diferimento." onclick="lhHint(event,this)">?</span></div>
       <div class="input-group"><label>Ano da simulação</label><select id="agro02_ano"><option value="2026">2026 — ano-teste (CBS 0,9% / IBS 0,1%)</option><option value="2027" selected>2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option><option value="2031">2031</option><option value="2032">2032</option><option value="2033">2033 — regime pleno</option></select></div>
       <div class="input-group"><label>Redução de alíquota dos insumos (%)</label><input type="number" id="agro02_red" value="60"><span class="lh-hint" data-hint="Anexo IX da LC 214/2025: insumos agropecuários com redução de 60%." onclick="lhHint(event,this)">?</span></div>
-      <div class="input-group"><label>% do crédito presumido ao adquirente</label><input type="number" id="agro02_cp" value="55"><span class="lh-hint" data-hint="🟡 PREMISSA: art. 168 §5º manda o percentual ser fixado por ato conjunto MF+CGIBS até setembro, pela proporção do imposto dos INSUMOS. 55% é estimativa declarada." onclick="lhHint(event,this)">?</span></div>
+      <div class="input-group"><label>Peso dos insumos no valor fornecido (%) <span class="lh-hint" data-hint="🟡 PREMISSA até o ato conjunto (art. 168 §5º): o crédito presumido do adquirente é estimado pelo IBS/CBS dos insumos do produtor sobre o valor que ele fornece." onclick="lhHint(event,this)">?</span></label><input type="number" id="agro02_cp" value="55"><span class="lh-hint" data-hint="🟡 PREMISSA: art. 168 §5º manda o percentual ser fixado por ato conjunto MF+CGIBS até setembro, pela proporção do imposto dos INSUMOS. 55% é estimativa declarada." onclick="lhHint(event,this)">?</span></div>
     </div></div>
     <button class="btn-calcular" onclick="calcularAGRO02()">Calcular o barter</button>
     <div class="resultado-section" id="res-agro02"><div class="kpi-grid" id="kpi-agro02"></div><div class="chart-card"><h4>Carga da operação — hoje × novo regime</h4><div class="chart-wrapper"><canvas id="chart-agro02"></canvas></div></div><div id="recs-agro02"></div><div id="mem-agro02"></div><div id="viab-agro02"></div></div>
@@ -13145,9 +13154,9 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
       <div class="input-group"><label>Compras de fornecedor no regime regular (R$/ano)</label><input placeholder="ex: 3.000.000" type="number" id="agro09_reg"></div>
       <div class="input-group"><label>Ano da simulação</label><select id="agro09_ano"><option value="2026">2026 — ano-teste (CBS 0,9% / IBS 0,1%)</option><option value="2027" selected>2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option><option value="2031">2031</option><option value="2032">2032</option><option value="2033">2033 — regime pleno</option></select></div>
       <div class="input-group"><label>Redução do produto agro (%)</label><input type="number" id="agro09_red" value="60"></div>
-      <div class="input-group"><label>% do crédito presumido</label><input type="number" id="agro09_cp" value="55"><span class="lh-hint" data-hint="🟡 PREMISSA declarada: proporção do imposto dos insumos do produtor. Ato conjunto MF+CGIBS até setembro." onclick="lhHint(event,this)">?</span></div>
+      <div class="input-group"><label>Peso dos insumos no valor fornecido (%)</label><input type="number" id="agro09_cp" value="55"><span class="lh-hint" data-hint="🟡 PREMISSA declarada até o ato conjunto MF + CG-IBS (art. 168 §5º): o percentual do crédito presumido é estimado como o IBS/CBS dos insumos do produtor sobre o valor que ele fornece. Com 55% de peso e insumos com redução de 60%, o crédito por real comprado é pequeno — é a conta da lei." onclick="lhHint(event,this)">?</span></div>
     </div></div>
-    <div class="input-card"><h3>Cenário legislativo</h3><div class="input-grid-3"><div class="input-group" style="grid-column:span 3"><label>Corte de 10% da LC 224/2025 — vigente desde 01/04/2026</label><select id="agro09_lc224" onchange="window.LH_LC224_ATIVO=(this.value==='1')" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text);font-family:inherit;font-size:0.92em;"><option value="1">Aplicar — crédito presumido a 90% (regra atual)</option><option value="0">Não aplicar — cenário do PLP 34/26 ou da tese</option></select><span class="lh-hint" data-hint="A LC 224 reduziu em 10% a vantagem dos incentivos federais desde 01/04/2026. Está em disputa: o PLP 34/26 quer excluir o agro, e há tese sobre a antinomia com o art. 1º da Lei 10.925/2004. Compare os cenários." onclick="lhHint(event,this)">?</span></div></div></div>
+    <div class="input-card"><h3>Cenário legislativo</h3><p style="margin:4px 0 0;font-size:.88em;color:var(--text2)">O corte de 10% da LC 224/2025 alcança só os benefícios dos tributos federais atuais (PIS/COFINS, IRPJ/CSLL, IPI). <b>Não reduz</b> o crédito presumido de IBS/CBS do art. 168 da LC 214. O presumido de PIS/COFINS da Lei 10.925 (agroindústria, até 2026) é que fica a 90%.</p></div>
     <button class="btn-calcular" onclick="calcularAGRO09()">Testar neutralidade</button>
     <div class="resultado-section" id="res-agro09"><div class="kpi-grid" id="kpi-agro09"></div><div class="chart-card"><h4>Crédito por real comprado — PF × regime regular</h4><div class="chart-wrapper"><canvas id="chart-agro09"></canvas></div></div><div id="recs-agro09"></div><div id="mem-agro09"></div><div id="viab-agro09"></div></div>
   </div><!-- /agro09 -->
@@ -22521,7 +22530,8 @@ function seletivoLerEntradas(){
   if(receita<=0){ if(typeof toast==='function') toast('Informe a receita do produto','error'); return null; }
   var prodNome={bebida:'Bebidas açucaradas',fumigeno:'Produtos fumígenos',veiculo:'Veículos automotores',embarcacao:'Embarcações e aeronaves',mineral:'Bens minerais',outro:'Produto a classificar'}[produto]||'Produto';
 
-  return { receita:receita, aliquota_is:aliq, produto:produto, ano:(parseInt((document.getElementById('seletivo_ano')||{}).value,10)||2033), tem_tese:(tese==='S'), honorario_pct:20, _tese:tese, _importacao:importacao, _prodNome:prodNome };
+  return { receita:receita, aliquota_is:aliq, produto:produto, ano:(parseInt((document.getElementById('seletivo_ano')||{}).value,10)||2033), tem_tese:(tese==='S'), honorario_pct:20,
+           ipi_pct:num('seletivo_ipi'), inicio_is:(val('seletivo_inicio')||undefined), zfm:(val('seletivo_zfm')==='S'), _tese:tese, _importacao:importacao, _prodNome:prodNome };
 }
 function seletivoCalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
 function seletivoRender(r, ent, motivo){
@@ -22538,6 +22548,21 @@ function seletivoRender(r, ent, motivo){
     '<div class="kpi-card kpi-destaque"><div class="kpi-label">Carga total IS + CBS</div><div class="kpi-value">'+fmtR(total)+'</div><div class="kpi-sub">'+fmtPct(pctReceita)+' da receita</div></div>'+
     (tese==='S'?'<div class="kpi-card kpi-ok"><div class="kpi-label">Potencial em tese (20% êxito)</div><div class="kpi-value">'+fmtR(honorarios)+'</div><div class="kpi-sub">se discutir o enquadramento</div></div>':'');
 
+  /* v933 · calendário e IPI: tudo vem do servidor (fn_seletivo); a tela só escreve */
+  try{
+    var _ad=r.carga_antes_x_depois, _ipi=r.ipi||{}, _cal=document.getElementById('kpi-seletivo');
+    var _jv=document.getElementById('seletivo-janela'); if(_jv) _jv.remove();
+    if(_cal){
+      var _m=(r.meses_com_is_no_ano!=null)?(+r.meses_com_is_no_ano||0):null, _ini=String(r.inicio_is||'').replace(/[^0-9-]/g,''), _ano=String(+r.ano||'');
+      var _extra='';
+      if(_m!=null) _extra+='<div class="kpi-card"><div class="kpi-label">Meses com IS em '+_ano+'</div><div class="kpi-value">'+_m+' de 12</div><div class="kpi-sub">início: '+_ini+'</div></div>';
+      if(_ad && +_ipi.aliquota_pct>0) _extra+='<div class="kpi-card"><div class="kpi-label">Carga antes × depois</div><div class="kpi-value" style="font-size:1rem">'+fmtR(+_ad.antes_ipi)+' → '+fmtR(+_ad.depois_ipi_mais_is)+'</div><div class="kpi-sub">IPI de hoje → IS + cascata'+(+_ipi.no_ano>0?' + IPI (ZFM)':'')+'</div></div>';
+      if(_extra) _cal.insertAdjacentHTML('beforeend', _extra);
+      if(r.janela){ var _jd=document.createElement('div'); _jd.id='seletivo-janela'; _jd.className='lh-aviso-v933'; _jd.style.cssText='margin-top:10px;background:rgba(74,158,255,.08);border:1px solid rgba(74,158,255,.4);border-radius:10px;padding:11px 14px;font-size:.88em;line-height:1.45';
+        var _jp=document.createElement('p'); _jp.style.margin='0'; _jp.textContent=String(r.janela); _jd.appendChild(_jp);
+        if(_cal.parentNode) _cal.parentNode.insertBefore(_jd, _cal.nextSibling); }
+    }
+  }catch(_e933){}
   if(chartSeletivo) chartSeletivo.destroy();
   chartSeletivo=new Chart(document.getElementById('chart-seletivo').getContext('2d'),{
     type:'bar',
@@ -22572,7 +22597,7 @@ function seletivoRender(r, ent, motivo){
     (document.getElementById('viab-seletivo')||{}).innerHTML=window.lhNotaConsultiva({
       confianca:{nivel:'media',motivo:'A alíquota do IS por categoria ainda depende de regulamentação — o número é uma estimativa de planejamento.'},
       nota:'Carga total estimada de '+fmtR(total)+' ('+fmtPct(pctReceita)+' da receita). '+(tese==='S'?'Há tese de não-enquadramento com potencial de '+fmtR(honorarios)+' em honorários.':'Avalie a revisão de enquadramento (NCM).'),
-      premissas:[{label:'Produto',valor:prodNome},{label:'Vigência do IS',valor:'01/01/2027'},{label:'Efeito cascata CBS',valor:'8,65%'}],
+      premissas:[{label:'Produto',valor:prodNome},{label:'Início do IS (premissa)',valor:String(r.inicio_is||'')},{label:'IBS/CBS sobre o IS no ano',valor:( _aliqCascata*100).toFixed(2).replace('.',',')+'%'}],
       rotuloValor:'Carga total estimada',valor:fmtR(total)
     });
   }
@@ -24700,6 +24725,20 @@ function c05Render(r, ent, motivo){
   var _box=document.getElementById('kpi-c05'); if(!_box) return;
   if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
   if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
+  /* ★ v933 · aviso do sublimite: texto do servidor (fn_regime_otimo.aviso_sublimite), a tela só mostra */
+  try{ var _avS=document.getElementById('c05-aviso-sublimite'); if(_avS) _avS.remove();
+    var _as=r.aviso_sublimite; if(_as && _as.acima && _as.texto){ _avS=document.createElement('div'); _avS.id='c05-aviso-sublimite'; _avS.className='lh-aviso-v933'; _avS.style.cssText='margin:0 0 12px;background:rgba(224,168,58,.08);border:1px solid rgba(224,168,58,.45);border-radius:10px;padding:11px 14px;font-size:.88em;line-height:1.45';
+      var _h=document.createElement('b'); _h.style.color='#e0b93a'; _h.textContent='⚠ Sublimite do Simples'; _avS.appendChild(_h);
+      var _p=document.createElement('p'); _p.style.margin='4px 0 0'; _p.textContent=String(_as.texto); _avS.appendChild(_p);
+      if(_as.base_legal){ var _b=document.createElement('div'); _b.style.cssText='font-size:.76em;color:var(--text3);margin-top:4px'; _b.textContent=String(_as.base_legal); _avS.appendChild(_b); }
+      _box.parentNode.insertBefore(_avS, _box); }
+    /* ★ v933 · crédito do cliente PJ em hotel e restaurante (arts. 276 e 283): texto do servidor */
+    var _avC=document.getElementById('c05-aviso-credito'); if(_avC) _avC.remove();
+    var _ac=r.aviso_credito_cliente; if(_ac && _ac.aplica && _ac.texto){ _avC=document.createElement('div'); _avC.id='c05-aviso-credito'; _avC.className='lh-aviso-v933'; _avC.style.cssText='margin:0 0 12px;background:rgba(74,158,255,.08);border:1px solid rgba(74,158,255,.4);border-radius:10px;padding:11px 14px;font-size:.88em;line-height:1.45';
+      var _hc=document.createElement('b'); _hc.style.color='#9ecbff'; _hc.textContent='ℹ Crédito do cliente'; _avC.appendChild(_hc);
+      var _pc=document.createElement('p'); _pc.style.margin='4px 0 0'; _pc.textContent=String(_ac.texto); _avC.appendChild(_pc);
+      if(_ac.base_legal){ var _bc=document.createElement('div'); _bc.style.cssText='font-size:.76em;color:var(--text3);margin-top:4px'; _bc.textContent=String(_ac.base_legal); _avC.appendChild(_bc); }
+      _box.parentNode.insertBefore(_avC, _box); } }catch(_e933){}
   
   
     try{     var _pgC = document.getElementById('page-c05');     if(_pgC){       var _sec = _pgC.querySelector('#res-c05') || _pgC.querySelector('.resultado-section') || _pgC;       if(!document.getElementById('kpi-c05')){         var _k=document.createElement('div'); _k.id='kpi-c05'; _k.className='kpi-grid';         _sec.insertBefore(_k, _sec.firstChild);         try{ (window._C05_TRACE=window._C05_TRACE||[]).push('01b-KPI reconstruido'); }catch(_t){}       }       if(!document.getElementById('chart-c05')){         var _cc=document.createElement('div'); _cc.className='chart-card';         if(_cc) _cc.innerHTML='<h4>Carga tributária por regime</h4><div class="chart-wrapper" style="min-height:240px"><canvas id="chart-c05"></canvas></div>';         _sec.appendChild(_cc);         try{ (window._C05_TRACE=window._C05_TRACE||[]).push('01c-canvas reconstruido'); }catch(_t){}       }       /* seções escondidas por uma limpeza anterior voltam a aparecer */       _pgC.querySelectorAll('.resultado-section').forEach(function(e){ if(e.style.display==='none') e.style.display=''; });     }   }catch(_rep){} var seg=ent._seg, fat=ent._fat, folha=ent._folha, prol=ent._prol, lucPct=ent._lucPct, ano=ent._ano, socios=ent._socios, aliqISS=ent._aliqISS, redSetor=ent._redSetor, irpfmAtivo=ent._irpfmAtivo, lucro_anual=ent._lucro_anual; var TETO_INSS_2026=8475.55, plSoma=(ent._plSoma!=null?ent._plSoma:prol*socios); /* v776: soma efetiva da lista */ var _sn=r.simples||{}, _hb=r.simples_hibrido||{}, _lp=r.lucro_presumido||{}, _lr=r.lucro_real||{};
@@ -74576,17 +74615,28 @@ window.LH_MEU_CENARIO = (function(){
   }
   function comparadorBloco(pg){
     var d=document.createElement('div'); d.className='lh-comparar'; d.style.cssText='margin:14px 0 4px';
-    d.innerHTML='<button type="button" class="lh-comparar-btn" style="padding:7px 14px;background:transparent;border:1px solid rgba(201,162,39,.5);border-radius:8px;color:#e0b93a;font-weight:700;cursor:pointer">⇄ Comparar cenários</button>'
+    d.innerHTML='<button type="button" class="lh-comparar-btn" style="padding:8px 16px;background:rgba(201,162,39,.10);border:1px solid rgba(201,162,39,.6);border-radius:8px;color:#e0b93a;font-weight:800;cursor:pointer">⇄ Comparar cenários de alíquota</button>'
+      +'<span class="lh-comparar-dica" style="margin-left:10px;font-size:.76rem;color:#8a97a8">mesmas entradas em A (26,5%), B (estimativa oficial), Meu cenário 1 e 2</span>'
       +'<div class="lh-comparar-res" style="margin-top:10px"></div>';
     d.querySelector('.lh-comparar-btn').addEventListener('click', function(){ comparar(pg.id); });
-    pg.appendChild(d);
+    /* v933 · logo abaixo do botão de calcular da própria tela (antes ia para o fim da página, depois do PDF,
+       e o usuário clicava no "Comparar Cenários" da segregação por CNAE achando que era este) */
+    var calc=pg.querySelector('.btn-calcular'), ancora=calc ? (calc.parentNode===pg ? calc : calc.parentNode) : null;
+    if(ancora && ancora.parentNode) ancora.parentNode.insertBefore(d, ancora.nextSibling); else pg.appendChild(d);
+  }
+  /* v933 · sem entradas guardadas, lê da tela agora (mesmo leitor da ponte); nunca calcula aqui */
+  function entradasDaTela(pg){
+    var b=pg && pg.querySelector('.btn-calcular[onclick]'), m=b ? String(b.getAttribute('onclick')).match(/^\s*([A-Za-z0-9_]+)\(/) : null;
+    if(!m || !window.LH_PONTE || typeof window.LH_PONTE.lerEntradas!=='function') return null;
+    var r=window.LH_PONTE.lerEntradas(m[1]);
+    return (r && r.entradas && CALCS.indexOf(String(r.calc))>=0) ? { calc:String(r.calc), entradas:r.entradas } : null;
   }
   function semPrivados(ent){ var o={}; for(var k in ent){ if(k.charAt(0)!=='_') o[k]=ent[k]; } return o; }
   function comparar(pageId){
     var pg=document.getElementById(pageId), box=pg && pg.querySelector('.lh-comparar-res'); if(!box) return Promise.resolve(null);
     var ativa=document.querySelector('.page.active');   /* telas com apelido (formpreco → precmassa) */
-    var u=estado.ultima[pageId] || (ativa ? estado.ultima[ativa.id] : null);
-    if(!u){ box.innerHTML='<div class="kpi-sub">Calcule primeiro: o comparador usa as mesmas entradas da calculadora.</div>'; return Promise.resolve(null); }
+    var u=estado.ultima[pageId] || (ativa ? estado.ultima[ativa.id] : null) || entradasDaTela(pg);
+    if(!u){ box.innerHTML='<div class="kpi-sub" style="color:#e0a83a">Preencha os campos e clique em calcular: o comparador usa as mesmas entradas da calculadora.</div>'; return Promise.resolve(null); }
     var ent=u.entradas, nota='';
     if(Array.isArray(ent)){ nota=' · comparando a linha 1 de '+ent.length; ent=ent[0]||{}; }
     return compararCom(box, u.calc, ent, nota);
@@ -74658,7 +74708,18 @@ window.LH_MEU_CENARIO = (function(){
         +'<div class="kpi-sub">'+(c.total_ref_pct!=null ? fmt(c.total_ref_pct)+'% de referência' : '')+'</div>'
         +num+(base ? '<span class="lh-vs-a" style="display:inline-block;margin-top:6px;padding:1px 8px;border-radius:10px;font-size:.72rem;color:#8a97a8;border:1px solid #8a97a866">base da comparação</span>'
                    : (pr && c.ok!==false ? seloVsA(vsA(r, pr, c.cenario)) : ''))
-        +'</div>'; }).join('')+'</div>';
+        +'</div>'; }).join('')+'</div>'+igualEmTodos(r, pr, rot);
+  }
+  /* v933 · número principal igual em todos os cenários (ex.: o Simples vence e não depende da alíquota):
+     dizer isso, para não parecer que o comparador não comparou */
+  function igualEmTodos(r, pr, rot){
+    if(!pr) return '';
+    var vals=(r.cenarios||[]).filter(function(c){ return c.ok!==false; }).map(function(c){ var v=pegar(c.resultado, pr); return v==null ? null : Math.round(Number(v)*100); });
+    if(vals.length<2 || vals.some(function(v){ return v===null || isNaN(v); })) return '';
+    if(vals.some(function(v){ return v!==vals[0]; })) return '';
+    var muda=(r.variacoes||[]).length;
+    return '<div class="lh-cmp-igual" style="margin-top:8px;font-size:.82rem;color:#c9d1dc">'+esc(rot||'O número principal')+' é o mesmo nos '+vals.length+' cenários'
+      +(muda ? ': a alíquota de referência não mexe nele. Veja abaixo os '+muda+' números que mudam.' : '.')+'</div>';
   }
   /* (c) "O que mais muda": as 5 maiores variações que têm rótulo de tela, na ordem do servidor */
   function graficoMuda(r, calc){
