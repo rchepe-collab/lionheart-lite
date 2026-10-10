@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v935";</script>
+<body><script>window.LH_VERSAO="v936";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2826,7 +2826,10 @@ window.LH_PONTE = (function(){
           ano: parseInt((G.el('fp_ano')||{}).value,10) || 2027,
           perfil: G.txt('fp_perfil') || 'b2c',
           /* v679 · fn_formacao_preco ganhou p_sn_dentro */
-          sn_dentro: (G.txt('fp_pc_reg')==='sn' && (G.txt('fp_sn_cen')||'dentro')==='dentro')
+          sn_dentro: (G.txt('fp_pc_reg')==='sn' && (G.txt('fp_sn_cen')||'dentro')==='dentro'),
+          /* v936 · Motor da Operação: custo de compra do item (opcional) e a apuração que diz o PIS/COFINS embutido nele */
+          custo_compra: f('fp_custo') || null,
+          apuracao: (typeof window.fpApuracao==='function') ? window.fpApuracao() : null
         };
       },
       esperado: function(r){ return (r && r.atual && r.projetado && r.decisao) ? {
@@ -17363,14 +17366,15 @@ function lhAg14Calc(){
         <div class="input-group"><label>Alíquota nova PLENA do produto (%)</label><input type="number" step="0.01" id="fp_cbs_plena" value="" placeholder="26.5" readonly style="opacity:.85"><span class="lh-hint" data-hint="Vem do produto escolhido (baldes da LC 214: padrão 26,5 · −30% 18,55 · −60% 10,6 · zero 0). Escolha &quot;Digitar&quot; no produto para editar." onclick="lhHint(event,this)">?</span></div>
         <div class="input-group"><label>Regime PIS/COFINS hoje <span style="color:#3ecf8e;font-size:.72em">→ R$ automático</span></label>
           <select id="fp_pc_reg" onchange="fpAuto()">
-            <option value="3.65" selected>Presumido — cumulativo 3,65%</option>
-            <option value="9.25">Lucro Real — não-cumulativo 9,25%</option>
+            <option value="3.65" data-apur="lp" selected>Presumido — cumulativo 3,65%</option>
+            <option value="9.25" data-apur="lr">Lucro Real — não-cumulativo 9,25%</option>
             <option value="0">Monofásico / alíquota zero — 0%</option>
             <option value="sn">Simples — está no DAS (use a Dentro × Híbrido)</option>
             <option value="man">Digitar o R$ manualmente</option>
           </select>
         </div>
         <div class="input-group"><label>PIS/COFINS atual no item (R$)</label><input type="number" step="0.01" id="fp_pc" placeholder="automático"><span class="lh-hint" data-hint="Preenchido automaticamente = venda × % do regime. Editável se você tiver o valor exato do seu fiscal." onclick="lhHint(event,this)">?</span></div>
+        <div class="input-group"><label>Custo de compra do item (R$) <span style="color:#8a97a8;font-size:.72em">opcional</span></label><input type="number" step="0.01" id="fp_custo" placeholder="ex: 60,00"><span class="lh-hint" data-hint="Custo do item sem impostos. No Lucro Presumido, o PIS/COFINS cumulativo (3,65%) embutido nesse custo deixa de existir a partir de 2027 e vira folga de preço. O IBS/CBS das compras volta como crédito e não muda o preço. No Lucro Real o custo não muda o preço (o PIS/COFINS já é crédito hoje)." onclick="lhHint(event,this)">?</span></div>
         <div class="input-group"><label>UF (ICMS modal) <span class="lh-hint" data-hint="Alíquotas modais INDICATIVAS 2025/2026 — tabela PENDENTE de conferência (O2 valida; RJ inclui FECP). O R$ segue editável: confirme com o fiscal." onclick="lhHint(event,this)">?</span></label>
           <select id="fp_uf" onchange="fpAuto()"><option value="RS" selected>RS</option><option value="SP">SP</option><option value="RJ">RJ</option><option value="MG">MG</option><option value="PR">PR</option><option value="SC">SC</option><option value="ES">ES</option><option value="BA">BA</option><option value="PE">PE</option><option value="CE">CE</option><option value="GO">GO</option><option value="DF">DF</option><option value="MT">MT</option><option value="MS">MS</option><option value="PA">PA</option><option value="AM">AM</option><option value="MA">MA</option><option value="PI">PI</option><option value="RN">RN</option><option value="PB">PB</option><option value="AL">AL</option><option value="SE">SE</option><option value="TO">TO</option><option value="RO">RO</option><option value="AC">AC</option><option value="AP">AP</option><option value="RR">RR</option></select>
         </div>
@@ -66866,20 +66870,42 @@ function fpLerEntradas(){
    (document.getElementById("fpDec")||{}).innerHTML=''; (document.getElementById("fpRes")||{style:{}}).style.display="block"; return null;
  }
 
-  return { venda_bruta:vb, pis_cofins:pc, icms:icms, aliq_plena:plena, ano:ano, cenario:'A', perfil:((document.getElementById('fp_perfil')||{value:'b2c'}).value), sn_dentro:snDentro, _plena:plena, _snDentro:snDentro, _snHib:snHib, _rotVelho:rotVelho, _ehNBS:_ehNBS, _ehNCM:_ehNCM, _sit:_sit, _reg:_reg, _snCen:_snCen };
+  return { venda_bruta:vb, pis_cofins:pc, icms:icms, aliq_plena:plena, ano:ano, cenario:'A', perfil:((document.getElementById('fp_perfil')||{value:'b2c'}).value), sn_dentro:snDentro, custo_compra:(gv('fp_custo')||null), apuracao:fpApuracao(), _plena:plena, _snDentro:snDentro, _snHib:snHib, _rotVelho:rotVelho, _ehNBS:_ehNBS, _ehNCM:_ehNCM, _sit:_sit, _reg:_reg, _snCen:_snCen };
 }
 function fpCalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
+/* v936 · apuração do vendedor (lr | lp) lida do próprio seletor de regime (data-apur): diz ao servidor o PIS/COFINS
+   cumulativo embutido no custo de compra. Monofásico, Simples e digitação manual não mandam nada. */
+function fpApuracao(){ var s=document.getElementById('fp_pc_reg'), o=s&&s.options&&s.options[s.selectedIndex]; return (o&&o.getAttribute('data-apur'))||null; }
+window.fpApuracao=fpApuracao;
+/* v936 · Conta aberta do imposto (Motor da Operação v2.2): débito, crédito das compras, a recolher, split e o imposto
+   velho que some. Só desenha o que o servidor mandou; sem conta_aberta (modo local antigo), não aparece. */
+function fpContaHTML(r){
+  var c=r && r.conta_aberta; if(!c) return '';
+  var cp=r.compras||null, L=function(rot,val,cor,sub){ return '<div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)"><span style="color:#d4dce6">'+rot+(sub?'<div style="font-size:.7rem;color:#8a97a8">'+sub+'</div>':'')+'</span><b style="color:'+(cor||'#fff')+';white-space:nowrap">R$ '+_apN(val)+'</b></div>'; };
+  return '<div class="fp-conta" style="grid-column:1/-1;background:rgba(255,255,255,.02);border:1px solid rgba(201,162,39,.3);border-radius:12px;padding:14px">'
+    +'<div style="font-weight:800;color:var(--gold2,#e0b93a);font-size:.86rem;margin-bottom:6px">Conta aberta do imposto em '+r.ano+' (preço de hoje)</div>'
+    +L('IBS/CBS destacado na venda (débito)', c.debito, '#e8916f')
+    +(cp ? L('Crédito de IBS/CBS das compras', c.credito_compras, '#3ecf8e', 'volta como crédito; não baixa o preço, porque o fornecedor cobra o mesmo valor por fora') : '')
+    +L('IBS/CBS a recolher', c.a_recolher, '#fff')
+    +L('Retido no split payment', c.retido_no_split, '#9ec5f2', 'sai do pagamento do cliente antes de chegar no seu caixa')
+    +L('Imposto velho hoje (ICMS/ISS + PIS/COFINS)', c.velho_hoje, '#c8d2de')
+    +L('Imposto velho em '+r.ano, c.velho_ano, '#c8d2de')
+    +L('Imposto velho que some', c.velho_que_some, '#3ecf8e')
+    +((cp && +cp.economia_ano>0) ? L('Folga no custo de compra', cp.economia_ano, '#3ecf8e', 'PIS/COFINS cumulativo embutido no custo que deixa de existir — já está no preço de repassar') : '')
+    +'</div>';
+}
+window.fpContaHTML=fpContaHTML;
 function fpRender(r, ent, motivo){
   var _box=document.getElementById('fpTab'); if(!_box) return;
   if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); var _rr=document.getElementById('fpRes'); if(_rr) _rr.style.display='block'; return; }
   if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); var _d=document.getElementById('fpDec'); if(_d) _d.innerHTML=''; var _rr2=document.getElementById('fpRes'); if(_rr2) _rr2.style.display='block'; return; }
-  var vb=ent.venda_bruta, pc=ent.pis_cofins, icms=ent.icms, plena=ent._plena, ano=ent.ano, snDentro=ent._snDentro, snHib=ent._snHib, rotVelho=ent._rotVelho, _ehNBS=ent._ehNBS, _ehNCM=ent._ehNCM, _sit=ent._sit, _reg=ent._reg, _snCen=ent._snCen; var ehTeste=!!r.ano_teste; var FP_ICMSF=LH_MAPA_ANOS('icms',{2026:1,2027:1,2028:1,2029:.9,2030:.8,2031:.7,2032:.6,2033:0}); var tNovo=(+r.aliquota_item)/100, cbsA=tNovo*100, _fpF=(plena>0?(+r.aliquota_item)/plena:1); var icmsAno=+r.projetado.icms, cbs=+r.projetado.cbs_ibs, rlAtual=+r.atual.receita_liquida, rl27=+r.projetado.receita_liquida, dRL=+r.projetado.variacao_pct;
+  var vb=ent.venda_bruta, pc=ent.pis_cofins, icms=ent.icms, plena=ent._plena, ano=ent.ano, snDentro=ent._snDentro, snHib=ent._snHib, rotVelho=ent._rotVelho, _ehNBS=ent._ehNBS, _ehNCM=ent._ehNCM, _sit=ent._sit, _reg=ent._reg, _snCen=ent._snCen; var ehTeste=!!r.ano_teste; var tNovo=(+r.aliquota_item)/100, cbsA=tNovo*100, _fpF=(plena>0?(+r.aliquota_item)/plena:1); var icmsAno=+r.projetado.icms, cbs=+r.projetado.cbs_ibs, rlAtual=+r.atual.receita_liquida, rl27=+r.projetado.receita_liquida, dRL=+r.projetado.variacao_pct;
  var t='<table style="width:100%;border-collapse:collapse;font-size:.86rem;min-width:520px">'
   +'<tr><th style="text-align:left;padding:8px;color:#8a97a8;font-size:.72rem;border-bottom:1px solid rgba(255,255,255,.1)">LINHA</th><th style="text-align:right;padding:8px;color:#9aa7b8;border-bottom:1px solid rgba(255,255,255,.1)">ATUAL</th><th style="text-align:right;padding:8px;color:var(--gold2,#e0b93a);border-bottom:1px solid rgba(255,255,255,.1)">'+ano+' (preço mantido)</th></tr>'
   +'<tr><td style="padding:7px;color:#d4dce6">Venda bruta</td><td style="text-align:right;padding:7px;color:#c8d2de">R$ '+_apN(vb)+'</td><td style="text-align:right;padding:7px;color:#c8d2de">R$ '+_apN(vb)+'</td></tr>'
   +'<tr><td style="padding:7px;color:#d4dce6">PIS/COFINS</td><td style="text-align:right;padding:7px;color:#e8916f">− R$ '+_apN(pc)+'</td><td style="text-align:right;padding:7px;color:'+(ehTeste?'#e8916f':'#8a97a8')+'">'+(ehTeste?('− R$ '+_apN(pc)+' (mantidos)'):'extintos')+'</td></tr>'
   +'<tr><td style="padding:7px;color:#d4dce6">'+(ehTeste?('CBS+IBS TESTE '+_apN(tNovo*100)+'%'):(snDentro?'IBS/CBS — dentro do DAS':(ano>=2029?('CBS+IBS '+_apN(tNovo*100)+'%'):('CBS '+_apN(cbsA)+'%'))))+'</td><td style="text-align:right;padding:7px;color:#8a97a8">—</td><td style="text-align:right;padding:7px;color:'+(ehTeste?'#8a97a8':'#e8916f')+'">'+(ehTeste?('R$ '+_apN(cbs)+' destacado · compensável — efeito 0'):(snDentro?'no DAS (não destacado)':('− R$ '+_apN(cbs))))+'</td></tr>'
-  +'<tr><td style="padding:7px;color:#d4dce6">'+rotVelho+' ('+(ano<=2028?'integral':(ano>=2033?'extinto':Math.round((FP_ICMSF[ano])*10)+'/10'))+')</td><td style="text-align:right;padding:7px;color:#e8916f">− R$ '+_apN(icms)+'</td><td style="text-align:right;padding:7px;color:#e8916f">'+(icmsAno>0?'− R$ '+_apN(icmsAno):'—')+'</td></tr>'
+  +'<tr><td style="padding:7px;color:#d4dce6">'+rotVelho+' ('+(ano<=2028?'integral':(ano>=2033?'extinto':Math.round((+r.projetado.fator_icms)*10)+'/10'))+')</td><td style="text-align:right;padding:7px;color:#e8916f">− R$ '+_apN(icms)+'</td><td style="text-align:right;padding:7px;color:#e8916f">'+(icmsAno>0?'− R$ '+_apN(icmsAno):'—')+'</td></tr>'
   +'<tr style="border-top:2px solid rgba(201,162,39,.4)"><td style="padding:8px;font-weight:800;color:var(--gold2,#e0b93a)">RECEITA LÍQUIDA</td><td style="text-align:right;padding:8px;font-weight:800;color:#fff">R$ '+_apN(rlAtual)+'</td><td style="text-align:right;padding:8px;font-weight:800;color:'+(dRL>=0?'#3ecf8e':'#e8916f')+'">R$ '+_apN(rl27)+' ('+(dRL>=0?'+':'')+_apN(dRL)+'%)</td></tr></table>';
  var perfil=(document.getElementById("fp_perfil")||{value:"b2c"}).value;
  if(perfil==="b2b" && !ehTeste && snDentro){
@@ -66896,9 +66922,9 @@ function fpRender(r, ent, motivo){
  }
  (document.getElementById("fpTab")||{}).innerHTML=t;
  var _tt=document.getElementById("fpTituloAno"); if(_tt)_tt.textContent="Atual × "+ano+" — preço mantido";
- var icmsR=vb?icmsAno/vb:0, k=tNovo/(1+tNovo);
- var vbManter=(1-icmsR)>0? rlAtual/((1-icmsR)*(1-k)) : 0;   // preço que devolve a RL atual
- var ganho=rl27-rlAtual, dPreco=vb?(vbManter/vb-1)*100:0;
+ /* v936 · os três caminhos vêm prontos do servidor (Motor da Operação v2.2): nenhuma conta aqui */
+ var _dc=r.decisao||{}, vbManter=(_dc.repassar_preco_novo==null)?vb:+_dc.repassar_preco_novo, ganho=+(_dc.segurar_preco_ganho||0), dPreco=+(_dc.repassar_variacao_pct||0),
+     vbDiv=(_dc.dividir&&_dc.dividir.preco!=null)?+_dc.dividir.preco:vbManter;
  var pos=ganho>=0;
  if(snDentro && !ehTeste){
   (document.getElementById("fpDec")||{}).innerHTML='<div style="background:rgba(201,162,39,.05);border:1px solid rgba(201,162,39,.3);border-radius:12px;padding:14px;font-size:.8rem;color:#d4dce6"><b style="color:var(--gold2,#e0b93a)">Dentro do DAS: a decisão não é de preço — é de regime.</b> Sem destaque, o preço de prateleira não sofre o carve-out. O jogo aqui é outro: (1) qual a alíquota efetiva do DAS com a fatia IBS/CBS; (2) se os teus compradores PJ vão exigir crédito cheio (aí a conversa é migrar pro HÍBRIDO). Rode a <b>Dentro × Híbrido</b> com o perfil da carteira.</div>';
@@ -66907,12 +66933,13 @@ function fpRender(r, ent, motivo){
  (document.getElementById("fpDec")||{}).innerHTML= pos?(
   '<div style="background:rgba(62,207,142,.05);border:1px solid rgba(62,207,142,.3);border-radius:12px;padding:14px"><div style="font-weight:800;color:#3ecf8e;font-size:.86rem">1 · Segurar o preço</div><div style="font-size:.78rem;color:#d4dce6;margin-top:6px;line-height:1.55">Ganho de margem <b>explícito</b>: <b>R$ '+_apN(ganho)+'/item</b> ('+(dRL>=0?'+':'')+_apN(dRL)+'% na RL). O ganho aparece linha a linha, não escondido.</div></div>'
   +'<div style="background:rgba(74,158,255,.05);border:1px solid rgba(74,158,255,.3);border-radius:12px;padding:14px"><div style="font-weight:800;color:#4a9eff;font-size:.86rem">2 · Repassar ao cliente</div><div style="font-size:.78rem;color:#d4dce6;margin-top:6px;line-height:1.55">Novo preço que mantém a MESMA receita líquida de hoje: <b>R$ '+_apN(vbManter)+'</b> ('+_apN(dPreco)+'%). Arma competitiva se o mercado apertar.</div></div>'
-  +'<div style="background:rgba(201,162,39,.05);border:1px solid rgba(201,162,39,.3);border-radius:12px;padding:14px"><div style="font-weight:800;color:var(--gold2,#e0b93a);font-size:.86rem">3 · Dividir o ganho</div><div style="font-size:.78rem;color:#d4dce6;margin-top:6px;line-height:1.55">Preço em <b>R$ '+_apN((vb+vbManter)/2)+'</b>: metade do ganho fica na margem, metade vira desconto — protege share sem abrir mão de tudo.</div></div>'
+  +'<div style="background:rgba(201,162,39,.05);border:1px solid rgba(201,162,39,.3);border-radius:12px;padding:14px"><div style="font-weight:800;color:var(--gold2,#e0b93a);font-size:.86rem">3 · Dividir o ganho</div><div style="font-size:.78rem;color:#d4dce6;margin-top:6px;line-height:1.55">Preço em <b>R$ '+_apN(vbDiv)+'</b>: metade do ganho fica na margem, metade vira desconto — protege share sem abrir mão de tudo.</div></div>'
  ):(
   '<div style="background:rgba(232,145,111,.06);border:1px solid rgba(232,145,111,.4);border-radius:12px;padding:14px"><div style="font-weight:800;color:#e8916f;font-size:.86rem">⚠ 1 · Segurar o preço = PERDER margem</div><div style="font-size:.78rem;color:#d4dce6;margin-top:6px;line-height:1.55">Neste item a carga nova é MAIOR: mantendo o preço, sua sobra cai <b>R$ '+_apN(-ganho)+'/item</b> ('+_apN(dRL)+'% na RL). Aqui repassar não é opção — é sobrevivência da margem.</div></div>'
   +'<div style="background:rgba(62,207,142,.05);border:1px solid rgba(62,207,142,.35);border-radius:12px;padding:14px"><div style="font-weight:800;color:#3ecf8e;font-size:.86rem">2 · Repassar (recompõe a sobra)</div><div style="font-size:.78rem;color:#d4dce6;margin-top:6px;line-height:1.55">Novo preço que devolve a MESMA receita líquida de hoje: <b>R$ '+_apN(vbManter)+'</b> (+'+_apN(dPreco)+'%). Negocie cedo: contrato antigo sem cláusula de reequilíbrio segura o preço velho com o imposto novo.</div></div>'
-  +'<div style="background:rgba(201,162,39,.05);border:1px solid rgba(201,162,39,.3);border-radius:12px;padding:14px"><div style="font-weight:800;color:var(--gold2,#e0b93a);font-size:.86rem">3 · Dividir a dor</div><div style="font-size:.78rem;color:#d4dce6;margin-top:6px;line-height:1.55">Preço em <b>R$ '+_apN((vb+vbManter)/2)+'</b>: metade do aumento vai ao cliente, metade você absorve — amortece a perda sem chocar o mercado.</div></div>'
+  +'<div style="background:rgba(201,162,39,.05);border:1px solid rgba(201,162,39,.3);border-radius:12px;padding:14px"><div style="font-weight:800;color:var(--gold2,#e0b93a);font-size:.86rem">3 · Dividir a dor</div><div style="font-size:.78rem;color:#d4dce6;margin-top:6px;line-height:1.55">Preço em <b>R$ '+_apN(vbDiv)+'</b>: metade do aumento vai ao cliente, metade você absorve — amortece a perda sem chocar o mercado.</div></div>'
  );
+ var _dec=document.getElementById("fpDec"); if(_dec) _dec.insertAdjacentHTML('beforeend', fpContaHTML(r));
  (document.getElementById("fpRes")||{style:{}}).style.display="block";
 
 }
