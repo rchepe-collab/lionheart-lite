@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v944";</script>
+<body><script>window.LH_VERSAO="v945";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -75378,7 +75378,9 @@ window.LH_FP_COMPARAR = (function(){
    Só no CORE puro (no ITFE a leitura do dono já é a tela). SÓ TELA: nenhuma conta nova, nenhuma frase nova de cálculo.
    v943 · onde não há leitura do dono, a leitura vem pronta do servidor (calc 'sintese' → fn_sintese): N04, PF × PJ,
    Art. 127, Split por operação, Split na indústria, Imposto Seletivo e Formação de Preço.
-   v944 · + 11 setoriais e 9 do agro (mesma fn_sintese). */
+   v944 · + 11 setoriais e 9 do agro (mesma fn_sintese).
+   v945 · + as 12 últimas com comparador (Antecipados, Créditos plenos, Holding, IND08, Portos, Obra, Imobiliário, RET,
+   Raio-X, Alíquota por produto, Analisador de Contrato, Aluguel PF × PJ). */
 window.LH_SINTESE_CORE = (function(){
   'use strict';
   var modo = 'completo';   /* decisão do Ricardo: o Completo abre primeiro */
@@ -75449,7 +75451,20 @@ window.LH_SINTESE_CORE = (function(){
     agroSuper2:{ fn:'calcularAgroSuper2', calc:'agrosuper2', ancora:'kpi-agroSuper2' },
     agroSuper4:{ fn:'calcularAgroSuper4', calc:'agrosuper4', ancora:'kpi-agroSuper4' },
     agroSuper5:{ fn:'calcularAgroSuper5', calc:'agrosuper5', ancora:'kpi-agroSuper5' },
-    agroSuper6:{ fn:'calcularAgroSuper6', calc:'agrosuper6', ancora:'kpi-agroSuper6' }
+    agroSuper6:{ fn:'calcularAgroSuper6', calc:'agrosuper6', ancora:'kpi-agroSuper6' },
+    /* v945 · as últimas telas com comparador */
+    antecip:{ fn:'calcularAntecip', calc:'antecip', ancora:'kpi-antecip' },
+    cr04:{ fn:'calcularCR04', calc:'cr04', ancora:'kpi-cr04' },
+    n15:{ fn:'calcularN15', calc:'n15', ancora:'kpi-n15' },
+    ind08:{ fn:'calcularIND08', calc:'ind08', ancora:'kpi-ind08' },
+    portos:{ fn:'calcularPortos', calc:'portos', ancora:'kpi-portos' },
+    obra:{ fn:'calcularObra', calc:'obra', ancora:'kpi-obra' },
+    imobref:{ fn:'calcularImobReforma', calc:'imob-reforma', ancora:'kpi-imobref' },
+    imob_ret:{ fn:'calcularImobRET', calc:'imob-ret', ancora:'kpi-imob_ret' },
+    raiox360:{ fn:'calcularRaioX360', calc:'classificar-lote', ancora:'kpi-raiox360' },
+    classif:{ fn:'calcularClassificador', calc:'mix-efetiva', ancora:'kpi-classif' },
+    contrato:{ fn:'ctcCalc', calc:'contrato', ancora:'ctc_res' },
+    aluguelpfpj:{ fn:'calcularAluguelPFPJ', calc:'aluguel-pfpj', ancora:'kpi-aluguelpfpj' }
   };
   var LEITURA_SRV = {};   /* página → { q, L } : a última leitura pedida ao servidor */
   function porPagina(){ var m={}, L=leituras(); Object.keys(L).forEach(function(k){ if(L[k] && L[k].pagina) m[L[k].pagina]=k; });
