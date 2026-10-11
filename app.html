@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v941";</script>
+<body><script>window.LH_VERSAO="v942";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -67745,7 +67745,12 @@ window.fpLerEntradas=fpLerEntradas; window.fpCalcularLocal=fpCalcularLocal; wind
  window.LH_TELAS_CENARIO=['c01','c02','c04','c05','c07','n04','n33','calc03','capex',
    'seletivo','raiox360','import','coop','psaude','financeiro','apostas',
    'combustivel','agroins','dxh','formpreco',
-   'contrato'];   /* v928 · TR14: o Analisador de Contrato também lê o cenário (fn_contrato) */
+   'contrato',   /* v928 · TR14: o Analisador de Contrato também lê o cenário (fn_contrato) */
+   /* v942 · as telas cujo cálculo o servidor já roda em qualquer cenário (comparar-cenarios aceita) mas que ainda
+      não tinham a barra de alíquota nem o "Comparar cenários" (pergunta do Ricardo, 11/10 12h30) */
+   'bares','hotel','agviagem','telecom','medicamento','transpax','logcarga','hotelev','classif',
+   'c11','cr04','n15','antecip','art127','aluguelpfpj','ind08','portos','export','obra','imobref','imob_ret',
+   'agro02','agro09','agro11','agro12','agro22zero','agroSuper1','agroSuper2','agroSuper4','agroSuper5','agroSuper6'];
  (function(){
    function injetar(pid){
      try{ if(window.LH_MEU_CENARIO) window.LH_MEU_CENARIO.aoAbrir(pid); }catch(_mc){}   /* v928 · TR14 */
@@ -73540,7 +73545,7 @@ window.LH_MEU_CENARIO = (function(){
   var NOTA_TRAVA = 'a alíquota vem do Meu cenário';
   /* cores fixas por cenário em toda a ferramenta (tema escuro e claro) */
   var COR = { A:'#d4a82a', B:'#4a9eff', C:'#b07cf0', M1:'#16c47c', M2:'#ff7a59' };
-  var estado = { meu:null, meu2:null, sel:false, lido:false, aviso:null, aviso2:null, ultima:{}, oficiais:[], curvas:{} };
+  var estado = { meu:null, meu2:null, sel:false, lido:false, aviso:null, aviso2:null, ultima:{}, oficiais:[], curvas:{}, cmp:{} };
 
   /* estilos do painel e da página (grade de cartões; no celular, um embaixo do outro) */
   (function estilos(){
@@ -73924,7 +73929,11 @@ window.LH_MEU_CENARIO = (function(){
     return window.LH_PONTE.chamar('comparar-cenarios', { calc:calc, entradas:envio }).then(function(res){
       var r = res && res.ok ? res.resultado : null;
       if(!r || !r.ok){ box.innerHTML=erro((r && r.motivo) || (res && res.motivo) || 'sem resposta do servidor'); return r; }
-      box.innerHTML=painelComparador(r, nota, r.calc || calc); return r;
+      box.innerHTML=painelComparador(r, nota, r.calc || calc);
+      /* v942 · guarda a última comparação da tela: o Resultado sintetizado resume "e se a alíquota for outra?" */
+      var pgC=box.closest ? box.closest('.page') : null;
+      if(pgC){ estado.cmp[pgC.id]={ r:r, quando:Date.now() }; try{ document.dispatchEvent(new CustomEvent('lh:comparacao',{ detail:{ pagina:pgC.id } })); }catch(e){} }
+      return r;
     });
   }
   /* v937 · painel em linguagem simples (pedido do Ricardo, 11/10 06h25: "maior alíquota, menor alíquota, melhor regime…
@@ -74148,7 +74157,7 @@ window.LH_MEU_CENARIO = (function(){
   }
 
   return { ler:ler, salvar:salvar, total:total, decorar:decorar, pintar:pintar, escolher:escolher, soltar:soltar,
-    rota:rota, comparar:comparar, compararCom:compararCom, aoAbrir:aoAbrir, amigavel:amigavel, _estado:function(){ return estado; },
+    rota:rota, comparar:comparar, compararCom:compararCom, comparacao:function(pid){ return estado.cmp[pid] || null; }, aoAbrir:aoAbrir, amigavel:amigavel, _estado:function(){ return estado; },
     CALCS:CALCS, TRAVAS:TRAVAS, COR:COR, chave:chaveServidor };
 })();
 </script>
@@ -75374,6 +75383,20 @@ window.LH_SINTESE_CORE = (function(){
   function emProduto(){ return !!window.LH_PRODUTO || !!(document.body && document.body.getAttribute('data-lh-produto')); }
   function leituras(){ return window.LH_DONO_LEITURAS || {}; }
   function fmtR(v){ v=+v||0; return 'R$ '+Math.round(v).toLocaleString('pt-BR'); }
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  /* v942 · a última comparação de cenários da tela (A, B, Meu 1, Meu 2), com as frases do servidor */
+  function comparacaoDe(pg){ try{ return window.LH_MEU_CENARIO && window.LH_MEU_CENARIO.comparacao ? window.LH_MEU_CENARIO.comparacao('page-'+pg) : null; }catch(e){ return null; } }
+  function cenariosHTML(pg){
+    var c=comparacaoDe(pg), e=c && c.r && c.r.estrategia;
+    if(e && (e.resumo_curto || e.leitura_diferenca)){
+      return '<div class="faz lh-sint-cen"><b class="t">E se a alíquota for outra?</b>'
+        +(e.resumo_curto ? '<p>'+esc(e.resumo_curto)+'</p>' : '')
+        +(e.leitura_diferenca ? '<p>'+esc(e.leitura_diferenca)+'</p>' : '')
+        +'<div class="rod">Da última comparação de cenários desta tela (oficiais A e B e os seus cenários).</div></div>';
+    }
+    var P=document.getElementById('page-'+pg);
+    return (P && P.querySelector('.lh-comparar')) ? '<div class="rod lh-sint-cen-dica">Para ver o efeito de outras alíquotas, use "Comparar cenários de alíquota".</div>' : '';
+  }
   (function estilos(){
     if(document.getElementById('lh-sint-estilos')) return;
     var st=document.createElement('style'); st.id='lh-sint-estilos';
@@ -75414,10 +75437,11 @@ window.LH_SINTESE_CORE = (function(){
       +'<button type="button" data-modo="completo">Completo</button><button type="button" data-modo="sintetizado">Sintetizado</button>'
       +'<span class="dica">sintetizado: a leitura em linguagem do empresário, sem memória de cálculo nem base legal — boa para mostrar ao cliente</span>';
   }
-  function cartaoHTML(L){
+  function cartaoHTML(L, pg){
     return '<div class="eb">Resultado sintetizado · para o empresário</div><h4>'+L.t+'</h4>'
       +(L.f||[]).map(function(x){ return '<p>'+x+'</p>'; }).join('')
       +(L.a && L.a.length ? '<div class="faz"><b class="t">O que fazer</b><ul>'+L.a.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul></div>' : '')
+      +cenariosHTML(pg)
       +'<div class="rod">Mesma conta do resultado completo: só a leitura é mais curta.</div>';
   }
   function pintar(pg){
@@ -75439,7 +75463,8 @@ window.LH_SINTESE_CORE = (function(){
     if(modo==='sintetizado'){
       marcarTecnico(P, pg);
       if(!card){ card=document.createElement('div'); card.className='lh-sint-card'; }
-      if(card.getAttribute('data-q')!==String(u.quando||'')){ card.innerHTML=cartaoHTML(L); card.setAttribute('data-q', String(u.quando||'')); }
+      var cq=comparacaoDe(pg), q=String(u.quando||'')+'|'+(cq ? cq.quando : '')+'|'+(P.querySelector('.lh-comparar') ? 1 : 0);
+      if(card.getAttribute('data-q')!==q){ card.innerHTML=cartaoHTML(L, pg); card.setAttribute('data-q', q); }
       if(barra.nextElementSibling!==card) barra.parentNode.insertBefore(card, barra.nextSibling);
       P.classList.add('lh-modo-sint');
     } else {
@@ -75466,6 +75491,7 @@ window.LH_SINTESE_CORE = (function(){
     var b=ev.target && ev.target.closest ? ev.target.closest('.lh-sint-barra button[data-modo]') : null;
     if(b) escolher(b.getAttribute('data-modo'));
   });
+  document.addEventListener('lh:comparacao', function(ev){ var p=ev && ev.detail && String(ev.detail.pagina||'').replace(/^page-/,''); if(p) try{ pintar(p); }catch(e){} });
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', vigiar); else vigiar();
   window.addEventListener('load', vigiar);
   return { escolher:escolher, pintar:pintar, modo:function(){ return modo; }, paginas:function(){ return Object.keys(porPagina()); } };
