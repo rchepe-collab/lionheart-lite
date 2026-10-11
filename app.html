@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v937";</script>
+<body><script>window.LH_VERSAO="v939";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -40590,7 +40590,7 @@ window.LH_RADAR = (function(){
         html += '</div>';
         html += '<div style="font-family:\'Syne\',sans-serif;font-size:1em;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.2;">'+nomeCalc(c.id)+'</div>';
         html += '<div style="font-size:0.74em;color:var(--text2);margin-bottom:8px;line-height:1.45;">'+(window.lhTipoTag?window.lhTipoTag(c.id):'')+(window.lhFrase?window.lhFrase(c.id):'')+'</div>';
-        html += '<button onclick="event.stopPropagation();window.LH_ORIENTA_show(\''+c.id+'\')" style="margin-bottom:8px;background:rgba(93,202,165,0.12);border:1px solid rgba(93,202,165,0.4);color:#5dcaa5;padding:4px 10px;border-radius:6px;font-size:0.7em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">Como preencher</button>';
+        html += '<button onclick="event.stopPropagation();window.LH_ORIENTA_show(\''+c.id+'\')" style="margin-bottom:8px;background:rgba(93,202,165,0.12);border:1px solid rgba(93,202,165,0.4);color:#5dcaa5;padding:4px 10px;border-radius:6px;font-size:0.7em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">De onde vêm os dados</button>';
         html += '<div style="font-size:0.78em;color:#c9a227;font-weight:700;">→ Rodar agora</div>';
         html += '</div>';
       });
@@ -48109,7 +48109,7 @@ function calcularICMSST1125(){
       h+='<div style="font-family:\'Syne\',sans-serif;font-size:0.96em;font-weight:700;color:var(--text);margin-bottom:3px;line-height:1.2;">'+nome(id)+'</div>';
       h+='<div style="font-size:0.72em;color:var(--text3);margin-bottom:9px;line-height:1.4;">'+tag+frase+'</div>';
       h+='<div style="display:flex;gap:6px;flex-wrap:wrap;">';
-      h+='<button onclick="window.LH_ORIENTA_show(\''+id+'\')" style="background:rgba(93,202,165,0.12);border:1px solid rgba(93,202,165,0.4);color:#5dcaa5;padding:4px 9px;border-radius:6px;font-size:0.68em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">&#128203; Como preencher</button>';
+      h+='<button onclick="window.LH_ORIENTA_show(\''+id+'\')" style="background:rgba(93,202,165,0.12);border:1px solid rgba(93,202,165,0.4);color:#5dcaa5;padding:4px 9px;border-radius:6px;font-size:0.68em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">&#128203; De onde vêm os dados</button>';
       h+='<button onclick="if(typeof abrirPagina===\'function\')abrirPagina(\''+id+'\',null)" style="background:rgba(184,148,31,0.15);border:1px solid rgba(184,148,31,0.4);color:#c9a227;padding:4px 9px;border-radius:6px;font-size:0.68em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">Rodar &rarr;</button>';
       h+='</div></div>';
     });
@@ -49108,7 +49108,7 @@ function calcularICMSST1125(){
            Agronegócio inteiro. Agora TODAS aparecem: as que têm minicurso levam a
            ele; as que não têm abrem a própria análise e dizem isso.
            Some é pior que incompleto — o assinante concluía que não existia. */
-        var temCurso = !!F[id];
+        var temCurso = !!F[id] || !!(window.LH_GUIAS && window.LH_GUIAS[id]);   /* v939: o guia que saiu da aba também conta */
         var tag=window.lhTipoTag?window.lhTipoTag(id):'';
         h+='<div onclick="' + (temCurso
           ? 'window.LH_formacao_abrir(\''+id+'\')'
@@ -49128,8 +49128,11 @@ function calcularICMSST1125(){
     h+='</div></div>';
     ov.innerHTML=h; document.body.appendChild(ov);
   };
-  window.LH_formacao_abrir = function(id){
-    var d=F[id]; if(!d){ return; }
+  /* ★ v939 · o guia "Como preencher" que ficava dentro da aba (LH_GUIAS, ver LH_GUIA_CENTRAL) passa a morar aqui */
+  window.LH_formacao_tem = function(id){ return !!F[id] || !!(window.LH_GUIAS && window.LH_GUIAS[id]); };
+  window.LH_formacao_abrir = function(id, foco){
+    var g=(window.LH_GUIAS||{})[id];
+    var d=F[id] || (g ? {} : null); if(!d){ return; }
     fechar();
     var ov=document.createElement('div'); ov.id='lh-form-ov';
     ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:99999;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow:auto;';
@@ -49141,20 +49144,81 @@ function calcularICMSST1125(){
     h+='<div><div style="font-size:0.78em;color:#cdd6e4;cursor:pointer;margin-bottom:6px;" onclick="window.LH_formacao_home()">&larr; Voltar à formação</div><div style="font-family:Syne,sans-serif;font-size:1.3em;font-weight:800;color:#e8e6e3;">'+nome(id)+'</div><div style="font-size:0.88em;margin-top:5px;color:#e8edf5;">'+tag+frase+'</div></div>';
     h+='<button onclick="(function(){var o=document.getElementById(\'lh-form-ov\');if(o)o.remove();})()" style="background:none;border:none;color:#cdd6e4;font-size:1.5em;cursor:pointer;line-height:1;">&times;</button></div>';
     h+='<div style="padding:20px 26px;">';
-    h+=sec('','O que é', d.oQ);
-    h+=sec('','Quando aplicar', d.quando);
-    h+=sec('','Como pegar os dados', d.dados);
-    h+=sec('▶','Como rodar', d.comoRodar);
-    h+=sec('','Base legal', d.legal);
-    h+=sec('','Dica de venda', d.venda);
+    if(d.oQ) h+=sec('','O que é', d.oQ);
+    if(d.quando) h+=sec('','Quando aplicar', d.quando);
+    if(g && g.html) h+='<div id="lh-form-preencher" style="margin-bottom:15px;"><div style="font-size:0.80em;font-weight:800;color:#c9a227;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">📘 Como preencher, campo a campo</div><div class="lh-curso-body" style="padding:12px 14px;border:1px solid rgba(201,162,39,.25);border-radius:10px;">'+g.html+'</div></div>';
+    if(d.dados) h+=sec('','Como pegar os dados', d.dados);
+    if(d.comoRodar) h+=sec('▶','Como rodar', d.comoRodar);
+    if(d.legal) h+=sec('','Base legal', d.legal);
+    if(d.venda) h+=sec('','Dica de venda', d.venda);
     h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;">';
     h+='<button onclick="(function(){var o=document.getElementById(\'lh-form-ov\');if(o)o.remove();})();if(typeof abrirPagina===\'function\')abrirPagina(\''+id+'\',null)" style="background:rgba(184,148,31,0.18);border:1px solid rgba(184,148,31,0.45);color:#c9a227;padding:8px 16px;border-radius:9px;font-size:0.86em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">▶Rodar esta análise</button>';
-    h+='<button onclick="if(typeof window.LH_ORIENTA_show===\'function\')window.LH_ORIENTA_show(\''+id+'\')" style="background:rgba(93,202,165,0.12);border:1px solid rgba(93,202,165,0.4);color:#5dcaa5;padding:8px 16px;border-radius:9px;font-size:0.86em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">Como preencher os campos</button>';
+    h+='<button onclick="if(typeof window.LH_ORIENTA_show===\'function\')window.LH_ORIENTA_show(\''+id+'\')" style="background:rgba(93,202,165,0.12);border:1px solid rgba(93,202,165,0.4);color:#5dcaa5;padding:8px 16px;border-radius:9px;font-size:0.86em;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">De onde vêm os dados</button>';
     h+='</div>';
     h+='<div style="font-size:0.72em;color:#7a8aa0;margin-top:14px;line-height:1.5;">Conteúdo educativo do Lionheart. Em teses sujeitas a litígio (ex.: temas em julgamento no STF), a viabilidade e a estratégia de ajuizamento são decisão do advogado responsável.</div>';
     h+='</div></div>';
     ov.innerHTML=h; document.body.appendChild(ov);
+    if(foco==='preencher'){ var alvo=ov.querySelector('#lh-form-preencher'); if(alvo && alvo.scrollIntoView) try{ alvo.scrollIntoView({block:'start'}); }catch(e){} }
   };
+})();
+</script>
+<script>
+/* v939 · "Como preencher" sai de dentro das abas e vai para a Central de Análises (pedido do Ricardo, 11/10 06h25).
+   Antes: seis calculadoras tinham o guia campo a campo aberto na própria aba (details.lh-curso), empurrando os
+   campos para baixo. Agora: o guia é guardado (LH_GUIAS[id]) e, no lugar dele, fica um botão que abre o minicurso
+   daquela calculadora na Central de Análises, já na seção "Como preencher, campo a campo".
+   O link "Formação Lionheart" do rodapé de cada aba passa a abrir o minicurso da própria calculadora (antes abria a
+   lista geral). SÓ TELA: move texto que já existia; nenhuma conta. */
+window.LH_GUIA_CENTRAL = (function(){
+  'use strict';
+  var GUIAS = window.LH_GUIAS = window.LH_GUIAS || {};
+  function idDe(pg){ return String(pg.id||'').replace(/^page-/, ''); }
+  function botaoGuia(id){
+    var d=document.createElement('div'); d.className='lh-guia-central';
+    d.style.cssText='margin:0 auto 14px;max-width:1050px;display:flex;align-items:center;gap:10px;flex-wrap:wrap';
+    d.innerHTML='<button type="button" class="lh-guia-btn" style="padding:8px 16px;background:rgba(201,162,39,.10);border:1px solid rgba(201,162,39,.5);border-radius:8px;color:#e0b93a;font-weight:700;cursor:pointer;font-size:.86rem">📘 Como preencher esta calculadora</button>'
+      +'<span style="font-size:.74rem;color:#8a97a8">abre o guia campo a campo na Central de Análises</span>';
+    d.querySelector('.lh-guia-btn').addEventListener('click', function(){ abrirGuia(id); });
+    return d;
+  }
+  function abrirGuia(id){
+    if(typeof window.LH_formacao_abrir==='function') window.LH_formacao_abrir(id, 'preencher');
+  }
+  /* tira o guia da aba e guarda o conteúdo (uma vez por página). Se a aba tem mais de um (o Regime Ótimo tem
+     o guia e o vídeo), o guia vai primeiro e o vídeo depois, com o próprio título */
+  function recolher(pg){
+    var id=idDe(pg); if(!id) return 0;
+    var dets=[].slice.call(pg.querySelectorAll('details.lh-curso')); if(!dets.length) return 0;
+    var guia=[], video=[], titulo='';
+    dets.forEach(function(det){
+      var s=det.querySelector(':scope > summary'), corpo=det.querySelector('.lh-curso-body');
+      var t=s ? s.textContent.trim() : '', h=corpo ? corpo.innerHTML : '';
+      if(/^Como usar/i.test(t)){ if(!titulo) titulo=t.replace(/^Como usar:\s*/i,''); guia.push(h); }
+      else video.push('<h4>'+t.replace(/[<>&]/g,'')+'</h4>'+h);
+    });
+    if(!GUIAS[id]) GUIAS[id]={ titulo:titulo || (dets[0].querySelector(':scope > summary')||{}).textContent || '', html:guia.concat(video).join('') };
+    dets[0].parentNode.insertBefore(botaoGuia(id), dets[0]);
+    dets.forEach(function(det){ if(det.parentNode) det.parentNode.removeChild(det); });
+    return dets.length;
+  }
+  /* "Formação Lionheart" do rodapé da aba: abre o minicurso desta calculadora, quando ele existe */
+  function ligarRodape(pg){
+    var id=idDe(pg);
+    [].slice.call(pg.querySelectorAll('.calc-page-links a[onclick*="LH_formacao_home"]')).forEach(function(a){
+      a.setAttribute('onclick', "window.LH_GUIA_CENTRAL.rodape('"+id.replace(/[^\w-]/g,'')+"')");
+    });
+  }
+  function rodape(id){
+    if(typeof window.LH_formacao_tem==='function' && window.LH_formacao_tem(id)) window.LH_formacao_abrir(id);
+    else if(typeof window.LH_formacao_home==='function') window.LH_formacao_home();
+  }
+  function tudo(){
+    var n=0;
+    [].slice.call(document.querySelectorAll('div.page[id^="page-"]')).forEach(function(pg){ n+=recolher(pg); ligarRodape(pg); });
+    return n;
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', tudo); else tudo();
+  return { tudo:tudo, abrir:abrirGuia, rodape:rodape, guias:function(){ return GUIAS; } };
 })();
 </script>
 
