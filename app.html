@@ -3858,7 +3858,7 @@ window.LH_PONTE = (function(){
        Uma chamada por item da nota: fn_simnotas(valor, regime do emitente, alíquota do balde, ano). Compara-se o
        IBS+CBS DESTACADO somado (a parte que o servidor modela). O "velho" (ICMS/ISS na transição) é camada só da
        tela — fica fora. P1: nome do fornecedor (snc_forn_nome) e nome do item manual (snc_mnome) NÃO viajam.
-       PENDÊNCIA de modelo (Mestre): crédito sobre fornecedor do Simples — a tela usa 20% do cheio ("padrão-casa"),
+       PENDÊNCIA de modelo (Mestre): crédito sobre fornecedor do Simples — v936: escritor único fn_sn_credito_pct (antes 20% do cheio, "padrão-casa"),
        o servidor usa a fatia do DAS (art. 47 §9º II, ~15,5% do valor). Por isso o crédito não entra na comparação. */
     snRenderC: { calc:'simnotas',
       entradas:function(G){ var reg=((G.el('snc_forn_reg')||{}).value)||'regular'; var ano=(typeof window.SN_ANO==='number')?window.SN_ANO:2027;
@@ -12619,7 +12619,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <div class="input-group"><label>ICMS (produto) ou ISS (serviço) por dentro (%)</label>
           <div style="display:flex;gap:8px;align-items:center"><input type="number" step="0.1" id="pmi_icms" placeholder="18" style="flex:1"><select id="pmi_uf" onchange="lhPmItemUF()" title="ICMS modal da UF (indicativo)" style="width:auto"><option value="">UF…</option></select></div></div>
         <div class="input-group"><label>Custo de compra novo (R$) — opcional</label><input type="number" step="0.01" id="pmi_custonovo" placeholder="o leite que custava 5 passou a 4"></div>
-        <div class="input-group"><label>% da compra com crédito — opcional</label><input type="number" step="5" min="0" max="100" id="pmi_cred" placeholder="regular 100 · Simples 20 · pessoa física 0"><span class="lh-hint" data-hint="De quem você compra este item. Fornecedor do regime regular ou importação: 100% da compra gera crédito. Do Simples: ~20%. Pessoa física / produtor rural PF: 0. Vazio = Cadeia de Crédito ou 100%." onclick="lhHint(event,this)">?</span></div>
+        <div class="input-group"><label>% da compra com crédito — opcional</label><input type="number" step="5" min="0" max="100" id="pmi_cred" placeholder="regular 100 · Simples 12 · pessoa física 0"><span class="lh-hint" data-hint="De quem você compra este item. Fornecedor do regime regular ou importação: 100% da compra gera crédito. Do Simples: ~12% (só o IBS/CBS que ele recolhe no DAS, art. 47 §9º II). Pessoa física / produtor rural PF: 0. Vazio = Cadeia de Crédito ou 100%." onclick="lhHint(event,this)">?</span></div>
         <div class="input-group"><label>ICMS-ST pago na compra (R$ por unidade) — opcional</label><input type="number" step="0.01" id="pmi_st" placeholder="bebida, cosmético, autopeça: o ST que veio na nota do fornecedor, por unidade"><span class="lh-hint" data-hint="Hoje o ICMS-ST pago na compra é custo morto (não gera crédito na revenda). Conforme o ICMS some (2029-32 a 1/10 ao ano, zero em 2033), o IBS que o substitui é creditável: o custo do ano cai. Vazio = neutro." onclick="lhHint(event,this)">?</span></div>
         <div class="input-group" style="grid-column:1/-1"><div id="pmi_class" style="font-size:.82rem;color:var(--text2)">Regime, estratégia, leitura da transição e tipo de cliente vêm do bloco "Como você vende", logo abaixo.</div></div>
       </div>
@@ -12670,7 +12670,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
           <label>De quem você compra? — % das compras que gera crédito <span id="pm_cred_n" style="font-weight:400;text-transform:none;color:var(--text2)"></span></label>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
             <input type="number" step="5" min="0" max="100" id="pm_cred" placeholder="vazio = Cadeia de Crédito (ou 100%)" style="flex:1;min-width:240px;max-width:420px" oninput="clearTimeout(window._pmT);window._pmT=setTimeout(lhPmRender,400)">
-            <span class="lh-hint" data-hint="O crédito de entrada (PIS/COFINS que vira CBS, ICMS-ST que vira IBS) só existe na compra de quem destaca o imposto. Fornecedor do regime regular ou importação: 100%. Fornecedor do Simples: ~20% (art. 47 — só o que ele recolheu, salvo opção pelo regime regular). Pessoa física / produtor rural PF / sem nota: 0%. Prioridade: coluna CRED_% da linha > coluna ORIGEM_COMPRA da linha (regular · simples · pf · importacao) > % do grupo > este % geral > Cadeia de Crédito." onclick="lhHint(event,this)">?</span>
+            <span class="lh-hint" data-hint="O crédito de entrada (PIS/COFINS que vira CBS, ICMS-ST que vira IBS) só existe na compra de quem destaca o imposto. Fornecedor do regime regular ou importação: 100%. Fornecedor do Simples: ~12% (art. 47 §9º II — só o IBS/CBS que ele recolhe no DAS, salvo opção pelo regime regular). Pessoa física / produtor rural PF / sem nota: 0%. Prioridade: coluna CRED_% da linha > coluna ORIGEM_COMPRA da linha (regular · simples · pf · importacao) > % do grupo > este % geral > Cadeia de Crédito." onclick="lhHint(event,this)">?</span>
           </div>
           <details id="pm_cred_grupos_box" style="margin-top:8px;display:none"><summary style="cursor:pointer;color:var(--gold);font-size:.85rem">crédito por grupo — vale sobre o % geral</summary><div id="pm_cred_grupos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px 14px;margin-top:8px;font-size:.82rem"></div></details>
           <div style="font-size:.78rem;color:var(--text2);margin-top:6px">Na planilha: <code>ORIGEM_COMPRA</code> (regular · simples · pf · importacao) ou <code>CRED_%</code> por linha. Hortifrúti de produtor pessoa física e serviço de autônomo não trazem crédito: o custo deles não cai.</div>
@@ -32267,7 +32267,7 @@ function mixCreditoUltimo(prefix, lp, sn, ext){ var u=LH_MIXC.res[prefix]; retur
     if(_memEl&&window.lhMemoriaCalculo) _memEl.innerHTML=window.lhMemoriaCalculo({
       titulo:'Como o mix de origem vira crédito (ou perda)',
       porque:'Cada origem de compra aproveita o crédito de um jeito: fornecedor do regime REGULAR transfere 100% do imposto destacado; fornecedor do SIMPLES transfere só o efetivamente pago no DAS (premissa 20%); MEI e pessoa física transferem ZERO; importação direta credita 100%. O crédito efetivo = compras × 26,5% × mix ponderado. A diferença para o potencial é dinheiro deixado na mesa — renegociável trocando fornecedores de origem.',
-      aliquotas:[{label:'Regular (LP/LR)',valor:'crédito 100%'},{label:'Simples Nacional',valor:'~20% (premissa)'},{label:'MEI / PF',valor:'0%'},{label:'Importação',valor:'100%'}],
+      aliquotas:[{label:'Regular (LP/LR)',valor:'crédito 100%'},{label:'Simples Nacional',valor:'~12% (o que recolhe no DAS)'},{label:'MEI / PF',valor:'0%'},{label:'Importação',valor:'100%'}],
       baseLegal:[{lei:'LC 214/2025, arts. 28-47 (não-cumulatividade)',link:'https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm'},{lei:'LC 214/2025 (aquisições de optante do SN)',link:'https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm'}]});
     var _vEl=document.getElementById('viab-mixcredito');
     if(!_vEl&&_memEl&&_memEl.parentNode){ _vEl=document.createElement('div'); _vEl.id='viab-mixcredito'; _memEl.parentNode.appendChild(_vEl); }
@@ -58038,7 +58038,7 @@ function snTabela(itens,delFn,credFator){
         : '—')+'</td>'+
        '<td class="n">'+SN_FMT(it.ibs)+'</td><td class="n">'+SN_FMT(it.cbs)+'</td>'+
        '<td class="n"><b>'+SN_FMT(it.trib)+'</b></td>'+
-       (credFator!==undefined?'<td class="n" style="color:#1b6b4a"><b>'+SN_FMT(it.trib*credFator)+'</b></td>':'')+
+       (credFator!==undefined?'<td class="n" style="color:#1b6b4a"><b>'+SN_FMT(credFator==='srv'?(+it.credSrv||0):it.trib*credFator)+'</b></td>':'')+
        '<td class="del" onclick="'+delFn+'('+it.id+')">×</td></tr>';
   });
   return h+'</table>';
@@ -58155,16 +58155,18 @@ function sncRender(r, ent, motivo){
       if(nv.ibs==null && nv.ibs_cbs_destacado!=null){ var d=+nv.ibs_cbs_destacado, s0=(+it.ibs||0)+(+it.cbs||0);
         if(s0>0){ it.ibs=d*((+it.ibs||0)/s0); it.cbs=d*((+it.cbs||0)/s0); } else { it.ibs=d; it.cbs=0; } }
       if(tv.valor!=null) it.velho=+tv.valor;
+      var nc=x.nota_de_compra||{}; it.credSrv=(nc.credito_do_adquirente!=null)?+nc.credito_do_adquirente:null;   /* v936 · crédito do adquirente vem do servidor (escritor único) */
       it.novo=(+it.ibs||0)+(+it.cbs||0); it.trib=it.novo+(+it.velho||0); });
   }
 
-  var reg=document.getElementById('snc_forn_reg').value, fator=reg==='simples'?0.20:1; /* ⚒ padrão-casa: crédito SN ≈ parcela DAS ≈ 20% do cheio */
+  /* v936 · achado C: fornecedor do Simples → crédito que o servidor calculou (art. 47 §9º II, fatia do DAS), não 20% do cheio */
+  var reg=document.getElementById('snc_forn_reg').value, snF=(reg==='simples'), fator=snF?'srv':1;
   var l=document.getElementById('snc_lista');
   if(!SN_C.length){l.innerHTML='<div class="vazio">Nota vazia — adicione o primeiro item.</div>';}
   else l.innerHTML=snTabela(SN_C,'snDelC',fator);
   var tot=0,trib=0,ibs=0,cbs=0;
   SN_C.forEach(function(i){tot+=i.tot;trib+=i.trib;ibs+=i.ibs;cbs+=i.cbs;});
-  var cred=trib*fator;
+  var cred=snF ? SN_C.reduce(function(a,i){ return a+(+i.credSrv||0); },0) : trib;
   (document.getElementById('snc_tot')||{}).textContent=SN_FMT(tot);
   (document.getElementById('snc_trib')||{}).textContent=SN_FMT(trib);
   (document.getElementById('snc_split')||{}).textContent=SN_FMT(ibs)+' + '+SN_FMT(cbs);
@@ -58184,8 +58186,8 @@ function snFech(){
   var deb=SN_V.reduce(function(a,i){return a+i.trib;},0),
       recV=SN_V.reduce(function(a,i){return a+i.tot;},0),
       trC=SN_C.reduce(function(a,i){return a+i.trib;},0),
-      fator=document.getElementById('snc_forn_reg').value==='simples'?0.20:1,
-      cred=trC*fator, pagar=Math.max(0,deb-cred);
+      snF=document.getElementById('snc_forn_reg').value==='simples',
+      cred=snF ? SN_C.reduce(function(a,i){ return a+(+i.credSrv||0); },0) : trC, pagar=Math.max(0,deb-cred);
   (document.getElementById('snx_deb')||{}).textContent=SN_FMT(deb);
   (document.getElementById('snx_cred')||{}).textContent=SN_FMT(cred);
   (document.getElementById('snx_pagar')||{}).textContent=SN_FMT(pagar);
@@ -59261,7 +59263,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var pct=function(x){ return (Math.round((+x||0)*10)/10).toLocaleString('pt-BR')+'%'; }, fmt=function(x){ return 'R$ '+(+x||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
    var h='<div class="input-card"><h3 style="color:var(--gold)">Retrato da cadeia</h3><div class="kpi-grid">';
    h+='<div class="kpi-card kpi-hero"><div class="kpi-label">Compras que geram crédito integral</div><div class="kpi-value">'+pct((e.regular||0)+(e.importacao||0))+'</div><div class="kpi-label" style="margin-top:4px">regular + importação</div></div>';
-   h+='<div class="kpi-card"><div class="kpi-label">Compras de Simples/MEI (crédito ~20%)</div><div class="kpi-value" style="color:#e8b93a">'+pct(e.simples||0)+'</div></div>';
+   h+='<div class="kpi-card"><div class="kpi-label">Compras de Simples/MEI (crédito só do que ele recolhe no DAS)</div><div class="kpi-value" style="color:#e8b93a">'+pct(e.simples||0)+'</div></div>';
    h+='<div class="kpi-card"><div class="kpi-label">Produtor rural PF / sem nota</div><div class="kpi-value" style="color:#e05a4d">'+pct(e.pf||0)+'</div><div class="kpi-label" style="margin-top:4px">crédito presumido / zero</div></div>';
    h+='<div class="kpi-card"><div class="kpi-label">Vendas em que o cliente recupera o IBS/CBS</div><div class="kpi-value" style="color:#16c47c">'+pct(s.regular||0)+'</div><div class="kpi-label" style="margin-top:4px">PJ do regime regular</div></div>';
    h+='<div class="kpi-card"><div class="kpi-label">Vendas em que o imposto é custo final</div><div class="kpi-value">'+pct((s.b2c||0)+(s.simples||0)+(s.governo||0))+'</div><div class="kpi-label" style="margin-top:4px">consumidor + Simples + governo</div></div>';
@@ -59272,13 +59274,13 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    h+='</tr></thead><tbody>';
    var linha=function(rot,f,tit){ h+='<tr><td style="padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.06)" title="'+(tit||'')+'">'+rot+'</td>'+[c27,c29,c33].map(function(c){ return '<td style="text-align:right;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.06)">'+f(c)+'</td>'; }).join('')+'</tr>'; };
    linha('IBS/CBS creditável sobre o que você compra', function(c){ return pct(c.credEntradaPct); }, 'alíquota do ano × parcela creditável da cadeia');
-   linha('Crédito perdido (Simples 80% + PF/sem nota)', function(c){ return pct(c.perdidoPct)+(compras?' · '+fmt(compras*c.perdidoPct/100)+'/ano':''); }, 'o que você deixa na mesa por comprar de quem não destaca IBS/CBS');
+   linha('Crédito perdido (Simples além do DAS + PF/sem nota)', function(c){ return pct(c.perdidoPct)+(compras?' · '+fmt(compras*c.perdidoPct/100)+'/ano':''); }, 'o que você deixa na mesa por comprar de quem não destaca IBS/CBS');
    linha('Fatia das vendas com IBS/CBS recuperável pelo cliente', function(c){ return pct(c.recuperavelSaida); });
    h+='</tbody></table></div>';
    h+='<div style="background:rgba(201,162,39,.07);border:1px solid rgba(201,162,39,.35);border-radius:10px;padding:12px 16px;font-size:.85rem;color:#e6e0cc;line-height:1.6;margin-top:12px">';
    h+='<b style="color:var(--gold)">O que isso muda nas outras telas.</b> Regime Ótimo e Dentro × Híbrido já usam esta cadeia (os campos deles são espelhos destes). Na <b>Precificação em Massa</b>, o crédito de compra passa a valer só sobre a parcela creditável ('+pct(c33.creditavel*100)+' das compras) e a fatia PJ ('+pct(s.regular||0)+') define quanto do catálogo aceita "subir só o imposto". '
    +(c33.pfPct>0?'Produtor rural pessoa física: o crédito presumido (art. 168) depende do setor — conte com ele na tela de Crédito Presumido · Agroindústria, não aqui. ':'')
-   +(c33.snPct>=30?'Mais de um terço das compras vem do Simples: renegociar fornecedores para o regime regular (ou para o híbrido, a partir de 2027) recupera '+pct(c33.snPct*0.8*c33.tFora)+' do custo em 2033. ':'')
+   +(c33.snPct>=30?'Mais de um terço das compras vem do Simples: renegociar fornecedores para o regime regular (ou para o híbrido, a partir de 2027) recupera '+pct(c33.snPerdidoPct!=null?c33.snPerdidoPct:0)+' do custo em 2033. ':'')
    +(oS&&oS.tipo==='documentos'?'A fatia "PJ do Simples" nas vendas é estimativa ('+((estado.pjSimplesPct!=null)?estado.pjSimplesPct:30)+'%): o XML de venda não traz o regime do comprador — ajuste no campo ao lado se souber. ':'')
    +'</div></div>';
    el.innerHTML=h;
