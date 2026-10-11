@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v945";</script>
+<body><script>window.LH_VERSAO="v946";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -43719,7 +43719,7 @@ window.LH_SAUDE = (function(){
       nome: dados.nome.trim(),
       cnpj: dados.cnpj ? formatarCNPJ(dados.cnpj) : null,
       cpf: dados.cpf ? formatarCPF(dados.cpf) : null,
-      tipoDoc: dados.tipo === 'socio_pf' ? 'PF' : 'PJ',
+      tipoDoc: (dados.tipo === 'socio_pf' || (dados.tipo === 'solo' && (dados.tipoDoc === 'PF' || (dados.cpf && !dados.cnpj)))) ? 'PF' : 'PJ',
       uf: dados.uf || 'RS',
       email: dados.email || '',
       telefone: dados.telefone || '',
@@ -44697,6 +44697,7 @@ window.LH_SAUDE = (function(){
       // Cria entidade solo
       var dadosEnt = {
         tipo: 'solo',
+        tipoDoc: tipoDoc,
         nome: nome.trim(),
         uf: uf.trim().toUpperCase() || 'RS',
         email: email.trim(),
@@ -45499,7 +45500,7 @@ window.LH_SAUDE = (function(){
     'c08':       { escopo: 'SO_ENTIDADE', fn: 'calcularC08',       descEscopo: 'Pró-labore é por sócio específico' },
     'cr02':      { escopo: 'SO_ENTIDADE', fn: 'calcularCR02',      descEscopo: 'Folha de pagamento é por CNPJ' },
     'cr03':      { escopo: 'SO_ENTIDADE', fn: 'calcularCR03',      descEscopo: 'Conta de energia é por estabelecimento' },
-    'n15':       { escopo: 'SO_ENTIDADE', fn: 'calcularDIFAL',     descEscopo: 'DIFAL é por operação interestadual da entidade' },
+    'n15':       { escopo: 'SO_ENTIDADE', fn: 'calcularN15',       descEscopo: 'Holding Patrimonial · patrimônio da pessoa física ou da holding' },
     'n17':       { escopo: 'SO_ENTIDADE', fn: 'calcularSublimite', descEscopo: 'Sublimite SN é por CNPJ' },
     'n29':       { escopo: 'SO_ENTIDADE', fn: 'calcularN29',       descEscopo: 'Tributação dividendos é por sócio PF' },
 
@@ -45518,8 +45519,8 @@ window.LH_SAUDE = (function(){
     'sublimite': { escopo: 'AMBOS', fn: 'calcularSublimite', consolidacao: 'SOMA',     descEscopo: 'Sublimite consolidado · soma faturamento grupo' },
 
     /* SÓ GRUPO (4 calcs) — decisões estruturais do grupo todo */
-    'c05':       { escopo: 'SO_GRUPO', fn: 'calcularC05', consolidacao: 'SOMA',         descEscopo: 'Regime Ótimo · decisão é do grupo, não entidade isolada' },
-    'c07':       { escopo: 'SO_GRUPO', fn: 'calcularC07', consolidacao: 'SOMA',         descEscopo: 'Migração SN→Regime Regular · afeta todas as entidades' },
+    'c05':       { escopo: 'AMBOS', fn: 'calcularC05', consolidacao: 'SOMA',            descEscopo: 'Regime Ótimo · o regime é de cada CNPJ (matriz e filiais juntas); no grupo, cada CNPJ escolhe o seu' },
+    'c07':       { escopo: 'SO_ENTIDADE', fn: 'calcularC07',                            descEscopo: 'PF × PJ · como a pessoa física recebe a renda' },
     'c09':       { escopo: 'SO_GRUPO', fn: 'calcularC09', consolidacao: 'SOMA',         descEscopo: 'LTV · cliente do BPO = grupo, não entidade individual' }
   };
 
@@ -46031,7 +46032,12 @@ window.LH_SAUDE = (function(){
 
     /* Modo grupo ou subgrupo: consolida */
     if(esc.entidadesIds.length === 0) return false;
-    var listaDados = esc.entidadesIds.map(function(eid){
+    /* v946 · TR25: pessoa física (sócio PF, cliente PF) nunca entra na soma da empresa: CPF não é estabelecimento */
+    var _todasEnts = window.LH_GRUPO.getEntidades ? window.LH_GRUPO.getEntidades() : {};
+    var _ehPF = function(eid){ var e=_todasEnts[eid]; return !!e && (e.tipo==='socio_pf' || e.tipoDoc==='PF' || (e.tipo==='solo' && !!e.cpf && !e.cnpj)); };
+    var _idsEmpresa = esc.entidadesIds.filter(function(eid){ return !_ehPF(eid); });
+    var _pfFora = esc.entidadesIds.length - _idsEmpresa.length;
+    var listaDados = _idsEmpresa.map(function(eid){
       return carregarInputsDaEntidade(eid);
     }).filter(function(d){ return Object.keys(d).length > 0; });
 
@@ -46039,8 +46045,9 @@ window.LH_SAUDE = (function(){
        Consolidar 3 de 5 filiais em silêncio entrega um número parcial com
        cara de completo. Registra a cobertura e avisa quando falta entidade. */
     (function(){
-      var total = esc.entidadesIds.length, com = listaDados.length;
-      window.LH_CONSOLIDADO_COBERTURA = { total:total, com:com, faltam:total-com, completo:(com===total) };
+      var total = _idsEmpresa.length, com = listaDados.length;
+      window.LH_CONSOLIDADO_COBERTURA = { total:total, com:com, faltam:total-com, completo:(com===total), pfFora:_pfFora };
+      var _notaPF = _pfFora ? ' <span style="opacity:.85">· ' + _pfFora + (_pfFora>1?' pessoas físicas ficaram':' pessoa física ficou') + ' fora da soma (sócio PF não é estabelecimento da empresa).</span>' : '';
       var box = document.getElementById('lh-cobertura-consolidado');
       if(!box){
         var host = document.querySelector('.topbar') || document.body;
@@ -46049,14 +46056,14 @@ window.LH_SAUDE = (function(){
         box.style.cssText = 'margin:10px 14px;padding:9px 14px;border-radius:8px;font-size:.83rem;display:none';
         if(host.firstChild) host.parentNode.insertBefore(box, host.nextSibling); else host.appendChild(box);
       }
-      if(total<=1){ box.style.display='none'; return; }
+      if(total<=1 && !_pfFora){ box.style.display='none'; return; }
       if(com===total){
         box.style.cssText='margin:10px 14px;padding:9px 14px;border-radius:8px;font-size:.83rem;background:rgba(22,196,124,.08);border:1px solid rgba(22,196,124,.35);color:#8fd8b0';
-        box.innerHTML='✓ <b>Consolidado completo</b> — '+total+' estabelecimentos, todos com dados.';
+        box.innerHTML='✓ <b>Consolidado completo</b> — '+total+' estabelecimentos, todos com dados.'+_notaPF;
       } else {
         box.style.cssText='margin:10px 14px;padding:9px 14px;border-radius:8px;font-size:.83rem;background:rgba(224,138,46,.10);border:1px solid rgba(224,138,46,.45);color:#e8b96a';
         box.innerHTML='⚠ <b>Consolidado parcial: '+com+' de '+total+' estabelecimentos.</b> '+
-          (total-com)+' sem documento importado — o número abaixo não representa o grupo inteiro.';
+          (total-com)+' sem documento importado — o número abaixo não representa o grupo inteiro.'+_notaPF;
       }
       box.style.display='block';
     })();
@@ -46073,7 +46080,7 @@ window.LH_SAUDE = (function(){
     }
     /* consolida os campos PRÓPRIOS das calcs (a partir dos snapshots) e aplica por cima */
     try{
-      var _snaps = esc.entidadesIds.map(function(eid){ try{ return JSON.parse(localStorage.getItem('lh_snap_'+eid)||'{}'); }catch(e){ return {}; } });
+      var _snaps = _idsEmpresa.map(function(eid){ try{ return JSON.parse(localStorage.getItem('lh_snap_'+eid)||'{}'); }catch(e){ return {}; } });
       if(window.LH_consolidarCalcFields){
         var _cc = LH_consolidarCalcFields(_snaps);
         Object.keys(_cc).forEach(function(id){ var el=document.getElementById(id); if(el) el.value=_cc[id]; });
@@ -75575,6 +75582,131 @@ window.LH_SINTESE_CORE = (function(){
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', vigiar); else vigiar();
   window.addEventListener('load', vigiar);
   return { escolher:escolher, pintar:pintar, modo:function(){ return modo; }, paginas:function(){ return Object.keys(porPagina()); } };
+})();
+</script>
+<script>
+/* v946 · TRAVA DE ENTIDADE (TR25 B · pedido do Ricardo, 11/10 16h20: "vou puxar uma entidade pessoa física e fazer
+   Recuperação de Crédito… importar dados numa aba de sócio… que não pode").
+   A regra (que tipo de entidade cada calculadora aceita, e por quê) mora no servidor: tv_calc_entidade → calc
+   'calc-entidade'. Aqui só se lê a regra e se aplica na tela: aviso no topo, botão de calcular travado e importação
+   de documento recusada quando a entidade ativa é de um tipo que a calculadora não aceita.
+   Classes: 'pj' = CNPJ inteiro (matriz, holding, coligada, empresa solo) · 'filial' · 'pf' (sócio PF, cliente PF).
+   Só vale quando a análise é de UMA entidade (no grupo, o consolidado já tira a pessoa física da soma).
+   Sem resposta do servidor = nada é travado (falha aberta: a trava nunca impede o trabalho por falta de rede). */
+window.LH_TRAVA_ENTIDADE = (function(){
+  'use strict';
+  var REG = null, NOMES = {}, pedindo = false, ultimo = 0;
+  var SEL_BTN = '.btn-calcular, .btn-calc, button[onclick^="calc"]';
+  var RX_FISCAL = /\.(xml|txt|sped|efd|ecf|zip)\b|text\/xml|application\/(xml|zip)/i;
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function classe(ent){
+    if(!ent) return null;
+    if(ent.tipo === 'socio_pf' || ent.tipoDoc === 'PF') return 'pf';
+    if(ent.tipo === 'solo' && ent.cpf && !ent.cnpj) return 'pf';
+    if(ent.tipo === 'filial') return 'filial';
+    return 'pj';
+  }
+  function entidadeAtiva(){
+    try{
+      var G = window.LH_GRUPO; if(!G || !G.getEntidades) return null;
+      var esc0 = window.LH_ESCOPO && window.LH_ESCOPO.get ? window.LH_ESCOPO.get() : null;
+      if(esc0 && esc0.tipo && esc0.tipo !== 'entidade') return null;
+      var id = (esc0 && esc0.entidadeId) || (G.getEntidadeAtivaId && G.getEntidadeAtivaId());
+      return id ? (G.getEntidades()[id] || null) : null;
+    }catch(e){ return null; }
+  }
+  function paginaAtiva(){ var p = document.querySelector('.page.active'); return p ? p.id.replace(/^page-/,'') : null; }
+  function carregar(){
+    if(REG || pedindo) return;
+    var agora = Date.now(); if(agora - ultimo < 15000) return;
+    if(!(window.LH_PONTE && typeof window.LH_PONTE.chamar === 'function')) return;
+    pedindo = true; ultimo = agora;
+    try{
+      window.LH_PONTE.chamar('calc-entidade', {}).then(function(res){
+        pedindo = false;
+        var r = res && res.ok ? res.resultado : null;
+        if(r && r.ok && r.regras){ REG = r.regras; NOMES = r.nomes || {}; aplicar(); }
+      }, function(){ pedindo = false; });
+    }catch(e){ pedindo = false; }
+  }
+  function veredito(pg, ent){
+    if(!REG || !pg) return null;
+    var r = REG[pg]; if(!r || !Array.isArray(r.aceita)) return null;
+    var cl = classe(ent === undefined ? entidadeAtiva() : ent); if(!cl) return null;
+    if(r.aceita.indexOf(cl) >= 0) return null;
+    return { pagina:pg, classe:cl, nome:NOMES[cl] || cl, motivo:r.motivo || '', aceita:r.aceita.map(function(c){ return NOMES[c] || c; }) };
+  }
+  function avisoHTML(v){
+    return '<b>Esta tela não vale para ' + esc(v.nome) + '.</b> ' + esc(v.motivo)
+      + ' <span class="lh-trava-como">Para usar, escolha no topo uma entidade do tipo: ' + esc(v.aceita.join(' ou ')) + '.</span>';
+  }
+  function limpar(P){
+    var b = P.querySelector(':scope > .lh-trava-ent'); if(b) b.parentNode.removeChild(b);
+    [].forEach.call(P.querySelectorAll('[data-lh-trava]'), function(el){ el.disabled = false; el.removeAttribute('data-lh-trava'); el.removeAttribute('title'); });
+  }
+  function aplicar(pg){
+    pg = pg || paginaAtiva(); if(!pg) return;
+    var P = document.getElementById('page-' + pg); if(!P) return;
+    if(!REG) carregar();
+    var v = veredito(pg);
+    limpar(P);
+    if(!v) return;
+    var d = document.createElement('div');
+    d.className = 'lh-trava-ent';
+    d.setAttribute('role', 'alert');
+    d.style.cssText = 'margin:0 0 14px;padding:11px 14px;border-radius:8px;font-size:.86rem;line-height:1.45;background:rgba(224,82,82,.10);border:1px solid rgba(224,82,82,.45);color:#f0b4b4';
+    d.innerHTML = '⛔ ' + avisoHTML(v);
+    P.insertBefore(d, P.firstChild);
+    [].forEach.call(P.querySelectorAll(SEL_BTN), function(el){ if(!el.disabled){ el.disabled = true; el.setAttribute('data-lh-trava', '1'); el.title = 'Não vale para ' + v.nome; } });
+  }
+  function avisar(v){
+    var t = document.getElementById('lh-trava-aviso');
+    if(!t){ t = document.createElement('div'); t.id = 'lh-trava-aviso'; t.setAttribute('role','alert'); document.body.appendChild(t); }
+    t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);max-width:560px;z-index:99999;padding:12px 16px;border-radius:9px;font-size:.86rem;line-height:1.45;background:#2a1416;border:1px solid rgba(224,82,82,.6);color:#f4c4c4;box-shadow:0 8px 24px rgba(0,0,0,.4)';
+    t.innerHTML = '⛔ ' + avisoHTML(v);
+    clearTimeout(avisar._t); avisar._t = setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 7000);
+  }
+  /* clique em calcular numa tela travada (inclusive botões criados depois) */
+  document.addEventListener('click', function(ev){
+    var b = ev.target && ev.target.closest ? ev.target.closest(SEL_BTN) : null; if(!b) return;
+    var P = b.closest('.page'); if(!P) return;
+    var v = veredito(P.id.replace(/^page-/,'')); if(!v) return;
+    ev.preventDefault(); ev.stopImmediatePropagation(); avisar(v);
+  }, true);
+  /* importação de documento: na tela travada, ou documento fiscal de empresa com pessoa física ativa */
+  document.addEventListener('change', function(ev){
+    var inp = ev.target; if(!inp || inp.tagName !== 'INPUT' || inp.type !== 'file') return;
+    var P = inp.closest ? inp.closest('.page') : null;
+    var v = P ? veredito(P.id.replace(/^page-/,'')) : null;
+    if(!v && (RX_FISCAL.test(inp.getAttribute('accept') || '') || inp.hasAttribute('webkitdirectory'))) v = veredito('importsped');
+    if(!v) return;
+    ev.preventDefault(); ev.stopImmediatePropagation();
+    try{ inp.value = ''; }catch(e){}
+    avisar(v);
+  }, true);
+  /* arrastar e soltar arquivos (Importação Inteligente): mesma regra, a não ser que a tela aceite a entidade */
+  document.addEventListener('drop', function(ev){
+    var dt = ev.dataTransfer; if(!dt || !dt.files || !dt.files.length) return;
+    var P = ev.target && ev.target.closest ? ev.target.closest('.page') : null;
+    var pg = P ? P.id.replace(/^page-/,'') : null;
+    var v = veredito(pg);
+    if(!v && !(REG && pg && REG[pg])) v = veredito('importsped');
+    if(!v) return;
+    ev.preventDefault(); ev.stopImmediatePropagation(); avisar(v);
+  }, true);
+  document.addEventListener('lh:clienteMudou', function(){ setTimeout(function(){ aplicar(); }, 0); });
+  document.addEventListener('lh:escopoMudou', function(){ setTimeout(function(){ aplicar(); }, 0); });
+  function embrulhar(){
+    var f = window.abrirPagina;
+    if(typeof f !== 'function' || f._lhTrava) return;
+    var g = function(){ var r = f.apply(this, arguments); try{ aplicar(); }catch(e){} return r; };
+    g._lhTrava = true; window.abrirPagina = g;
+  }
+  embrulhar();
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ embrulhar(); carregar(); });
+  window.addEventListener('load', function(){ embrulhar(); carregar(); aplicar(); });
+  return { classe:classe, veredito:veredito, aplicar:aplicar, carregar:carregar,
+    regras:function(){ return REG; }, _reset:function(){ REG = null; NOMES = {}; pedindo = false; ultimo = 0; } };
 })();
 </script>
 </body>
