@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v943";</script>
+<body><script>window.LH_VERSAO="v944";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -75377,7 +75377,8 @@ window.LH_FP_COMPARAR = (function(){
    Sintetizado, mostra o cartão do dono e esconde memória de cálculo, base legal, pareceres e a Análise de Resultados.
    Só no CORE puro (no ITFE a leitura do dono já é a tela). SÓ TELA: nenhuma conta nova, nenhuma frase nova de cálculo.
    v943 · onde não há leitura do dono, a leitura vem pronta do servidor (calc 'sintese' → fn_sintese): N04, PF × PJ,
-   Art. 127, Split por operação, Split na indústria, Imposto Seletivo e Formação de Preço. */
+   Art. 127, Split por operação, Split na indústria, Imposto Seletivo e Formação de Preço.
+   v944 · + 11 setoriais e 9 do agro (mesma fn_sintese). */
 window.LH_SINTESE_CORE = (function(){
   'use strict';
   var modo = 'completo';   /* decisão do Ricardo: o Completo abre primeiro */
@@ -75427,7 +75428,28 @@ window.LH_SINTESE_CORE = (function(){
     c11:      { fn:'calcularC11',      calc:'c11',            ancora:'kpi-c11' },
     ind11:    { fn:'calcularIND11',    calc:'ind11',          ancora:'kpi-ind11' },
     seletivo: { fn:'calcularSeletivo', calc:'seletivo',       ancora:'kpi-seletivo' },
-    formpreco:{ fn:'fpCalc',           calc:'formacao-preco', ancora:'fpDec' }
+    formpreco:{ fn:'fpCalc',           calc:'formacao-preco', ancora:'fpDec' },
+    /* v944 · setoriais (fn_setor) e agro */
+    bares:{ fn:'calcularBares', calc:'setor', ancora:'kpi-bares' },
+    hotel:{ fn:'calcularHotel', calc:'setor', ancora:'kpi-hotel' },
+    agviagem:{ fn:'calcularAgViagem', calc:'setor', ancora:'kpi-agviagem' },
+    telecom:{ fn:'calcularTelecom', calc:'setor', ancora:'kpi-telecom' },
+    transpax:{ fn:'calcularTransPax', calc:'setor', ancora:'kpi-transpax' },
+    logcarga:{ fn:'calcularLogCarga', calc:'setor', ancora:'kpi-logcarga' },
+    psaude:{ fn:'calcularPSaude', calc:'setor', ancora:'kpi-psaude' },
+    financeiro:{ fn:'calcularFinanceiro', calc:'setor', ancora:'kpi-financeiro' },
+    apostas:{ fn:'calcularApostas', calc:'setor', ancora:'kpi-apostas' },
+    coop:{ fn:'calcularCoop', calc:'setor', ancora:'kpi-coop' },
+    agroins:{ fn:'calcularAgroIns', calc:'setor', ancora:'kpi-agroins' },
+    agro02:{ fn:'calcularAGRO02', calc:'agro02', ancora:'kpi-agro02' },
+    agro09:{ fn:'calcularAGRO09', calc:'agro09', ancora:'kpi-agro09' },
+    agro11:{ fn:'calcularAGRO11', calc:'agro11', ancora:'kpi-agro11' },
+    agro22zero:{ fn:'lhAg22Calc', calc:'agro22', ancora:'ag22_kpis' },
+    agroSuper1:{ fn:'calcularAgroSuper1', calc:'agro-decisor', ancora:'kpi-agroSuper1' },
+    agroSuper2:{ fn:'calcularAgroSuper2', calc:'agrosuper2', ancora:'kpi-agroSuper2' },
+    agroSuper4:{ fn:'calcularAgroSuper4', calc:'agrosuper4', ancora:'kpi-agroSuper4' },
+    agroSuper5:{ fn:'calcularAgroSuper5', calc:'agrosuper5', ancora:'kpi-agroSuper5' },
+    agroSuper6:{ fn:'calcularAgroSuper6', calc:'agrosuper6', ancora:'kpi-agroSuper6' }
   };
   var LEITURA_SRV = {};   /* página → { q, L } : a última leitura pedida ao servidor */
   function porPagina(){ var m={}, L=leituras(); Object.keys(L).forEach(function(k){ if(L[k] && L[k].pagina) m[L[k].pagina]=k; });
