@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v940";</script>
+<body><script>window.LH_VERSAO="v941";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -64395,8 +64395,10 @@ function lhCentralOportunidades(targetId){
     }
   }
   /* 4) JCP se LP/LR */
-  if(regs[0].nome.indexOf('Lucro')===0 || regAtual.indexOf('Lucro')===0){
-    ops.push({t:'JCP dedutível (LP/LR): juros sobre capital próprio reduzem IRPJ/CSLL', v:0, d:'rode a calculadora JCP × Dividendos — ela encontra a combinação ótima automaticamente'});
+  /* v941 · JCP só é dedutível no Lucro Real (Lei 9.249/1995, art. 9º); no Presumido a base é presumida e o JCP não
+     reduz IRPJ/CSLL — antes a sugestão aparecia também para o Presumido */
+  if(regs[0].nome==='Lucro Real' || regAtual==='Lucro Real'){
+    ops.push({t:'JCP no Lucro Real: juros sobre capital próprio são dedutíveis e reduzem IRPJ/CSLL', v:0, d:'rode a calculadora JCP × Dividendos — ela encontra a combinação ótima automaticamente'});
   }
   /* 5) Híbrido próximo do empate + carteira B2B */
   var sn=regs.find(function(r){return r.nome==='Simples Nacional';});
@@ -71057,12 +71059,15 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
       var fat = v('c05_fat') || 0;
       var melhor = R.slice().sort(function(a,b){return a.total-b.total;})[0];
       var saiSimples = melhor && !/Simples/i.test(melhor.nome);
+      /* v941 · a lista "o que muda" só vale para quem ESTÁ no Simples hoje (antes valia para qualquer um, e falava
+         de ICMS também para empresa de serviços) */
+      var hojeSimples = /^simples/i.test(txt('gi_regime'));
       var b2c = v('c05_cli_b2c');
       return {
         opcoes: R.map(function(r){ return {nome:r.nome, valor:r.total}; }),
-        mudanca: saiSimples ? {
-          itens:['O ICMS sai do DAS e passa a ter apuração e guia estaduais próprias',
-                 'Aparecem obrigações acessórias estaduais que hoje não existem',
+        mudanca: (saiSimples && hojeSimples) ? {
+          itens:['O ICMS (comércio e indústria) ou o ISS (serviços) sai do DAS e passa a ter apuração e guia próprias',
+                 'Aparecem obrigações acessórias que hoje não existem',
                  'O imposto passa a ser destacado na nota — muda o que o cliente vê',
                  'A troca de regime, em regra, só vale a partir do ano-calendário seguinte'],
           nota:'Esses custos são reais e não entram na comparação numérica acima.'
@@ -71090,11 +71095,9 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
           {dispara:function(){ return !!(melhor && melhor.total > fat*0.45); },
            texto:'Carga acima de 45% do faturamento — confira faturamento e período dos documentos'}
         ],
-        virada: (function(){
-          if(!saiSimples) return null;
-          return 'O Lucro Real passaria a vencer com margem líquida abaixo de cerca de 8,5%. '+
-                 'E qualquer mudança relevante na folha altera o Fator R e a comparação.';
-        })(),
+        /* v941 · saiu a frase "o Lucro Real passaria a vencer com margem abaixo de cerca de 8,5%": era um número
+           fixo, igual para toda empresa, não a conta desta. Fica só o que vale para qualquer caso. */
+        virada: saiSimples ? 'Margem de lucro e folha decidem esta comparação: se mudarem de forma relevante, refaça a conta.' : null,
         prazos: saiSimples ? ['A opção pelo regime vale a partir do início do ano-calendário'] : null
       };
     },
@@ -75403,6 +75406,8 @@ window.LH_SINTESE_CORE = (function(){
     });
     var rc=document.getElementById('recs-'+pg); if(rc) rc.classList.add('lh-sint-tec');
     [].slice.call(P.querySelectorAll('[id^="lhFront-"]')).forEach(function(e){ e.classList.add('lh-sint-tec'); });
+    /* v941 · leituras e oportunidades do contador (Leitura da análise, Central de Oportunidades) também saem */
+    [].slice.call(P.querySelectorAll('.lh-leitura,[id$="_oport_box"]')).forEach(function(e){ e.classList.add('lh-sint-tec'); });
   }
   function barraHTML(){
     return '<span class="rot">RESULTADO</span>'
