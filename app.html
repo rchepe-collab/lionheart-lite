@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v936";</script>
+<body><script>window.LH_VERSAO="v937";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -73648,8 +73648,26 @@ window.LH_MEU_CENARIO = (function(){
       });
     });
   }
+  /* v937 · a "Análise de Resultados" de cada calculadora diz em qual cenário de alíquota ela foi feita
+     (o texto da análise é o da tela; aqui só se carimba o cenário que foi ao servidor) */
+  function cenarioEmUso(){
+    var m=escolhido(); if(m) return { nome:nomeMeu(estado.sel), pct:m.total_ref_pct, cor:(estado.sel==='2' ? COR.M2 : COR.M1) };
+    var k=trilhoAtivo()==='B' ? 'B' : 'A', o=(estado.oficiais||[]).filter(function(x){ return String(x.cenario)===k; })[0];
+    return { nome:(k==='A' ? 'cenário oficial A' : 'cenário B'), pct:o ? o.total_ref_pct : null, cor:COR[k] };
+  }
+  function marcarAnalises(){
+    var c=cenarioEmUso(), txt='calculada no '+c.nome+(c.pct!=null ? ' · '+fmt(c.pct)+'%' : '');
+    document.querySelectorAll('details.lh-acc > summary').forEach(function(s){
+      if(!/Análise de Resultados/.test(s.textContent)) return;
+      var pg=s.closest ? s.closest('.page') : null; if(!pg || !pg.querySelector('.lh-estresse-v257')) return;
+      var sp=s.querySelector('.lh-ar-cen');
+      if(!sp){ sp=document.createElement('span'); sp.className='lh-ar-cen'; sp.style.cssText='margin-left:8px;padding:1px 8px;border-radius:10px;font-size:.7rem;font-weight:700;vertical-align:middle'; s.appendChild(sp); }
+      sp.textContent=txt; sp.style.color=c.cor; sp.style.border='1px solid '+c.cor+'88';
+    });
+  }
   function pintar(){
     pintarBotoes();
+    try{ marcarAnalises(); }catch(e){}
     var m=escolhido();
     if(!m){
       if(trilhoAtivo()==='E') document.querySelectorAll('.lh-selo-cenario').forEach(function(el){
@@ -73673,7 +73691,7 @@ window.LH_MEU_CENARIO = (function(){
     try{ window.dispatchEvent(new CustomEvent('lh:cenario',{detail:{meu:meuDe(q).cenario}})); }catch(e){}
     return true;
   }
-  function soltar(){ if(!estado.sel) return; estado.sel=false; destravar(); pintarBotoes(); }
+  function soltar(){ if(!estado.sel) return; estado.sel=false; destravar(); pintarBotoes(); try{ marcarAnalises(); }catch(e){} }
   function abrir(){ try{ window.abrirPagina('meucenario'); }catch(e){} }
 
   /* ── trava da dupla contagem (TR14 §3) ───────────────────────────── */
@@ -73842,72 +73860,109 @@ window.LH_MEU_CENARIO = (function(){
       box.innerHTML=painelComparador(r, nota, r.calc || calc); return r;
     });
   }
-  /* (a) Leitura estratégica: só se o servidor mandar; nenhuma frase nasce aqui */
+  /* v937 · painel em linguagem simples (pedido do Ricardo, 11/10 06h25: "maior alíquota, menor alíquota, melhor regime…
+     está confuso"). Ordem: (1) Resumo → (2) Quanto dá em cada cenário → (3) O que isso significa para o seu cliente →
+     (4) O que fazer → (5) atenção → (6) detalhes recolhidos. Todas as frases vêm do servidor (estrategia_completa v2:
+     resumo_curto, leitura_diferenca, diferencas.melhor/pior, banco, acoes_unificadas); aqui só se escolhe onde desenhar.
+     Resposta antiga (sem esses campos) continua desenhando como na v936. */
+  function novoPainel(e){ return !!(e && typeof e==='object' && (e.resumo_curto || Array.isArray(e.acoes_unificadas))); }
+  function titSecao(t){ return '<div class="lh-secao-tit" style="font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#8a97a8;margin-bottom:4px">'+esc(t)+'</div>'; }
+  function itemAcao(a){ return '<li style="margin:4px 0">'+esc(a.texto)
+      +(a.prazo ? ' <span style="color:#e0b93a;font-size:.8em;white-space:nowrap">· '+esc(a.prazo)+'</span>' : '')
+      +(a.base_legal ? '<div class="lh-est-base" style="color:#8a97a8;font-size:.76em">'+esc(a.base_legal)+'</div>' : '')+'</li>'; }
+  function pontoHTML(e){
+    var c=e && e.custo_por_ponto; if(c==null) return '';
+    if(typeof c==='object') return c.texto ? '<div class="lh-est-ponto" style="margin-top:6px;font-size:.84rem">'+esc(c.texto)+'</div>' : '';
+    return '<div class="lh-est-ponto" style="margin-top:6px;font-size:.84rem">cada 1 p.p. de alíquota = <b>R$ '+fmt(c)+'/ano</b></div>';
+  }
+  /* (1) Resumo: a conclusão numa frase (resumo_curto) + o selo; v936: título, resumo, custo por ponto e ações */
   function estrategiaHTML(e){
-    if(!e || typeof e!=='object' || !e.titulo) return '';
+    if(!e || typeof e!=='object' || !(e.titulo || e.resumo_curto)) return '';
+    var nv=novoPainel(e);
     var SELO = { robusta:'decisão robusta', sensivel:'decisão sensível à alíquota', estavel:'pouco sensível à alíquota' };
     var verde = e.veredito==='robusta' || e.veredito==='estavel', cor = verde ? '#16c47c' : '#e0a83a';
     var selo = SELO[e.veredito] ? '<span class="lh-est-selo" style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:.7rem;font-weight:800;color:'+cor+';border:1px solid '+cor+'88;background:'+cor+'1f;vertical-align:middle">'
       +SELO[e.veredito]+'</span>' : '';
-    var acoes=(e.acoes||[]).map(function(a){ return '<li style="margin:4px 0">'+esc(a.texto)
-      +(a.prazo ? ' <span style="color:#e0b93a;font-size:.8em;white-space:nowrap">· '+esc(a.prazo)+'</span>' : '')
-      +(a.base_legal ? '<div class="lh-est-base" style="color:#8a97a8;font-size:.76em">'+esc(a.base_legal)+'</div>' : '')+'</li>'; }).join('');
+    var acoes=nv ? '' : (e.acoes||[]).map(itemAcao).join('');
     var fontes=(e.fontes||[]).filter(function(f){ return f && (f.url || f.link || f.curso || f.titulo); });
     var curso=fontes.length ? '<div class="lh-est-fontes" style="margin-top:6px">'+fontes.map(function(f){ var u=f.url||f.link||f.curso;
         return u ? '<a href="'+esc(u)+'" target="_blank" rel="noopener" style="color:#e0b93a;font-size:.8rem">ver no curso'+(f.titulo ? ' · '+esc(f.titulo) : '')+' →</a>'
                  : '<span style="color:#8a97a8;font-size:.8rem">Fonte: '+esc(f.titulo)+'</span>'; }).join(' &nbsp; ')+'</div>' : '';
     return '<div class="lh-estrategia" data-veredito="'+esc(e.veredito||'')+'" style="border:1px solid '+cor+'66;border-left:4px solid '+cor+';border-radius:12px;padding:12px 14px;margin-bottom:12px;background:rgba(255,255,255,.02)">'
-      +'<div style="font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#8a97a8;margin-bottom:4px">Leitura estratégica</div>'
-      +'<div class="lh-est-titulo" style="font-weight:800;font-size:1.05rem;line-height:1.35">'+esc(e.titulo)+' '+selo+'</div>'
+      +titSecao(nv ? 'Resumo' : 'Leitura estratégica')
+      +'<div class="lh-est-titulo" style="font-weight:800;font-size:1.05rem;line-height:1.35">'+esc(nv && e.resumo_curto ? e.resumo_curto : e.titulo)+' '+selo+'</div>'
       +(e.resumo ? '<div class="lh-est-resumo" style="margin-top:6px;font-size:.88rem;line-height:1.5">'+esc(e.resumo)+'</div>' : '')
-      +((e.custo_por_ponto && typeof e.custo_por_ponto==='object')
-          ? (e.custo_por_ponto.texto ? '<div class="lh-est-ponto" style="margin-top:6px;font-size:.84rem">'+esc(e.custo_por_ponto.texto)+'</div>' : '')
-          : (e.custo_por_ponto!=null ? '<div class="lh-est-ponto" style="margin-top:6px;font-size:.84rem">cada 1 p.p. de alíquota = <b>R$ '+fmt(e.custo_por_ponto)+'/ano</b></div>' : ''))
+      +(nv ? '' : pontoHTML(e))
       +(acoes ? '<ul class="lh-est-acoes" style="margin:8px 0 0 18px;font-size:.86rem;line-height:1.45">'+acoes+'</ul>' : '')
       +curso+'</div>';
   }
-  /* v936 · (a2) Diferença entre os cenários: a frase e a tabela vêm prontas do servidor (estrategia.diferencas) */
+  /* v936 · (2) Quanto dá em cada cenário: a frase e a tabela vêm prontas do servidor (estrategia.diferencas) */
   function valorDif(v, tipo, sinal){
     if(v==null || isNaN(Number(v))) return '—';
     var n=Number(v), s = sinal ? (n>0 ? '+' : (n<0 ? '−' : '')) : (n<0 ? '−' : '');
     return s+(tipo==='pct' ? fmt(Math.abs(n))+'%' : 'R$ '+fmt(Math.abs(n)));
   }
+  /* etiqueta da linha: cenário oficial / melhor caso / pior caso (pelo sentido que o servidor mandou; sem sentido, nada) */
+  function etiquetaCaso(d, c){
+    var t=[], k=String(c.cenario);
+    if(c.base) t.push(['oficial','#8a97a8']);
+    if(d.sentido && d.sentido!=='neutro' && d.melhor!==d.pior){ if(k===String(d.melhor)) t.push(['melhor caso','#16c47c']); if(k===String(d.pior)) t.push(['pior caso','#e07a7a']); }
+    return t.map(function(x){ return ' <span class="lh-caso" style="display:inline-block;padding:0 7px;border-radius:9px;font-size:.68rem;font-weight:700;color:'+x[1]+';border:1px solid '+x[1]+'88">'+x[0]+'</span>'; }).join('');
+  }
   function diferencasHTML(e){
     var d=e && e.diferencas, L=d && Array.isArray(d.por_cenario) ? d.por_cenario : [];
     if(!e || (!e.leitura_diferenca && L.length<2)) return '';
+    var nv=novoPainel(e);
     var rot=d && d.rotulo ? String(d.rotulo).replace(/^./, function(c){ return c.toUpperCase(); }) : 'Número principal';
     var linhas=L.map(function(c){
       var cor=corDe(c), base=!!c.base, pp=Number(c.pp_vs_a);
-      return '<tr data-cenario="'+esc(c.cenario)+'"><td style="white-space:nowrap"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:'+cor+';margin-right:6px;vertical-align:middle"></span><b style="color:'+cor+'">'+esc(curto(c))+'</b><div style="color:#8a97a8;font-size:.72rem">'+esc(c.nome||'')+'</div></td>'
-        +'<td style="text-align:right">'+(base ? '<span style="color:#8a97a8">base</span>' : (isNaN(pp) ? '—' : (pp>0?'+':(pp<0?'−':''))+fmt(Math.abs(pp))+' p.p.'))+'</td>'
+      var aliq = nv ? (c.total_ref_pct!=null ? fmt(c.total_ref_pct)+'%' : '—')
+        : (base ? '<span style="color:#8a97a8">base</span>' : (isNaN(pp) ? '—' : (pp>0?'+':(pp<0?'−':''))+fmt(Math.abs(pp))+' p.p.'));
+      return '<tr data-cenario="'+esc(c.cenario)+'"><td><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:'+cor+';margin-right:6px;vertical-align:middle"></span><b style="color:'+cor+'">'+esc(nv ? (c.nome||curto(c)) : curto(c))+'</b>'+(nv ? etiquetaCaso(d, c) : '<div style="color:#8a97a8;font-size:.72rem">'+esc(c.nome||'')+'</div>')+'</td>'
+        +'<td style="text-align:right">'+aliq+'</td>'
         +'<td style="text-align:right;font-weight:700">'+valorDif(c.valor, d.tipo, false)+'</td>'
-        +'<td style="text-align:right">'+(base ? '<span style="color:#8a97a8">—</span>' : valorDif(c.dif_valor, d.tipo, true)+(c.dif_pct!=null && d.tipo!=='pct' ? ' <span style="color:#8a97a8">('+(Number(c.dif_pct)>0?'+':'')+fmt(c.dif_pct)+'%)</span>' : ''))+'</td></tr>'; }).join('');
+        +'<td style="text-align:right">'+(base ? '<span style="color:#8a97a8">'+(nv ? 'referência' : '—')+'</span>' : valorDif(c.dif_valor, d.tipo, true)+(c.dif_pct!=null && d.tipo!=='pct' ? ' <span style="color:#8a97a8">('+(Number(c.dif_pct)>0?'+':'')+fmt(c.dif_pct)+'%)</span>' : ''))+'</td></tr>'; }).join('');
+    var cab = nv ? ['Cenário','Alíquota cheia (CBS+IBS)',rot,'Diferença para o oficial'] : ['Cenário','Alíquota vs A',rot,'Diferença vs A'];
     return '<div class="lh-cmp-dif" style="border:1px solid rgba(224,185,58,.35);border-radius:12px;padding:12px 14px;margin-bottom:12px">'
-      +'<div style="font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#8a97a8;margin-bottom:4px">Diferença entre os cenários</div>'
+      +titSecao(nv ? 'Quanto dá em cada cenário' : 'Diferença entre os cenários')
       +(e.leitura_diferenca ? '<div class="lh-dif-leitura" style="font-size:.9rem;line-height:1.5;margin-bottom:8px">'+esc(e.leitura_diferenca)+'</div>' : '')
-      +(L.length>=2 ? '<div style="overflow-x:auto"><table class="result-table lh-dif-tabela" style="width:100%;min-width:420px;font-size:.8rem"><thead><tr><th style="text-align:left">Cenário</th><th style="text-align:right">Alíquota vs A</th><th style="text-align:right">'+esc(rot)+'</th><th style="text-align:right">Diferença vs A</th></tr></thead><tbody>'+linhas+'</tbody></table></div>' : '')
+      +(L.length>=2 ? '<div style="overflow-x:auto"><table class="result-table lh-dif-tabela" style="width:100%;min-width:420px;font-size:.8rem"><thead><tr>'
+          +cab.map(function(h, i){ return '<th style="text-align:'+(i ? 'right' : 'left')+'">'+esc(h)+'</th>'; }).join('')+'</tr></thead><tbody>'+linhas+'</tbody></table></div>' : '')
+      +(nv ? pontoHTML(e) : '')
       +'</div>';
   }
-  /* v936 · (a3) Banco de estratégias: o que a diferença significa para o SEU tipo de negócio (servidor: estrategia.banco) */
+  /* v936 · (3) Banco de estratégias: o que a diferença significa para o SEU tipo de negócio (servidor: estrategia.banco) */
   function bancoHTML(e){
     var b=e && e.banco; if(!b || typeof b!=='object') return '';
+    var nv=novoPainel(e);
     var porque=(b.porque||[]).map(function(t){ return '<p style="margin:6px 0">'+esc(t)+'</p>'; }).join('');
-    var acoes=(b.acoes||[]).map(function(a){ return '<li style="margin:4px 0">'+esc(a.texto)
-      +(a.prazo ? ' <span style="color:#e0b93a;font-size:.8em;white-space:nowrap">· '+esc(a.prazo)+'</span>' : '')
-      +(a.base_legal ? '<div class="lh-est-base" style="color:#8a97a8;font-size:.76em">'+esc(a.base_legal)+'</div>' : '')+'</li>'; }).join('');
-    var riscos=(b.riscos||[]).map(function(a){ return '<div class="lh-banco-risco" style="margin-top:8px;font-size:.82rem;color:#e0a83a">⚠ '+esc(a.texto)
-      +(a.base_legal ? ' <span style="color:#8a97a8;font-size:.9em">· '+esc(a.base_legal)+'</span>' : '')+'</div>'; }).join('');
+    var acoes=nv ? '' : (b.acoes||[]).map(itemAcao).join('');
+    var riscos=nv ? '' : riscosHTML(b);
     if(!b.efeito_texto && !porque && !acoes) return '';
     var p=b.perfil||{};
     return '<div class="lh-banco" data-efeito="'+esc(b.efeito||'')+'" data-cliente="'+esc(p.cliente||'')+'" style="border:1px solid rgba(110,168,254,.35);border-left:4px solid #6ea8fe;border-radius:12px;padding:12px 14px;margin-bottom:12px;background:rgba(110,168,254,.04)">'
-      +'<div style="font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#8a97a8;margin-bottom:4px">Estratégia para o seu tipo de negócio</div>'
+      +titSecao(nv ? 'O que isso significa para o seu cliente' : 'Estratégia para o seu tipo de negócio')
       +(p.rotulo ? '<div class="lh-banco-perfil" style="font-size:.8rem;color:#c9d1dc;margin-bottom:6px">Perfil: <b>'+esc(p.rotulo)+'</b>'+(p.origem ? ' <span style="color:#8a97a8">· fonte: '+esc(p.origem)+'</span>' : '')+'</div>' : '')
       +(b.efeito_texto ? '<div class="lh-banco-efeito" style="font-weight:700;font-size:.92rem;line-height:1.45">'+esc(b.efeito_texto)+'</div>' : '')
-      +(porque ? '<div class="lh-banco-porque" style="font-size:.86rem;line-height:1.5;margin-top:4px"><div style="font-weight:700;margin-top:8px">Por que essa diferença importa para você</div>'+porque+'</div>' : '')
+      +(porque ? '<div class="lh-banco-porque" style="font-size:.86rem;line-height:1.5;margin-top:4px"><div style="font-weight:700;margin-top:8px">'+(nv ? 'Por quê' : 'Por que essa diferença importa para você')+'</div>'+porque+'</div>' : '')
       +(acoes ? '<div style="font-weight:700;margin-top:8px;font-size:.86rem">O que fazer</div><ul class="lh-banco-acoes" style="margin:4px 0 0 18px;font-size:.86rem;line-height:1.45">'+acoes+'</ul>' : '')
       +riscos
-      +(b.dica ? '<div class="lh-banco-dica" style="margin-top:8px;font-size:.8rem;color:#8a97a8">'+esc(b.dica)+'</div>' : '')
+      +(!nv && b.dica ? '<div class="lh-banco-dica" style="margin-top:8px;font-size:.8rem;color:#8a97a8">'+esc(b.dica)+'</div>' : '')
       +'</div>';
+  }
+  function riscosHTML(b){
+    return ((b && b.riscos)||[]).map(function(a){ return '<div class="lh-banco-risco" style="margin-top:8px;font-size:.82rem;color:#e0a83a">⚠ '+esc(a.texto)
+      +(a.base_legal ? ' <span style="color:#8a97a8;font-size:.9em">· '+esc(a.base_legal)+'</span>' : '')+'</div>'; }).join('');
+  }
+  /* v937 · (4) O que fazer: uma lista só (servidor: acoes_unificadas, já sem repetição) · (5) atenção: risco e dica do banco */
+  function acoesHTML(e){
+    if(!novoPainel(e)) return '';
+    var L=(e.acoes_unificadas||[]).filter(function(a){ return a && a.texto; });
+    var b=e.banco||{}, risco=riscosHTML(b);
+    var dica=b.dica ? '<div class="lh-banco-dica" style="margin-top:8px;font-size:.8rem;color:#8a97a8">'+esc(b.dica)+'</div>' : '';
+    return (L.length ? '<div class="lh-cmp-acoes" style="border:1px solid rgba(22,196,124,.35);border-left:4px solid #16c47c;border-radius:12px;padding:12px 14px;margin-bottom:12px">'
+        +titSecao('O que fazer')+'<ol class="lh-acoes-lista" style="margin:4px 0 0 18px;font-size:.88rem;line-height:1.5">'+L.map(itemAcao).join('')+'</ol></div>' : '')
+      +((risco || dica) ? '<div class="lh-cmp-atencao" style="margin-bottom:12px">'+risco+dica+'</div>' : '');
   }
   /* "+x% vs A" vem do servidor (variacoes[].vs_a_pct); sem o campo, o selo não aparece */
   function vsA(r, caminho, cen){
@@ -73997,13 +74052,26 @@ window.LH_MEU_CENARIO = (function(){
   }
   function painelComparador(r, nota, calc){
     var falhas=(r.cenarios||[]).filter(function(c){ return c.ok===false; }).map(function(c){ return '<div class="kpi-sub" style="color:#e07a7a">'+esc(c.nome)+': '+esc(c.motivo)+'</div>'; }).join('');
-    return '<div class="lh-comparar-tab lh-cmp-painel">'
-      +estrategiaHTML(r.estrategia)+diferencasHTML(r.estrategia)+bancoHTML(r.estrategia)
-      +'<div class="kpi-sub" style="margin-bottom:8px">'+esc(r.leitura||'')+esc(nota||'')+'</div>'
-      +cartoesHTML(r, calc)+falhas+graficoMuda(r, calc)+tabelaHTML(r, calc)
-      +(r.dica?'<div class="kpi-sub" style="margin-top:8px">'+esc(r.dica)+'</div>':'')
-      +(r.base_legal?'<div style="margin-top:6px;font-size:.72rem;color:#8a97a8">'+esc(r.base_legal)+'</div>':'')+'</div>';
+    var e=r.estrategia, rodape=(r.dica?'<div class="kpi-sub" style="margin-top:8px">'+esc(r.dica)+'</div>':'')
+      +(r.base_legal?'<div style="margin-top:6px;font-size:.72rem;color:#8a97a8">'+esc(r.base_legal)+'</div>':'');
+    var detalhe='<div class="kpi-sub" style="margin-bottom:8px">'+esc(r.leitura||'')+esc(nota||'')+'</div>'+cartoesHTML(r, calc);
+    if(!novoPainel(e)) return '<div class="lh-comparar-tab lh-cmp-painel">'
+      +estrategiaHTML(e)+diferencasHTML(e)+bancoHTML(e)+detalhe+falhas+graficoMuda(r, calc)+tabelaHTML(r, calc)+rodape+'</div>';
+    /* v937: o essencial em cima; cartões, gráfico e todas as variações num "ver detalhes" recolhido */
+    return '<div class="lh-comparar-tab lh-cmp-painel lh-cmp-v937">'
+      +estrategiaHTML(e)+diferencasHTML(e)+bancoHTML(e)+acoesHTML(e)+falhas
+      +'<div class="lh-cmp-detalhes" style="margin-top:4px"><button type="button" class="lh-cmp-ver" aria-expanded="false" style="background:none;border:0;padding:0;cursor:pointer;color:#e0b93a;font-weight:700;font-size:.9rem">'+TXT_VER[0]+'</button>'
+      +'<div class="lh-cmp-detalhes-corpo" hidden style="margin-top:10px">'+detalhe+graficoMuda(r, calc)+tabelaHTML(r, calc)+'</div></div>'+rodape+'</div>';
   }
+  /* "Ver os detalhes" é botão, não <details>: os organizadores de página do CORE levam todo <details> da tela
+     para a seção de resultado (achado na foto da v937: o bloco saía do comparador e ia parar no fim da página) */
+  var TXT_VER = ['▸ Ver os detalhes de cada cenário (cartões, gráfico e todos os números)', '▾ Esconder os detalhes'];
+  function alternarDetalhes(ev){
+    var b=ev.target && ev.target.closest ? ev.target.closest('.lh-cmp-ver') : null; if(!b) return;
+    var c=b.nextElementSibling; if(!c) return;
+    var abrir=!!c.hidden; c.hidden=!abrir; b.setAttribute('aria-expanded', abrir ? 'true' : 'false'); b.textContent=TXT_VER[abrir ? 1 : 0];
+  }
+  document.addEventListener('click', alternarDetalhes);
 
   /* ── ganchos ─────────────────────────────────────────────────────── */
   function atualizarTudo(){ document.querySelectorAll('.lh-estresse-v257').forEach(decorar); pintar(); }
