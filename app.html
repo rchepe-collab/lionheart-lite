@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v939";</script>
+<body><script>window.LH_VERSAO="v940";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -74755,6 +74755,9 @@ window.LH_FP_COMPARAR = (function(){
     }
   };
 
+  /* v940 · a leitura do dono também serve ao CORE: o botão "Sintetizado" mostra a mesma leitura (LH_SINTESE_CORE) */
+  window.LH_DONO_LEITURAS = PRODUTOS.empresario && PRODUTOS.empresario.dono;
+  window.LH_DONO_TECNICO = PRODUTOS.empresario && PRODUTOS.empresario.tecnico;
   var PRODUTO=PRODUTOS[q];
   if(!PRODUTO) return;
   window.LH_PRODUTO=PRODUTO;
@@ -75352,6 +75355,115 @@ window.LH_FP_COMPARAR = (function(){
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',aplicar);
   window.addEventListener('load',aplicar);
   var n=0, iv=setInterval(function(){ aplicar(); if(++n>=20) clearInterval(iv); },750);
+})();
+</script>
+<script>
+/* v940 · RESULTADO SINTETIZADO no CORE (pedido do Ricardo, 11/10: "um botão de resultado simplificado ou sintetizado,
+   que nem no ITFE para o empresário"; o Completo abre primeiro).
+   Reaproveita a LEITURA DO DONO que o ITFE já usa (LH_DONO_LEITURAS, 26 calculadoras): mesma conta do servidor
+   (LH_PONTE.ultimo), mesmas frases. Aqui só se põe a chave "Completo | Sintetizado" acima do resultado e, no
+   Sintetizado, mostra o cartão do dono e esconde memória de cálculo, base legal, pareceres e a Análise de Resultados.
+   Só no CORE puro (no ITFE a leitura do dono já é a tela). SÓ TELA: nenhuma conta nova, nenhuma frase nova de cálculo. */
+window.LH_SINTESE_CORE = (function(){
+  'use strict';
+  var modo = 'completo';   /* decisão do Ricardo: o Completo abre primeiro */
+  var RX_ANALISE = /An[aá]lise de Resultados/i;
+  function emProduto(){ return !!window.LH_PRODUTO || !!(document.body && document.body.getAttribute('data-lh-produto')); }
+  function leituras(){ return window.LH_DONO_LEITURAS || {}; }
+  function fmtR(v){ v=+v||0; return 'R$ '+Math.round(v).toLocaleString('pt-BR'); }
+  (function estilos(){
+    if(document.getElementById('lh-sint-estilos')) return;
+    var st=document.createElement('style'); st.id='lh-sint-estilos';
+    st.textContent='.lh-modo-sint .lh-sint-tec{display:none!important}'
+      +'.lh-sint-barra{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0 8px}'
+      +'.lh-sint-barra .rot{font-size:.78rem;color:#8a97a8;font-weight:700;letter-spacing:.04em}'
+      +'.lh-sint-barra button{padding:5px 14px;border-radius:16px;border:1px solid rgba(201,162,39,.45);background:transparent;color:#c9a227;font-size:.8rem;font-weight:700;cursor:pointer}'
+      +'.lh-sint-barra button.on{background:rgba(201,162,39,.22);color:#f4cc4a;border-color:#e0b93a}'
+      +'.lh-sint-barra .dica{font-size:.72rem;color:#8a97a8}'
+      +'.lh-sint-card{margin:6px 0 12px;border:1px solid rgba(201,162,39,.5);border-left:4px solid #e0b93a;border-radius:12px;padding:16px 20px;background:linear-gradient(135deg,rgba(201,162,39,.10),rgba(201,162,39,.02))}'
+      +'.lh-sint-card .eb{font-size:.7em;letter-spacing:.14em;text-transform:uppercase;color:#c9a227;font-weight:700;margin-bottom:4px}'
+      +'.lh-sint-card h4{margin:0 0 8px;font-size:1.08em;color:var(--text)}'
+      +'.lh-sint-card p{margin:6px 0;line-height:1.6;font-size:.95em}'
+      +'.lh-sint-card .faz{margin-top:10px;padding-top:10px;border-top:1px solid rgba(201,162,39,.25)}'
+      +'.lh-sint-card .faz b.t{display:block;color:#e0b93a;font-size:.8em;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}'
+      +'.lh-sint-card ul{margin:0;padding-left:18px}.lh-sint-card li{margin:3px 0;font-size:.92em;line-height:1.5}'
+      +'.lh-sint-card .rod{margin-top:8px;font-size:.76em;color:#8a97a8}';
+    (document.head||document.documentElement).appendChild(st);
+  })();
+  function porPagina(){ var m={}, L=leituras(); Object.keys(L).forEach(function(k){ if(L[k] && L[k].pagina) m[L[k].pagina]=k; }); return m; }
+  function dadoDe(cfg, k){
+    try{ return cfg.fonte ? cfg.fonte() : ((window.LH_PONTE && window.LH_PONTE.ultimo) ? window.LH_PONTE.ultimo[k] : null); }catch(e){ return null; }
+  }
+  /* o que é do contador (memória de cálculo, base legal, pareceres, Análise de Resultados): some no Sintetizado */
+  function marcarTecnico(P, pg){
+    var rx=window.LH_DONO_TECNICO;
+    [].slice.call(P.querySelectorAll('summary')).forEach(function(sm){
+      var d=sm.closest('details'), t=(sm.textContent||'').trim(); if(!d || d.closest('.lh-sint-card')) return;
+      if((rx && rx.test(t)) || RX_ANALISE.test(t)) d.classList.add('lh-sint-tec');
+    });
+    var rc=document.getElementById('recs-'+pg); if(rc) rc.classList.add('lh-sint-tec');
+    [].slice.call(P.querySelectorAll('[id^="lhFront-"]')).forEach(function(e){ e.classList.add('lh-sint-tec'); });
+  }
+  function barraHTML(){
+    return '<span class="rot">RESULTADO</span>'
+      +'<button type="button" data-modo="completo">Completo</button><button type="button" data-modo="sintetizado">Sintetizado</button>'
+      +'<span class="dica">sintetizado: a leitura em linguagem do empresário, sem memória de cálculo nem base legal — boa para mostrar ao cliente</span>';
+  }
+  function cartaoHTML(L){
+    return '<div class="eb">Resultado sintetizado · para o empresário</div><h4>'+L.t+'</h4>'
+      +(L.f||[]).map(function(x){ return '<p>'+x+'</p>'; }).join('')
+      +(L.a && L.a.length ? '<div class="faz"><b class="t">O que fazer</b><ul>'+L.a.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul></div>' : '')
+      +'<div class="rod">Mesma conta do resultado completo: só a leitura é mais curta.</div>';
+  }
+  function pintar(pg){
+    if(emProduto()) return;
+    var k=porPagina()[pg]; if(!k) return;
+    var P=document.getElementById('page-'+pg); if(!P) return;
+    var cfg=leituras()[k], u=dadoDe(cfg, k);
+    var ref=null; try{ ref=cfg.ancora ? cfg.ancora() : document.getElementById(cfg.depoisDe); }catch(e){}
+    var barra=P.querySelector('.lh-sint-barra'), card=P.querySelector('.lh-sint-card');
+    var L=null; if(u && u.resultado && u.resultado.ok!==false){ try{ L=cfg.texto(u.resultado, u.ent||{}, fmtR); }catch(e){ L=null; } }
+    if(!L || !ref || !ref.parentNode){   /* sem resultado: nada de chave, tela como sempre */
+      if(barra) barra.parentNode.removeChild(barra); if(card) card.parentNode.removeChild(card);
+      P.classList.remove('lh-modo-sint'); return;
+    }
+    if(!barra){ barra=document.createElement('div'); barra.className='lh-sint-barra'; barra.innerHTML=barraHTML(); }
+    var noLugar = barra.parentNode && (barra.nextElementSibling===ref || (card && barra.nextElementSibling===card && card.nextElementSibling===ref));
+    if(!noLugar) ref.parentNode.insertBefore(barra, ref);
+    [].slice.call(barra.querySelectorAll('button')).forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-modo')===modo); });
+    if(modo==='sintetizado'){
+      marcarTecnico(P, pg);
+      if(!card){ card=document.createElement('div'); card.className='lh-sint-card'; }
+      if(card.getAttribute('data-q')!==String(u.quando||'')){ card.innerHTML=cartaoHTML(L); card.setAttribute('data-q', String(u.quando||'')); }
+      if(barra.nextElementSibling!==card) barra.parentNode.insertBefore(card, barra.nextSibling);
+      P.classList.add('lh-modo-sint');
+    } else {
+      if(card) card.parentNode.removeChild(card);
+      P.classList.remove('lh-modo-sint');
+    }
+  }
+  function escolher(m){
+    modo = (m==='sintetizado') ? 'sintetizado' : 'completo';
+    Object.keys(porPagina()).forEach(pintar);
+  }
+  var _obs={};
+  function vigiar(){
+    if(emProduto()) return;
+    Object.keys(porPagina()).forEach(function(pg){
+      var P=document.getElementById('page-'+pg); if(!P || _obs[pg]) return;
+      var t=null, rodar=function(){ t=null; try{ pintar(pg); }catch(e){} };
+      rodar();
+      if(window.MutationObserver){ _obs[pg]=new MutationObserver(function(){ if(!t) t=setTimeout(rodar,150); }); _obs[pg].observe(P,{childList:true,subtree:true}); }
+      else _obs[pg]=true;
+    });
+  }
+  document.addEventListener('click', function(ev){
+    var b=ev.target && ev.target.closest ? ev.target.closest('.lh-sint-barra button[data-modo]') : null;
+    if(b) escolher(b.getAttribute('data-modo'));
+  });
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', vigiar); else vigiar();
+  window.addEventListener('load', vigiar);
+  return { escolher:escolher, pintar:pintar, modo:function(){ return modo; }, paginas:function(){ return Object.keys(porPagina()); } };
 })();
 </script>
 </body>
