@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v942";</script>
+<body><script>window.LH_VERSAO="v943";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -75379,7 +75379,9 @@ window.LH_FP_COMPARAR = (function(){
    Reaproveita a LEITURA DO DONO que o ITFE já usa (LH_DONO_LEITURAS, 26 calculadoras): mesma conta do servidor
    (LH_PONTE.ultimo), mesmas frases. Aqui só se põe a chave "Completo | Sintetizado" acima do resultado e, no
    Sintetizado, mostra o cartão do dono e esconde memória de cálculo, base legal, pareceres e a Análise de Resultados.
-   Só no CORE puro (no ITFE a leitura do dono já é a tela). SÓ TELA: nenhuma conta nova, nenhuma frase nova de cálculo. */
+   Só no CORE puro (no ITFE a leitura do dono já é a tela). SÓ TELA: nenhuma conta nova, nenhuma frase nova de cálculo.
+   v943 · onde não há leitura do dono, a leitura vem pronta do servidor (calc 'sintese' → fn_sintese): N04, PF × PJ,
+   Art. 127, Split por operação, Split na indústria, Imposto Seletivo e Formação de Preço. */
 window.LH_SINTESE_CORE = (function(){
   'use strict';
   var modo = 'completo';   /* decisão do Ricardo: o Completo abre primeiro */
@@ -75420,7 +75422,36 @@ window.LH_SINTESE_CORE = (function(){
       +'.lh-sint-card .rod{margin-top:8px;font-size:.76em;color:#8a97a8}';
     (document.head||document.documentElement).appendChild(st);
   })();
-  function porPagina(){ var m={}, L=leituras(); Object.keys(L).forEach(function(k){ if(L[k] && L[k].pagina) m[L[k].pagina]=k; }); return m; }
+  /* v943 · calculadoras sem leitura do dono: a leitura vem pronta do servidor (calc 'sintese' → fn_sintese).
+     Aqui só o endereço: qual função da tela guarda o resultado (LH_PONTE.ultimo), qual calculadora e onde desenhar */
+  var SERVIDOR = {
+    n04:      { fn:'calcularN04',      calc:'n04',            ancora:'kpi-n04' },
+    c07:      { fn:'calcularC07',      calc:'pf-vs-pj',       ancora:'kpi-c07' },
+    art127:   { fn:'calcularArt127',   calc:'art127',         ancora:'kpi-art127' },
+    c11:      { fn:'calcularC11',      calc:'c11',            ancora:'kpi-c11' },
+    ind11:    { fn:'calcularIND11',    calc:'ind11',          ancora:'kpi-ind11' },
+    seletivo: { fn:'calcularSeletivo', calc:'seletivo',       ancora:'kpi-seletivo' },
+    formpreco:{ fn:'fpCalc',           calc:'formacao-preco', ancora:'fpDec' }
+  };
+  var LEITURA_SRV = {};   /* página → { q, L } : a última leitura pedida ao servidor */
+  function porPagina(){ var m={}, L=leituras(); Object.keys(L).forEach(function(k){ if(L[k] && L[k].pagina) m[L[k].pagina]=k; });
+    Object.keys(SERVIDOR).forEach(function(pg){ if(!m[pg]) m[pg]='@'+pg; }); return m; }
+  /* só <b> sobrevive no texto do servidor */
+  function negrito(t){ return esc(t).replace(/&lt;(\/?)b&gt;/g, '<$1b>'); }
+  function leituraServidor(pg, u){
+    var S=SERVIDOR[pg], q=String(u.quando||''), c=LEITURA_SRV[pg];
+    if(c && c.q===q) return c.L;
+    if(c && c.pedindo===q) return null;
+    LEITURA_SRV[pg]={ q:null, pedindo:q, L:null };
+    try{
+      window.LH_PONTE.chamar('sintese', { calc:S.calc, resultado:u.resultado }).then(function(res){
+        var r=res && res.ok ? res.resultado : null;
+        LEITURA_SRV[pg]={ q:q, L:(r && r.ok) ? { t:negrito(r.titulo), f:(r.frases||[]).map(negrito), a:(r.acoes||[]).map(negrito) } : null };
+        try{ pintar(pg); }catch(e){}
+      }, function(){ LEITURA_SRV[pg]={ q:q, L:null }; });
+    }catch(e){ LEITURA_SRV[pg]={ q:q, L:null }; }
+    return null;
+  }
   function dadoDe(cfg, k){
     try{ return cfg.fonte ? cfg.fonte() : ((window.LH_PONTE && window.LH_PONTE.ultimo) ? window.LH_PONTE.ultimo[k] : null); }catch(e){ return null; }
   }
@@ -75441,6 +75472,11 @@ window.LH_SINTESE_CORE = (function(){
       +'<button type="button" data-modo="completo">Completo</button><button type="button" data-modo="sintetizado">Sintetizado</button>'
       +'<span class="dica">sintetizado: a leitura em linguagem do empresário, sem memória de cálculo nem base legal — boa para mostrar ao cliente</span>';
   }
+  function esperaHTML(pg){
+    var c=LEITURA_SRV[pg], pedindo=c && c.pedindo;
+    return '<div class="eb">Resultado sintetizado · para o empresário</div>'
+      +(pedindo ? '<p data-lh-espera="1">Montando a leitura no servidor…</p>' : '<p>Não foi possível montar o resultado sintetizado agora. O resultado completo continua valendo.</p>');
+  }
   function cartaoHTML(L, pg){
     return '<div class="eb">Resultado sintetizado · para o empresário</div><h4>'+L.t+'</h4>'
       +(L.f||[]).map(function(x){ return '<p>'+x+'</p>'; }).join('')
@@ -75452,14 +75488,21 @@ window.LH_SINTESE_CORE = (function(){
     if(emProduto()) return;
     var k=porPagina()[pg]; if(!k) return;
     var P=document.getElementById('page-'+pg); if(!P) return;
-    var cfg=leituras()[k], u=dadoDe(cfg, k);
-    var ref=null; try{ ref=cfg.ancora ? cfg.ancora() : document.getElementById(cfg.depoisDe); }catch(e){}
+    var srv=k.charAt(0)==='@', S=srv ? SERVIDOR[pg] : null, cfg=srv ? null : leituras()[k];
+    var u=srv ? ((window.LH_PONTE && window.LH_PONTE.ultimo) ? window.LH_PONTE.ultimo[S.fn] : null) : dadoDe(cfg, k);
+    var ref=null; try{ ref=srv ? document.getElementById(S.ancora) : (cfg.ancora ? cfg.ancora() : document.getElementById(cfg.depoisDe)); }catch(e){}
     var barra=P.querySelector('.lh-sint-barra'), card=P.querySelector('.lh-sint-card');
-    var L=null; if(u && u.resultado && u.resultado.ok!==false){ try{ L=cfg.texto(u.resultado, u.ent||{}, fmtR); }catch(e){ L=null; } }
-    if(!L || !ref || !ref.parentNode){   /* sem resultado: nada de chave, tela como sempre */
+    var temRes = !!(u && u.resultado && u.resultado.ok!==false);
+    var L=null;
+    if(temRes && !srv){ try{ L=cfg.texto(u.resultado, u.ent||{}, fmtR); }catch(e){ L=null; } }
+    /* do servidor, a leitura só é pedida quando alguém escolhe o Sintetizado (uma chamada por resultado) */
+    if(temRes && srv && modo==='sintetizado') L=leituraServidor(pg, u);
+    var mostra = srv ? (temRes && ref && ref.parentNode) : (L && ref && ref.parentNode);
+    if(!mostra){   /* sem resultado: nada de chave, tela como sempre */
       if(barra) barra.parentNode.removeChild(barra); if(card) card.parentNode.removeChild(card);
       P.classList.remove('lh-modo-sint'); return;
     }
+    if(srv && !L) L={ espera:true };
     if(!barra){ barra=document.createElement('div'); barra.className='lh-sint-barra'; barra.innerHTML=barraHTML(); }
     var noLugar = barra.parentNode && (barra.nextElementSibling===ref || (card && barra.nextElementSibling===card && card.nextElementSibling===ref));
     if(!noLugar) ref.parentNode.insertBefore(barra, ref);
@@ -75467,8 +75510,8 @@ window.LH_SINTESE_CORE = (function(){
     if(modo==='sintetizado'){
       marcarTecnico(P, pg);
       if(!card){ card=document.createElement('div'); card.className='lh-sint-card'; }
-      var cq=comparacaoDe(pg), q=String(u.quando||'')+'|'+(cq ? cq.quando : '')+'|'+(P.querySelector('.lh-comparar') ? 1 : 0);
-      if(card.getAttribute('data-q')!==q){ card.innerHTML=cartaoHTML(L, pg); card.setAttribute('data-q', q); }
+      var cq=comparacaoDe(pg), q=String(u.quando||'')+'|'+(cq ? cq.quando : '')+'|'+(P.querySelector('.lh-comparar') ? 1 : 0)+'|'+(L.espera ? (LEITURA_SRV[pg] && LEITURA_SRV[pg].pedindo ? 'e' : 'x') : 'ok');
+      if(card.getAttribute('data-q')!==q){ card.innerHTML=L.espera ? esperaHTML(pg) : cartaoHTML(L, pg); card.setAttribute('data-q', q); }
       if(barra.nextElementSibling!==card) barra.parentNode.insertBefore(card, barra.nextSibling);
       P.classList.add('lh-modo-sint');
     } else {
