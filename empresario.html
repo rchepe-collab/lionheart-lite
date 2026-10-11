@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v946";</script>
+<body><script>window.LH_VERSAO="v947";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -24575,7 +24575,9 @@ function c05LerEntradas(){
   var fat=N('c05_fat',0); if(fat<=0){ if(typeof mostrarToast==='function') mostrarToast('Informe o faturamento anual','error'); return null; }
   var seg=T('c05_seg','servicos_gerais'), ano=parseInt(T('c05_ano','2027'),10)||2027, socios=parseInt(T('c05_socios','1'),10)||1;
   var folha=N('c05_folha',0), prol=N('c05_prolabore',0), lucPct=(N('c05_lucro_pct',18)/100)||0.18;
-  var custos=N('c05_custos', Math.max(0, fat - fat*lucPct - folha));
+  /* ★ v947 · custo vazio: o padrão é MENSAL, como o campo (faturamento/12 − lucro − folha mensal). Antes misturava o
+     faturamento ANUAL com a folha MENSAL e ainda multiplicava por 12 na saída: custo 12× maior e crédito de CBS/IBS inflado. */
+  var custos=N('c05_custos', Math.max(0, fat/12 - (fat/12)*lucPct - folha));
   var aliqISS=(window.LH_getISS?LH_getISS(seg):((typeof ISS_POR_SETOR!=='undefined'?ISS_POR_SETOR[seg]:0)||0));
   var redSetor=(typeof REDUCAO_CBS_IBS!=='undefined'?(REDUCAO_CBS_IBS[seg]||0):0);
   var icmsAliq=N('c05_icms_aliq',0)/100;
@@ -46051,6 +46053,9 @@ window.LH_SAUDE = (function(){
     (function(){
       var total = _idsEmpresa.length, com = listaDados.length;
       window.LH_CONSOLIDADO_COBERTURA = { total:total, com:com, faltam:total-com, completo:(com===total), pfFora:_pfFora };
+      /* v947 · TR25 C: com mais de um CNPJ, a soma das entradas é só uma visão — o número certo é o consolidado por CNPJ */
+      var _nCNPJ = 0; try{ _nCNPJ = window.LH_CONSOLIDADO_GRUPO ? LH_CONSOLIDADO_GRUPO.contribuintes().length : 0; }catch(_e){}
+      var _notaCNPJ = _nCNPJ > 1 ? '<div style="margin-top:5px">🏢 <b>' + _nCNPJ + ' CNPJs diferentes no grupo.</b> Somar as entradas de empresas diferentes é só uma visão: em cada calculadora de empresa, use <b>Consolidar o grupo por CNPJ</b> para o número certo (cada CNPJ calculado separado).</div>' : '';
       var _notaPF = _pfFora ? ' <span style="opacity:.85">· ' + _pfFora + (_pfFora>1?' pessoas físicas ficaram':' pessoa física ficou') + ' fora da soma (sócio PF não é estabelecimento da empresa).</span>' : '';
       var box = document.getElementById('lh-cobertura-consolidado');
       if(!box){
@@ -46063,11 +46068,11 @@ window.LH_SAUDE = (function(){
       if(total<=1 && !_pfFora){ box.style.display='none'; return; }
       if(com===total){
         box.style.cssText='margin:10px 14px;padding:9px 14px;border-radius:8px;font-size:.83rem;background:rgba(22,196,124,.08);border:1px solid rgba(22,196,124,.35);color:#8fd8b0';
-        box.innerHTML='✓ <b>Consolidado completo</b> — '+total+' estabelecimentos, todos com dados.'+_notaPF;
+        box.innerHTML='✓ <b>Consolidado completo</b> — '+total+' estabelecimentos, todos com dados.'+_notaPF+_notaCNPJ;
       } else {
         box.style.cssText='margin:10px 14px;padding:9px 14px;border-radius:8px;font-size:.83rem;background:rgba(224,138,46,.10);border:1px solid rgba(224,138,46,.45);color:#e8b96a';
         box.innerHTML='⚠ <b>Consolidado parcial: '+com+' de '+total+' estabelecimentos.</b> '+
-          (total-com)+' sem documento importado — o número abaixo não representa o grupo inteiro.'+_notaPF;
+          (total-com)+' sem documento importado — o número abaixo não representa o grupo inteiro.'+_notaPF+_notaCNPJ;
       }
       box.style.display='block';
     })();
@@ -75711,6 +75716,176 @@ window.LH_TRAVA_ENTIDADE = (function(){
   window.addEventListener('load', function(){ embrulhar(); carregar(); aplicar(); });
   return { classe:classe, veredito:veredito, aplicar:aplicar, carregar:carregar,
     regras:function(){ return REG; }, _reset:function(){ REG = null; NOMES = {}; pedindo = false; ultimo = 0; } };
+})();
+</script>
+<script>
+/* v947 · CONSOLIDADO DO GRUPO POR CNPJ (TR25 C · pedido do Ricardo, 11/10).
+   No escopo de grupo, cada calculadora de empresa ganha o botão "Consolidar o grupo por CNPJ":
+     camada 1 · o mesmo CNPJ raiz (matriz + filiais) junta as entradas como a tela sempre fez (é uma empresa só);
+     camada 2 · CNPJs diferentes (holding, coligada, outra empresa) vão separados ao servidor (calc 'consolidar-grupo'
+                → fn_consolidar_grupo), que roda a mesma calculadora para cada um e soma só os valores em reais.
+   SÓ TELA: aqui se escolhem as entradas de cada CNPJ (as que já estão salvas em cada entidade) e se desenha a tabela
+   que volta. Nenhuma conta, nenhuma frase de resultado nasce aqui. Nome e CNPJ não saem do navegador: o servidor
+   recebe "CNPJ 1 · matriz + 2 filiais", "CNPJ 2 · holding". Pessoa física nunca entra. */
+window.LH_CONSOLIDADO_GRUPO = (function(){
+  'use strict';
+  var ultimo = {};
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function fmtR(v){ var n=+v; if(!isFinite(n)) return '—'; return 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function fmtP(v){ var n=+v; if(!isFinite(n)) return '—'; return n.toLocaleString('pt-BR',{maximumFractionDigits:4}); }
+  function lerLS(k){ try{ var v=localStorage.getItem(k); return v ? JSON.parse(v) : null; }catch(e){ return null; } }
+  function ehPF(e){ return !!e && (e.tipo==='socio_pf' || e.tipoDoc==='PF' || (e.tipo==='solo' && !!e.cpf && !e.cnpj)); }
+  function raiz(e){ var d=String(e && e.cnpj || '').replace(/\D/g,''); return d.length===14 ? d.slice(0,8) : ''; }
+  function escopoGrupo(){
+    try{ var s=window.LH_ESCOPO && LH_ESCOPO.get(); return s && s.tipo!=='entidade' && (s.entidadesIds||[]).length>1 ? s : null; }catch(e){ return null; }
+  }
+  /* agrupa as entidades do escopo em contribuintes: mesmo CNPJ raiz = um contribuinte (filial sem CNPJ vai com a matriz) */
+  function contribuintes(s){
+    var ents=(window.LH_GRUPO && LH_GRUPO.getEntidades) ? LH_GRUPO.getEntidades() : {};
+    var lista=(s.entidadesIds||[]).map(function(id){ return ents[id]; }).filter(function(e){ return e && !ehPF(e); });
+    var grupos={}, ordem=[], matrizChave=null;
+    lista.forEach(function(e){ if(e.tipo==='matriz'){ matrizChave = raiz(e) || ('ent:'+e.id); } });
+    lista.forEach(function(e){
+      var k = raiz(e) || (e.tipo==='filial' && matrizChave ? matrizChave : 'ent:'+e.id);
+      if(e.tipo==='matriz') k = matrizChave;
+      if(!grupos[k]){ grupos[k]={ membros:[] }; ordem.push(k); }
+      grupos[k].membros.push(e);
+    });
+    return ordem.map(function(k, i){
+      var g=grupos[k], cab=g.membros.filter(function(e){ return e.tipo==='matriz'; })[0] || g.membros[0];
+      var fil=g.membros.filter(function(e){ return e.tipo==='filial'; }).length;
+      var papel = cab.tipo==='solo' ? 'empresa' : cab.tipo;
+      var rot = 'CNPJ '+(i+1)+' · '+(papel==='matriz' ? 'matriz'+(fil ? ' + '+fil+(fil>1?' filiais':' filial') : '') : (papel==='filial' ? 'filiais' : papel));
+      return { rotulo:rot, papel:papel, membros:g.membros };
+    });
+  }
+  /* entradas de um contribuinte: o que está salvo em cada entidade (camada 1 junta matriz + filiais como a tela já fazia) */
+  function mapaDe(c){
+    var gis=[], snaps=[];
+    c.membros.forEach(function(e){
+      var gi=lerLS('lite_inputs_entidade_'+e.id) || {}, sn=lerLS('lh_snap_'+e.id) || {};
+      if(Object.keys(gi).length || Object.keys(sn).length){ gis.push(gi); snaps.push(sn); }
+    });
+    if(!snaps.length) return null;
+    if(snaps.length===1) return Object.assign({}, gis[0], snaps[0]);
+    var gi = (window.LH_CONSOLIDA && LH_CONSOLIDA.consolidar) ? LH_CONSOLIDA.consolidar(gis) : gis[0];
+    var cf = window.LH_consolidarCalcFields ? LH_consolidarCalcFields(snaps) : snaps[0];
+    return Object.assign({}, gi, cf);
+  }
+  function fnDaTela(P){ var b=P && P.querySelector('.btn-calcular[onclick], .btn-calc[onclick]'); var m=b ? String(b.getAttribute('onclick')).match(/^\s*([A-Za-z0-9_]+)\(/) : null; return m ? m[1] : null; }
+  /* mesmos campos que a troca de entidade salva e limpa (LH_snapTodos / LH_limparCamposCalc): o que a entidade não tem fica vazio,
+     nunca o número de exemplo da tela */
+  var RX_CAMPO=/^(gi_|c\d|cr\d|n\d|calc\d|iss\d|icmsst|difal|fator|sublimite|mono|cred|imob)/i;
+  /* lê as entradas da calculadora com os valores do CNPJ postos nos campos por um instante (sem disparar evento) e devolve a tela como estava */
+  function entradasCom(nomeFn, P, mapa){
+    var els=[].slice.call(P.querySelectorAll('input, select, textarea')).concat([].slice.call(document.querySelectorAll('[id^="gi_"]')));
+    var guardado=els.map(function(el){ return [el, el.value]; });
+    try{
+      els.forEach(function(el){
+        var t=(el.type||'').toLowerCase(); if(!el.id || t==='checkbox' || t==='radio' || t==='file' || t==='button' || t==='submit') return;
+        if(Object.prototype.hasOwnProperty.call(mapa, el.id)) el.value = String(mapa[el.id]==null?'':mapa[el.id]);
+        else if(el.tagName==='INPUT' && RX_CAMPO.test(el.id)) el.value = '';
+      });
+      /* 1º · o leitor da própria calculadora, em modo coleta da ponte (anota as entradas, não chama o servidor) */
+      var r=null, coleta=[], al=window.alert, cf=window.confirm;
+      if(typeof window[nomeFn]==='function'){
+        window.alert=function(){}; window.confirm=function(){ return false; }; LH_PONTE._coleta=coleta;
+        try{ window[nomeFn](); }catch(e){}
+        finally{ LH_PONTE._coleta=null; window.alert=al; window.confirm=cf; }
+        var it=coleta.filter(function(x){ return x.nomeFn===nomeFn; })[0] || coleta[0];
+        if(it && it.ent && !Array.isArray(it.ent) && typeof it.ent==='object') r={ calc:it.m.calc, entradas:it.ent };
+      }
+      /* 2º · o leitor genérico da ponte */
+      if(!r && LH_PONTE.lerEntradas) r=LH_PONTE.lerEntradas(nomeFn);
+      if(!r || !r.entradas) return null;
+      var o={}; for(var k in r.entradas){ if(k.charAt(0)!=='_') o[k]=r.entradas[k]; }
+      /* Meu cenário / trilho B escolhido na barra: a mesma chave que a tela usaria */
+      try{ var ch=window.LH_MEU_CENARIO && LH_MEU_CENARIO.chave ? LH_MEU_CENARIO.chave() : null; if(ch && Object.prototype.hasOwnProperty.call(o,'cenario')) o.cenario=ch; }catch(e){}
+      return { calc:r.calc, entradas:o };
+    } catch(e){ return null; }
+    finally{ guardado.forEach(function(g){ try{ g[0].value=g[1]; }catch(_e){} }); }
+  }
+  function aceitaEmpresa(pg){
+    var R = window.LH_TRAVA_ENTIDADE && LH_TRAVA_ENTIDADE.regras ? LH_TRAVA_ENTIDADE.regras() : null;
+    var r = R && R[pg]; return !!(r && Array.isArray(r.aceita) && r.aceita.indexOf('pj')>=0);
+  }
+  function bloco(P){ return P.querySelector('.lh-grupo-cnpj'); }
+  function montar(pg){
+    var P=document.getElementById('page-'+pg); if(!P) return;
+    var s=escopoGrupo(), b=bloco(P);
+    var cabe = s && aceitaEmpresa(pg) && fnDaTela(P) && window.LH_PONTE && LH_PONTE.MAPA && LH_PONTE.MAPA[fnDaTela(P)];
+    if(!cabe){ if(b) b.parentNode.removeChild(b); return; }
+    if(b) return;
+    b=document.createElement('div'); b.className='lh-grupo-cnpj'; b.style.cssText='margin:14px 0 6px';
+    b.innerHTML='<button type="button" class="lh-grupo-cnpj-btn" style="padding:8px 16px;background:rgba(80,160,230,.10);border:1px solid rgba(80,160,230,.6);border-radius:8px;color:#7cc0f0;font-weight:800;cursor:pointer">🏢 Consolidar o grupo por CNPJ</button>'
+      +'<span style="margin-left:10px;font-size:.76rem;color:#8a97a8">cada CNPJ calculado separado no servidor; matriz e filiais juntas; pessoa física fora</span>'
+      +'<div class="lh-grupo-cnpj-res" style="margin-top:10px"></div>';
+    b.querySelector('.lh-grupo-cnpj-btn').addEventListener('click', function(){ consolidar(pg); });
+    var cmp=P.querySelector('.lh-comparar'), calc=P.querySelector('.btn-calcular, .btn-calc'), anc=cmp || (calc ? (calc.parentNode===P ? calc : calc.parentNode) : null);
+    if(anc && anc.parentNode) anc.parentNode.insertBefore(b, anc.nextSibling); else P.appendChild(b);
+  }
+  function aviso(box, txt, cor){ box.innerHTML='<div class="kpi-sub" style="color:'+(cor||'#e0a83a')+'">'+esc(txt)+'</div>'; }
+  function consolidar(pg){
+    var P=document.getElementById('page-'+pg), b=P && bloco(P), box=b && b.querySelector('.lh-grupo-cnpj-res');
+    if(!box) return Promise.resolve(null);
+    var s=escopoGrupo(); if(!s){ aviso(box, 'Escolha o grupo no topo (escopo de grupo) para consolidar por CNPJ.'); return Promise.resolve(null); }
+    var nomeFn=fnDaTela(P), cs=contribuintes(s), envio=[], sem=[];
+    cs.forEach(function(c){
+      var mapa=mapaDe(c), e = mapa ? entradasCom(nomeFn, P, mapa) : null;
+      if(e && e.entradas) envio.push({ rotulo:c.rotulo, papel:c.papel, entradas:e.entradas, _calc:e.calc }); else sem.push(c.rotulo);
+    });
+    if(cs.length<2){ aviso(box, 'Este grupo tem um CNPJ só (matriz e filiais são a mesma empresa): o cálculo da tela, com as entradas somadas, já é o consolidado certo.', '#8fd8b0'); return Promise.resolve(null); }
+    if(envio.length<2){ aviso(box, 'Faltam dados salvos: preencha esta calculadora em cada empresa do grupo (escopo de uma entidade) e volte aqui. Sem dados: '+sem.join(', ')+'.'); return Promise.resolve(null); }
+    var calc=envio[0]._calc; envio.forEach(function(x){ delete x._calc; });
+    box.innerHTML='<div class="kpi-sub" style="color:#8a97a8">Calculando '+envio.length+' CNPJs no servidor…</div>';
+    return LH_PONTE.chamar('consolidar-grupo', { calc:calc, pagina:pg, entidades:envio }).then(function(res){
+      var r = res && res.ok ? res.resultado : null;
+      if(!r || !r.ok){ aviso(box, (r && r.motivo) || (res && res.motivo) || 'Não foi possível consolidar agora.'); ultimo[pg]=null; return null; }
+      ultimo[pg]={ r:r, sem:sem }; box.innerHTML=tabela(r, sem);
+      try{ document.dispatchEvent(new CustomEvent('lh:grupoConsolidado', { detail:{ pagina:pg } })); }catch(e){}
+      return r;
+    }, function(){ aviso(box, 'Servidor indisponível: tente de novo em instantes.'); return null; });
+  }
+  function tabela(r, sem){
+    var cn=(r.cnpjs||[]), ok=cn.filter(function(c){ return c.ok; });
+    var th='padding:6px 9px;text-align:right;color:#9fb0c4;font-weight:700;border-bottom:1px solid rgba(255,255,255,.12);white-space:nowrap';
+    var td='padding:5px 9px;text-align:right;border-bottom:1px solid rgba(255,255,255,.05);white-space:nowrap';
+    var h='<div class="lh-grupo-cnpj-card" style="padding:14px 16px;border-radius:10px;background:rgba(80,160,230,.06);border:1px solid rgba(80,160,230,.35)">';
+    h+='<div style="font-weight:800;color:#7cc0f0;margin-bottom:6px">'+esc(r.titulo||'')+'</div>';
+    (r.alertas||[]).forEach(function(a){ h+='<div class="lh-grupo-alerta" style="margin:8px 0;padding:9px 12px;border-radius:8px;background:rgba(224,138,46,.10);border:1px solid rgba(224,138,46,.45);color:#e8b96a;font-size:.84rem">⚠ '+esc(a)+'</div>'; });
+    h+='<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:.83rem;width:100%"><thead><tr><th style="'+th+';text-align:left">Valor em reais</th>';
+    ok.forEach(function(c){ h+='<th style="'+th+'">'+esc(c.rotulo)+'</th>'; });
+    h+='<th style="'+th+';color:#7cc0f0">Total do grupo</th></tr></thead><tbody>';
+    (r.soma||[]).forEach(function(l){
+      h+='<tr><td style="'+td+';text-align:left;white-space:normal">'+esc(l.rotulo)+'</td>';
+      ok.forEach(function(c){ h+='<td style="'+td+'">'+fmtR(l.valores && l.valores[String(c.i)])+'</td>'; });
+      h+='<td style="'+td+';font-weight:800;color:#e8edf5">'+fmtR(l.total)+'</td></tr>';
+    });
+    h+='</tbody></table></div>';
+    if((r.por_cnpj_pct||[]).length){
+      h+='<details style="margin-top:8px"><summary style="cursor:pointer;color:#9fb0c4;font-size:.8rem">Percentuais por CNPJ (não se somam)</summary><div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:.8rem;width:100%"><tbody>';
+      r.por_cnpj_pct.forEach(function(l){ h+='<tr><td style="'+td+';text-align:left;white-space:normal">'+esc(l.rotulo)+'</td>'; ok.forEach(function(c){ h+='<td style="'+td+'">'+fmtP(l.valores && l.valores[String(c.i)])+'</td>'; }); h+='</tr>'; });
+      h+='</tbody></table></div></details>';
+    }
+    var fora=cn.filter(function(c){ return !c.ok; }).map(function(c){ return esc(c.rotulo)+' ('+esc(c.motivo||'')+')'; }).concat((sem||[]).map(function(x){ return esc(x)+' (sem dados salvos)'; }));
+    if(fora.length) h+='<div style="margin-top:8px;font-size:.8rem;color:#e0a83a">Fora do total: '+fora.join(' · ')+'</div>';
+    if(r.aviso) h+='<div style="margin-top:4px;font-size:.8rem;color:#e0a83a">'+esc(r.aviso)+'</div>';
+    h+='<div style="margin-top:10px;font-size:.8rem;color:#b9c4d2;line-height:1.5">'+esc(r.leitura||'')+' '+esc(r.por_que||'')+'</div>';
+    if(r.base_legal) h+='<div style="margin-top:4px;font-size:.74rem;color:#7d8a9b">'+esc(r.base_legal)+'</div>';
+    return h+'</div>';
+  }
+  function aplicar(){ var p=document.querySelector('.page.active'); if(p) montar(p.id.replace(/^page-/,'')); }
+  document.addEventListener('lh:escopoMudou', function(){ setTimeout(aplicar, 0); });
+  document.addEventListener('lh:clienteMudou', function(){ setTimeout(aplicar, 0); });
+  function embrulhar(){
+    var f=window.abrirPagina; if(typeof f!=='function' || f._lhGrupoCnpj) return;
+    var g=function(){ var r=f.apply(this, arguments); try{ aplicar(); }catch(e){} return r; };
+    g._lhGrupoCnpj=true; g._lhTrava=f._lhTrava; window.abrirPagina=g;
+  }
+  embrulhar();
+  window.addEventListener('load', function(){ embrulhar(); aplicar(); });
+  return { montar:montar, consolidar:consolidar, contribuintes:function(){ var s=escopoGrupo(); return s ? contribuintes(s) : []; },
+    ultimo:function(pg){ return ultimo[pg] || null; } };
 })();
 </script>
 </body>
