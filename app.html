@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v947";</script>
+<body><script>window.LH_VERSAO="v948";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -75564,6 +75564,26 @@ window.LH_SINTESE_CORE = (function(){
       P.classList.remove('lh-modo-sint');
     }
   }
+  /* v948 · a mesma leitura, entregue ao PDF do cliente sem trocar o modo da tela (do servidor: uma chamada por resultado, com cache) */
+  function leituraPara(pg){
+    try{
+      var k=porPagina()[pg]; if(!k) return Promise.resolve(null);
+      if(k.charAt(0)!=='@'){
+        var cfg=leituras()[k], u0=dadoDe(cfg, k);
+        if(!(u0 && u0.resultado && u0.resultado.ok!==false)) return Promise.resolve(null);
+        try{ return Promise.resolve(cfg.texto(u0.resultado, u0.ent||{}, fmtR) || null); }catch(e){ return Promise.resolve(null); }
+      }
+      var S=SERVIDOR[pg], u=(window.LH_PONTE && window.LH_PONTE.ultimo) ? window.LH_PONTE.ultimo[S.fn] : null;
+      if(!(u && u.resultado && u.resultado.ok!==false)) return Promise.resolve(null);
+      var q=String(u.quando||''), c=LEITURA_SRV[pg];
+      if(c && c.q===q) return Promise.resolve(c.L);
+      return window.LH_PONTE.chamar('sintese', { calc:S.calc, resultado:u.resultado }).then(function(res){
+        var r=res && res.ok ? res.resultado : null;
+        var L=(r && r.ok) ? { t:negrito(r.titulo), f:(r.frases||[]).map(negrito), a:(r.acoes||[]).map(negrito) } : null;
+        LEITURA_SRV[pg]={ q:q, L:L }; return L;
+      }, function(){ return null; });
+    }catch(e){ return Promise.resolve(null); }
+  }
   function escolher(m){
     modo = (m==='sintetizado') ? 'sintetizado' : 'completo';
     Object.keys(porPagina()).forEach(pintar);
@@ -75586,7 +75606,7 @@ window.LH_SINTESE_CORE = (function(){
   document.addEventListener('lh:comparacao', function(ev){ var p=ev && ev.detail && String(ev.detail.pagina||'').replace(/^page-/,''); if(p) try{ pintar(p); }catch(e){} });
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', vigiar); else vigiar();
   window.addEventListener('load', vigiar);
-  return { escolher:escolher, pintar:pintar, modo:function(){ return modo; }, paginas:function(){ return Object.keys(porPagina()); } };
+  return { escolher:escolher, pintar:pintar, leituraPara:leituraPara, modo:function(){ return modo; }, paginas:function(){ return Object.keys(porPagina()); } };
 })();
 </script>
 <script>
@@ -75882,6 +75902,202 @@ window.LH_CONSOLIDADO_GRUPO = (function(){
   window.addEventListener('load', function(){ embrulhar(); aplicar(); });
   return { montar:montar, consolidar:consolidar, contribuintes:function(){ var s=escopoGrupo(); return s ? contribuintes(s) : []; },
     ultimo:function(pg){ return ultimo[pg] || null; } };
+})();
+</script>
+<script>
+/* v948 · PDFs DESTA ANÁLISE, sempre no fim da tela (pedido do Ricardo, 11/10 20h47: "todos têm que ter o PDF do
+   usuário e o do cliente… os dois na parte de baixo, as últimas duas partes… nem todos têm, uns estão no meio").
+   Cada calculadora ganha um rodapé com dois botões, e só eles:
+     📄 PDF do contador · técnico   → o PDF técnico que a tela já tinha ("PDF usuário" / "PDF desta análise");
+                                      onde não havia, o mesmo gerador sobre o resultado da tela.
+     📄 PDF do cliente · resumido   → o PDF de cliente próprio da tela, onde existe (Regime Ótimo, Dentro × Híbrido,
+                                      Tema 69, Monofásico); nas demais, uma folha resumida com a leitura do Sintetizado
+                                      (frases do servidor), os números do resultado, a comparação de cenários e o parecer
+                                      que o contador escreveu.
+   Os botões antigos ficam escondidos (os geradores deles continuam sendo os que rodam). SÓ TELA: nenhuma conta, nenhuma
+   frase de resultado nasce aqui; o PDF é montado no navegador e nada sai dele. No ITFE (produto do empresário) não age. */
+window.LH_PDF_RODAPE = (function(){
+  'use strict';
+  var FORA = ['consultacnpj','importsped','fichacontador','matrizdoc'];
+  /* calculadoras com botão próprio (sem .btn-calcular): Dentro × Híbrido, Formação de Preço, Contrato, Simulador de Notas */
+  var DENTRO = ['dxh','formpreco','contrato','simnotas'];
+  var TXT_CONTADOR = '📄 PDF do contador · técnico', TXT_CLIENTE = '📄 PDF do cliente · resumido';
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function emProduto(){ return !!window.LH_PRODUTO || !!(document.body && document.body.getAttribute('data-lh-produto')); }
+  function toast(m, t){ try{ if(window.mostrarToast) window.mostrarToast(m, t||'info'); }catch(e){} }
+  function ehAlvo(P){
+    if(!P || FORA.indexOf(P.id.replace(/^page-/,''))>=0) return false;
+    if(DENTRO.indexOf(P.id.replace(/^page-/,''))>=0) return true;
+    return !!(P.querySelector('.resultado-section') || P.querySelector('.btn-calcular, .btn-calc, button[onclick^="calc"]'));
+  }
+  function antigos(P){
+    return [].slice.call(P.querySelectorAll('.btn-pdf-calc')).filter(function(b){ return /PDF/i.test(b.textContent||'') && !b.closest('.lh-pdf-rodape'); });
+  }
+  function rodapeDe(P){ return P.querySelector(':scope > .lh-pdf-rodape'); }
+  function montar(P){
+    var r=document.createElement('div'); r.className='lh-pdf-rodape'; r.setAttribute('data-html2canvas-ignore','true');
+    r.style.cssText='margin:26px 0 6px;padding:14px 16px;border-top:1px solid rgba(201,162,39,.30);display:flex;flex-wrap:wrap;align-items:center;gap:10px';
+    var bs='display:inline-flex;align-items:center;gap:6px;padding:10px 20px;font-weight:700;font-size:.9rem;cursor:pointer;border-radius:8px;';
+    r.innerHTML='<span style="flex-basis:100%;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:#8a97a8;font-weight:700">Relatórios desta análise</span>'
+      +'<button type="button" class="lh-pdf-btn" data-pdf="contador" style="'+bs+'background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.6);color:#e0b93a">'+TXT_CONTADOR+'</button>'
+      +'<button type="button" class="lh-pdf-btn" data-pdf="cliente" style="'+bs+'background:rgba(80,160,230,.10);border:1px solid rgba(80,160,230,.6);color:#7cc0f0">'+TXT_CLIENTE+'</button>'
+      +'<span style="flex-basis:100%;font-size:.74rem;color:#7d8a9b">Técnico: memória de cálculo e base legal, para o seu arquivo. Resumido: a leitura e os números principais, para entregar ao cliente.</span>';
+    [].slice.call(r.children).forEach(function(c){ c.setAttribute('data-lh-pdf-proprio', '1'); });
+    return r;
+  }
+  /* o rodapé é sempre o último bloco da tela; os botões antigos somem (os geradores seguem os mesmos) */
+  function arrumar(P){
+    if(emProduto() || !ehAlvo(P)) return;
+    antigos(P).forEach(function(b){ if(b.style.display!=='none'){ b.style.display='none'; b.setAttribute('data-lh-pdf-oculto','1'); } });
+    var r=rodapeDe(P); if(!r) r=montar(P);
+    /* outros arrumadores põem blocos "antes do botão de PDF" (Base legal, Detalhamento): o que cair aqui dentro sobe
+       para logo acima do rodapé, na mesma ordem */
+    [].slice.call(r.children).forEach(function(c){ if(!c.hasAttribute('data-lh-pdf-proprio')) P.insertBefore(c, r); });
+    var ult=P.lastElementChild; while(ult && ult!==r && /^(SCRIPT|STYLE|TEMPLATE)$/.test(ult.tagName)) ult=ult.previousElementSibling;
+    if(ult!==r) P.appendChild(r);
+  }
+  /* onde a tela desenha o resultado (cada geração de tela usa um nome) */
+  function caixas(P, pg){
+    var ids=['kpi-'+pg, pg+'-result', pg+'_result', pg+'_res', 'res-'+pg];
+    var out=ids.map(function(id){ return document.getElementById(id); }).filter(function(e){ return e && P.contains(e); });
+    [].slice.call(P.querySelectorAll('.resultado-section')).forEach(function(e){ if(out.indexOf(e)<0) out.push(e); });
+    return out;
+  }
+  var RX_NUM=/(R\$\s?-?[\d.]+(,\d+)?|-?\d+(,\d+)?\s?%|-?\d{1,3}(\.\d{3})+(,\d+)?)/;
+  /* os números principais: o cartão padrão (.kpi-card) ou, nas telas de outra geração, qualquer cartão curto de rótulo + valor */
+  function cartoes(P, pg){
+    /* cartão padrão (.kpi-card) e o totalizador do Simulador de Notas (.tot); valor zerado não conta como resultado */
+    var lista=[].slice.call(P.querySelectorAll('.kpi-card, .totaliz .tot')).map(function(c){
+      var g=function(a, b){ return ((c.querySelector(a)||c.querySelector(b)||{}).textContent||'').replace(/\s+/g,' ').trim(); };
+      return { l:g('.kpi-label', '.l'), v:g('.kpi-value', '.v'), s:g('.kpi-sub', '.kpi-sub') };
+    }).filter(function(x){ return x.l && x.v && /[1-9]/.test(x.v); });
+    if(lista.length) return lista.slice(0, 6);
+    var vistos=[];
+    caixas(P, pg).forEach(function(box){
+      [].slice.call(box.querySelectorAll('div')).forEach(function(d){
+        if(vistos.length>=6 || d.closest('details') || d.closest('.lh-pdf-rodape')) return;
+        var f=[].slice.call(d.children); if(f.length<2 || f.length>3 || f.some(function(x){ return x.children.length>1; })) return;
+        var t=f.map(function(x){ return (x.textContent||'').replace(/\s+/g,' ').trim(); });
+        if((d.textContent||'').length>140 || !t[0] || /\d/.test(t[0]) && !/[A-Za-zÀ-ú]{3}/.test(t[0])) return;
+        if(!RX_NUM.test(t[1]||'') || !/[1-9]/.test(t[1]) || t[1].length>40) return;
+        if(vistos.some(function(x){ return x.el.contains(d) || d.contains(x.el); })) return;
+        vistos.push({ el:d, l:t[0], v:t[1], s:t[2]||'' });
+      });
+    });
+    return vistos.map(function(x){ return { l:x.l, v:x.v, s:x.s }; });
+  }
+  function motor(pg){ try{ var m=window._motorState && window._motorState[pg]; return (m && (m.descricao || m.valor)) ? m : null; }catch(e){ return null; } }
+  function fnDaTela(P){ var b=P.querySelector('.btn-calcular[onclick], .btn-calc[onclick], button[onclick^="calc"]'); var m=b ? String(b.getAttribute('onclick')).match(/^\s*([A-Za-z0-9_]+)\(/) : null; return m ? m[1] : null; }
+  /* Score Lionheart: nota, dimensões e plano vêm prontos do servidor (fn_score, via LH_scoreMotor) */
+  function score(){ try{ var m=window.LH_scoreMotor ? window.LH_scoreMotor() : null; return (m && m.score!=null) ? m : null; }catch(e){ return null; } }
+  function scoreHTML(){
+    var m=score(); if(!m) return '';
+    var d=(m.dimensoes||[]).filter(function(x){ return x && x.titulo; }).map(function(x){ return '<li>'+esc(x.titulo)+': <b>'+(x.nota==null ? 'sem dados' : esc(Math.round(x.nota)))+'</b></li>'; }).join('');
+    var a=(m.acoes||[]).slice(0, 5).map(function(x){ return '<li>'+esc(x.texto)+'</li>'; }).join('');
+    return '<div style="border:1.5px solid rgba(22,150,95,.40);border-radius:12px;padding:18px 20px;margin-bottom:22px;background:rgba(22,150,95,.05)">'
+      +'<div style="font-weight:800;color:#16965f;font-size:21px">Score Lionheart: '+esc(Math.round(m.score))+(m.categoria ? ' · '+esc(m.categoria) : '')+'</div>'
+      +(d ? '<ul style="margin:8px 0 0;padding-left:20px">'+d+'</ul>' : '')
+      +(a ? '<div style="margin-top:10px;font-weight:800;color:#22303d">O que fazer primeiro</div><ul style="margin:4px 0 0;padding-left:20px">'+a+'</ul>' : '')+'</div>';
+  }
+  function temResultado(P, pg){
+    if(pg==='score') return !!score();
+    if(cartoes(P, pg).length) return true;
+    try{ var f=fnDaTela(P), u=f && window.LH_PONTE && LH_PONTE.ultimo ? LH_PONTE.ultimo[f] : null; if(u && u.resultado && u.resultado.ok!==false) return true; }catch(e){}
+    return false;
+  }
+  function pdfContador(P, pg){
+    var orig=antigos(P).filter(function(b){ return /PDF (usu|desta)/i.test(b.textContent||''); })[0];
+    if(orig){ orig.click(); return; }
+    if(typeof window.gerarPdfCalc!=='function'){ toast('Gerador de PDF indisponível', 'error'); return; }
+    var alvo=P.querySelector('.resultado-section') || (document.getElementById('kpi-'+pg) ? document.getElementById('kpi-'+pg).parentNode : null) || P;
+    if(!alvo.id) alvo.id='lhPdfAlvo-'+pg;
+    window.gerarPdfCalc({ style:{}, getAttribute:function(a){ return a==='data-pdf-target' ? alvo.id : null; } });
+  }
+  function kpisHTML(P, pg){
+    var itens=cartoes(P, pg).map(function(c){
+      return '<div style="flex:1 1 30%;min-width:240px;border:1.5px solid rgba(168,133,29,.35);border-radius:12px;padding:14px 16px;background:rgba(168,133,29,.04)">'
+        +'<div style="font-size:13px;color:#5a6b7d">'+esc(c.l)+'</div><div style="font-size:21px;font-weight:800;color:#1c2733">'+esc(c.v)+'</div>'
+        +(c.s ? '<div style="font-size:12.5px;color:#7a8694">'+esc(c.s)+'</div>' : '')+'</div>';
+    });
+    return itens.length ? '<div style="font-weight:800;color:#22303d;margin:6px 0 10px;font-size:18px">Números principais</div><div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:22px">'+itens.join('')+'</div>' : '';
+  }
+  /* sem leitura do Sintetizado: o resumo de uma linha que a própria conta registra (Motor) */
+  function resumoMotorHTML(pg){
+    var m=motor(pg); if(!m || !m.descricao) return '';
+    return '<div style="border:1.5px solid rgba(22,150,95,.40);border-radius:12px;padding:16px 20px;margin-bottom:22px;background:rgba(22,150,95,.05)">'
+      +'<div style="font-weight:800;color:#16965f;font-size:17px;margin-bottom:4px">Resultado</div><div>'+esc(m.descricao)+'</div></div>';
+  }
+  function leituraHTML(L){
+    if(!L || !L.t) return '';
+    return '<div style="border:1.5px solid rgba(22,150,95,.40);border-radius:12px;padding:18px 20px;margin-bottom:22px;background:rgba(22,150,95,.05)">'
+      +'<div style="font-weight:800;color:#16965f;font-size:19px;margin-bottom:8px">'+L.t+'</div>'
+      +(L.f||[]).map(function(x){ return '<p style="margin:6px 0">'+x+'</p>'; }).join('')
+      +(L.a && L.a.length ? '<div style="margin-top:10px;font-weight:800;color:#22303d">O que fazer</div><ul style="margin:4px 0 0;padding-left:20px">'+L.a.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul>' : '')+'</div>';
+  }
+  function cenariosHTML(pg){
+    try{ var c=window.LH_MEU_CENARIO && LH_MEU_CENARIO.comparacao ? LH_MEU_CENARIO.comparacao('page-'+pg) : null, e=c && c.r && c.r.estrategia;
+      if(!e || !(e.resumo_curto || e.leitura_diferenca)) return '';
+      return '<div style="border:1px solid rgba(40,110,220,.35);border-radius:12px;padding:16px 18px;margin-bottom:22px;background:rgba(40,110,220,.04)"><div style="font-weight:800;color:#2464c8;margin-bottom:6px">E se a alíquota for outra?</div>'
+        +(e.resumo_curto ? '<p style="margin:4px 0">'+esc(e.resumo_curto)+'</p>' : '')+(e.leitura_diferenca ? '<p style="margin:4px 0">'+esc(e.leitura_diferenca)+'</p>' : '')+'</div>';
+    }catch(err){ return ''; }
+  }
+  function parecerHTML(P){
+    var t=[].slice.call(P.querySelectorAll('textarea')).filter(function(x){ return /parecer/i.test(x.id||'') && String(x.value||'').trim(); })[0];
+    return t ? '<div style="border:1.5px solid rgba(168,133,29,.4);border-radius:12px;padding:18px 20px;margin-bottom:22px;background:rgba(168,133,29,.04)"><div style="font-weight:800;color:#a8851d;margin-bottom:8px;font-size:18px">✍️ Parecer do seu contador</div><div style="white-space:pre-wrap">'+esc(String(t.value).trim())+'</div></div>' : '';
+  }
+  function folhaCliente(P, pg, L){
+    var titulo=((P.querySelector('h1,h2')||{}).textContent||'Análise').replace(/\s+/g,' ').trim();
+    var cliente=String((document.getElementById('gi_nome')||{}).value||'').trim();
+    var hoje=new Date().toLocaleDateString('pt-BR');
+    var logo=(window._pdfConfig && window._pdfConfig.logoData) ? '<img src="'+esc(window._pdfConfig.logoData)+'" style="max-height:54px;max-width:220px;margin-bottom:14px">' : '';
+    return logo+'<div style="font-size:27px;font-weight:800;color:#a8851d;margin-bottom:4px">'+esc(titulo)+'</div>'
+      +'<div style="font-size:15px;color:#5a6b7d;margin-bottom:24px">'+(cliente ? 'Preparado para '+esc(cliente)+' · ' : '')+esc(hoje)+'</div>'
+      +(pg==='score' ? scoreHTML() : (L && L.t ? leituraHTML(L) : resumoMotorHTML(pg)))+kpisHTML(P, pg)+cenariosHTML(pg)+parecerHTML(P)
+      +'<div style="font-size:12.5px;color:#7a8694;border-top:1px solid rgba(0,0,0,.12);padding-top:14px">Estimativa feita com os dados informados pelo seu contador · Metodologia Lionheart · Valores para apoiar a decisão; a conclusão final é do seu contador.</div>';
+  }
+  function pdfCliente(P, pg){
+    /* PDF de cliente próprio da tela (Regime Ótimo, Dentro × Híbrido, Tema 69, Monofásico) */
+    var proprio=P.querySelector('[id$="BtnPdfCli"]');
+    if(proprio){ proprio.click(); return Promise.resolve('proprio'); }
+    if(!temResultado(P, pg)){ toast('Calcule primeiro: o PDF do cliente usa o resultado desta tela.', 'error'); return Promise.resolve(null); }
+    var S=window.LH_SINTESE_CORE, espera = S && S.leituraPara ? S.leituraPara(pg) : Promise.resolve(null);
+    var limite=new Promise(function(ok){ setTimeout(function(){ ok(null); }, 6000); });
+    toast('Montando o PDF do cliente…', 'info');
+    return Promise.race([espera, limite]).then(function(L){
+      var box=document.getElementById('lhPdfCliGen');
+      if(!box){ box=document.createElement('div'); box.id='lhPdfCliGen'; document.body.appendChild(box); }
+      box.style.cssText='position:absolute;top:0;left:-12000px;width:980px;background:#ffffff;color:#1c2733;padding:44px 52px;font-size:17px;line-height:1.7;';
+      box.innerHTML=folhaCliente(P, pg, L);
+      if(typeof window.gerarPdfCalc==='function') window.gerarPdfCalc({ style:{}, getAttribute:function(a){ return a==='data-pdf-target' ? 'lhPdfCliGen' : null; } });
+      return 'generico';
+    }, function(){ return null; });
+  }
+  document.addEventListener('click', function(ev){
+    var b=ev.target && ev.target.closest ? ev.target.closest('.lh-pdf-rodape .lh-pdf-btn') : null; if(!b) return;
+    var P=b.closest('.page'); if(!P) return; var pg=P.id.replace(/^page-/,'');
+    if(b.getAttribute('data-pdf')==='contador') pdfContador(P, pg); else pdfCliente(P, pg);
+  });
+  /* mantém o rodapé por último quando outros módulos acrescentam blocos ou recriam botões */
+  var obs={};
+  function vigiar(P){
+    if(obs[P.id] || !window.MutationObserver) return;
+    var t=null; obs[P.id]=new MutationObserver(function(){ if(!t) t=setTimeout(function(){ t=null; try{ arrumar(P); }catch(e){} }, 200); });
+    obs[P.id].observe(P, { childList:true, subtree:true });
+  }
+  function aplicar(){
+    if(emProduto()) return;
+    var P=document.querySelector('.page.active'); if(!P || !ehAlvo(P)) return;
+    arrumar(P); vigiar(P);
+  }
+  function embrulhar(){
+    var f=window.abrirPagina; if(typeof f!=='function' || f._lhPdfRodape) return;
+    /* depois da tela assentar (o "PDF usuário" antigo é reposto a 120 ms): nada de trabalho extra na abertura */
+    var g=function(){ var r=f.apply(this, arguments); try{ setTimeout(aplicar, 300); setTimeout(aplicar, 1000); }catch(e){} return r; };
+    g._lhPdfRodape=true; g._lhTrava=f._lhTrava; g._lhGrupoCnpj=f._lhGrupoCnpj; window.abrirPagina=g;
+  }
+  embrulhar();
+  window.addEventListener('load', function(){ embrulhar(); aplicar(); });
+  return { arrumar:arrumar, aplicar:aplicar, pdfCliente:pdfCliente, pdfContador:pdfContador, ehAlvo:ehAlvo, folhaCliente:folhaCliente };
 })();
 </script>
 </body>
