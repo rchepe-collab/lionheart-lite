@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v948";</script>
+<body><script>window.LH_VERSAO="v949";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -3985,7 +3985,15 @@ window.LH_PONTE = (function(){
       headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + t },
       body: JSON.stringify({ calc: calc, entradas: entradas })
     }).then(function(r){ return r.json(); })
-      .catch(function(e){ return { ok:false, recusa:'rede', motivo:String(e) }; });
+      .catch(function(e){ return { ok:false, recusa:'rede', motivo:String(e) }; })
+      .then(function(j){ guardarPorCalc(calc, j); return j; });
+  }
+  /* ★ v949 · a última resposta das telas que chamam o despachante direto (sem executar): o Sintetizado lê daqui.
+     Só guarda (cópia); nenhuma conta. Falha apaga, para não mostrar leitura de um resultado que já não está na tela. */
+  var POR_CALC = {}, POR_CALC_N = 0, GUARDA = { 'fin':1, 'invest':1, 'invest-ativos':1 };
+  function guardarPorCalc(calc, j){
+    if(!GUARDA[calc]) return;
+    try{ POR_CALC[calc] = (j && j.ok && j.resultado && j.resultado.ok!==false) ? { quando:'c'+(++POR_CALC_N), resultado:JSON.parse(JSON.stringify(j.resultado)) } : null; }catch(_g){ POR_CALC[calc]=null; }
   }
 
   /* comparação: só reprova o que diverge ALÉM da tolerância */
@@ -4072,6 +4080,7 @@ window.LH_PONTE = (function(){
     MAPA: MAPA,   /* ★ v786 · exposto para quem precisa da LISTA de telas convertidas (o Fluxo Completo deriva o MAP daqui em vez de manter lista à mão) */
     /* ★ v783 · chamada genérica ao despachante para módulos que não são calcular* (radar de teses) */
     chamar: function(calc, ent){ return chamar(calc, ent); },
+    porCalc: function(calc){ return POR_CALC[calc] || null; },   /* ★ v949 · leitura do Sintetizado (fin, invest, invest-ativos) */
     /* ★ v933 · leitor das entradas de uma tela convertida (o mesmo do MAPA): o comparador usa quando a tela ainda não foi calculada nesta sessão */
     lerEntradas: function(nomeFn){ var m = MAPA[nomeFn]; if(!m || typeof m.entradas !== 'function') return null;
       try { var e = m.entradas(G); return e ? { calc: m.calc, entradas: e } : null; } catch(_e){ return null; } },
@@ -75392,7 +75401,11 @@ window.LH_FP_COMPARAR = (function(){
    Art. 127, Split por operação, Split na indústria, Imposto Seletivo e Formação de Preço.
    v944 · + 11 setoriais e 9 do agro (mesma fn_sintese).
    v945 · + as 12 últimas com comparador (Antecipados, Créditos plenos, Holding, IND08, Portos, Obra, Imobiliário, RET,
-   Raio-X, Alíquota por produto, Analisador de Contrato, Aluguel PF × PJ). */
+   Raio-X, Alíquota por produto, Analisador de Contrato, Aluguel PF × PJ).
+   v949 · + 52: recuperação de crédito, contencioso e compliance, planejamento, agro, indústria e comércio exterior.
+   v949 · + 7: Doação × Herança, Simulador de Notas, Excesso de caixa, Saúde financeira, Comprar um bem, Identificador de
+   Créditos e Mapa de Fornecedores. As 5 últimas não passam por executar(): o resultado vem de LH_PONTE.porCalc (última
+   resposta do despachante para aquela calculadora) ou do estado da tela (fonte); "recorte" só escolhe o que vai ao servidor. */
 window.LH_SINTESE_CORE = (function(){
   'use strict';
   var modo = 'completo';   /* decisão do Ricardo: o Completo abre primeiro */
@@ -75476,7 +75489,73 @@ window.LH_SINTESE_CORE = (function(){
     raiox360:{ fn:'calcularRaioX360', calc:'classificar-lote', ancora:'kpi-raiox360' },
     classif:{ fn:'calcularClassificador', calc:'mix-efetiva', ancora:'kpi-classif' },
     contrato:{ fn:'ctcCalc', calc:'contrato', ancora:'ctc_res' },
-    aluguelpfpj:{ fn:'calcularAluguelPFPJ', calc:'aluguel-pfpj', ancora:'kpi-aluguelpfpj' }
+    aluguelpfpj:{ fn:'calcularAluguelPFPJ', calc:'aluguel-pfpj', ancora:'kpi-aluguelpfpj' },
+    /* v949 · as 52 que só tinham números: recuperação, contencioso, planejamento, agro e indústria (fn_sintese lotes 4 a 7) */
+    drawback:{ fn:'calcularDrawback', calc:'drawback', ancora:'kpi-drawback' },
+    cr06:{ fn:'calcularCR06', calc:'cr06', ancora:'kpi-cr06' },
+    cp01:{ fn:'calcularCP01', calc:'cp01', ancora:'kpi-cp01' },
+    cp02:{ fn:'calcularCP02', calc:'cp02', ancora:'kpi-cp02' },
+    cp03:{ fn:'calcularCP03', calc:'cp03', ancora:'kpi-cp03' },
+    fatorR:{ fn:'calcularFatorR', calc:'fator-r', ancora:'kpi-fatorR' },
+    sublimite:{ fn:'calcularSublimite', calc:'sublimite', ancora:'kpi-sublimite' },
+    aliqref:{ fn:'calcularAliqRef', calc:'aliqref', ancora:'kpi-aliqref' },
+    icmsst1125:{ fn:'calcularICMSST1125', calc:'icmsst1125', ancora:'icmsst1125-result' },
+    s962:{ fn:'calcularS962', calc:'s962', ancora:'s962-result' },
+    ins:{ fn:'calcularINS', calc:'ins', ancora:'ins-result' },
+    dup:{ fn:'calcularDUP', calc:'dup', ancora:'dup-result' },
+    ret:{ fn:'calcularRET', calc:'ret', ancora:'ret-result' },
+    iss118:{ fn:'calcularISS118', calc:'iss118', ancora:'iss118-result' },
+    credpresumido:{ fn:'calcularCredPresumido', calc:'cred-presumido', ancora:'credpresumido-result' },
+    cr02:{ fn:'calcularCR02', calc:'cr02', ancora:'kpi-cr02' },
+    cr03:{ fn:'calcularCR03', calc:'cr03', ancora:'kpi-cr03' },
+    cr05:{ fn:'calcularCR05', calc:'cr05', ancora:'kpi-cr05' },
+    n29:{ fn:'calcularN29', calc:'n29', ancora:'kpis-n29' },
+    n16:{ fn:'calcularN16', calc:'n16', ancora:'kpi-n16' },
+    n17:{ fn:'calcularN17', calc:'n17', ancora:'kpi-n17' },
+    c10:{ fn:'calcularC10', calc:'c10', ancora:'kpi-c10' },
+    c09:{ fn:'calcularC09', calc:'c09', ancora:'kpi-c09' },
+    agro03:{ fn:'calcularAGRO03', calc:'agro03', ancora:'kpi-agro03' },
+    agro04:{ fn:'calcularAGRO04', calc:'agro04', ancora:'kpi-agro04' },
+    agro05:{ fn:'calcularAGRO05', calc:'agro05', ancora:'kpi-agro05' },
+    agro06:{ fn:'calcularAGRO06', calc:'agro06', ancora:'kpi-agro06' },
+    agro07:{ fn:'calcularAGRO07', calc:'agro07', ancora:'kpi-agro07' },
+    agro10:{ fn:'calcularAGRO10', calc:'agro10', ancora:'kpi-agro10' },
+    agroSuper3:{ fn:'calcularAgroSuper3', calc:'agrosuper3', ancora:'kpi-agroSuper3' },
+    agro21frete:{ fn:'lhAg21Calc', calc:'agro21', ancora:'ag21_kpis' },
+    agro14sent:{ fn:'lhAg14Calc', calc:'agro-sentinela', ancora:'ag14_kpis' },
+    transacao:{ fn:'calcularTransacao', calc:'transacao', ancora:'kpi-transacao' },
+    prescricao:{ fn:'calcularPrescricao', calc:'prescricao', ancora:'kpi-prescricao' },
+    multajuros:{ fn:'calcularMultaJuros', calc:'multa-juros', ancora:'kpi-multajuros' },
+    decisor:{ fn:'calcularDecisor', calc:'decisor', ancora:'kpi-decisor' },
+    compensacao:{ fn:'calcularCompensacao', calc:'compensacao', ancora:'kpi-compensacao' },
+    refis:{ fn:'calcularRefis', calc:'refis', ancora:'kpi-refis' },
+    autuacao:{ fn:'calcularAutuacao', calc:'autuacao', ancora:'kpi-autuacao' },
+    sucessorio:{ fn:'calcularSucessorio', calc:'sucessorio', ancora:'kpi-sucessorio' },
+    offshore:{ fn:'calcularOffshore', calc:'offshore', ancora:'kpi-offshore' },
+    valuation:{ fn:'calcularValuation', calc:'valuation', ancora:'kpi-valuation' },
+    stockoptions:{ fn:'calcularStockOptions', calc:'stockoptions', ancora:'kpi-stockoptions' },
+    ma:{ fn:'calcularMA', calc:'ma', ancora:'kpi-ma' },
+    n18:{ fn:'calcularN18', calc:'n18', ancora:'kpi-n18' },
+    ind01:{ fn:'calcularIND01', calc:'ind01', ancora:'kpi-ind01' },
+    ind03:{ fn:'calcularIND03', calc:'ind03', ancora:'kpi-ind03' },
+    ind04:{ fn:'calcularIND04', calc:'ind04', ancora:'kpi-ind04' },
+    ind05:{ fn:'calcularIND05', calc:'ind05', ancora:'kpi-ind05' },
+    ind06:{ fn:'calcularIND06', calc:'ind06', ancora:'kpi-ind06' },
+    ind10:{ fn:'calcularIND10', calc:'ind10', ancora:'kpi-ind10' },
+    ind12:{ fn:'calcularIND12', calc:'ind12', ancora:'kpi-ind12' },
+    /* v949 · as 7 que faltavam */
+    n30:          { fn:'calcularN30', calc:'n30',      ancora:'kpi-n30' },
+    simnotas:     { fn:'snRenderV',   calc:'simnotas', ancora:'snv_lista' },
+    inv_caixa:    { porCalc:'invest', calc:'invest-caixa', ancora:'inv_caixa_res', cheio:1, recorte:function(r){ return { caixa:r.caixa, taxa:r.taxa }; } },
+    inv_saude:    { porCalc:'invest', calc:'invest-saude', ancora:'inv_saude_res', cheio:1, recorte:function(r){ return { saude:r.saude }; } },
+    inv_ativos:   { porCalc:'invest-ativos', calc:'invest-ativos', ancora:'inv_ativos_res', cheio:1 },
+    fin_cred:     { porCalc:'fin', calc:'fin-cred', ancora:'fin_cred_result', cheio:1, recorte:function(r){ return { impostos:r.impostos }; } },
+    fornecedores: { calc:'fornecedores', ancora:'mf_res', cheio:1,
+                    fonte:function(){ var M=window.LH_MAPA_FORN, e=M && M._estado, R=e && e.resultado;
+                      return (R && R.fornecedores) ? { quando:'mf'+e.vez+'|'+R.fornecedores.length, resultado:R } : null; },
+                    recorte:function(R){ var foco=String((R.base||{}).ano_foco||2027);
+                      return { base:{ ano_foco:foco }, fornecedores:R.fornecedores.map(function(f){ var a={}; a[foco]={ custo:((f.anos||{})[foco]||{}).custo };
+                        return { custo_hoje:f.custo_hoje, classe:f.classe, credito_presumido:f.credito_presumido, anos:a }; }) }; } }
   };
   var LEITURA_SRV = {};   /* página → { q, L } : a última leitura pedida ao servidor */
   function porPagina(){ var m={}, L=leituras(); Object.keys(L).forEach(function(k){ if(L[k] && L[k].pagina) m[L[k].pagina]=k; });
@@ -75489,7 +75568,7 @@ window.LH_SINTESE_CORE = (function(){
     if(c && c.pedindo===q) return null;
     LEITURA_SRV[pg]={ q:null, pedindo:q, L:null };
     try{
-      window.LH_PONTE.chamar('sintese', { calc:S.calc, resultado:u.resultado }).then(function(res){
+      window.LH_PONTE.chamar('sintese', { calc:S.calc, resultado:envio(S, u) }).then(function(res){
         var r=res && res.ok ? res.resultado : null;
         LEITURA_SRV[pg]={ q:q, L:(r && r.ok) ? { t:negrito(r.titulo), f:(r.frases||[]).map(negrito), a:(r.acoes||[]).map(negrito) } : null };
         try{ pintar(pg); }catch(e){}
@@ -75497,6 +75576,18 @@ window.LH_SINTESE_CORE = (function(){
     }catch(e){ LEITURA_SRV[pg]={ q:q, L:null }; }
     return null;
   }
+  /* v949 · de onde vem o resultado de uma calculadora do servidor: executar() (ultimo), o despachante (porCalc) ou a tela (fonte) */
+  function dadoSrv(S){
+    try{
+      if(S.fonte) return S.fonte();
+      var P=window.LH_PONTE; if(!P) return null;
+      if(S.porCalc) return P.porCalc ? P.porCalc(S.porCalc) : null;
+      return P.ultimo ? P.ultimo[S.fn] : null;
+    }catch(e){ return null; }
+  }
+  function envio(S, u){ try{ return S.recorte ? S.recorte(u.resultado) : u.resultado; }catch(e){ return u.resultado; } }
+  /* a chave só aparece quando a tela já mostra o resultado (não um "calculando…" nem a caixa vazia) */
+  function cheio(S, ref){ return !S.cheio || !!(ref && (ref.textContent||'').trim() && !ref.querySelector('[data-lh-espera]')); }
   function dadoDe(cfg, k){
     try{ return cfg.fonte ? cfg.fonte() : ((window.LH_PONTE && window.LH_PONTE.ultimo) ? window.LH_PONTE.ultimo[k] : null); }catch(e){ return null; }
   }
@@ -75534,7 +75625,7 @@ window.LH_SINTESE_CORE = (function(){
     var k=porPagina()[pg]; if(!k) return;
     var P=document.getElementById('page-'+pg); if(!P) return;
     var srv=k.charAt(0)==='@', S=srv ? SERVIDOR[pg] : null, cfg=srv ? null : leituras()[k];
-    var u=srv ? ((window.LH_PONTE && window.LH_PONTE.ultimo) ? window.LH_PONTE.ultimo[S.fn] : null) : dadoDe(cfg, k);
+    var u=srv ? dadoSrv(S) : dadoDe(cfg, k);
     var ref=null; try{ ref=srv ? document.getElementById(S.ancora) : (cfg.ancora ? cfg.ancora() : document.getElementById(cfg.depoisDe)); }catch(e){}
     var barra=P.querySelector('.lh-sint-barra'), card=P.querySelector('.lh-sint-card');
     var temRes = !!(u && u.resultado && u.resultado.ok!==false);
@@ -75542,7 +75633,7 @@ window.LH_SINTESE_CORE = (function(){
     if(temRes && !srv){ try{ L=cfg.texto(u.resultado, u.ent||{}, fmtR); }catch(e){ L=null; } }
     /* do servidor, a leitura só é pedida quando alguém escolhe o Sintetizado (uma chamada por resultado) */
     if(temRes && srv && modo==='sintetizado') L=leituraServidor(pg, u);
-    var mostra = srv ? (temRes && ref && ref.parentNode) : (L && ref && ref.parentNode);
+    var mostra = srv ? (temRes && ref && ref.parentNode && cheio(S, ref)) : (L && ref && ref.parentNode);
     if(!mostra){   /* sem resultado: nada de chave, tela como sempre */
       if(barra) barra.parentNode.removeChild(barra); if(card) card.parentNode.removeChild(card);
       P.classList.remove('lh-modo-sint'); return;
@@ -75573,11 +75664,11 @@ window.LH_SINTESE_CORE = (function(){
         if(!(u0 && u0.resultado && u0.resultado.ok!==false)) return Promise.resolve(null);
         try{ return Promise.resolve(cfg.texto(u0.resultado, u0.ent||{}, fmtR) || null); }catch(e){ return Promise.resolve(null); }
       }
-      var S=SERVIDOR[pg], u=(window.LH_PONTE && window.LH_PONTE.ultimo) ? window.LH_PONTE.ultimo[S.fn] : null;
+      var S=SERVIDOR[pg], u=dadoSrv(S);
       if(!(u && u.resultado && u.resultado.ok!==false)) return Promise.resolve(null);
       var q=String(u.quando||''), c=LEITURA_SRV[pg];
       if(c && c.q===q) return Promise.resolve(c.L);
-      return window.LH_PONTE.chamar('sintese', { calc:S.calc, resultado:u.resultado }).then(function(res){
+      return window.LH_PONTE.chamar('sintese', { calc:S.calc, resultado:envio(S, u) }).then(function(res){
         var r=res && res.ok ? res.resultado : null;
         var L=(r && r.ok) ? { t:negrito(r.titulo), f:(r.frases||[]).map(negrito), a:(r.acoes||[]).map(negrito) } : null;
         LEITURA_SRV[pg]={ q:q, L:L }; return L;
