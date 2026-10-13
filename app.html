@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v950";</script>
+<body><script>window.LH_VERSAO="v951";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -2609,7 +2609,7 @@ window.LH_PONTE = (function(){
         prazo_recolhimento_dias: G.num('c01_prazo_recolhimento'), pct_incidencia: G.num('c01_pct_incidencia'),
         pct_eletronico: G.num('c01_pct_prazo'), pct_credito: G.num('c01_pct_credito'),
         crescimento_aa: G.num('c01_crescimento'), custo_capital: G.num('c01_taxa_cg'),
-        modo_simples: G.txt('c01_modo_simples')||'dentro', anexo_simples: G.txt('c01_anexo_simples')||'I'
+        modo_simples: (reg==='hibrido'?'hibrido':(G.txt('c01_modo_simples')||'dentro')), anexo_simples: G.txt('c01_anexo_simples')||'I'
       };},
       /* kpi-c01: [0] gap 2027 · [1] gap 2029 · [2] custo p/ repor 2029 · [3] taxa · [4] float atual */
       esperado: function(r){ if(!r) return null; var p29=null; (r.projecao||[]).forEach(function(x){ if(Number(x.ano)===2029) p29=x; });
@@ -3060,13 +3060,14 @@ window.LH_PONTE = (function(){
         var seg=G.txt('c02_segmento')||'servicos';
         var pg=window.LH_IMPORT_PGDAS, usaPg=!!(window._c02UsarPGDAS && pg && pg.ok && pg.das && pg.rpa>0);
         var rbt=G.num('c02_rbt12');
-        return { preco:f('c02_preco',0), regime:G.txt('c02_regime')||'lp', segmento:seg, margem:f('c02_margem',22),
+        var regC02=G.txt('c02_regime')||'lp';
+        return { preco:f('c02_preco',0), regime:regC02, segmento:seg, margem:f('c02_margem',22),
                  ano:parseInt((G.el('c02_ano')||{}).value,10)||2033, qtd_contratos:parseInt((G.el('c02_qtd')||{}).value,10)||1,
                  rbt12:(rbt>0?rbt:undefined),
                  aliq_efetiva_real:(usaPg? Math.round(pg.das/pg.rpa*1000000)/10000 : undefined),
                  reducao_manual:((seg==='ncm' && window.C02_RED_NCM!=null)? window.C02_RED_NCM*100 : undefined),
                  pct_sujeita:f('c02_pct_sujeita',80), pct_insumos:f('c02_pct_insumos',30),
-                 aliq_iss_icms:(function(v){ return isNaN(v)?undefined:v; })(parseFloat(String((G.el('c02_aliq_iss_icms')||{}).value||''))), modo_simples:G.txt('c02_modo_simples')||'dentro' }; },
+                 aliq_iss_icms:(function(v){ return isNaN(v)?undefined:v; })(parseFloat(String((G.el('c02_aliq_iss_icms')||{}).value||''))), modo_simples:(regC02==='hibrido'?'hibrido':(G.txt('c02_modo_simples')||'dentro')) }; },
       esperado: function(r){ return r ? { novo_preco:Number(r.novo_preco), margem_sem_reajuste:Number(r.margem_sem_reajuste_pct), impacto_carteira:Number(r.impacto_carteira) } : null; },
       /* kpi-c02: [0] novo preço · [1] preço atual · [2] var % · [3] margem sem reajuste · [4] margem atual · [5] impacto carteira */
       local: function(){ return { novo_preco:LH_PONTE._kpiNum('kpi-c02',0), margem_sem_reajuste:LH_PONTE._kpiNum('kpi-c02',3), impacto_carteira:LH_PONTE._kpiNum('kpi-c02',5) }; },
@@ -3087,9 +3088,10 @@ window.LH_PONTE = (function(){
     calcularN33: {
       calc: 'n33',
       entradas: function(G){ var f=function(id){ var v=parseFloat(String((G.el(id)||{}).value||'0')); return isNaN(v)?0:v; };
-        return { faturamento_mensal:f('n33_fat'), pmr:f('n33_pmr'), pme:f('n33_pme'), pmp:f('n33_pmp'), regime:(G.el('n33_regime')||{}).value||'lp',
+        var regN33=(G.el('n33_regime')||{}).value||'lp';
+        return { faturamento_mensal:f('n33_fat'), pmr:f('n33_pmr'), pme:f('n33_pme'), pmp:f('n33_pmp'), regime:regN33,
                  pct_eletronico:f('n33_pct_eletronico'), custo_capital:f('n33_taxa'), crescimento_aa:f('n33_cresc'),
-                 prazo_recolhimento:(String((G.el('n33_prazo_recolhimento')||{}).value||'').trim()===''?25:f('n33_prazo_recolhimento')), modo_simples:(G.el('n33_modo_simples')||{}).value||'dentro', anexo_simples:(G.el('n33_anexo_simples')||{}).value||'I' }; },
+                 prazo_recolhimento:(String((G.el('n33_prazo_recolhimento')||{}).value||'').trim()===''?25:f('n33_prazo_recolhimento')), modo_simples:(regN33==='hibrido'?'hibrido':((G.el('n33_modo_simples')||{}).value||'dentro')), anexo_simples:(G.el('n33_anexo_simples')||{}).value||'I' }; },
       esperado: function(r){ return r ? { ncg_2026:Number(r.ncg_2026), ncg_2033:Number(r.ncg_2033), camada_split_2033:Number(r.camada_split_2033), aumento:Number(r.aumento_da_ncg) } : null; },
       /* kpi-n33: [0] captação (aumento) · [1] NCG atual (2026) · [2] custo fin. 2033 · [3] taxa · [4] NCG trad 2033 · [5] NCG total 2033 · [6] camada split 2033 · [7] ... */
       local: function(){ return { aumento:LH_PONTE._kpiNum('kpi-n33',0), ncg_2026:LH_PONTE._kpiNum('kpi-n33',1), ncg_2033:LH_PONTE._kpiNum('kpi-n33',5), camada_split_2033:LH_PONTE._kpiNum('kpi-n33',6) }; },
@@ -5765,6 +5767,7 @@ function lhTrocarSenha(){
           <label style="font-size:0.7em;color:rgba(200,215,235,0.5);display:block;margin-bottom:4px">REGIME</label>
           <select id="me_regime" style="width:100%;background:#132840;border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:9px 12px;color:#e8edf5;font-size:0.85em;outline:none;">
             <option value="simples">Simples Nacional</option>
+            <option value="hibrido">Simples Nacional híbrido (IBS/CBS por fora)</option>
             <option value="lp">Lucro Presumido</option>
             <option value="lr">Lucro Real</option>
             <option value="mei">MEI</option>
@@ -6855,6 +6858,7 @@ function lhTrocarSenha(){
             <label>Regime Tributário</label>
             <select id="gi_regime" onchange="syncRegime()">
               <option value="simples">Simples Nacional</option>
+              <option value="hibrido">Simples Nacional híbrido (IBS/CBS por fora)</option>
               <option value="lp" selected>Lucro Presumido</option>
               <option value="lr">Lucro Real</option>
               <option value="mei">MEI</option>
@@ -7646,6 +7650,7 @@ function lhTrocarSenha(){
           <label>Regime Tributário Atual</label>
           <select id="c01_regime" data-dl="Parcial" data-doc="Cadastro · DAS-PGDAS" title="Importavel (parcial) - a Central sugere a partir de Cadastro · DAS-PGDAS; confira/edite. Editavel manualmente.">
             <option value="simples">Simples Nacional</option>
+            <option value="hibrido">Simples Nacional híbrido (IBS/CBS por fora)</option>
             <option value="lp" selected>Lucro Presumido</option>
             <option value="lr">Lucro Real</option>
             <option value="mei">MEI</option>
@@ -7681,7 +7686,7 @@ function lhTrocarSenha(){
           <label>% recebido por meio eletrônico (Pix, boleto, cartão, TED)</label>
           <input type="number" id="c01_pct_prazo" data-dl="Parcial" data-doc="Contratos" title="Importavel (parcial) - a Central sugere a partir de Contratos; confira/edite. Editavel manualmente." min="0" max="100" placeholder="70">
         </div>
-        <div class="input-group">
+        <div class="input-group" style="display:none"><!-- ⚖ v951 · fundido no seletor de regime ("Simples Nacional híbrido"); o campo fica só por compatibilidade -->
           <label>Simples: forma de recolher o IBS/CBS (a partir de 2027)</label>
           <select id="c01_modo_simples"><option value="dentro" selected>Dentro do DAS (padrão)</option><option value="hibrido">Híbrido — IBS/CBS por fora</option></select>
           <span class="lh-hint" data-hint="Só vale para o Simples. Dentro do DAS, o split alcança só a fatia de IBS/CBS do DAS; no híbrido, a alíquota cheia." onclick="lhHint(event,this)">?</span>
@@ -7884,6 +7889,7 @@ function lhTrocarSenha(){
           <label>Regime Tributário</label>
           <select id="c02_regime" data-dl="Parcial" data-doc="Cadastro · DAS-PGDAS" title="Importavel (parcial) - a Central sugere a partir de Cadastro · DAS-PGDAS; confira/edite. Editavel manualmente.">
             <option value="simples">Simples Nacional</option>
+            <option value="hibrido">Simples Nacional híbrido (IBS/CBS por fora)</option>
             <option value="lp" selected>Lucro Presumido</option>
             <option value="lr">Lucro Real</option>
           </select>
@@ -7932,7 +7938,7 @@ function lhTrocarSenha(){
             <span class="lh-hint" data-hint="Serviço: ISS do município (padrão 5% se vazio). Comércio/indústria: informe o ICMS da operação — o servidor não usa padrão escondido para o ICMS. O PIS/COFINS sai do regime (LP 3,65% · LR 9,25%)." onclick="lhHint(event,this)">?</span></label>
           <input type="number" id="c02_aliq_iss_icms" min="0" max="40" step="0.5" placeholder="Serviço: 5 · Comércio: ICMS da UF" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text);font-family:inherit;font-size:0.92em;">
         </div>
-        <div class="input-group">
+        <div class="input-group" style="display:none"><!-- ⚖ v951 · fundido no seletor de regime ("Simples Nacional híbrido"); o campo fica só por compatibilidade -->
           <label>Simples: forma de recolher o IBS/CBS (a partir de 2027)</label>
           <select id="c02_modo_simples"><option value="dentro" selected>Dentro do DAS (padrão — sem reajuste)</option><option value="hibrido">Híbrido — IBS/CBS por fora</option></select>
         </div>
@@ -8056,6 +8062,7 @@ function lhTrocarSenha(){
           <label>Regime Tributário Atual</label>
           <select id="c04_regime" data-dl="Parcial" data-doc="Cadastro · DAS-PGDAS" title="Importavel (parcial) - a Central sugere a partir de Cadastro · DAS-PGDAS; confira/edite. Editavel manualmente.">
             <option value="simples">Simples Nacional</option>
+            <option value="hibrido">Simples Nacional híbrido (IBS/CBS por fora)</option>
             <option value="lp" selected>Lucro Presumido</option>
             <option value="lr">Lucro Real</option>
           </select>
@@ -8158,8 +8165,9 @@ function lhTrocarSenha(){
           <select id="capex_regime" onchange="calcularCapex()">
             <option value="regular" selected>Regime Regular (Presumido/Real)</option>
             <option value="simples">Simples Nacional (puro)</option>
+            <option value="hibrido">Simples Nacional híbrido (IBS/CBS por fora)</option>
           </select>
-          <small style="color:var(--text-dim);font-size:.78em">O crédito integral é do regime regular. Simples puro não credita (fica no DAS).</small>
+          <small style="color:var(--text-dim);font-size:.78em">O crédito integral é do regime regular. Simples puro não credita (fica no DAS); o Simples híbrido recolhe IBS/CBS pelo regime regular e credita como ele (LC 123 art. 18 §4º-A).</small>
         </div>
         <div class="input-group">
           <label>Ano da compra</label>
@@ -8671,7 +8679,7 @@ function lhTrocarSenha(){
 <div class="page" id="page-cp03">
   <h2>✨ Compliance da Reforma — quanto vale 2026 em dia</h2>
   <p style="color:var(--mut);margin:6px 0 18px;"><b>O que é:</b> Comparação Simples Nacional vs Lucro Presumido sob a Reforma (CBS+IBS): avalia se, com o novo modelo de créditos, vale a pena migrar de regime conforme o perfil de clientes (B2B x B2C) e insumos.. <b>Para que serve:</b> Sob a Reforma, empresas B2B se beneficiam dos créditos de CBS/IBS (o cliente aproveita o crédito), o que pode favorecer o Lucro Presumido frente ao Simples em alguns perfis. Quanto mais vendas B2B e mais insumos tributad… <b>O que analisar:</b> compare o cenário atual com a projeção 2026-2033, observe o ano de virada e leve o resultado como base da orientação ao cliente.</p>
-  <div class="input-grid-2"><div class="input-group"><label>Faturamento previsto 2026 (R$)</label><input type="number" id="cp03_fat" placeholder="5000000"></div><div class="input-group"><label>Vai cumprir as acessórias em dia?</label><select id="cp03_ok"><option value="sim">Sim</option><option value="nao">Não</option></select></div><div class="input-group"><label>Custo de adequação (sistemas+consultoria) (R$)</label><input type="number" id="cp03_custo" value="40000"></div><div class="input-group"><label>Regime</label><select id="cp03_reg"><option value="regular">Regular (LP/LR)</option><option value="simples">Simples</option></select></div></div>
+  <div class="input-grid-2"><div class="input-group"><label>Faturamento previsto 2026 (R$)</label><input type="number" id="cp03_fat" placeholder="5000000"></div><div class="input-group"><label>Vai cumprir as acessórias em dia?</label><select id="cp03_ok"><option value="sim">Sim</option><option value="nao">Não</option></select></div><div class="input-group"><label>Custo de adequação (sistemas+consultoria) (R$)</label><input type="number" id="cp03_custo" value="40000"></div><div class="input-group"><label>Regime</label><select id="cp03_reg"><option value="regular">Regular (LP/LR)</option><option value="simples">Simples Nacional</option><option value="hibrido">Simples Nacional híbrido (IBS/CBS por fora)</option></select></div></div>
   <button class="btn-calcular" onclick="calcularCP03()">⚡ Calcular</button>
   <div class="resultado-section" id="res-cp03"><div class="kpi-grid" id="kpi-cp03"></div><div id="recs-cp03"></div></div>
 </div><!-- /transpax -->
@@ -8832,6 +8840,8 @@ function lhTrocarSenha(){
         <div class="input-group">
           <label>Seu regime tributário</label>
           <select id="calc03_regime_comprador" data-dl="Parcial" data-doc="Cadastro · DAS-PGDAS" title="Importavel (parcial) - a Central sugere a partir de Cadastro · DAS-PGDAS; confira/edite. Editavel manualmente.">
+            <option value="SN">Simples Nacional</option>
+            <option value="SN_HIBRIDO">Simples Nacional híbrido (IBS/CBS por fora)</option>
             <option value="LP" selected>Lucro Presumido</option>
             <option value="LR">Lucro Real</option>
           </select>
@@ -8860,7 +8870,7 @@ function lhTrocarSenha(){
       <div class="input-grid-3">
         <div class="input-group">
           <label>Regime do Fornecedor A</label>
-          <select id="calc03_regime_a" onchange="calcularCalc03()"><option value="SN" selected>Simples Nacional</option><option value="LP">Lucro Presumido</option><option value="LR">Lucro Real</option><option value="IMP">Importação</option></select>
+          <select id="calc03_regime_a" onchange="calcularCalc03()"><option value="SN" selected>Simples Nacional</option><option value="SN_HIBRIDO">Simples Nacional híbrido (IBS/CBS por fora)</option><option value="LP">Lucro Presumido</option><option value="LR">Lucro Real</option><option value="IMP">Importação</option></select>
         </div>
         <div class="input-group">
           <label>Valor mensal — Fornecedor A (R$)</label>
@@ -8869,7 +8879,7 @@ function lhTrocarSenha(){
         <div class="input-group"></div>
         <div class="input-group">
           <label>Regime do Fornecedor B</label>
-          <select id="calc03_regime_b" onchange="calcularCalc03()"><option value="SN">Simples Nacional</option><option value="LP" selected>Lucro Presumido</option><option value="LR">Lucro Real</option><option value="IMP">Importação</option></select>
+          <select id="calc03_regime_b" onchange="calcularCalc03()"><option value="SN">Simples Nacional</option><option value="SN_HIBRIDO">Simples Nacional híbrido (IBS/CBS por fora)</option><option value="LP" selected>Lucro Presumido</option><option value="LR">Lucro Real</option><option value="IMP">Importação</option></select>
         </div>
         <div class="input-group">
           <label>Valor mensal — Fornecedor B (R$)</label>
@@ -8923,9 +8933,10 @@ function lhTrocarSenha(){
         <div class="input-group">
           <label>Regime atual</label>
           <select id="n33_regime" data-dl="Parcial" data-doc="Cadastro · DAS-PGDAS" title="Importavel (parcial) - a Central sugere a partir de Cadastro · DAS-PGDAS; confira/edite. Editavel manualmente.">
+            <option value="simples">Simples Nacional</option>
+            <option value="hibrido">Simples Nacional híbrido (IBS/CBS por fora)</option>
             <option value="LP" selected>Lucro Presumido</option>
             <option value="LR">Lucro Real</option>
-            <option value="simples">Simples Nacional</option>
           </select>
         </div>
         <div class="input-group">
@@ -8972,7 +8983,7 @@ function lhTrocarSenha(){
           <input type="number" id="n33_prazo_recolhimento" min="0" max="120" step="1" value="25" placeholder="25">
           <span class="lh-hint" data-hint="O split só tira o float das vendas recebidas ANTES do vencimento da guia (Dec. 12.955 art. 29 §4º). Padrão 25 dias até o regulamento fixar o vencimento." onclick="lhHint(event,this)">?</span>
         </div>
-        <div class="input-group">
+        <div class="input-group" style="display:none"><!-- ⚖ v951 · fundido no seletor de regime ("Simples Nacional híbrido"); o campo fica só por compatibilidade -->
           <label>Simples: forma de recolher o IBS/CBS</label>
           <select id="n33_modo_simples"><option value="dentro" selected>Dentro do DAS (padrão)</option><option value="hibrido">Híbrido — IBS/CBS por fora</option></select>
         </div>
@@ -9816,10 +9827,12 @@ function lhTrocarSenha(){
         <div class="input-group">
           <label>Regime tributário atual</label>
           <select id="obra_regime" onchange="obraRegimeChange()" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text);font-family:inherit;font-size:0.92em;">
+            <option value="simples">Simples Nacional</option>
+            <option value="hibrido">Simples Nacional híbrido (IBS/CBS por fora)</option>
             <option value="lp" selected>Lucro Presumido</option>
             <option value="lr">Lucro Real</option>
-            <option value="simples">Simples Nacional</option>
           </select>
+          <span class="lh-hint" data-hint="Simples Nacional: o IBS/CBS fica na fatia do DAS (Anexo IV), sem crédito de materiais. Híbrido (LC 123 art. 18 §4º-A, opção até 30/10/2026 para 2027): IBS/CBS por fora pelo regime regular, com crédito de materiais e crédito cheio ao contratante." onclick="lhHint(event,this)">?</span>
         </div>
         <div class="input-group">
           <label>Faturamento anual de obras (R$)</label>
@@ -9930,10 +9943,12 @@ function lhTrocarSenha(){
         <div class="input-group">
           <label>Regime atual</label>
           <select id="por_regime" onchange="porRegimeChange()" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text);font-family:inherit;font-size:0.92em;">
-            <option value="lr" selected>Lucro Real</option>
-            <option value="lp">Lucro Presumido</option>
             <option value="simples">Simples Nacional</option>
+            <option value="hibrido">Simples Nacional híbrido (IBS/CBS por fora)</option>
+            <option value="lp">Lucro Presumido</option>
+            <option value="lr" selected>Lucro Real</option>
           </select>
+          <span class="lh-hint" data-hint="Simples Nacional: o IBS/CBS fica na fatia do DAS (premissa Anexo III), sem crédito de insumos. Híbrido (LC 123 art. 18 §4º-A, opção até 30/10/2026 para 2027): IBS/CBS por fora pelo regime regular, com crédito de insumos e crédito cheio ao tomador B2B." onclick="lhHint(event,this)">?</span>
         </div>
       </div>
       <div class="input-grid-3" style="margin-top:10px;">
@@ -10068,9 +10083,9 @@ function lhTrocarSenha(){
         <div class="input-group">
           <label>Regime tributário</label>
           <select id="hev_regime" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text);font-family:inherit;font-size:0.92em;">
-            <option value="regular" selected>Regime regular</option>
-            <option value="simples_hibrido">Simples — híbrido (arts. 41-43)</option>
-            <option value="simples_dentro">Simples — por dentro do DAS</option>
+            <option value="simples_dentro">Simples Nacional</option>
+            <option value="simples_hibrido">Simples Nacional híbrido (IBS/CBS por fora)</option>
+            <option value="regular" selected>Regime regular (Lucro Presumido / Lucro Real)</option>
           </select>
           <span class="lh-hint" data-hint="No Simples POR DENTRO as reduções de 40/60% NÃO se aplicam — os tributos estão no DAS. No híbrido, sim." onclick="lhHint(event,this)">?</span>
         </div>
@@ -10204,10 +10219,11 @@ function lhTrocarSenha(){
         <div class="input-group">
           <label>Regime</label>
           <select id="ant_regime" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text);font-family:inherit;font-size:0.92em;">
-            <option value="regular" selected>Regime regular</option>
-            <option value="simples_dentro">Simples — por dentro do DAS</option>
+            <option value="regular" selected>Regime regular (Presumido/Real)</option>
+            <option value="simples_dentro">Simples Nacional (por dentro do DAS)</option>
+            <option value="simples_hibrido">Simples Nacional híbrido (IBS/CBS por fora)</option>
           </select>
-          <span class="lh-hint" data-hint="No Simples por dentro o DAS incide no RECEBIMENTO, pela alíquota efetiva — sem curva de transição e sem redução setorial." onclick="lhHint(event,this)">?</span>
+          <span class="lh-hint" data-hint="No Simples por dentro o DAS incide no RECEBIMENTO, pela alíquota efetiva — sem curva de transição e sem redução setorial. No Simples híbrido (LC 123 art. 18 §4º-A) o IBS/CBS segue o regime regular: a conta é a mesma do Presumido/Real." onclick="lhHint(event,this)">?</span>
         </div>
       </div>
     </div>
@@ -11413,11 +11429,12 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <div class="input-group">
           <label>Regime tributário do cliente</label>
           <select id="cr04_regime" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text);font-family:inherit;font-size:0.92em;">
-            <option value="lr" selected>Lucro Real (não-cumulativo · aproveita crédito pleno)</option>
-            <option value="lp">Lucro Presumido (avaliar migração para regime regular)</option>
             <option value="sn">Simples Nacional (NÃO aproveita · regime opcional)</option>
+            <option value="hibrido">Simples Nacional híbrido (IBS/CBS por fora · aproveita crédito pleno)</option>
+            <option value="lp">Lucro Presumido (avaliar migração para regime regular)</option>
+            <option value="lr" selected>Lucro Real (não-cumulativo · aproveita crédito pleno)</option>
           </select>
-          <span class="lh-hint" data-hint="Só LR (e LP migrando) aproveita o crédito pleno." onclick="lhHint(event,this)">?</span>
+          <span class="lh-hint" data-hint="Só LR, Simples híbrido (IBS/CBS por fora) e LP migrando aproveitam o crédito pleno." onclick="lhHint(event,this)">?</span>
         </div>
         <div class="input-group">
           <label>Alíquota CBS+IBS estimada (%)</label>
@@ -17793,6 +17810,7 @@ function ctcCalc(){
         <div><label style="display:block;font-size:.62rem;color:#666;margin-bottom:2px">REGIME DO FORNECEDOR</label><select id="snc_forn_reg" onchange="snRenderC()">
           <option value="regular">Regime Regular — crédito integral</option>
           <option value="simples">Simples Nacional — crédito limitado ao IBS/CBS do DAS</option>
+          <option value="hibrido">Simples Nacional híbrido (IBS/CBS por fora) — crédito integral</option>
           <option value="mei">MEI — sem crédito (SIMEI)</option>
         </select></div>
       </div>
@@ -20842,8 +20860,11 @@ function toggleBloco(id) {
 // ══════════════════════════════════════════
 function syncRegime() {
   const val = document.getElementById('gi_regime').value;
+  /* ⚖ v951 · Simples híbrido no cadastro: tela que tem a opção recebe 'hibrido'; tela que só conhece simples/lp/lr
+     (IRPJ/CSLL/CPP — c05, c06, c08, n29…) recebe 'simples', porque o híbrido continua optante; tela que separa
+     o modo (c01/c02/n33 _modo_simples) recebe 'simples' + modo 'hibrido' (ou 'dentro' quando o regime é simples). */
   const regimeIds = ['c01_regime','c02_regime','c04_regime','c05_seg',
-                     'c06_regime','c08_regime','c10_regime','n29_regime'];
+                     'c06_regime','c08_regime','c10_regime','n29_regime','n33_regime','cr04_regime','calc03_regime_comprador'];
   regimeIds.forEach(id => {
     const el = document.getElementById(id);
     if(el && el.tagName === 'SELECT') {
@@ -20852,10 +20873,15 @@ function syncRegime() {
         if(val === 'lp') el.value = 'LP';
         else if(val === 'lr') el.value = 'LR';
       } else {
-        for(let o of el.options) { if(o.value === val) { el.value = val; break; } }
+        var _alvos = (val === 'hibrido') ? ['hibrido','SN_HIBRIDO','simples','sn','SN'] : (val === 'simples') ? ['simples','sn','SN'] : (val === 'lp') ? ['lp','LP'] : (val === 'lr') ? ['lr','LR'] : [val];
+        var _ops = Array.prototype.map.call(el.options, function(o){ return o.value; });
+        for(var _i = 0; _i < _alvos.length; _i++){ if(_ops.indexOf(_alvos[_i]) >= 0){ el.value = _alvos[_i]; break; } }
       }
     }
   });
+  if(val === 'hibrido' || val === 'simples'){
+    ['c01_modo_simples','c02_modo_simples','n33_modo_simples'].forEach(function(id){ var m = document.getElementById(id); if(m) m.value = (val === 'hibrido') ? 'hibrido' : 'dentro'; });
+  }
 }
 
 // ══════════════════════════════════════════
@@ -20881,7 +20907,11 @@ function propagarInputs() {
   const setSel = (id, val) => {
     const el=g(id);
     if(!el) return;
+    /* ⚖ v951 · regime 'hibrido' numa tela que só conhece simples/lp/lr: vai como 'simples' (o híbrido continua
+       optante); o modo IBS/CBS por fora vai no campo _modo_simples da tela, quando ela o tem. */
+    if((val==='hibrido' || val==='simples') && /_regime$/.test(id)){ const m=g(id.replace(/_regime$/,'_modo_simples')); if(m) m.value=(val==='hibrido')?'hibrido':'dentro'; }
     for(let o of el.options){ if(o.value===val){ el.value=val; return; } }
+    if(val==='hibrido'){ for(let o of el.options){ if(o.value==='simples'){ el.value='simples'; return; } } }
   };
 
   const regime    = gv('gi_regime');
@@ -22485,7 +22515,7 @@ function c01LerEntradas(){
   // CG atual: "float" tributário que o cliente ainda tem (antes do split)
   const cgAtual = fat*pctPrazo*aliqAtual*(prazoR/30);
 
-  return { faturamento_mensal:fat, regime:regime, prazo_recolhimento_dias:prazoR, pct_incidencia:pctInc*100, pct_eletronico:pctPrazo*100, pct_credito:((parseFloat((document.getElementById('c01_pct_credito')||{}).value)||0)), crescimento_aa:cresc*100, custo_capital:taxaCG*100, cenario:'A', modo_simples:((document.getElementById('c01_modo_simples')||{}).value||'dentro'), anexo_simples:((document.getElementById('c01_anexo_simples')||{}).value||'I'), _pctInc:pctInc, _pctPrazo:pctPrazo, _cresc:cresc, _taxaCG:taxaCG, _pctCred:((parseFloat((document.getElementById('c01_pct_credito')||{}).value)||0)/100) };
+  return { faturamento_mensal:fat, regime:regime, prazo_recolhimento_dias:prazoR, pct_incidencia:pctInc*100, pct_eletronico:pctPrazo*100, pct_credito:((parseFloat((document.getElementById('c01_pct_credito')||{}).value)||0)), crescimento_aa:cresc*100, custo_capital:taxaCG*100, cenario:'A', modo_simples:(regime==='hibrido'?'hibrido':((document.getElementById('c01_modo_simples')||{}).value||'dentro')), anexo_simples:((document.getElementById('c01_anexo_simples')||{}).value||'I'), _pctInc:pctInc, _pctPrazo:pctPrazo, _cresc:cresc, _taxaCG:taxaCG, _pctCred:((parseFloat((document.getElementById('c01_pct_credito')||{}).value)||0)/100) };
 }
 function c01CalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
 function c01Render(r, ent, motivo){
@@ -22515,7 +22545,7 @@ function c01Render(r, ent, motivo){
           confianca: { nivel: confNivel, motivo: 'A projeção depende do prazo entre receber e recolher, da taxa de captação ('+fmtPct(taxaCG*100)+' a.a.) e do % recebido por meio eletrônico — premissas que variam com a realidade da operação. A data da obrigatoriedade do split ainda não existe em norma.' },
           premissas: [
             {label:'Faturamento mensal', valor:fmtR(fat)},
-            {label:'Regime', valor:(regime||'—')},
+            {label:'Regime', valor:((r&&r.regime_rotulo)||regime||'—')},
             {label:'Prazo de recolhimento', valor:prazoR+' dias'},
             {label:'% recebido por meio eletrônico', valor:fmtPct(pctPrazo*100)},
             {label:'Crescimento anual', valor:fmtPct(cresc*100)},
@@ -22557,7 +22587,7 @@ function c01Render(r, ent, motivo){
   const _b26=r26.cgPerdido; const difPct=(_b26>0)?((r29.cgPerdido-_b26)/_b26*100).toFixed(0):null;
   // v26 FIX GRAVE-05: C01 — alerta específico para Simples Nacional
   // ⚖ v950 · Simples: "dentro" (padrão) o split só alcança a fatia de IBS/CBS do DAS; no híbrido, a alíquota cheia.
-  var avisoSN = regime === 'simples'
+  var avisoSN = (regime === 'simples' || regime === 'hibrido')
     ? '<div class="rec-card rec-atencao" style="border-left:4px solid #c9a227"><h5>Simples Nacional: '+((r&&r.modo_simples==='hibrido')?'híbrido (IBS/CBS por fora)':'IBS/CBS dentro do DAS')+'</h5><p>'+((r&&r.nota_simples)||'No Simples "dentro", o split só alcança a fatia de IBS/CBS do DAS; no híbrido (opção pelo regime regular de IBS/CBS — LC 123, Res. CGSN 186/2026), a alíquota cheia.')+' Compare os dois modos na calculadora <strong>Dentro × Híbrido</strong> antes de orientar.</p></div>'
     : '';
   var notasSplit = (r && (r.status_2027||r.nota_credito)) ? '<div class="rec-card rec-info"><h5>Premissas do split</h5><p>'+[r.status_2027, r.nota_obrigatoriedade, r.nota_credito].filter(Boolean).join(' ')+'</p></div>' : '';
@@ -22767,7 +22797,7 @@ function c02LerEntradas(){
      Antes: 6% chapado p/ todo Simples. Agora: fração que a Reforma SUBSTITUI
      (ISS/ICMS/IPI + PIS/COFINS) por anexo × alíquota efetiva do DAS.
      Fonte: Resolução CGSN 94/2011 + LC 214 arts. 508/519. */
-  if(regime==='simples'){
+  if(regime==='simples' || regime==='hibrido'){ /* ⚖ v951 · híbrido = Simples (tributo atual do DAS) com IBS/CBS por fora */
     var _seg=(document.getElementById('c02_segmento')||{}).value||'servicos';
     /* mapa segmento → anexo do Simples */
     var _segAnexo={servicos:'V', saude:'III', comercio:'I', agro:'I', agroindustria:'II',
@@ -22806,7 +22836,7 @@ function c02LerEntradas(){
   var _sj=parseFloat((document.getElementById('c02_pct_sujeita')||{}).value); var _in=parseFloat((document.getElementById('c02_pct_insumos')||{}).value); var pctSujeitaC02=(isNaN(_sj)?80:_sj)/100, pctInsumosC02=(isNaN(_in)?30:_in)/100;
   var _iss=parseFloat((document.getElementById('c02_aliq_iss_icms')||{}).value), _rbtE=parseFloat(String((document.getElementById('c02_rbt12')||{}).value||'').replace(/\./g,'').replace(',','.')), _pgE=window.LH_IMPORT_PGDAS;
   return { preco:preco, regime:regime, segmento:seg, margem:margem*100, ano:anoRef, qtd_contratos:qtd, cenario:'A', pct_sujeita:pctSujeitaC02*100, pct_insumos:pctInsumosC02*100,
-           aliq_iss_icms:(isNaN(_iss)?undefined:_iss), modo_simples:((document.getElementById('c02_modo_simples')||{}).value||'dentro'),
+           aliq_iss_icms:(isNaN(_iss)?undefined:_iss), modo_simples:(regime==='hibrido'?'hibrido':((document.getElementById('c02_modo_simples')||{}).value||'dentro')),
            rbt12:(_rbtE>0?_rbtE:undefined), aliq_efetiva_real:((window._c02UsarPGDAS && _pgE && _pgE.ok && _pgE.das && _pgE.rpa>0)? Math.round(_pgE.das/_pgE.rpa*1000000)/10000 : undefined),
            reducao_manual:((seg==='ncm' && window.C02_RED_NCM!=null)? window.C02_RED_NCM*100 : undefined), _margem:margem, _pctSujeita:pctSujeitaC02, _pctInsumos:pctInsumosC02, _impostosAtuais:impostosAtuais }
 }
@@ -22893,7 +22923,7 @@ function c02Render(r, ent, motivo){
     <div class="rec-card ${r.varPct>8?'rec-critica':r.varPct>2?'rec-atencao':'rec-oport'}">
       <h5>${r.varPct>8?'Reajuste Urgente Necessário':r.varPct>2?'Reajuste Recomendado':'Preço Dentro do Esperado'}</h5>
       <p>Em ${anoRef}, o preço de ${fmtR(preco)} precisará ser reajustado para <strong>${fmtR(r.novoPreco)}</strong> (${r.varPct>0?'+':''}${fmtPct(r.varPct)}) para manter a margem atual de ${fmtPct(margem*100)}. Sem reajuste, a margem cai para <strong>${fmtPct(r.novaMargemSemReajuste)}</strong> — perda de ${perdaMargem} pp.</p></div>
-    ${(function(){ var nt=[]; try{ if(r0 && r0.imposto_velho && r0.imposto_velho.fonte) nt.push('<b>Imposto velho:</b> '+r0.imposto_velho.fonte+'.'); if(r0 && r0.imposto_velho && r0.imposto_velho.nota) nt.push(r0.imposto_velho.nota); if(r0 && r0.aviso_setor) nt.push(r0.aviso_setor); if(r0 && +r0.reducao_setorial_pct>0 && r0.nota_reducao) nt.push(r0.nota_reducao); }catch(_n){} return nt.length?'<div class="rec-card rec-atencao"><h5>Premissas desta conta</h5><p>'+nt.join(' ')+'</p></div>':''; })()}
+    ${(function(){ var nt=[]; try{ if(r0 && r0.regime_rotulo) nt.push('<b>Regime:</b> '+r0.regime_rotulo+'.'); if(r0 && r0.imposto_velho && r0.imposto_velho.fonte) nt.push('<b>Imposto velho:</b> '+r0.imposto_velho.fonte+'.'); if(r0 && r0.imposto_velho && r0.imposto_velho.nota) nt.push(r0.imposto_velho.nota); if(r0 && r0.aviso_setor) nt.push(r0.aviso_setor); if(r0 && +r0.reducao_setorial_pct>0 && r0.nota_reducao) nt.push(r0.nota_reducao); }catch(_n){} return nt.length?'<div class="rec-card rec-atencao"><h5>Premissas desta conta</h5><p>'+nt.join(' ')+'</p></div>':''; })()}
     <div class="rec-card rec-info"><h5>Argumento para Renegociação</h5><p>Comunique o reajuste como uma <strong>adequação técnica à legislação tributária</strong> — não como aumento de preço. A Reforma altera a estrutura de impostos embutida em todo preço. Apresente este relatório como comprovação técnica para o cliente.</p></div>`);
   document.getElementById('res-c02').classList.add('visible');
   // ── Motor 360°: registrar reprecificação como INFO (não soma como economia) ──
@@ -22993,7 +23023,7 @@ function c04LerEntradas(){
   }
   if(fat<=0){ mostrarToast('Informe o faturamento','error'); return null; }
   const cnae=CONFIG_CNAE[cnaeKey];
-  const cargaAtual=CARGA_ATUAL_C04[regime];
+  const cargaAtual=CARGA_ATUAL_C04[regime]||CARGA_ATUAL_C04.simples;   /* v951: 'hibrido' — a carga atual (DAS) vem do servidor */
   const impostoAtual=fat*cargaAtual.base;
 
   return { setor:cnaeKey, regime:regime, faturamento:fat, mix_lp:mixLP, mix_sn:mixSN, mix_ext:mixExt, pct_insumos_legado:(pctIns==null ? null : pctIns*100), _pctIns:pctIns, _mixLP:mixLP, _mixSN:mixSN, _mixExt:mixExt, _cnaeKey:cnaeKey };
@@ -23004,8 +23034,9 @@ function c04Render(r, ent, motivo){
   if(motivo==='aguardando'){ _box.innerHTML=LH_PONTE.cardAguardando(); return; }
   if(!r || r.ok===false){ _box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
   var cnaeKey=ent._cnaeKey, regime=ent.regime, fat=ent.faturamento, mixLP=ent._mixLP, mixSN=ent._mixSN, mixExt=ent._mixExt, pctIns=ent._pctIns; const cnae={ label:(r.rotulo || (CONFIG_CNAE[cnaeKey]||{}).label || cnaeKey) };
-  
-  var pctIns=(r.mix_compras && r.mix_compras.credito_efetivo_pct!=null) ? (+r.mix_compras.credito_efetivo_pct)/100 : ent._pctIns, mixLP=ent._mixLP, mixSN=ent._mixSN, mixExt=ent._mixExt; const cargaAtual={ base:(+r.carga_atual_pct)/100, label:(CARGA_ATUAL_C04[regime]||{}).label }; const impostoAtual=+r.imposto_atual; const anos=(r.projecao||[]).map(function(p){ return +p.ano; }); const resultados=(r.projecao||[]).map(function(p){ var t={}; try{ t=getAliq(+p.ano)||{}; }catch(_e){} var aliqBruta=(+p.novo_bruto_pct)/100, creditoInsums=(+p.credito_pct)/100, aliqNovaEfetiva=(+p.novo_liquido_pct)/100, aliqVelhaVigente=((+p.velho_estadual_pct)+(+p.velho_federal_pct))/100, aliqEfetiva=(+p.carga_total_pct)/100, impostoNovo=+p.imposto; var varVsAtual=(p.variacao_vs_hoje!=null?+p.variacao_vs_hoje:impostoNovo-impostoAtual); return { ano:+p.ano, aliqBruta:aliqBruta, creditoInsums:creditoInsums, aliqEfetiva:aliqEfetiva, aliqNovaEfetiva:aliqNovaEfetiva, aliqVelhaVigente:aliqVelhaVigente, impostoNovo:impostoNovo, impostoNovoSozinho:fat*aliqNovaEfetiva, impostoVelhoVigente:fat*aliqVelhaVigente, varVsAtual:varVsAtual, resultado:(varVsAtual<0?'Ganha':varVsAtual===0?'Neutro':'Perde'), obs:t.obs||'' }; });
+  /* ⚖ v951 · Simples híbrido: o servidor manda hibrido:true, a carga atual = DAS e a coluna "velho" = DAS restante (das_restante_pct). A tela só rotula. */
+  var _hibC04=(r.hibrido===true); var _thVelho=document.querySelector('#tabela-c04 thead th:nth-child(3)'); if(_thVelho) _thVelho.textContent=_hibC04?'DAS restante (sem a fatia de IBS/CBS)':'Velho vigente (ICMS/ISS/PIS/COFINS)';
+  var pctIns=(r.mix_compras && r.mix_compras.credito_efetivo_pct!=null) ? (+r.mix_compras.credito_efetivo_pct)/100 : ent._pctIns, mixLP=ent._mixLP, mixSN=ent._mixSN, mixExt=ent._mixExt; const cargaAtual={ base:(+r.carga_atual_pct)/100, label:(_hibC04?'Simples híbrido · DAS hoje':((CARGA_ATUAL_C04[regime]||{}).label||r.regime)) }; const impostoAtual=+r.imposto_atual; const anos=(r.projecao||[]).map(function(p){ return +p.ano; }); const resultados=(r.projecao||[]).map(function(p){ var t={}; try{ t=getAliq(+p.ano)||{}; }catch(_e){} var aliqBruta=(+p.novo_bruto_pct)/100, creditoInsums=(+p.credito_pct)/100, aliqNovaEfetiva=(+p.novo_liquido_pct)/100, aliqVelhaVigente=((+p.velho_estadual_pct)+(+p.velho_federal_pct))/100, aliqEfetiva=(+p.carga_total_pct)/100, impostoNovo=+p.imposto; var varVsAtual=(p.variacao_vs_hoje!=null?+p.variacao_vs_hoje:impostoNovo-impostoAtual); return { ano:+p.ano, aliqBruta:aliqBruta, creditoInsums:creditoInsums, aliqEfetiva:aliqEfetiva, aliqNovaEfetiva:aliqNovaEfetiva, aliqVelhaVigente:aliqVelhaVigente, impostoNovo:impostoNovo, impostoNovoSozinho:fat*aliqNovaEfetiva, impostoVelhoVigente:fat*aliqVelhaVigente, varVsAtual:varVsAtual, resultado:(varVsAtual<0?'Ganha':varVsAtual===0?'Neutro':'Perde'), obs:t.obs||'' }; });
   // v30.8 — Salvar mix usado no _motorState pro Motor 360°
   if(window._motorState) {
     window._motorState.c04 = window._motorState.c04 || {};
@@ -23030,7 +23061,7 @@ function c04Render(r, ent, motivo){
     premissas:[
       {label:'CNAE', valor: (document.getElementById('c04_cnae')||{value:''}).value || '—'},
       {label:'Faturamento', valor: fmtR(parseFloat((document.getElementById('c04_faturamento')||{value:0}).value)||0)},
-      {label:'Regime', valor: (document.getElementById('c04_regime')||{value:''}).value || '—'},
+      {label:'Regime', valor: (r.regime || (document.getElementById('c04_regime')||{value:''}).value || '—')},
       {label:'% de crédito efetivo sobre o imposto novo (usado no cálculo)', valor: fmtPct(pctIns*100)},
       {label:'Carga atual decomposta', valor: (r.premissa_carga_atual||'—')}
     ],
@@ -23040,10 +23071,10 @@ function c04Render(r, ent, motivo){
         titulo:'Alíquota efetiva da Reforma por ano: durante a transição (2026-2032) a empresa paga os DOIS sistemas em paralelo — o novo (CBS+IBS) subindo e o velho (ICMS/ISS) descendo. A carga total de cada ano soma as duas partes.',
         aliquotas:[
           {label:'Faturamento anual', valor:fmtR(fat)},
-          {label:'Regime', valor:(regime||'—')},
+          {label:'Regime', valor:(r.regime||regime||'—')},
           {label:'Carga atual (hoje)', valor:fmtPct(cargaAtual.base*100)},
           {label:'Lado novo em 2029 (CBS+IBS efet.)', valor:fmtPct(r29.aliqNovaEfetiva*100)},
-          {label:'Lado velho ainda vigente 2029', valor:fmtPct(r29.aliqVelhaVigente*100)},
+          {label:(_hibC04?'DAS restante em 2029 (sem a fatia de IBS/CBS)':'Lado velho ainda vigente 2029'), valor:fmtPct(r29.aliqVelhaVigente*100)},
           {label:'Carga TOTAL 2029 (híbrido)', valor:fmtPct(r29.aliqEfetiva*100)}
         ],
         porque:'A transição é HÍBRIDA (LC 214/2025): em 2027 o CBS substitui PIS/COFINS; de 2029 a 2032 o IBS sobe (10%→40%) enquanto ICMS/ISS descem (90%→60%); em 2033 só o novo sistema vigora. A carga total de cada ano é a soma do que ainda se paga no sistema velho mais o que já se paga no novo — por isso os anos de transição pesam mais do que olhar só a alíquota nova isolada. A Reforma é não-cumulativa: créditos sobre insumos reduzem a parte nova.',
@@ -23073,6 +23104,7 @@ function c04Render(r, ent, motivo){
     <div class="rec-card ${setorGanha?'rec-oport':'rec-critica'}">
       <h5>${setorGanha?'Setor Favorecido pela Reforma':'Setor com Aumento de Carga'}</h5>
       <p>O setor <strong>${cnae.label}</strong> terá carga de <strong>${fmtPct((+r.carga_2033_pct))}</strong> em 2033 (carga plena) vs. ${fmtPct(cargaAtual.base*100)} hoje${_v33!=null?' — '+(_v33>0?'+':'')+fmtR(_v33)+'/ano':''}. Em 2029 (transição) a carga é de ${fmtPct(r29.aliqEfetiva*100)}. ${setorGanha?'A Reforma reduz a carga — oportunidade de melhorar margem.':'Prepare o cliente para aumento gradual de carga. Planejamento de precificação é urgente.'}</p>${r.observacao?'<p style="font-size:.85em;opacity:.8">'+r.observacao+'</p>':''}</div>
+    ${_hibC04&&r.simples_hibrido?'<div class="rec-card rec-info" style="border-left:4px solid #06b6d4"><h5>Simples Nacional híbrido — Anexo '+r.simples_hibrido.anexo+' presumido · DAS '+fmtPct(+r.simples_hibrido.aliq_efetiva_das_pct)+'</h5><p>'+String(r.simples_hibrido.nota||'')+'</p></div>':''}
     <div class="rec-card rec-info"><h5>Use com a CALC-02 — Reprecificação</h5><p>Com a alíquota efetiva calculada aqui, alimente a CALC-02 para descobrir o novo preço correto. As duas calcs juntas entregam um diagnóstico completo de precificação pós-Reforma.</p></div>`);
   document.getElementById('res-c04').classList.add('visible');
   // ── Motor 360°: registrar impacto setorial ──
@@ -23544,6 +23576,7 @@ function cp03Render(r, ent, motivo){
   lhKpi('kpi-cp03',[{l:'PILOTO 2026 (1%)',v:fmtR(piloto)},{l:'DISPENSA CONQUISTADA',v:fmtR(disp),cls:disp>0?'kpi-positivo':'kpi-negativo',s:disp>0?'acessórias em dia':'sem dispensa'},{l:'VALOR LÍQUIDO DO COMPLIANCE',v:fmtR(liq),cls:liq>0?'kpi-positivo':''},{l:'ROI DA ADEQUAÇÃO',v:roi.toFixed(2)+'×',s:'cada R$1 investido'}]);
   (document.getElementById('recs-cp03')||{}).innerHTML='<div class="rec-card rec-oport"><h5>✨ Compliance É o imposto em 2026</h5><p>'+(disp>0?('Estar em dia vale '+fmtR(disp)+' este ano — e o bônus invisível: chegar em 2027 (CBS 8,8% + split payment) com sistemas rodados, enquanto o concorrente apaga incêndio.'):'Sem as acessórias em dia, o piloto de '+fmtR(piloto)+' é devido — e 2027 chega com CBS 8,8% e split payment em cima de uma casa desorganizada. A adequação se paga só com a dispensa.')+'</p></div>';
   document.getElementById('recs-cp03').innerHTML+='<div class="rec-card rec-atencao"><h5>📅 A linha do tempo que vende</h5><p>2026: piloto 1% + dispensa p/ quem cumprir → 2027: CBS 8,8% pra valer + split payment + fim do PIS/COFINS → 2029-32: rampa do IBS. Quem entra em 2026 organizado atravessa tudo isso com sistema rodado. O contador que conduzir essa esteira vira infraestrutura do cliente — impossível de demitir.</p></div>';
+  if(r.nota_regime){ document.getElementById('recs-cp03').innerHTML+='<div class="rec-card rec-info"><h5>Regime: '+(r.regime_rotulo||'')+'</h5><p>'+r.nota_regime+'</p></div>'; }
   mostrarToast('✓ Compliance calculado');
 try{var _pg=document.getElementById('page-cp03');if(_pg&&window.lhMemoriaCalculo){var _mv=document.getElementById('mem-cp03');if(!_mv){_mv=document.createElement('div');_mv.id='mem-cp03';_pg.appendChild(_mv);}_mv.innerHTML=window.lhMemoriaCalculo({titulo:'ROI do compliance 2026',aliquotas:[{label:'Custo adequação',valor:''},{label:'Benefício',valor:''},{label:'Valor líquido',valor:''}],porque:'Valor líquido = benefício da adequação (ano-piloto) − custo de adequação.',baseLegal:[{lei:'LC 214/2025 — cronograma 2026'}]});}}catch(e){}
 }
@@ -25106,14 +25139,15 @@ try {
   // ── Motor 360°: registrar regime ótimo + economia anual REAL ──
   // v17 Bug #1: tratamento correto quando regime input é inválido
   var regimeAtual = ((document.getElementById('gi_regime')||{value:''}).value || 'simples');
-  var nomeAtual = {simples:'Simples Nacional', lp:'Lucro Presumido', lr:'Lucro Real', mei:'MEI'}[regimeAtual] || 'Atual';
+  var nomeAtual = {simples:'Simples Nacional', hibrido:'Simples Híbrido', lp:'Lucro Presumido', lr:'Lucro Real', mei:'MEI'}[regimeAtual] || 'Atual';
   var regimeAtualObj = regimes.find(function(r){
     return (regimeAtual==='simples' && r.nome==='Simples Nacional') ||
+           (regimeAtual==='hibrido' && r.nome==='Simples Híbrido') ||   /* v951 */
            (regimeAtual==='lp' && r.nome==='Lucro Presumido') ||
            (regimeAtual==='lr' && r.nome==='Lucro Real');
   });
   // Detectar regime inválido (input contradiz lei)
-  var regimeIncompativel = (regimeAtual === 'simples' && fat > 4800000) ||
+  var regimeIncompativel = ((regimeAtual === 'simples' || regimeAtual === 'hibrido') && fat > 4800000) ||
                             (regimeAtual === 'lp' && fat > 78000000) ||
                             (regimeAtual === 'mei' && fat > 81000);
   // economiaVsAtual:
@@ -28823,7 +28857,8 @@ function antecipLerEntradas(){
   var regime=G('ant_regime','regular');
 
 
-  return { valor:val, ano_recebimento:aRec, ano_entrega:aEnt, reducao:red, credito_pct:cred*100, cenario:'A', _red:red, _cred:cred, _regime:regime };
+  /* ⚖ v951 · regime vai ao servidor (fn_antecip ganha p_regime na migração pendente; até lá o despachante ignora o campo) */
+  return { valor:val, ano_recebimento:aRec, ano_entrega:aEnt, reducao:red, credito_pct:cred*100, cenario:'A', regime:regime, _red:red, _cred:cred, _regime:regime };
 }
 function antecipCalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
 function antecipRender(r, ent, motivo){
@@ -28840,11 +28875,16 @@ function antecipRender(r, ent, motivo){
     '<div class="kpi-card'+(provisao>0?' kpi-alerta':'')+'"><div class="kpi-label">'+(provisao<0?'Antecipação paga a mais (restituição)':'Complemento na entrega (provisionar)')+'</div><div class="kpi-value">'+R(provisao)+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">% do recebido comprometido</div><div class="kpi-value">'+pc(pctComprometido)+'</div></div>';
 
-  var html='';
+  var html='', htmlHib='';
+  /* ⚖ v951 · Simples híbrido: IBS/CBS pelo regime regular — a conta é a mesma; a nota vem do servidor (nota_regime) quando a fn já a devolve */
+  if(regime==='simples_hibrido'){
+    htmlHib='<div class="lh-acc t-info" style="margin-top:10px;padding:14px 16px;border-radius:10px"><b>Simples Nacional híbrido (IBS/CBS por fora):</b> '+
+      ((r&&r.nota_regime)||'a empresa recolhe IBS/CBS pelo regime regular (LC 123 art. 18 §4º-A), então a antecipação no recebimento e o valor definitivo na entrega seguem a curva da transição exatamente como no Presumido/Real; IRPJ/CSLL/CPP continuam no DAS.')+'</div>';
+  }
   if(regime==='simples_dentro'){
     html='<div class="lh-acc t-warn" style="margin-top:10px;padding:14px 16px;border-radius:10px">'+
-      '<b>⚠ Simples por dentro:</b> o DAS incide no <b>recebimento</b>, pela alíquota efetiva do anexo — sem curva de transição e sem redução setorial. '+
-      'Esta tela projeta o regime regular; para o Simples, compare em <a onclick="abrirPagina(\'dxh\',null)" style="color:#c9a227;cursor:pointer;text-decoration:underline">Dentro × Híbrido</a>.</div>';
+      '<b>⚠ Simples por dentro:</b> '+((r&&r.nota_regime)||'o DAS incide no <b>recebimento</b>, pela alíquota efetiva do anexo — sem curva de transição e sem redução setorial. Esta tela projeta o regime regular; para o Simples, compare em Dentro × Híbrido.')+
+      ' <a onclick="abrirPagina(\'dxh\',null)" style="color:#c9a227;cursor:pointer;text-decoration:underline">Abrir Dentro × Híbrido</a>.</div>';
   } else if(aEnt>aRec){
     html='<div class="lh-acc t-warn" style="margin-top:10px;padding:14px 16px;border-radius:10px">'+
       '<b>Recebeu em '+aRec+', entrega em '+aEnt+'.</b> No recebimento recolhe-se a antecipação ('+R(impRec)+'); na entrega o imposto é recalculado pela alíquota de '+aEnt+': '+R(impEnt)+' ('+pc(pctComprometido)+' do recebido). '+
@@ -28858,6 +28898,7 @@ function antecipRender(r, ent, motivo){
     html='<div class="lh-acc t-ok" style="margin-top:10px;padding:14px 16px;border-radius:10px">'+
       '<b>Recebimento e entrega no mesmo ano ('+aRec+').</b> Sem descasamento de curva: o imposto é '+R(impEnt)+'.</div>';
   }
+  html=htmlHib+html;
   html+='<div style="margin-top:10px;padding:14px 16px;border-radius:10px;background:rgba(30,95,168,.10);border:1px solid rgba(30,95,168,.45);font-size:.92em">'+
     'ℹ️ <b>Por que o imposto definitivo é o da entrega.</b> O art. 10 fixa o fato gerador no <b>fornecimento</b>. Mas, no pagamento antecipado, você <b>já recolhe a antecipação</b> no recebimento (art. 10 §4º I, alíquota do pagamento ou da emissão do DF-e, o que vier primeiro — LC 227). '+
     'Na entrega o valor é recalculado pela alíquota do ano da entrega e você paga a diferença (§4º II b); se sobrar, é restituição (§4º II c). '+
@@ -29039,7 +29080,10 @@ function portosRender(r, ent, motivo){
   var tb=document.getElementById('tabela-portos'); if(tb) tb.innerHTML=linhas;
 
   var variacao=imp2033-impAtual;
-  var creditoB2B=fat*b2b*LH_REF_PLENA()*(1-0); /* crédito que o tomador passa a ter no pleno */
+  /* ★ v951 · o servidor (fn_portos) diz qual regime calculou — Simples por dentro (fatia do DAS, Anexo III, ano a ano),
+     Simples híbrido (IBS/CBS por fora, credita insumos) ou LP/LR; a tela desenha o rótulo e a nota que vieram. */
+  var dentro=(r.simples_dentro===true), hib=(r.simples_hibrido===true), rotReg=r.regime_rotulo||'', notaReg=r.nota_regime||'';
+  var creditoB2B=fat*b2b*(dentro?aliq2033:LH_REF_PLENA()); /* crédito que o tomador passa a ter no pleno (Simples por dentro: só a fatia do DAS, art. 47 §9º II) */
 
   (document.getElementById('kpi-portos')||{}).innerHTML=
     '<div class="kpi-card"><div class="kpi-label">Carga atual (5 tributos)</div><div class="kpi-value">'+pc(cargaAtual)+'</div></div>'+
@@ -29052,8 +29096,8 @@ function portosRender(r, ent, motivo){
   var html='';
   /* veredito da carga */
   html+= (variacao<0)
-    ? '<div class="lh-acc t-ok" style="margin-top:10px;padding:14px 16px;border-radius:10px"><b>🟢 ALIVIA</b> — no pleno a carga cai '+R(Math.abs(variacao))+'/ano. O crédito de insumos ('+(cred*100).toFixed(0)+'%) mais que compensa a alíquota.</div>'
-    : '<div class="lh-acc t-warn" style="margin-top:10px;padding:14px 16px;border-radius:10px"><b>🔴 ENCARECE</b> em '+R(variacao)+'/ano no pleno. Com '+(b2b*100).toFixed(0)+'% da receita em B2B, boa parte disso é repassável: o tomador passa a se creditar de '+R(creditoB2B)+'/ano. A conversa vira de <b>preço</b>, não de custo.</div>';
+    ? '<div class="lh-acc t-ok" style="margin-top:10px;padding:14px 16px;border-radius:10px"><b>🟢 ALIVIA</b> — no pleno a carga cai '+R(Math.abs(variacao))+'/ano. '+(dentro?'A fatia de IBS/CBS do DAS fica abaixo da carga informada hoje.':'O crédito de insumos ('+(cred*100).toFixed(0)+'%) mais que compensa a alíquota.')+'</div>'
+    : '<div class="lh-acc t-warn" style="margin-top:10px;padding:14px 16px;border-radius:10px"><b>🔴 ENCARECE</b> em '+R(variacao)+'/ano no pleno. Com '+(b2b*100).toFixed(0)+'% da receita em B2B, '+(dentro?'o tomador credita só a fatia do DAS ('+R(creditoB2B)+'/ano) — o híbrido devolve o crédito cheio ao tomador.':'boa parte disso é repassável: o tomador passa a se creditar de '+R(creditoB2B)+'/ano. A conversa vira de <b>preço</b>, não de custo.')+'</div>';
 
   /* benefício estadual */
   if(temTtd && ttdVal>0){
@@ -29078,9 +29122,9 @@ function portosRender(r, ent, motivo){
       'Na virada, é este código que faz a operação ser reconhecida no regime de suspensão. Cadastro sem ele = tributação integral na emissão. '+
       'Vale rodar o <a onclick="abrirPagina(\'auditorcad\',null)" style="color:#c9a227;cursor:pointer;text-decoration:underline">Auditor de Cadastro</a> na base de itens antes de 2027.</div>';
   }
-  if(regime==='simples'){
+  if(dentro||hib){
     html+='<div style="margin-top:10px;padding:14px 16px;border-radius:10px;background:rgba(224,138,46,.10);border:1px solid rgba(224,138,46,.45);color:#e8b877;font-size:.92em">'+
-      '⚠ No Simples o crédito transferido ao tomador é limitado — em cadeia B2B portuária isso pesa. Compare em <a onclick="abrirPagina(\'dxh\',null)" style="color:#c9a227;cursor:pointer;text-decoration:underline">Dentro × Híbrido</a>.</div>';
+      '⚠ <b>'+rotReg+'.</b> '+notaReg+' Compare em <a onclick="abrirPagina(\'dxh\',null)" style="color:#c9a227;cursor:pointer;text-decoration:underline">Dentro × Híbrido</a>.</div>';
   }
   (document.getElementById('recs-portos')||{}).innerHTML=html;
 
@@ -29089,12 +29133,14 @@ function portosRender(r, ent, motivo){
       (document.getElementById('mem-portos')||{}).innerHTML=window.lhMemoriaCalculo({
         titulo:'Memória de cálculo — operação portuária',
         linhas:[
+          ['Regime (servidor)', rotReg||regime||'—'],
           ['Receita bruta anual', R(fat)],
           ['Carga atual = PIS+COFINS+ISS+ICMS+IPI', pc(pis)+' + '+pc(cof)+' + '+pc(iss)+' + '+pc(icms)+' + '+pc(ipi)+' = '+pc(cargaAtual)],
           ['Imposto hoje', R(impAtual)],
           ['Benefício estadual hoje', temTtd?R(ttdVal):'não há'],
           ['Carga líquida hoje (imposto − benefício)', R(liquidoHoje)],
-          ['Alíquota 2033 líquida de crédito', '26,5% × (1 − '+(cred*100).toFixed(1)+'%) = '+pc(aliq2033)],
+          (dentro ? ['IBS/CBS na fatia do DAS 2033 (Anexo III, faixa da receita)', pc(aliq2033)+' — sem crédito de insumos']
+                  : ['Alíquota 2033 líquida de crédito', '26,5% × (1 − '+(cred*100).toFixed(1)+'%) = '+pc(aliq2033)]),
           ['Imposto 2033', R(imp2033)],
           ['Perda acumulada do benefício (2029-2032)', temTtd?R(perdaAcum):'—']
         ]
@@ -29139,12 +29185,15 @@ function obraRender(r, ent, motivo){
   if(!r || r.ok===false){ box.innerHTML=LH_PONTE.cardErro(motivo||(r&&r.motivo)); return; }
   var pc=function(x){ return (x*100).toFixed(3).replace(/0+$/,'').replace(/[.,]$/,'').replace('.',',')+'%'; };
   var R=(typeof fmtR==='function')?fmtR:function(v){ return 'R$ '+(v||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); };
+  /* ★ v951 · o servidor (fn_obra) diz qual regime calculou: Simples por dentro (fatia do DAS, Anexo IV), Simples híbrido
+     (IBS/CBS por fora, credita materiais) ou LP/LR. A tela só desenha o rótulo e as notas que vieram. */
+  var dentro=(r.simples_dentro===true), hib=(r.simples_hibrido===true), rotReg=r.regime_rotulo||'', notaReg=r.nota_regime||'', leituraReg=(dentro||hib)?(r.leitura||''):'';
   r={ carga_atual_pct:+r.carga_atual_pct, imposto_atual:+r.imposto_atual, aliquota_bruta_pct:+r.aliquota_bruta_pct, credito_pct:+r.credito_pct,
       aliquota_efetiva_pct:+r.aliquota_efetiva_pct, imposto_2033:+r.imposto_2033, variacao:+r.variacao };
   box.innerHTML =
     '<div class="kpi-card"><div class="kpi-label">Carga atual (5 tributos)</div><div class="kpi-value">'+pc(r.carga_atual_pct/100)+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Imposto hoje / ano</div><div class="kpi-value">'+R(r.imposto_atual)+'</div></div>'+
-    '<div class="kpi-card"><div class="kpi-label">Alíquota bruta 2033</div><div class="kpi-value">'+pc(r.aliquota_bruta_pct/100)+'</div></div>'+
+    '<div class="kpi-card"><div class="kpi-label">'+(dentro?'IBS/CBS na fatia do DAS 2033':'Alíquota bruta 2033')+'</div><div class="kpi-value">'+pc(r.aliquota_bruta_pct/100)+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Alíquota efetiva líquida de crédito</div><div class="kpi-value">'+pc(r.aliquota_efetiva_pct/100)+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Imposto 2033 / ano</div><div class="kpi-value">'+R(r.imposto_2033)+'</div></div>'+
     '<div class="kpi-card'+(r.variacao<0?' kpi-destaque':'')+'"><div class="kpi-label">Variação</div><div class="kpi-value">'+(r.variacao<0?'−':'+')+R(Math.abs(r.variacao)).replace('R$ ','R$ ')+'</div></div>';
@@ -29154,14 +29203,16 @@ function obraRender(r, ent, motivo){
       '⚠ <b>Trava do art. 252.</b> Com contratante não-contribuinte (pessoa física, condomínio, órgão público), o crédito do prestador fica <b>limitado ao valor do débito da operação</b>. '+
       'O crédito de materiais acima do débito não se aproveita — o alívio calculado aqui é o teto, não a garantia.</div>';
   }
-  if(ent.regime==='simples'){
+  if(dentro||hib){
     alerta+='<div style="margin-top:10px;padding:12px 14px;border-radius:10px;background:rgba(224,138,46,.10);border:1px solid rgba(224,138,46,.45);color:#e8b877;font-size:.9em">'+
-      '⚠ <b>Simples Nacional:</b> os tributos estão dentro do DAS e o crédito transferido é limitado. Compare também em <a onclick="abrirPagina(\'dxh\',null)" style="color:#c9a227;cursor:pointer;text-decoration:underline">Dentro × Híbrido</a>.</div>';
+      '⚠ <b>'+rotReg+':</b> '+leituraReg+(notaReg?'<br><span style="color:var(--text-dim)">'+notaReg+'</span>':'')+' Compare também em <a onclick="abrirPagina(\'dxh\',null)" style="color:#c9a227;cursor:pointer;text-decoration:underline">Dentro × Híbrido</a>.</div>';
   }
 
   var veredito = (r.variacao<0)
-    ? '<div class="lh-acc t-ok" style="margin-top:10px;padding:14px 16px;border-radius:10px"><b>🟢 ALIVIA</b> — o crédito de materiais vence a alta da alíquota. Economia de '+R(Math.abs(r.variacao))+'/ano.</div>'
-    : '<div class="lh-acc t-warn" style="margin-top:10px;padding:14px 16px;border-radius:10px"><b>🔴 ENCARECE</b> em '+R(r.variacao)+'/ano — mix de materiais creditáveis baixo. Caminhos: formalizar a cadeia (subempreiteiro MEI ou informal não gera crédito), renegociar fornecedores para PJ do regime regular e revisar cláusula de reequilíbrio nos contratos longos.</div>';
+    ? '<div class="lh-acc t-ok" style="margin-top:10px;padding:14px 16px;border-radius:10px"><b>🟢 ALIVIA</b> — '+(dentro?'a fatia de IBS/CBS do DAS fica abaixo da carga informada hoje.':'o crédito de materiais vence a alta da alíquota.')+' Economia de '+R(Math.abs(r.variacao))+'/ano.</div>'
+    : (dentro
+       ? '<div class="lh-acc t-warn" style="margin-top:10px;padding:14px 16px;border-radius:10px"><b>🔴 ENCARECE</b> em '+R(r.variacao)+'/ano — no Simples por dentro não há crédito de materiais nem redução setorial: o IBS/CBS é a fatia do DAS. Caminho: simular o Simples híbrido (IBS/CBS por fora, com crédito) antes de 30/10/2026.</div>'
+       : '<div class="lh-acc t-warn" style="margin-top:10px;padding:14px 16px;border-radius:10px"><b>🔴 ENCARECE</b> em '+R(r.variacao)+'/ano — mix de materiais creditáveis baixo. Caminhos: formalizar a cadeia (subempreiteiro MEI ou informal não gera crédito), renegociar fornecedores para PJ do regime regular e revisar cláusula de reequilíbrio nos contratos longos.</div>');
   (document.getElementById('recs-obra')||{}).innerHTML = veredito+alerta;
 
   /* cenários do setor (mesmos do Mestre) */
@@ -29176,12 +29227,16 @@ function obraRender(r, ent, motivo){
     if(window.lhMemoriaCalculo){
       (document.getElementById('mem-obra')||{}).innerHTML=window.lhMemoriaCalculo({
         titulo:'Memória de cálculo — obra',
+        /* ★ v951 · pis/cof/iss/icms/ipi/red não existiam neste escopo (ReferenceError engolido pelo try: a memória nunca aparecia). Lidos de ent. */
         linhas:[
+          ['Regime (servidor)', rotReg||ent.regime||'—'],
           ['Faturamento anual de obras', R(ent.faturamento)],
-          ['Carga atual = PIS + COFINS + ISS + ICMS + IPI', pc(pis)+' + '+pc(cof)+' + '+pc(iss)+' + '+pc(icms)+' + '+pc(ipi)+' = '+pc((r.carga_atual_pct/100))],
+          ['Carga atual = PIS + COFINS + ISS + ICMS + IPI', pc((+ent.pis_pct||0)/100)+' + '+pc((+ent.cofins_pct||0)/100)+' + '+pc((+ent.iss_pct||0)/100)+' + '+pc((+ent.icms_pct||0)/100)+' + '+pc((+ent.ipi_pct||0)/100)+' = '+pc((r.carga_atual_pct/100))],
           ['Imposto hoje', R(ent.faturamento)+' × '+pc((r.carga_atual_pct/100))+' = '+R(r.imposto_atual)],
-          ['Alíquota bruta 2033 (26,5% − redução)', '26,5% × (1 − '+(red*100)+'%) = '+pc((r.aliquota_bruta_pct/100))],
-          ['% creditável (materiais + outros)', ((ent.pct_material/100)*100).toFixed(1)+'% + '+((ent.pct_outros/100)*100).toFixed(1)+'% = '+((r.credito_pct/100)*100).toFixed(1)+'%'],
+          (dentro
+            ? ['IBS/CBS na fatia do DAS 2033 (Anexo IV, faixa do faturamento)', pc((r.aliquota_bruta_pct/100))+' — sem crédito de materiais e sem redução setorial']
+            : ['Alíquota bruta 2033 (referência − redução)', pc((+ent.aliq_ref_pct||26.5)/100)+' × (1 − '+(((+ent.reducao||0)*100).toFixed(0))+'%) = '+pc((r.aliquota_bruta_pct/100))]),
+          ['% creditável (materiais + outros)', dentro?'0% (Simples por dentro não credita)':(((ent.pct_material/100)*100).toFixed(1)+'% + '+((ent.pct_outros/100)*100).toFixed(1)+'% = '+((r.credito_pct/100)*100).toFixed(1)+'%')],
           ['Alíquota efetiva líquida de crédito', pc((r.aliquota_bruta_pct/100))+' × (1 − '+((r.credito_pct/100)*100).toFixed(1)+'%) = '+pc((r.aliquota_efetiva_pct/100))],
           ['Imposto 2033', R(ent.faturamento)+' × '+pc((r.aliquota_efetiva_pct/100))+' = '+R(r.imposto_2033)],
           ['Variação', R(r.variacao)]
@@ -29996,6 +30051,7 @@ function cr04Render(r, ent, motivo){
   if(creditoTotal >= 50000){ recHtml += window.lhCards([{tipo:'oport',aberto:false,titulo:'Oportunidade clara — proposta consultiva recorrente',corpo:'<p>Volume de crédito alto. Vale propor acompanhamento consultivo recorrente para mapear e sustentar os créditos a cada competência.</p>'}]); }
   else if(creditoTotal >= 10000){ recHtml += window.lhCards([{tipo:'atencao',aberto:false,titulo:'Economia moderada — avaliar pacote',corpo:'<p>Crédito relevante, porém moderado. Avalie um pacote consultivo proporcional ao volume.</p>'}]); }
   else { recHtml += window.lhCards([{tipo:'critico',aberto:false,titulo:'Economia baixa — despesas pouco atacáveis',corpo:'<p>Poucas despesas nas categorias com virada da Reforma — estrutura pode ser predominantemente folha (não gera CBS/IBS) ou já tinha crédito pré-Reforma. Refine o mapeamento das despesas reais.</p>'}]); }
+  if(r.nota_regime){ recHtml += window.lhCards([{tipo:'info',aberto:false,titulo:'Cliente no Simples Nacional híbrido',corpo:'<p>'+String(r.nota_regime)+'</p>'}]); }   /* v951 */
   if(regime === 'lp'){ recHtml += window.lhCards([{tipo:'critico',aberto:false,titulo:'Cliente em Lucro Presumido',corpo:'<p>O LP atual é cumulativo — para aproveitar 100% dos créditos plenos pós-Reforma pode ser necessário migrar para LR ou regime regular CBS/IBS.</p>'+'<p>Rode <strong>Regime Ótimo</strong> e <strong>Simples→Regular</strong> antes de fechar contrato. Estimativa de perda no LP cumulativo: <strong>'+fmtR(perdaLPCumulativo)+'</strong>.</p>'}]); }
   (document.getElementById('recs-cr04')||{}).innerHTML = recHtml;
         var _m4=document.getElementById('mem-cr04');
@@ -39798,7 +39854,7 @@ function calc03Render(r, ent, motivo){
   var compraSN=+r.fornecedor_a.compra, compraLP=+r.fornecedor_b.compra, regA=r.fornecedor_a.regime||ent.regime_a, regB=r.fornecedor_b.regime||ent.regime_b;
   var aliqCBSIBS=(+r.aliquota_pct)/100, pctCredito=(+r.comprador.aproveitamento_pct)/100;
   var creditoSN=+r.fornecedor_a.credito, creditoLP=+r.fornecedor_b.credito;
-  var _nomeReg={SN:'Simples',LP:'L. Presumido',LR:'L. Real',IMP:'Importação'};
+  var _nomeReg={SN:'Simples',SN_HIBRIDO:'Simples híbrido',LP:'L. Presumido',LR:'L. Real',IMP:'Importação'};   /* v951 */
   var nomeA=_nomeReg[String(regA).toUpperCase()]||regA, nomeB=_nomeReg[String(regB).toUpperCase()]||regB;
   var custoLiqSN=+r.fornecedor_a.custo_liquido, custoLiqLP=+r.fornecedor_b.custo_liquido;
   var vantagemSN=custoLiqLP-custoLiqSN, vantagemSNAnual=vantagemSN*12, creditoPerdido=creditoLP-creditoSN;
@@ -39825,7 +39881,7 @@ function calc03Render(r, ent, motivo){
       (document.getElementById('viab-calc03')||{}).innerHTML = (window.lhNotaConsultiva ? window.lhNotaConsultiva({
     confianca:{ nivel:'Média', motivo:'A vantagem depende do regime do fornecedor e do aproveitamento de crédito de CBS/IBS, que evolui na transição (2026-2033). Fornecedor do Simples gera menos crédito ao comprador.' },
     premissas:[
-      {label:'Regime do comprador', valor: regimeComprador},
+      {label:'Regime do comprador', valor: (_nomeReg[regimeComprador]||regimeComprador)},
       {label:'Ano de simulação', valor: String(ano)},
       {label:'Compra do fornecedor A ('+nomeA+')', valor: fmtR(compraSN)},
       {label:'Compra do fornecedor B ('+nomeB+')', valor: fmtR(compraLP)},
@@ -39836,7 +39892,7 @@ function calc03Render(r, ent, motivo){
   memCalc03.innerHTML = window.lhMemoriaCalculo({
         titulo:'Risco de comprar de fornecedor no Simples Nacional sob a Reforma: como o SN não transfere crédito cheio de CBS/IBS, comprar dele pode custar mais caro para quem está no regime normal.',
         aliquotas:[
-          {label:'Regime do comprador', valor:(regimeComprador||'—')},
+          {label:'Regime do comprador', valor:(_nomeReg[regimeComprador]||regimeComprador||'—')},
           {label:'Alíquota CBS+IBS', valor:fmtPct(aliqCBSIBS*100)},
           {label:'Crédito do fornecedor do Simples (% do valor)', valor:(SNB?fmtPct(+SNB.credito_pct_do_valor):'—')},
           {label:'Aproveitamento do comprador', valor:fmtPct(pctCredito*100)},
@@ -39881,7 +39937,7 @@ function calc03Render(r, ent, motivo){
       : '<div class="rec-card rec-atencao"><h5>Recomendação: comprar do Fornecedor B ('+nomeB+')</h5><p>Depois do crédito de IBS/CBS, o Fornecedor B sai mais barato. Economia: <strong>'+fmtR(Math.abs(vantagemSN))+'/mês</strong> · <strong>'+fmtR(Math.abs(vantagemSNAnual))+'/ano</strong>.</p></div>') +
     (desagioMaxPct>0 ? '<div class="rec-card rec-info"><h5>Preço que empata</h5><p>Para empatar depois do crédito, o fornecedor '+_nomeCaro+' precisa cobrar no máximo <strong>'+fmtR(precoEmpate)+'/mês</strong> (desconto de <strong>'+fmtPct(desagioMaxPct)+'</strong> sobre o preço dele). Use isso como argumento de negociação.</p></div>' : '')+
     (r.acao ? '<div class="rec-card rec-info"><h5>O que fazer</h5><p>'+_calc03Esc(String(r.acao))+'</p><p style="margin-top:8px"><button class="btn-secondary" onclick="abrirPagina(\'fornecedores\',null)">Ver a base inteira no Mapa de Fornecedores</button></p></div>' : '')+
-    (ano >= 2027 ? '<div class="rec-card rec-info" style="border-left:4px solid #06b6d4"><h5>Fornecedor do Simples no regime híbrido</h5><p>Se o fornecedor do Simples optar por recolher IBS/CBS por fora do DAS (LC 214/2025 art. 41 §3º), ele destaca o imposto na nota e o crédito do comprador passa a ser o destacado. Pergunte ao fornecedor se ele vai optar — o Mapa de Fornecedores simula essa troca.</p></div>' : '');
+    ((ano >= 2027 && (String(regA).toUpperCase()==='SN' || String(regB).toUpperCase()==='SN')) ? '<div class="rec-card rec-info" style="border-left:4px solid #06b6d4"><h5>Fornecedor do Simples no regime híbrido</h5><p>Se o fornecedor do Simples optar por recolher IBS/CBS por fora do DAS (LC 214/2025 art. 41 §3º), ele destaca o imposto na nota e o crédito do comprador passa a ser o destacado. Pergunte ao fornecedor se ele vai optar — o Mapa de Fornecedores simula essa troca.</p></div>' : '');
 
   document.getElementById('res-calc03').classList.add('visible');
 
@@ -39953,7 +40009,7 @@ function n33LerEntradas(){
 
   var anos = [2026,2027,2028,2029,2030,2031,2032,2033];
 
-  var _venc=parseFloat((document.getElementById('n33_prazo_recolhimento')||{}).value); return { faturamento_mensal:fat, pmr:pmr, pme:pme, pmp:pmp, regime:regime, pct_eletronico:pctEletronico*100, custo_capital:taxa*100, crescimento_aa:cresc*100, cenario:'A', prazo_recolhimento:(isNaN(_venc)?25:_venc), modo_simples:((document.getElementById('n33_modo_simples')||{}).value||'dentro'), anexo_simples:((document.getElementById('n33_anexo_simples')||{}).value||'I'), _setor:setor, _pctEletronico:pctEletronico, _taxa:taxa, _cresc:cresc, _sazonPico:sazonPico, _sazonMeses:sazonMeses };
+  var _venc=parseFloat((document.getElementById('n33_prazo_recolhimento')||{}).value); return { faturamento_mensal:fat, pmr:pmr, pme:pme, pmp:pmp, regime:regime, pct_eletronico:pctEletronico*100, custo_capital:taxa*100, crescimento_aa:cresc*100, cenario:'A', prazo_recolhimento:(isNaN(_venc)?25:_venc), modo_simples:(regime==='hibrido'?'hibrido':((document.getElementById('n33_modo_simples')||{}).value||'dentro')), anexo_simples:((document.getElementById('n33_anexo_simples')||{}).value||'I'), _setor:setor, _pctEletronico:pctEletronico, _taxa:taxa, _cresc:cresc, _sazonPico:sazonPico, _sazonMeses:sazonMeses };
 }
 function n33CalcularLocal(ent){ throw new Error("LH: o calculo roda no servidor Lionheart."); }
 function n33Render(r, ent, motivo){
@@ -40043,7 +40099,7 @@ function n33Render(r, ent, motivo){
     '<div class="rec-card rec-atencao"><h5>Estratégia recomendada de captação</h5><p>'+modalidade+'.</p><p><strong>Cronograma sugerido:</strong> Negociar linha hoje com o banco principal (taxas melhores em 2026 antes do gap crescer). Captação gradual evita pico de pressão financeira em 2029-2030.</p></div>'+
     (r.leitura ? '<div class="rec-card rec-info"><h5>Como o split entra na NCG</h5><p>'+r.leitura+(r.status_2027?' '+r.status_2027:'')+'</p></div>' : '')+
     '<div class="rec-card rec-info"><h5>Otimizar o ciclo financeiro</h5><p>Reduzir o ciclo financeiro também reduz a NCG. Ações: (a) negociar prazo maior com fornecedores (PMP); (b) encurtar o PMR reduz a NCG tradicional, mas aumenta a exposição ao split se o recebimento ficar antes do vencimento da guia; (c) reduzir estoque com gestão just-in-time (PME). Cada dia de ciclo reduzido economiza '+fmtR(fat/30)+' de NCG tradicional.</p></div>'+
-    (regime === 'simples' ? '<div class="rec-card rec-info" style="border-left:4px solid #06b6d4"><h5>Simples Nacional — '+((r&&r.modo_simples==='hibrido')?'híbrido':'IBS/CBS dentro do DAS')+'</h5><p>'+((r&&r.nota_simples)||'No Simples "dentro", o split só alcança a fatia de IBS/CBS do DAS; no híbrido (opção pelo regime regular de IBS/CBS — LC 123, Res. CGSN 186/2026), a alíquota cheia.')+'</p></div>' : '')+
+    ((regime === 'simples' || regime === 'hibrido') ? '<div class="rec-card rec-info" style="border-left:4px solid #06b6d4"><h5>Simples Nacional — '+((r&&r.modo_simples==='hibrido')?'híbrido':'IBS/CBS dentro do DAS')+'</h5><p>'+((r&&r.nota_simples)||'No Simples "dentro", o split só alcança a fatia de IBS/CBS do DAS; no híbrido (opção pelo regime regular de IBS/CBS — LC 123, Res. CGSN 186/2026), a alíquota cheia.')+'</p></div>' : '')+
     /* v30.11.18 — Recomendação SAZONALIDADE */
     (sazonPico > 0
       ? '<div class="rec-card rec-atencao" style="border-left:4px solid #c9a227"><h5>Capital adicional no pico sazonal</h5><p>Receita do cliente concentra <strong>+'+sazonPico+'%</strong> no pico (duração '+sazonMeses+' mês'+(sazonMeses>1?'es':'')+'). Isso exige <strong>'+fmtR(capitalExtraPico)+' de capital ADICIONAL</strong> nesse período além da NCG estrutural. Custo financeiro desse capital sazonal: <strong>'+fmtR(custoCapitalPico)+'</strong> por temporada (taxa '+fmtPct(taxa*100)+' a.a. proporcional aos '+sazonMeses+' meses).</p><p><strong>Recomendação:</strong> negocie uma <em>linha sazonal</em> (CG ou antecipação de recebíveis) com prazo casado com o pico, e libere-a antes da temporada começar. Não use cheque especial para isso — taxa muito superior à da captação estrutural.</p></div>'
@@ -51881,11 +51937,13 @@ var nCampos=0,nCalcs=0;
              (lp/lr/sn), por nome, por regime de PIS/COFINS (cumulativo × não
              cumulativo) ou por oposição ao Simples ("regime regular"). */
           var _sin={ simples:[/^simples/i,/^sn$/i,/\bsimples\b/i],
+                     hibrido:[/h[ií]brido/i],   /* v951 */
                      lp:[/^lp$/i,/presumido/i,/^cumulativo$/i,/regime regular/i],
                      lr:[/^lr$/i,/lucro.?real/i,/^real$/i,/n[ãa]o.?cumulativo/i,/regime regular/i] }[_regime]||[];
           var _cand=[];
           Array.prototype.forEach.call(_sel.options,function(o){
             var alvo=(o.value||'')+' '+(o.textContent||'');
+            if(_regime!=='hibrido' && /h[ií]brido/i.test(alvo)) return;   /* v951: "Simples Nacional híbrido" não é candidato de 'simples' */
             for(var i=0;i<_sin.length;i++){ if(_sin[i].test(o.value)||_sin[i].test(alvo)){ _cand.push(o.value); break; } }
           });
           if(_cand.length===1 && _sel.value!==_cand[0]){
@@ -58496,6 +58554,7 @@ function sncRender(r, ent, motivo){
   var _nCusto='<br><span style="font-size:.72rem">Crédito a apropriar = só o IBS/CBS (o ICMS/ISS da compra não entra: ISS nunca dá crédito; ICMS só para quem revende ou industrializa, e segue a regra do ICMS). Custo líquido real = o que você paga (valor + IBS/CBS por fora) − esse crédito.</span>';
   if(reg==='simples'){al.style.display='block';al.innerHTML='⚠ <b>Fornecedor do Simples:</b> na Reforma o crédito fica <b>limitado ao IBS/CBS recolhido no DAS</b> (art. 47 §9º, II, LC 214). '+(_nSn||'O crédito é a alíquota efetiva do fornecedor × a fatia de IBS/CBS do DAS no ano.')+' O regime do fornecedor passa a pesar na decisão de compra: compare o <b>custo líquido real</b>, não só o preço.'+_nCusto;}
   else if(reg==='mei'){al.style.display='block';al.innerHTML='⚠ <b>Fornecedor MEI:</b> sem crédito de IBS/CBS (o SIMEI é valor fixo; premissa da ferramenta até o regulamento dizer quanto de IBS/CBS há no SIMEI).'+_nCusto;}
+  else if(reg==='hibrido'){al.style.display='block';al.innerHTML='ℹ <b>Simples Nacional híbrido (IBS/CBS por fora):</b> '+((SN_C.filter(function(i){ return i.notaSnSrv; })[0]||{}).notaSnSrv||'fornecedor optante que recolhe IBS/CBS pelo regime regular (LC 123 art. 18 §4º-A): destaca por fora e dá crédito integral, como o regime regular.')+_nCusto;}   /* v951 */
   else {al.style.display='block';al.innerHTML='ℹ Fornecedor do regime regular: crédito integral do IBS/CBS destacado.'+_nCusto;}
 
 }
@@ -64644,7 +64703,7 @@ function lhCentralOportunidades(targetId){
     return; }
   var ops=[], total=0;
   /* 1) melhor regime vs atual */
-  var regAtualMap={simples:'Simples Nacional', lp:'Lucro Presumido', lr:'Lucro Real'};
+  var regAtualMap={simples:'Simples Nacional', hibrido:'Simples Híbrido', lp:'Lucro Presumido', lr:'Lucro Real'};   /* v951 */
   var regAtual=regAtualMap[((document.getElementById('gi_regime')||{}).value||'simples')]||'Simples Nacional';
   var atualObj=regs.find(function(r){return r.nome===regAtual;});
   if(atualObj && regs[0].nome!==regAtual){
@@ -70064,6 +70123,7 @@ function capexRender(r, ent, motivo){
     recs.innerHTML='<div class="rec-box"><b>📖 Leitura:</b> '+r.leitura+' '+
       'Se o mesmo crédito viesse em 48 parcelas mensais (como o ICMS do ativo pelo CIAP), valeria só '+_fmtR(vpAntigo)+' em valor presente: '+
       'a regra nova vale <b>'+_fmtR(ganhoVP)+'</b> a mais ('+pctGanho.toLocaleString('pt-BR',{maximumFractionDigits:1})+'% do crédito) só pela antecipação. '+
+      (r.nota_regime?'<br><b>Regime:</b> '+r.nota_regime:'')+
       (ano<2033?'<br><b>Momento de comprar:</b> a alíquota (logo, o crédito) cresce até 2033. Comprar mais tarde credita mais imposto — mas paga mais caro também. O ganho líquido depende do preço do bem no tempo.':'')+'</div>';
   }
   }
@@ -71410,7 +71470,7 @@ window.LH_mostrarCoerencia = function(destinoId, grupo){
       var saiSimples = melhor && !/Simples/i.test(melhor.nome);
       /* v941 · a lista "o que muda" só vale para quem ESTÁ no Simples hoje (antes valia para qualquer um, e falava
          de ICMS também para empresa de serviços) */
-      var hojeSimples = /^simples/i.test(txt('gi_regime'));
+      var hojeSimples = /^(simples|hibrido)/i.test(txt('gi_regime'));   /* v951 */
       var b2c = v('c05_cli_b2c');
       return {
         opcoes: R.map(function(r){ return {nome:r.nome, valor:r.total}; }),
