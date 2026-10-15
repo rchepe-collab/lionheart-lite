@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v963";</script>
+<body><script>window.LH_VERSAO="v964";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -67083,9 +67083,8 @@ window.fpLerEntradas=fpLerEntradas; window.fpCalcularLocal=fpCalcularLocal; wind
     +'<button type="button" data-v="26.5" class="lh-ref-btn" style="background:rgba(201,162,39,.18);color:#e0b93a;border:1px solid rgba(201,162,39,.5);border-radius:16px;padding:4px 12px;font-size:.74rem;cursor:pointer">A · 26,5% (referência da LC 214)</button>'
     +'<button type="button" data-v="27.91" class="lh-ref-btn" style="background:transparent;color:#8a97a8;border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:4px 12px;font-size:.74rem;cursor:pointer">B · 27,91% (estimativa do Comitê Gestor, 2026)</button>'
     /* v928 · TR14: o botão 28% (estresse) saiu — o Meu cenário faz esse papel (decisão do Ricardo, 06/10) */
-    +'<span style="font-size:.7rem">Nenhuma é lei ainda: as alíquotas de referência saem por <b>Resolução do Senado</b> (LC 214, art. 18, com cálculo do TCU) — a CBS de 2027 é estimativa, o Senado fixa até 15/12/2026. '
-    +'<b>26,5%</b> é a <b>referência usada pela LC 214</b> e a trava do art. 475: acima dela, a partir da avaliação com dados de 2030, o Executivo deve enviar PLP com medidas — não há corte automático. '
-    +'<b>27,91%</b> é a estimativa do Comitê Gestor (<b>Resolução CGIBS nº 14, de 29/07/2026</b>) — 1,41 ponto acima da referência.</span>';
+    /* v964 · texto curto (pedido do Ricardo, 15/10): o essencial cabe numa frase */
+    +'<span class="lh-ref-nota">Ainda não há alíquota em lei: o Senado fixa até 15/12/2026. <b>A · 26,5%</b> é a referência da LC 214 (art. 475: acima dela o Executivo propõe medidas, sem corte automático); <b>B · 27,91%</b> é a estimativa do Comitê Gestor (Res. CGIBS 14/2026).</span>';
    d.querySelectorAll('.lh-ref-btn').forEach(function(b){
      b.addEventListener('click',function(){
        try{ if(window.LH_MEU_CENARIO) window.LH_MEU_CENARIO.soltar(); }catch(_mc){}   /* v928 · TR14 */
@@ -75833,7 +75832,10 @@ window.LH_ABAS = (function(){
     if(c.contains('lh-sint-barra')) return ['sempre'];
     if(c.contains('resultado-section') || c.contains('lh-pdf-rodape')) return ['s','c'];
     if(c.contains('lh-comparar')) return ['a'];
-    if(c.contains('lh-estresse-v257') || c.contains('lh-fin-btn') || /_oport_box$/.test(el.id||'') || el.querySelector('button[onclick^="lhCentral"]')) return ['c'];
+    if(c.contains('lh-estresse-v257')) return (el.parentElement && el.parentElement.querySelector('.lh-comparar')) ? ['a'] : ['c'];   /* v964 · a barra de alíquota mora em Minhas alíquotas */
+    if(c.contains('lh-fonte-central')) return ['d'];
+    if(el.tagName==='P' && el.previousElementSibling && /^H[12]$/.test(el.previousElementSibling.tagName)) return ['d','sempre-desc'];
+    if(c.contains('lh-fin-btn') || /_oport_box$/.test(el.id||'') || el.querySelector('button[onclick^="lhCentral"]')) return ['c'];
     if(c.contains('input-card') || c.contains('lh-guia-central') || c.contains('lh-curso') || c.contains('btn-calcular') || c.contains('btn-calc')) return ['d'];
     if(el.matches && el.matches('.btn-calcular, .btn-calc')) return ['d'];
     if(el.querySelector('input,select,textarea') || el.querySelector(BTN)) return ['d'];
@@ -75851,6 +75853,9 @@ window.LH_ABAS = (function(){
       if(sel==='.lh-estresse-v257' && ref && ref.parentElement===P) P.insertBefore(el, ref); else P.appendChild(el);
       el.removeAttribute('data-lh-aba-ok');
     });
+    /* v964 · em Minhas alíquotas a barra de alíquota de referência vem DEPOIS do comparador */
+    var cmp=P.querySelector(':scope > .lh-comparar'), est=P.querySelector(':scope > .lh-estresse-v257');
+    if(cmp && est && cmp.nextElementSibling!==est){ P.insertBefore(est, cmp.nextSibling); est.removeAttribute('data-lh-aba-ok'); est.className=est.className.replace(/\blh-aba-[a-z-]+\b/g,'').trim(); }
     /* camadas antigas (memória, base legal, detalhamento, viabilidade) que tiraram os seus cartões de dentro do
        resultado: voltam para dentro dele — o resultado é UMA caixa, na ordem em que estão */
     if(area && area.querySelector('.kpi-grid')){
@@ -76187,7 +76192,14 @@ window.LH_ABAS = (function(){
       /* 6 */
       +'label .lh-hint.lh-hint-rotulo{display:inline-flex!important;margin:0 0 0 6px!important;vertical-align:middle;position:static!important}'
       /* 8 */
-      +'body:not(.lh-admin) .lh-selo-canto{display:none!important}';
+      +'body:not(.lh-admin) .lh-selo-canto{display:none!important}'
+      /* v964 · descrição da calculadora: largura toda, texto justificado, só na aba Dados */
+      +'html body .page .calc-page-header > div:not(.calc-page-icon) > p,html[data-theme] body .page .calc-page-header > div:not(.calc-page-icon) > p,html body .page > h2 + p,html body .page > h1 + p{max-width:none!important;text-align:justify!important;hyphens:auto;-webkit-hyphens:auto}'
+      +'.lh-abas-on:not([data-lh-aba="dados"]) .calc-page-header > div:not(.calc-page-icon) > p,.lh-abas-on:not([data-lh-aba="dados"]) .calc-page-header .calc-page-links{display:none!important}'
+      /* v964 · barra de alíquota: sem a segunda linha repetida do selo; espaço entre comparador e barra */
+      +'.lh-estresse-v257 .lh-selo-cenario br,.lh-estresse-v257 .lh-selo-cenario span[style*="opacity:.75"]{display:none!important}'
+      +'.lh-estresse-v257 .lh-ref-nota{flex-basis:100%;line-height:1.55}'
+      +'.lh-abas-on[data-lh-aba="aliq"] > .lh-estresse-v257{margin-top:16px!important}';
     (document.head||document.documentElement).appendChild(st);
   }catch(e){}
   function lh962Polir(raiz){
@@ -76278,6 +76290,8 @@ window.LH_ABAS = (function(){
       if(el.tagName==='H4' || (el.tagName==='B' && el.classList.contains('t'))) return 15.5;
       return 14;
     }
+    /* v964 · barra de alíquota de referência: tudo em 14 (o selo do cenário em 12) */
+    if(el.closest && el.closest('.lh-estresse-v257')) return el.closest('.lh-selo-cenario') && el.tagName==='SPAN' ? 12 : 14;
     if(px>=30) return null;                       /* números de capa e telas de boas-vindas ficam como estão */
     if(px>=25) return 26;
     if(px>=21) return 24;
