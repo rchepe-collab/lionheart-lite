@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v958";</script>
+<body><script>window.LH_VERSAO="v959";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -74857,6 +74857,7 @@ window.LH_SINTESE_CORE = (function(){
         +'<div class="rod">Da última comparação de cenários desta tela (oficiais A e B e os seus cenários).</div></div>';
     }
     var P=document.getElementById('page-'+pg);
+    if(P && P.classList.contains('lh-abas-on')) return '<div class="rod lh-sint-cen-dica">Para ver o efeito de outras alíquotas, abra a aba "Minhas alíquotas".</div>';   /* v959 · telas com abas */
     return (P && P.querySelector('.lh-comparar')) ? '<div class="rod lh-sint-cen-dica">Para ver o efeito de outras alíquotas, use "Comparar cenários de alíquota".</div>' : '';
   }
   (function estilos(){
@@ -75744,6 +75745,157 @@ window.LH_PDF_RODAPE = (function(){
   try{ new MutationObserver(function(){ if(!meu) lh958Agendar(); }).observe(document.body, { childList:true, subtree:true }); }catch(e){}
   window.lhPadraoResultado=lh958Arrumar;
   window.LH_V958={ padrao:'KPIs → Análise de Resultados (servidor) → demais contêineres' };
+})();
+</script>
+<script>
+/* ═════════════════════════════════════════════════════════════════════
+   v959 — QUATRO ABAS NA CALCULADORA (piloto: Split Payment · Cash Gap, pedido do Ricardo 14/10 23h37)
+   No topo da tela, quatro botões; cada um mostra só a sua parte e o resto some:
+     📝 Dados              — enquadramento, dados, parâmetros e o botão Calcular (o guia "Como preencher" junto);
+     ⚡ Análise sintetizada — os números grandes + a leitura do dono (fn_sintese / r.analise.sintese, a mesma conta);
+     📊 Análise completa    — o resultado inteiro (KPIs, Análise de Resultados do servidor, gráfico, memória, base legal)
+                              + a barra de alíquota de referência e o texto da lei (A · B · Meu cenário) e a Central de
+                              Oportunidades — que saem da aba de Dados;
+     ⇄ Minhas alíquotas     — o comparador de cenários (A, B, Meu cenário 1 e 2) — conta no servidor
+                              ('comparar-cenarios'); a aba roda a comparação sozinha a cada cálculo novo.
+   Depois de Calcular, a tela vai para a Análise sintetizada. Só tela: nenhuma conta, nenhuma frase nasce aqui.
+   Para estender a outra calculadora: uma linha em PILOTO (página → função de calcular).
+   ═════════════════════════════════════════════════════════════════════ */
+window.LH_ABAS = (function(){
+  'use strict';
+  var PILOTO = { c01:{ fn:'calcularC01' } };
+  var ABAS = [ ['dados','📝 Dados'], ['sint','⚡ Análise sintetizada'], ['comp','📊 Análise completa'], ['aliq','⇄ Minhas alíquotas'] ];
+  var aba = {};          /* página → aba atual */
+  var nossoModo = false; /* o Sintetizado global foi ligado por nós */
+  (function lh959Estilos(){
+    if(document.getElementById('lh-abas-estilos')) return;
+    var st=document.createElement('style'); st.id='lh-abas-estilos';
+    var css='.lh-abas-barra{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 16px;padding:6px;border:1px solid rgba(201,162,39,.25);border-radius:12px;background:rgba(201,162,39,.04)}'
+      +'.lh-abas-barra button{flex:1 1 150px;padding:10px 14px;border-radius:9px;border:1px solid rgba(201,162,39,.35);background:transparent;color:#c9a227;font-weight:800;font-size:.86rem;cursor:pointer}'
+      +'.lh-abas-barra button.on{background:rgba(201,162,39,.22);color:#f4cc4a;border-color:#e0b93a}'
+      +'.lh-abas-barra button[disabled]{opacity:.45;cursor:not-allowed}'
+      +'.lh-aba-vazio{padding:18px;border:1px dashed rgba(201,162,39,.35);border-radius:10px;color:#8a97a8;font-size:.9rem;text-align:center}'
+      /* cada aba mostra só os seus blocos (filhos diretos da página) */
+      +'.lh-abas-on[data-lh-aba="dados"]>:not(.lh-aba-d):not(.lh-aba-sempre){display:none!important}'
+      +'.lh-abas-on[data-lh-aba="sint"]>:not(.lh-aba-s):not(.lh-aba-sempre){display:none!important}'
+      +'.lh-abas-on[data-lh-aba="comp"]>:not(.lh-aba-c):not(.lh-aba-sempre){display:none!important}'
+      +'.lh-abas-on[data-lh-aba="aliq"]>:not(.lh-aba-a):not(.lh-aba-sempre){display:none!important}'
+      /* a chave antiga Completo | Sintetizado vira as abas */
+      +'.lh-abas-on .lh-sint-barra{display:none!important}'
+      /* sintetizada: só os números grandes, o gráfico e a leitura do dono */
+      +'.lh-abas-on[data-lh-aba="sint"] .resultado-section>:not(.kpi-grid):not(.lh-sint-card):not(div.chart-card){display:none!important}'
+      +'.lh-abas-on[data-lh-aba="comp"] .lh-sint-card{display:none!important}'
+      /* a mensagem de "calcule primeiro" só aparece quando não há resultado */
+      +'.lh-abas-on .lh-aba-vazio{display:none}'
+      +'.lh-abas-on.lh-abas-semres[data-lh-aba="sint"] .lh-aba-vazio,.lh-abas-on.lh-abas-semres[data-lh-aba="comp"] .lh-aba-vazio{display:block}';
+    st.textContent=css; (document.head||document.documentElement).appendChild(st);
+  })();
+  function lh959Resultado(P){ var r=P.querySelector('.resultado-section'); return !!(r && r.classList.contains('visible') && (r.querySelector('.kpi-grid')||{children:[]}).children.length); }
+  /* em qual aba mora cada bloco da página */
+  function lh959Classe(el){
+    var c=el.classList;
+    if(c.contains('calc-page-header') || c.contains('lh-abas-barra')) return ['sempre'];
+    if(c.contains('lh-aba-vazio')) return ['s','c'];
+    if(c.contains('resultado-section') || c.contains('lh-pdf-rodape')) return ['s','c'];
+    if(c.contains('lh-comparar')) return ['a'];
+    if(c.contains('lh-estresse-v257') || c.contains('lh-fin-btn') || /_oport_box$/.test(el.id||'') || el.querySelector('button[onclick^="lhCentral"]')) return ['c'];
+    if(c.contains('input-card') || c.contains('lh-guia-central') || c.contains('lh-curso') || c.contains('btn-calcular')) return ['d'];
+    if(el.querySelector('input,select,textarea')) return ['d'];
+    if(el.tagName==='SCRIPT' || el.tagName==='STYLE') return ['sempre'];
+    return ['c'];
+  }
+  /* blocos que outras camadas montam DENTRO de um bloco de outra aba (ex.: a barra de alíquota cai dentro do
+     "Como preencher" conforme a ordem de carga): sobem para a página, para cada um morar na sua aba */
+  function lh959Soltar(P){
+    var ref=P.querySelector(':scope > .lh-fin-btn') || P.querySelector(':scope > .lh-aba-vazio') || P.querySelector(':scope > .resultado-section');
+    ['.lh-estresse-v257', '.lh-comparar', '.lh-pdf-rodape'].forEach(function(sel){
+      var el=P.querySelector(sel); if(!el || el.parentElement===P || el.closest('.resultado-section')) return;
+      if(sel==='.lh-estresse-v257' && ref) P.insertBefore(el, ref); else P.appendChild(el);
+      el.removeAttribute('data-lh-aba-ok');
+    });
+  }
+  function lh959Classificar(P){
+    lh959Soltar(P);
+    [].slice.call(P.children).forEach(function(el){
+      if(el.getAttribute('data-lh-aba-ok')) return;
+      lh959Classe(el).forEach(function(k){ el.classList.add('lh-aba-'+k); });
+      el.setAttribute('data-lh-aba-ok','1');
+    });
+  }
+  function lh959Barra(P, pg){
+    var b=P.querySelector(':scope > .lh-abas-barra');
+    if(!b){
+      b=document.createElement('div'); b.className='lh-abas-barra';
+      b.innerHTML=ABAS.map(function(a){ return '<button type="button" data-aba="'+a[0]+'">'+a[1]+'</button>'; }).join('');
+      var h=P.querySelector(':scope > .calc-page-header');
+      if(h && h.nextSibling) P.insertBefore(b, h.nextSibling); else P.insertBefore(b, P.firstChild);
+      b.addEventListener('click', function(ev){ var x=ev.target.closest('button[data-aba]'); if(x) lh959Ir(pg, x.getAttribute('data-aba')); });
+      var v=document.createElement('div'); v.className='lh-aba-vazio';
+      v.textContent='Ainda não há resultado: preencha a aba Dados e clique em Calcular.';
+      var res=P.querySelector(':scope > .resultado-section'); if(res) P.insertBefore(v, res); else P.appendChild(v);
+    }
+    return b;
+  }
+  function lh959Pintar(pg){
+    var P=document.getElementById('page-'+pg); if(!P) return;
+    var a=aba[pg]||'dados';
+    lh959Barra(P, pg); lh959Classificar(P);
+    P.classList.add('lh-abas-on'); P.setAttribute('data-lh-aba', a);
+    P.classList.toggle('lh-abas-semres', !lh959Resultado(P));
+    [].slice.call(P.querySelectorAll(':scope > .lh-abas-barra button')).forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-aba')===a); });
+  }
+  function lh959Ir(pg, a){
+    aba[pg]=a;
+    var S=window.LH_SINTESE_CORE;
+    try{
+      if(S && a==='sint'){ if(S.modo()!=='sintetizado'){ S.escolher('sintetizado'); nossoModo=true; } }
+      else if(S && S.modo()==='sintetizado'){ S.escolher('completo'); nossoModo=false; }
+    }catch(e){}
+    lh959Pintar(pg);
+    if(a==='aliq') lh959Comparar(pg);
+    try{ var P=document.getElementById('page-'+pg), b=P && P.querySelector('.lh-abas-barra'); if(b && b.scrollIntoView) b.scrollIntoView({ block:'nearest' }); }catch(e){}
+  }
+  /* Minhas alíquotas: compara de novo só quando há um cálculo novo (a conta é do servidor) */
+  var comparado = {};
+  function lh959Comparar(pg){
+    var P=document.getElementById('page-'+pg), btn=P && P.querySelector('.lh-comparar-btn'); if(!btn) return;
+    var u=null; try{ u=window.LH_PONTE && window.LH_PONTE.ultimo ? window.LH_PONTE.ultimo[PILOTO[pg].fn] : null; }catch(e){}
+    var q=u ? String(u.quando||'') : '';
+    if(!q || comparado[pg]===q) return;
+    comparado[pg]=q; btn.click();
+  }
+  function lh959Ligar(pg){
+    var P=document.getElementById('page-'+pg); if(!P || P._lhAbas) return;
+    P._lhAbas=true;
+    lh959Pintar(pg);
+    /* novos blocos (camadas que montam depois) caem na aba certa */
+    var t=null;
+    try{ new MutationObserver(function(){ if(!t) t=setTimeout(function(){ t=null; try{ lh959Pintar(pg); }catch(e){} }, 120); }).observe(P, { childList:true }); }catch(e){}
+    /* resultado novo → aba sintetizada */
+    var res=P.querySelector('.resultado-section');
+    if(res){ try{ new MutationObserver(function(){ try{ lh959Pintar(pg); }catch(e){} }).observe(res, { attributes:true, attributeFilter:['class'] }); }catch(e){} }
+    P.addEventListener('click', function(ev){
+      if(ev.target.closest && ev.target.closest('.btn-calcular')) setTimeout(function(){ lh959Ir(pg, 'sint'); }, 0);
+    }, true);
+  }
+  function lh959Todas(){ Object.keys(PILOTO).forEach(function(pg){ try{ lh959Ligar(pg); lh959Pintar(pg); }catch(e){} }); }
+  /* saindo do piloto, o resto da plataforma volta ao Completo (o Sintetizado global foi ligado aqui) */
+  function lh959Embrulhar(){
+    var f=window.abrirPagina; if(typeof f!=='function' || f._lhAbas) return;
+    var g=function(id){
+      var r=f.apply(this, arguments);
+      try{
+        if(!PILOTO[id] && nossoModo && window.LH_SINTESE_CORE && window.LH_SINTESE_CORE.modo()==='sintetizado'){ window.LH_SINTESE_CORE.escolher('completo'); nossoModo=false; }
+        if(PILOTO[id]){ lh959Ligar(id); setTimeout(function(){ lh959Ir(id, aba[id]||'dados'); }, 0); }
+      }catch(e){}
+      return r;
+    };
+    for(var k in f){ try{ g[k]=f[k]; }catch(e){} }
+    g._lhAbas=true; window.abrirPagina=g;
+  }
+  lh959Embrulhar(); lh959Todas();
+  window.addEventListener('load', function(){ lh959Embrulhar(); lh959Todas(); });
+  return { ir:lh959Ir, aba:function(pg){ return aba[pg]||'dados'; }, paginas:function(){ return Object.keys(PILOTO); } };
 })();
 </script>
 </body>
