@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v959";</script>
+<body><script>window.LH_VERSAO="v960";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -75713,6 +75713,15 @@ window.LH_PDF_RODAPE = (function(){
       var k=lh958Chave(lh958Titulo(c)); if(!k) return;
       (grupos[k]=grupos[k]||[]).push(c);
     });
+    /* base legal e memória: um cartão de cada (o de título mais específico, como na v255) */
+    [/base legal/i, /mem[óo]ria de c[áa]lculo/i].forEach(function(rx){
+      var g=lh958Topo(pg, ancora).concat([].slice.call(pg.querySelectorAll('.resultado-section details, .resultado-section .lh-acc')))
+        .filter(function(c, i, a){ return a.indexOf(c)===i && c!==un.acc && !un.u.contains(c) && lh958Visivel(c, pg) && rx.test(lh958Titulo(c)); });
+      for(var i=g.length-1;i>=0;i--){ for(var j=0;j<g.length;j++){ if(i!==j && g[j].contains(g[i])){ g.splice(i,1); break; } } }
+      if(g.length<2) return;
+      g.sort(function(a, b){ return lh958Titulo(b).length-lh958Titulo(a).length; });
+      g.slice(1).forEach(function(c){ c.dataset.lhDup='v958'; c.style.display='none'; });
+    });
     Object.keys(grupos).forEach(function(k){
       var g=grupos[k]; if(g.length<2) return;
       var fica=g.filter(function(c){ return c.closest('[id^="mem-"],[id^="viab-"],[id^="recs-"],[id^="det-"]'); })[0] || g[0];
@@ -75809,6 +75818,17 @@ window.LH_ABAS = (function(){
       if(sel==='.lh-estresse-v257' && ref) P.insertBefore(el, ref); else P.appendChild(el);
       el.removeAttribute('data-lh-aba-ok');
     });
+    /* camadas antigas (memória, base legal, detalhamento, viabilidade) que tiraram os seus cartões de dentro do
+       resultado: voltam para dentro dele — o resultado é UMA caixa, na ordem em que estão */
+    var res=P.querySelector(':scope > .resultado-section');
+    if(res){
+      for(var el=res.nextElementSibling; el; ){
+        var prox=el.nextElementSibling;
+        if(el.tagName==='DIV' && !el.classList.contains('lh-pdf-rodape') && !el.classList.contains('lh-comparar') && !el.classList.contains('lh-estresse-v257')
+           && !el.classList.contains('lh-abas-barra') && !el.classList.contains('lh-aba-vazio') && el.querySelector('details, .lh-acc, [id^="mem-"], [id^="viab-"]')) res.appendChild(el);
+        el=prox;
+      }
+    }
   }
   function lh959Classificar(P){
     lh959Soltar(P);
@@ -75892,6 +75912,86 @@ window.LH_ABAS = (function(){
   lh959Embrulhar(); lh959Todas();
   window.addEventListener('load', function(){ lh959Embrulhar(); lh959Todas(); });
   return { ir:lh959Ir, aba:function(pg){ return aba[pg]||'dados'; }, paginas:function(){ return Object.keys(PILOTO); } };
+})();
+</script>
+<script>
+/* ═════════════════════════════════════════════════════════════════════
+   v959 — TEMA CLARO NOVO, piloto no Split Payment (pedido do Ricardo, 15/10 00h14: "tema claro como padrão,
+   dentro de uma caixa um pouco mais escura", como o sistema financeiro que ele usa).
+   Só com o tema claro ligado (botão da lua) e só nas telas do piloto (classe lh-claro2, as mesmas das abas):
+     · fundo branco; cada bloco (dados, barra de alíquota, resultado, comparador, PDFs) numa CAIXA cinza-clara
+       com borda fina; dentro dela, cartões brancos com borda (KPIs, gráfico, análise);
+     · texto quase preto; texto de apoio em cinza médio legível; o dourado vira OCRE (o dourado claro só
+       funciona no fundo escuro); verde e vermelho fortes nos números;
+     · o gráfico ganha eixos e legenda escuros no claro.
+   O tema escuro fica como está. Só tela: nenhuma conta.
+   ═════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var C='[data-theme="claro"] .lh-claro2';
+  var OCRE='#8a5a00', TXT='#1f2937', APOIO='#5b6573', BORDA='#dfe3e8', CAIXA='#f3f4f6';
+  var css=[
+    C+' #c1_oport_box:empty{display:none!important}',
+    /* cartões brancos dentro das caixas */
+    C+' .kpi-card,'+C+' .chart-card,'+C+' details.lh-acc,'+C+' .lh-sint-card,'+C+' .rec-card,'+C+' .lh-comparar-res>div,'+C+' .lh-curso'
+      +'{background:#fff!important;border:1px solid '+BORDA+'!important;box-shadow:0 1px 2px rgba(16,24,40,.05)!important;color:'+TXT+'!important}',
+    C+' .lh-sint-card{border-left:4px solid '+OCRE+'!important}',
+    C+' .chart-card{border-left:3px solid '+OCRE+'!important}',
+    C+' details.lh-acc>summary{color:'+TXT+'!important;background:transparent!important}',
+    C+' .lh-acc-body{background:#fff!important;color:'+TXT+'!important}',
+    /* texto */
+    C+',' +C+' p,'+C+' li,'+C+' td,'+C+' span,'+C+' div{color:'+TXT+'}',
+    C+' h2,'+C+' h3,'+C+' h4,'+C+' h5,'+C+' summary,'+C+' .rec-card *,'+C+' .lh-sint-card *,'+C+' .lh-acc-body *{color:'+TXT+'!important}',
+    C+' label,'+C+' .kpi-label,'+C+' .kpi-sub,'+C+' .lh-comparar-dica,'+C+' .lh-sint-card .rod,'+C+' .lh-sint-card .eb{color:'+APOIO+'!important}',
+    C+' .rec-card b,'+C+' .lh-an-sec>b,'+C+' .lh-sint-card .eb,'+C+' .lh-sint-card .faz b.t,'+C+' .calc-page-header h2,'+C+' .input-card h3,'+C+' .input-card>div:first-child{color:'+OCRE+'!important}',
+    C+' .lh-an-ver b{color:'+TXT+'!important}',
+    /* cores escritas direto nos blocos (pensadas para o escuro) */
+    C+' [style*="color:#8a97a8"],'+C+' [style*="color: rgb(138, 151, 168)"],'+C+' [style*="color:#7d8a9b"],'+C+' [style*="color:#9aa7b8"],'+C+' [style*="color:var(--text3)"],'+C+' [style*="color:var(--text2)"]{color:'+APOIO+'!important}',
+    C+' [style*="color:#e0b93a"],'+C+' [style*="color:#c9a227"],'+C+' [style*="color:#e8b020"],'+C+' [style*="color:#b8941f"],'+C+' [style*="color: rgb(224, 185, 58)"],'+C+' [style*="color: rgb(212, 168, 42)"],'+C+' [style*="color:var(--gold"],'+C+' [style*="color:#f4cc4a"],'+C+' [style*="color:#E8B84B"],'+C+' [style*="color:#C9A227"]{color:'+OCRE+'!important}',
+    C+' [style*="color:#3ecf8e"],'+C+' [style*="color:#7fb069"],'+C+' [style*="color:#16c47c"]{color:#1e7e34!important}',
+    C+' [style*="color:#7cc0f0"]{color:#1565c0!important}',
+    C+' [style*="background:rgba(201,162,39"],'+C+' [style*="background: rgba(201, 162, 39"],'+C+' [style*="background:#b8941f22"]{background:#fbf3dc!important}',
+    C+' [style*="border:1px solid rgba(201,162,39"],'+C+' [style*="border: 1px rgba(201, 162, 39"],'+C+' [style*="border:1px solid #b8941f"]{border-color:#d8b863!important}',
+    C+' [style*="rgba(255,255,255,0.0"],'+C+' [style*="rgba(255, 255, 255, 0.1"]{border-color:#e5e7eb!important}',
+    C+' [style*="background:rgba(74,158,255"]{background:#eef5ff!important;border-color:#bcd6f5!important}',
+    /* números */
+    C+' .kpi-card [style*="color:#f8"],'+C+' .kpi-card [style*="color:var(--red"],'+C+' .kpi-value.neg,'+C+' .kpi-card.kpi-perda .kpi-value{color:#c62828!important}',
+    C+' .kpi-card.kpi-destaque .kpi-value{color:#1e7e34!important}',
+    /* campos */
+    C+' input,'+C+' select,'+C+' textarea{background:#fff!important;color:#212529!important;border:1px solid #ced4da!important}',
+    C+' input::placeholder{color:#9aa1ab!important}',
+    /* botões */
+    C+' .lh-abas-barra button{background:#fff!important;color:#5b4300!important;border:1px solid #d8c48a!important}',
+    C+' .lh-abas-barra button.on{background:#fbe9b5!important;color:#3d2c00!important;border-color:'+OCRE+'!important}',
+    C+' .lh-pdf-btn,'+C+' .lh-comparar-btn,'+C+' .lh-guia-btn,'+C+' .lh-ref-btn,'+C+' .lh-meu-btn,'+C+' button[onclick^="lhCentral"]{background:#fff!important;color:'+OCRE+'!important;border:1px solid #d8b863!important}',
+    C+' .lh-ref-btn.on,'+C+' .lh-ref-btn.ativo,'+C+' .lh-ref-btn[aria-pressed="true"]{background:#fbe9b5!important}',
+    C+' .lh-fin-btn{background:#fff!important;color:#1e7e34!important;border:1px solid #9fd3ad!important}',
+    /* caixas cinza (os blocos de cada aba) — por último, para valer sobre as cores escritas nos blocos */
+    C+' .input-card,'+C+' .lh-estresse-v257,'+C+' .lh-comparar,'+C+' .lh-pdf-rodape,'+C+' .resultado-section,'+C+' .lh-guia-central,'+C+' .lh-abas-barra,'+C+' .lh-aba-vazio,'+C+' > .lh-aba-c:not(.resultado-section):not(.lh-estresse-v257):not(.lh-fin-btn):not(.lh-pdf-rodape):not(.lh-aba-vazio):not(:empty):has(> button[onclick^="lhCentral"])'
+      +'{background:'+CAIXA+'!important;background-image:none!important;border:1px solid '+BORDA+'!important;border-radius:10px!important;box-shadow:none!important;padding:14px 16px!important;margin:0 0 14px!important}'
+  ].join('\n');
+  try{ var st=document.createElement('style'); st.id='lh-claro2-estilos'; st.textContent=css; (document.head||document.documentElement).appendChild(st); }catch(e){}
+  /* gráfico: eixos, grade e legenda legíveis no claro (só nas telas do piloto). Mexe na configuração crua do gráfico
+     (ch.config.options) e redesenha uma vez — nunca dentro do ciclo de desenho do Chart.js */
+  function lh959CoresGrafico(){
+    var claro=document.documentElement.getAttribute('data-theme')==='claro';
+    var tk=claro ? '#4b5563' : 'rgba(232,234,237,0.72)', gr=claro ? '#e5e7eb' : 'rgba(255,255,255,0.05)', lg=claro ? '#1f2937' : 'rgba(232,234,237,0.72)';
+    document.querySelectorAll('.lh-claro2 canvas').forEach(function(cv){
+      try{
+        var ch=window.Chart && window.Chart.getChart ? window.Chart.getChart(cv) : null; if(!ch || ch._lhClaro2===String(claro)) return;
+        var o=ch.config.options=ch.config.options||{}, sc=o.scales=o.scales||{};
+        Object.keys(sc).forEach(function(k){ var x=sc[k]=sc[k]||{}; x.ticks=x.ticks||{}; x.ticks.color=tk; x.grid=x.grid||{}; x.grid.color=gr; if(x.title) x.title.color=tk; });
+        o.plugins=o.plugins||{}; o.plugins.legend=o.plugins.legend||{}; o.plugins.legend.labels=o.plugins.legend.labels||{}; o.plugins.legend.labels.color=lg;
+        ch._lhClaro2=String(claro); ch.update('none');
+      }catch(e){}
+    });
+  }
+  var tg=null; function lh959AgendarGrafico(){ clearTimeout(tg); tg=setTimeout(lh959CoresGrafico, 150); }
+  try{ new MutationObserver(lh959AgendarGrafico).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] }); }catch(e){}
+  try{ new MutationObserver(function(ms){ for(var i=0;i<ms.length;i++){ var t=ms[i].target; if(t.closest && t.closest('.lh-claro2')){ lh959AgendarGrafico(); return; } } }).observe(document.body, { childList:true, subtree:true }); }catch(e){}
+  /* telas do piloto: as mesmas das abas */
+  function lh959MarcarClaro(){ try{ (window.LH_ABAS ? window.LH_ABAS.paginas() : []).forEach(function(pg){ var P=document.getElementById('page-'+pg); if(P) P.classList.add('lh-claro2'); }); }catch(e){} }
+  lh959MarcarClaro(); window.addEventListener('load', lh959MarcarClaro);
 })();
 </script>
 </body>
