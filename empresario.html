@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v964";</script>
+<body><script>window.LH_VERSAO="v965";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -75805,6 +75805,11 @@ window.LH_ABAS = (function(){
       +'.lh-abas-on .lh-sint-barra{display:none!important}'
       /* sintetizada: só os números grandes, o gráfico e a leitura do dono */
       +'.lh-abas-on[data-lh-aba="sint"] .lh-aba-res>:not(.kpi-grid):not(.lh-sint-card):not(div.chart-card){display:none!important}'
+      /* v965 · Sintetizada na mesma ordem da Completa: números grandes → gráfico → texto (pedido do Ricardo, 15/10) */
+      +'.lh-abas-on[data-lh-aba="sint"] .lh-aba-res{display:flex!important;flex-direction:column}'
+      +'.lh-abas-on[data-lh-aba="sint"] .lh-aba-res>.kpi-grid{order:1}'
+      +'.lh-abas-on[data-lh-aba="sint"] .lh-aba-res>div.chart-card{order:2}'
+      +'.lh-abas-on[data-lh-aba="sint"] .lh-aba-res>.lh-sint-card{order:3;margin-top:14px}'
       +'.lh-abas-on[data-lh-aba="comp"] .lh-sint-card{display:none!important}'
       /* a mensagem de "calcule primeiro" só aparece quando não há resultado */
       +'.lh-abas-on .lh-aba-vazio{display:none}'
@@ -75857,6 +75862,18 @@ window.LH_ABAS = (function(){
       if(sel==='.lh-estresse-v257' && ref && ref.parentElement===P) P.insertBefore(el, ref); else P.appendChild(el);
       el.removeAttribute('data-lh-aba-ok');
     });
+    /* v965 · a Completa começa pelos números, como a Sintetizada: botões de ação da Completa (Central de Oportunidades,
+       Usar no meu DRE, Diagnóstico) vão para DEPOIS do resultado */
+    var areaR=lh961Area(P);
+    if(areaR && areaR.parentElement===P){
+      var ancoraR=areaR;
+      [].slice.call(P.children).forEach(function(el){
+        if(!(el.compareDocumentPosition(areaR) & 4)) return;                 /* só o que vem antes do resultado */
+        var acao=el.classList.contains('lh-fin-btn') || /_oport_box$/.test(el.id||'') || !!el.querySelector('button[onclick^="lhCentral"]') || el.classList.contains('lh-diag-btn') || (el.tagName==='BUTTON' && /LH_diag/.test(el.getAttribute('onclick')||''));
+        if(!acao || el.querySelector('input,select,textarea,.btn-calcular,.btn-calc')) return;   /* nunca move bloco com campos */
+        P.insertBefore(el, ancoraR.nextSibling); ancoraR=el;
+      });
+    }
     /* v964 · em Minhas alíquotas a barra de alíquota de referência vem DEPOIS do comparador */
     var cmp=P.querySelector(':scope > .lh-comparar'), est=P.querySelector(':scope > .lh-estresse-v257');
     if(cmp && est && cmp.nextElementSibling!==est){ P.insertBefore(est, cmp.nextSibling); est.removeAttribute('data-lh-aba-ok'); est.className=est.className.replace(/\blh-aba-[a-z-]+\b/g,'').trim(); }
