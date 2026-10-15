@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v961";</script>
+<body><script>window.LH_VERSAO="v962";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -76019,7 +76019,7 @@ window.LH_ABAS = (function(){
     C+' .lh-ref-btn.on,'+C+' .lh-ref-btn.ativo,'+C+' .lh-ref-btn[aria-pressed="true"]{background:#fbe9b5!important}',
     C+' .lh-fin-btn{background:#fff!important;color:#1e7e34!important;border:1px solid #9fd3ad!important}',
     /* caixas cinza (os blocos de cada aba) — por último, para valer sobre as cores escritas nos blocos */
-    C+' .input-card,'+C+' .lh-estresse-v257,'+C+' .lh-comparar,'+C+' .lh-pdf-rodape,'+C+' .resultado-section,'+C+' .lh-guia-central,'+C+' .lh-abas-barra,'+C+' .lh-aba-vazio,'+C+' > .lh-aba-c:not(.resultado-section):not(.lh-estresse-v257):not(.lh-fin-btn):not(.lh-pdf-rodape):not(.lh-aba-vazio):not(:empty):has(> button[onclick^="lhCentral"])'
+    C+' .input-card,'+C+' .lh-estresse-v257,'+C+' .lh-comparar,'+C+' .lh-pdf-rodape,'+C+' .resultado-section,'+C+' .lh-abas-barra,'+C+' .lh-aba-vazio,'+C+' > .lh-aba-c:not(.resultado-section):not(.lh-estresse-v257):not(.lh-fin-btn):not(.lh-pdf-rodape):not(.lh-aba-vazio):not(:empty):has(> button[onclick^="lhCentral"])'
       +'{background:'+CAIXA+'!important;background-image:none!important;border:1px solid '+BORDA+'!important;border-radius:10px!important;box-shadow:none!important;padding:18px 21px!important;margin:0 0 16px!important}'
   ].join('\n');
   try{ var st=document.createElement('style'); st.id='lh-claro2-estilos'; st.textContent=css; (document.head||document.documentElement).appendChild(st); }catch(e){}
@@ -76093,6 +76093,130 @@ window.LH_ABAS = (function(){
   /* v961 · o claro novo vale em TODAS as telas (com e sem abas) */
   function lh959MarcarClaro(){ try{ [].slice.call(document.querySelectorAll('.page[id^="page-"]')).forEach(function(P){ P.classList.add('lh-claro2'); }); }catch(e){} }
   lh959MarcarClaro(); window.addEventListener('load', lh959MarcarClaro);
+})();
+</script>
+<script>
+/* ═════════════════════════════════════════════════════════════════════
+   v961 · BARRA DO TOPO LIMPA (pedido do Ricardo, 15/10 10h40)
+   · saem "Aprenda" e "Quer dominar esta ferramenta?" (a Formação e o Glossário continuam no menu lateral);
+   · os dois redondos que flutuavam sobre a tela (💾 simulações salvas e 🧹 limpar) e o "Qual é a sua dúvida?"
+     sobem para a barra do topo, à direita — nada mais flutua por cima dos campos.
+   Só tela: os botões chamam as mesmas funções de antes.
+   ═════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  try{
+    var st=document.createElement('style'); st.id='lh-topo-estilos';
+    st.textContent=
+      '#lh-aprenda-topbar,.topbar > button[onclick^="abrirPagina(\'tour\'"]{display:none!important}'
+      +'#lh-sim-fabs{display:none!important}'
+      +'.lh-topo-dir{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}'
+      +'.lh-topo-dir .lh-topo-ico{height:36px;min-width:36px;padding:0 11px;border-radius:8px;border:1px solid rgba(201,162,39,.38);background:rgba(201,162,39,.10);color:#c9a227;cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:700;font-size:.8rem;white-space:nowrap}'
+      +'.lh-topo-dir .lh-topo-ico:hover{filter:brightness(1.08)}'
+      +'.lh-topo-dir #lh-fab-perg{position:static!important;bottom:auto!important;right:auto!important;box-shadow:none!important;height:36px;padding:0 14px!important;border-radius:8px!important;font-size:.76rem!important}'
+      +'[data-theme="claro"] .lh-topo-dir .lh-topo-ico{background:#fff;border-color:#d8b863;color:#8a5a00}'
+      +'@media (max-width:720px){.lh-topo-dir .lh-topo-ico .rot{display:none}}';
+    (document.head||document.documentElement).appendChild(st);
+  }catch(e){}
+  function lh961Topo(){
+    var bar=document.querySelector('.main > .topbar'); if(!bar) return false;
+    var dir=bar.querySelector('.lh-topo-dir');
+    if(!dir){
+      dir=document.createElement('div'); dir.className='lh-topo-dir';
+      dir.innerHTML='<button type="button" class="lh-topo-ico" id="lh-topo-sim" title="Simulações salvas: salvar esta tela ou voltar a uma anterior" onclick="window.LH_SIM && LH_SIM.abrir()"><span aria-hidden="true">💾</span><span class="rot">Simulações</span></button>'
+        +'<button type="button" class="lh-topo-ico" id="lh-topo-limpar" title="Limpar os campos desta calculadora ou de todas (volta ao padrão)" onclick="window.LH_SIM && LH_SIM.limpar()"><span aria-hidden="true">🧹</span><span class="rot">Limpar</span></button>';
+      bar.appendChild(dir);
+    }
+    var perg=document.getElementById('lh-fab-perg');
+    if(perg && perg.parentElement!==dir) dir.appendChild(perg);
+    return true;
+  }
+  if(!lh961Topo()) document.addEventListener('DOMContentLoaded', lh961Topo);
+  window.addEventListener('load', lh961Topo); setTimeout(lh961Topo, 1200);
+})();
+</script>
+<script>
+/* ═════════════════════════════════════════════════════════════════════
+   v962 · POLIMENTO (pedido do Ricardo, 15/10 10h52 — itens 1 a 6 e 8 da lista)
+   1 · Backup discreto, como o Suporte (o botão que chama o olho é o Calcular);
+   2 · Calcular preso no rodapé da aba Dados, sempre à vista;
+   3 · sai o quadrado vazio ao lado do título (só fica quando tem ícone);
+   4 · a descrição do título aparece inteira (antes cortava em 2 linhas com "…");
+   5 · "Como preencher esta calculadora" vira um link pequeno, sem caixa;
+   6 · o "?" de ajuda vai para o lado do nome do campo;
+   8 · o selo "CORE vNNN" do canto só aparece para a administração (servidor confirma admin_lh).
+   Só tela.
+   ═════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  try{
+    var st=document.createElement('style'); st.id='lh-polir-estilos';
+    st.textContent=
+      /* 1 */
+      '.topbar > button[onclick="lhBkpAbrir()"]{background:rgba(201,162,39,.10)!important;color:#c9a227!important;border:1px solid rgba(201,162,39,.38)!important;box-shadow:none!important}'
+      +'[data-theme="claro"] .topbar > button[onclick="lhBkpAbrir()"]{background:#fff!important;color:#8a5a00!important;border-color:#d8b863!important}'
+      /* 2 */
+      +'.lh-abas-on[data-lh-aba="dados"] > .btn-calcular,.lh-abas-on[data-lh-aba="dados"] > .btn-calc,.lh-abas-on[data-lh-aba="dados"] > .lh-aba-d > .btn-calcular,.lh-abas-on[data-lh-aba="dados"] > .lh-aba-d > .btn-calc'
+      +'{position:sticky!important;bottom:14px;z-index:60;box-shadow:0 8px 24px rgba(16,24,40,.28)!important}'
+      /* 3 */
+      +'html body .page .calc-page-header > .calc-page-icon.lh-icone-vazio,html[data-theme] body .page .calc-page-header > .calc-page-icon.lh-icone-vazio{display:none!important}'
+      /* 4 */
+      +'.calc-page-header > div:not(.calc-page-icon) > p{display:block!important;-webkit-line-clamp:unset!important;overflow:visible!important;max-width:96ch!important}'
+      /* 5 */
+      +'.lh-guia-central{background:transparent!important;border:0!important;padding:0!important;margin:-6px 0 10px!important;box-shadow:none!important;justify-content:flex-end}'
+      +'.lh-guia-central .lh-guia-btn{background:transparent!important;border:0!important;padding:2px 0!important;box-shadow:none!important;font-size:.82rem!important;text-decoration:underline;text-underline-offset:3px;color:#c9a227!important}'
+      +'[data-theme="claro"] .lh-claro2 .lh-guia-central .lh-guia-btn,[data-theme="claro"] .lh-guia-central .lh-guia-btn{color:#8a5a00!important;background:transparent!important;border:0!important}'
+      +'.lh-desc-mais[hidden]{display:none!important}'
+      +'.lh-desc-tg{background:none;border:0;padding:0 0 0 6px;color:#c9a227;font-weight:700;cursor:pointer;font-size:.9em}'
+      +'[data-theme="claro"] .lh-desc-tg{color:#8a5a00}'
+      +'.calc-page-header > div:not(.calc-page-icon){flex:1 1 auto;min-width:0}'
+      +'.lh-guia-central > span{display:none!important}'
+      /* 6 */
+      +'label .lh-hint.lh-hint-rotulo{display:inline-flex!important;margin:0 0 0 6px!important;vertical-align:middle;position:static!important}'
+      /* 8 */
+      +'body:not(.lh-admin) .lh-selo-canto{display:none!important}';
+    (document.head||document.documentElement).appendChild(st);
+  }catch(e){}
+  function lh962Polir(raiz){
+    raiz=raiz||document;
+    /* 3 · ícone sem conteúdo visível */
+    [].slice.call(raiz.querySelectorAll('.calc-page-icon')).forEach(function(i){
+      var vazio=!(i.textContent||'').replace(/[\s\uFE0E\uFE0F\u200B-\u200D\u2060]/g,'') && !i.querySelector('img,svg');
+      i.classList.toggle('lh-icone-vazio', vazio);
+    });
+    /* 4 · descrição: fica a frase do "O que é"; "Para que serve" e "O que analisar" abrem em "mais" */
+    [].slice.call(raiz.querySelectorAll('.calc-page-header > div:not(.calc-page-icon) > p')).forEach(function(p){
+      if(p.getAttribute('data-lh-desc')) return; p.setAttribute('data-lh-desc','1');
+      var bs=[].slice.call(p.querySelectorAll('b')).filter(function(b){ return /^(Para que serve|O que analisar)/i.test((b.textContent||'').trim()); });
+      if(!bs.length) return;
+      var mais=document.createElement('span'); mais.className='lh-desc-mais'; mais.hidden=true;
+      var n=bs[0]; while(n){ var prox=n.nextSibling; mais.appendChild(n); n=prox; }
+      var tg=document.createElement('button'); tg.type='button'; tg.className='lh-desc-tg'; tg.textContent='mais';
+      tg.addEventListener('click', function(){ mais.hidden=!mais.hidden; tg.textContent=mais.hidden ? 'mais' : 'menos'; if(!mais.hidden) p.insertBefore(mais, tg); });
+      p.appendChild(tg); p.insertBefore(mais, tg);
+    });
+    /* 6 · o "?" que ficou solto depois do campo sobe para o rótulo */
+    [].slice.call(raiz.querySelectorAll('.input-group > .lh-hint, .input-group > * > .lh-hint')).forEach(function(h){
+      if(h.classList.contains('lh-hint-rotulo')) return;
+      var g=h.closest('.input-group'), lb=g && g.querySelector('label');
+      if(!lb || lb.contains(h)) return;
+      lb.appendChild(h); h.classList.add('lh-hint-rotulo');
+    });
+  }
+  /* 8 · selo de versão: marca o elemento e mostra só para a administração */
+  function lh962Selo(){
+    var sv=document.getElementById('lh-selo-versao'), caixa=sv && sv.parentElement;
+    if(caixa) caixa.classList.add('lh-selo-canto');
+    if(document.getElementById('lh-nav-admin')) document.body.classList.add('lh-admin');
+  }
+  var t=null;
+  function lh962Agendar(){ if(t) return; t=setTimeout(function(){ t=null; try{ var P=document.querySelector('.page.active'); lh962Polir(P||document); lh962Selo(); }catch(e){} }, 300); }
+  function lh962Iniciar(){
+    try{ lh962Polir(document); lh962Selo(); }catch(e){}
+    try{ new MutationObserver(lh962Agendar).observe(document.body, { childList:true, subtree:true }); }catch(e){}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', lh962Iniciar); else lh962Iniciar();
+  window.addEventListener('load', function(){ lh962Polir(document); lh962Selo(); });
 })();
 </script>
 </body>
