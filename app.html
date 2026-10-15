@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v957";</script>
+<body><script>window.LH_VERSAO="v958";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -49027,6 +49027,9 @@ window.LH_aplicarSnapEntidade=function(entId){ try{ var eid=_LH_entAtivaId(entId
   function conv(el){
     try{
       if(!el || el.tagName==='DETAILS' || el.getAttribute('data-colap')) return;
+      /* v958 · a Análise de Resultados do servidor (rec-card lh-an) já vive dentro do acordeão "Análise de Resultados":
+         recolhê-la de novo num "Ver detalhe" fechado fazia a caixa abrir vazia no Completo (print do Ricardo, 14/10). */
+      if(el.classList && el.classList.contains('lh-an')) return;
       var head=el.querySelector('h5,h4,h3');
       var det=document.createElement('details');
       det.className=el.className; det.setAttribute('data-colap','1');
@@ -75617,6 +75620,126 @@ window.LH_PDF_RODAPE = (function(){
   embrulhar();
   window.addEventListener('load', function(){ embrulhar(); aplicar(); });
   return { arrumar:arrumar, aplicar:aplicar, pdfCliente:pdfCliente, pdfContador:pdfContador, ehAlvo:ehAlvo, folhaCliente:folhaCliente };
+})();
+</script>
+<script>
+/* ═════════════════════════════════════════════════════════════════════
+   v958 — PADRÃO DA ÁREA DE RESULTADO (pedido do Ricardo, 14/10/2026)
+   Print do Split por Operação: a "Análise de Resultados" estava no MEIO
+   dos contêineres (depois de Memória e Viabilidade), com texto antigo
+   fixo ("⚠️ AÇÃO: …", camada v221) no lugar da análise do servidor, e a
+   Memória de cálculo aparecia duas vezes.
+   O padrão, em TODAS as telas:
+     KPIs → 📊 Análise de Resultados (a do servidor) → os demais contêineres.
+   (1) a análise do servidor (.lh-an-sec, de lhIndAnalise / lhAnaliseProdutor
+       e dos renderizadores das frentes) vira o PRIMEIRO contêiner depois dos
+       KPIs; se veio solta (sem acordeão), ganha o acordeão padrão, aberto;
+   (2) com a análise do servidor na tela, as camadas antigas de texto fixo
+       ("O que este número está dizendo", "Veredito", "▤ Análise de
+       Resultados" montada na tela) saem — nenhuma frase nasce aqui;
+   (3) contêiner com o MESMO título duas vezes: fica um (o da própria tela).
+   Telas que ainda não têm análise do servidor: a "Análise de Resultados"
+   que existir também sobe para primeiro. Só ordem e visibilidade: nenhum
+   número muda.
+   ═════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var RE_ANALISE=/an[áa]lise de resultados/i;
+  var RE_VELHA=/an[áa]lise de resultados|veredito|o que este n[úu]mero/i;
+  var CONT='details, .lh-acc';
+  function lh958Titulo(c){
+    var s=c.querySelector(':scope > summary, :scope > .lh-acc-h') || c.querySelector('summary, .lh-acc-h');
+    return s ? (s.textContent||'').trim().split('\n')[0].trim() : '';
+  }
+  function lh958Visivel(el, pg){
+    for(var e=el; e && e!==pg; e=e.parentElement){
+      if(e.hidden || (e.style && e.style.display==='none') || (e.dataset && e.dataset.lhDup)) return false;
+    }
+    return true;
+  }
+  function lh958Chave(t){
+    return (t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
+  }
+  /* contêineres de topo, visíveis, depois da âncora (KPIs) */
+  function lh958Topo(pg, ancora){
+    return [].slice.call(pg.querySelectorAll(CONT)).filter(function(c){
+      if(!lh958Visivel(c, pg)) return false;
+      if(ancora && (c.contains(ancora) || !(ancora.compareDocumentPosition(c) & 4))) return false;
+      for(var p=c.parentElement; p && p!==pg; p=p.parentElement){ if(p.matches && p.matches(CONT)) return false; }
+      return true;
+    });
+  }
+  function lh958Unidade(pg, raiz){
+    /* o bloco que se move junto: acordeão da análise, ou a caixa-alvo do renderizador */
+    var C=raiz.closest(CONT);
+    while(C && pg.contains(C) && !RE_ANALISE.test(lh958Titulo(C))){ var acima=C.parentElement && C.parentElement.closest(CONT); C=(acima && pg.contains(acima)) ? acima : null; }
+    var B=raiz.parentElement; while(B && B!==pg && !B.id) B=B.parentElement;
+    if(B===pg) B=null;
+    if(C && B && B.contains(C)) return { u:B, acc:C };       /* renderizador escreve o acordeão dentro da caixa */
+    if(C) return { u:C, acc:C };                               /* caixa dentro do acordeão da página */
+    if(!B) return null;
+    var W=document.createElement('details');                  /* análise solta: ganha o acordeão padrão */
+    W.className='lh-acc t-info lh-an-acc'; W.open=true; W.style.marginTop='12px';
+    W.innerHTML='<summary>📊 Análise de Resultados</summary><div class="lh-acc-body"></div>';
+    B.parentElement.insertBefore(W, B); W.querySelector('.lh-acc-body').appendChild(B);
+    return { u:W, acc:W };
+  }
+  function lh958Arrumar(pg){
+    if(!pg) return;
+    var pid=(pg.id||'').replace(/^page-/,'');
+    var ancora=pg.querySelector('#kpi-'+pid) || [].slice.call(pg.querySelectorAll('.kpi-grid')).filter(function(k){ return k.children.length; })[0] || null;
+    var sec=[].slice.call(pg.querySelectorAll('.lh-an-sec')).filter(function(s){ return lh958Visivel(s, pg) || (s.closest('details[data-colap]')); })[0];
+    var raiz=sec ? (sec.closest('.lh-an, .lh-analise-srv') || sec.parentElement) : null;
+    var un=null;
+    if(raiz){
+      un=lh958Unidade(pg, raiz);
+      if(!un) return;
+      if(!raiz.dataset.lhPadrao){ raiz.dataset.lhPadrao='v958'; if(un.acc.tagName==='DETAILS') un.acc.open=true; }
+      /* (2) camadas antigas de análise montada na tela */
+      [].slice.call(pg.querySelectorAll(CONT)).forEach(function(c){
+        if(c===un.acc || un.u.contains(c) || c.contains(un.u) || c.dataset.lhDup) return;
+        if(RE_VELHA.test(lh958Titulo(c)) && !c.querySelector('.lh-an-sec')){ c.dataset.lhDup='v958'; c.style.display='none'; }
+      });
+    } else {
+      var velha=lh958Topo(pg, ancora).filter(function(c){ return RE_ANALISE.test(lh958Titulo(c)); })[0];
+      if(!velha) return;
+      un={ u:velha, acc:velha };
+    }
+    /* (3) mesmo título duas vezes: fica o da própria tela (#mem-, #viab-, #recs-…) */
+    var grupos={};
+    lh958Topo(pg, ancora).forEach(function(c){
+      if(c===un.acc || un.u.contains(c)) return;
+      var k=lh958Chave(lh958Titulo(c)); if(!k) return;
+      (grupos[k]=grupos[k]||[]).push(c);
+    });
+    Object.keys(grupos).forEach(function(k){
+      var g=grupos[k]; if(g.length<2) return;
+      var fica=g.filter(function(c){ return c.closest('[id^="mem-"],[id^="viab-"],[id^="recs-"],[id^="det-"]'); })[0] || g[0];
+      g.forEach(function(c){ if(c!==fica){ c.dataset.lhDup='v958'; c.style.display='none'; } });
+    });
+    /* (1) a análise é o primeiro contêiner depois dos KPIs */
+    var topo=lh958Topo(pg, ancora).filter(function(c){ return !un.u.contains(c) && !c.contains(un.u); });
+    var primeiro=topo[0]; if(!primeiro) return;
+    if(un.u.compareDocumentPosition(primeiro) & 4){
+      /* já vem antes; confere se não há contêiner entre a âncora e a análise */
+      return;
+    }
+    var ref=primeiro;
+    while(ref.parentElement && ref.parentElement!==pg && ref.parentElement.children.length===1 && !ref.parentElement.contains(un.u)) ref=ref.parentElement;
+    if(ref.parentElement && !un.u.contains(ref)) ref.parentElement.insertBefore(un.u, ref);
+  }
+  var meu=false, t=null;
+  function lh958Rodar(){
+    if(meu) return;
+    var pg=document.querySelector('.page.active'); if(!pg) return;
+    meu=true;
+    try{ lh958Arrumar(pg); }catch(e){}
+    setTimeout(function(){ meu=false; }, 0);
+  }
+  function lh958Agendar(){ clearTimeout(t); t=setTimeout(lh958Rodar, 250); }
+  try{ new MutationObserver(function(){ if(!meu) lh958Agendar(); }).observe(document.body, { childList:true, subtree:true }); }catch(e){}
+  window.lhPadraoResultado=lh958Arrumar;
+  window.LH_V958={ padrao:'KPIs → Análise de Resultados (servidor) → demais contêineres' };
 })();
 </script>
 </body>
