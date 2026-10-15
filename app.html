@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v966";</script>
+<body><script>window.LH_VERSAO="v967";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -6669,7 +6669,7 @@ function lhTrocarSenha(){
                 <label style="font-size:0.78em;color:#0891b2;margin-bottom:3px;display:block;font-weight:600;">% Externo <span style="color:#94a3b8;font-weight:400">(100% crédito)</span></label>
                 <input type="number" id="gi_creditos_ext" min="0" max="100" oninput="atualizarMixCredito();propagarInputsDebounced()" style="width:100%;padding:8px;background:rgba(8,145,178,0.05);border:1px solid rgba(8,145,178,0.25);border-radius:6px;color:#0891b2;font-size:0.95em;font-weight:700;outline:none;">
               </div><div id="gi_mix-credito-feedback" style="font-size:0.78em;color:rgba(200,215,235,0.65);line-height:1.55;padding:8px 10px;background:rgba(0,0,0,0.15);border-radius:6px;margin-top:4px;">
-              <strong style="color:var(--gold);">Crédito efetivo real:</strong> <span style="color:#10b981;font-weight:700;font-size:1.05em;">~28%</span> &nbsp;·&nbsp; <span style="color:rgba(200,215,235,0.5);">Fórmula: %LP×100 + <strong style="color:#c9a227;">%SN×20</strong> + %Ext×100 · art. 28 LC 214/2025.</span>
+              <strong style="color:var(--gold);">Crédito efetivo real:</strong> <span style="color:#10b981;font-weight:700;font-size:1.05em;">~28%</span> &nbsp;·&nbsp; <span style="color:rgba(200,215,235,0.5);">Fórmula: %LP×100 + <strong style="color:#c9a227;">%SN × crédito do DAS</strong> + %Ext×100 · arts. 28 e 47 §9º II LC 214/2025.</span>
             </div><div class="input-group">
             <label>Margem de Lucro (%) <span class="lh-tip" tabindex="0" data-tip="Margem LÍQUIDA: (Lucro Líquido ÷ Faturamento Bruto) × 100. Tipicamente: serviços 15-25%, comércio 5-15%, indústria 8-18%. Use o histórico ou benchmark do setor.">?</span></label>
             <input type="number" id="gi_margem" step="0.5" placeholder="18">
@@ -8113,7 +8113,7 @@ function lhTrocarSenha(){
               </div>
             </div>
             <div id="c04_mix-credito-feedback" style="font-size:0.78em;color:rgba(200,215,235,0.65);line-height:1.55;padding:8px 10px;background:rgba(0,0,0,0.15);border-radius:6px;margin-top:4px;">
-              <strong style="color:var(--gold);">Crédito efetivo real:</strong> <span style="color:#10b981;font-weight:700;font-size:1.05em;">~28%</span> &nbsp;·&nbsp; <span style="color:rgba(200,215,235,0.5);">Fórmula: %LP×100 + <strong style="color:#c9a227;">%SN×20</strong> + %Ext×100 · art. 28 LC 214/2025.</span>
+              <strong style="color:var(--gold);">Crédito efetivo real:</strong> <span style="color:#10b981;font-weight:700;font-size:1.05em;">~28%</span> &nbsp;·&nbsp; <span style="color:rgba(200,215,235,0.5);">Fórmula: %LP×100 + <strong style="color:#c9a227;">%SN × crédito do DAS</strong> + %Ext×100 · arts. 28 e 47 §9º II LC 214/2025.</span>
             </div>
             <!-- Compatibilidade: c04_insumos como hidden (% insumos = mix.soma) + c04_credito_efetivo (novo) -->
             <input type="hidden" id="c04_insumos" data-dl="Parcial" data-doc="SPED EFD (entradas) · NFe de compras" title="Importavel (parcial) - a Central sugere a partir de SPED EFD (entradas) · NFe de compras; confira/edite. Editavel manualmente." value="" data-legacy="true">
@@ -23061,18 +23061,18 @@ function c04LerEntradas(){
   const cnaeKey=document.getElementById('c04_cnae').value;
   const regime=document.getElementById('c04_regime').value;
   const fat=parseFloat(document.getElementById('c04_faturamento').value)||0;
-  // v30.8 ONDA 1.18 — Usa crédito efetivo do MIX (LP×100 + SN×20 + Ext×100) ÷ 100
+  // v30.8 ONDA 1.18 — Usa crédito efetivo do MIX (LP×100 + SN × crédito do DAS + Ext×100) ÷ 100
   // Se o mix não foi preenchido, faz fallback pro hidden c04_insumos legado
   let pctIns;
    const elMixEfet = document.getElementById('c04_credito_efetivo');
    /* ★ v710 · o hidden c04_credito_efetivo só era preenchido por evento de digitação; mix importado
       ou preenchido por script deixava-o vazio e a tela caía no % legado (35%) mesmo com o mix na tela.
-      Agora: se o mix tem valor, o crédito é derivado dele (LP×100 + SN×20 + Ext×100) — a mesma regra
+      Agora: se o mix tem valor, o crédito é derivado dele (LP×100 + SN × crédito do DAS + Ext×100) — a mesma regra
       do servidor. Só sem mix vale o % legado. */
    const _mLP=parseFloat((document.getElementById('c04_creditos_lp')||{value:''}).value)||0,
          _mSN=parseFloat((document.getElementById('c04_creditos_sn')||{value:''}).value)||0,
          _mEX=parseFloat((document.getElementById('c04_creditos_ext')||{value:''}).value)||0;
-   /* ★ v935 · TR11 · com mix na tela, a regra (LP×100 + SN×20 + Ext×100) é do servidor (fn_c04 → mix_compras);
+   /* ★ v935 · TR11 · com mix na tela, a regra (LP×100 + SN × crédito do DAS + Ext×100) é do servidor (fn_c04 → mix_compras);
       sem mix, vai o % legado que o usuário informou — e, vazio, o servidor usa o padrão dele. */
    if(_mLP+_mSN+_mEX > 0) {
      pctIns = null;
@@ -31391,7 +31391,7 @@ function atualizarTJLPAutomatica() {
  * @param {number} pctExt - % de compras importadas/externas
  * @return {object} { soma, creditoEfetivo, status, alerta }
  */
-/* ★ v935 · TR11 · a regra do mix (LP×100 + SN×20 + Ext×100, teto 100, soma e aviso) saiu do navegador:
+/* ★ v935 · TR11 · a regra do mix (LP×100 + SN × crédito do DAS + Ext×100, teto 100, soma e aviso) saiu do navegador:
    é fn_mix_credito no servidor. Aqui fica só o cache da última resposta de cada tela (prefixo). */
 var LH_MIXC={res:{}, vez:{}};
 function mixCreditoChave(lp, sn, ext){ return [parseFloat(lp)||0, parseFloat(sn)||0, parseFloat(ext)||0].join('|'); }
@@ -31412,15 +31412,15 @@ function mixCreditoUltimo(prefix, lp, sn, ext){ var u=LH_MIXC.res[prefix]; retur
     if(!_memEl){ var _rs=document.getElementById('res-mixcredito')||document.getElementById('kpi-mixcredito'); if(_rs&&_rs.parentNode){ _memEl=document.createElement('div'); _memEl.id='mem-mixcredito'; _rs.parentNode.appendChild(_memEl);} }
     if(_memEl&&window.lhMemoriaCalculo) _memEl.innerHTML=window.lhMemoriaCalculo({
       titulo:'Como o mix de origem vira crédito (ou perda)',
-      porque:'Cada origem de compra aproveita o crédito de um jeito: fornecedor do regime REGULAR transfere 100% do imposto destacado; fornecedor do SIMPLES transfere só o efetivamente pago no DAS (premissa 20%); MEI e pessoa física transferem ZERO; importação direta credita 100%. O crédito efetivo = compras × 26,5% × mix ponderado. A diferença para o potencial é dinheiro deixado na mesa — renegociável trocando fornecedores de origem.',
+      porque:'Cada origem de compra aproveita o crédito de um jeito: fornecedor do regime REGULAR transfere 100% do imposto destacado; fornecedor do SIMPLES transfere só o IBS/CBS recolhido no DAS (alíquota efetiva × fatia; ~13% do imposto cheio na faixa de referência); MEI e pessoa física transferem ZERO; importação direta credita 100%. O crédito efetivo = compras × 26,5% × mix ponderado. A diferença para o potencial é dinheiro deixado na mesa — renegociável trocando fornecedores de origem.',
       aliquotas:[{label:'Regular (LP/LR)',valor:'crédito 100%'},{label:'Simples Nacional',valor:'~12% (o que recolhe no DAS)'},{label:'MEI / PF',valor:'0%'},{label:'Importação',valor:'100%'}],
       baseLegal:[{lei:'LC 214/2025, arts. 28-47 (não-cumulatividade)',link:'https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm'},{lei:'LC 214/2025 (aquisições de optante do SN)',link:'https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm'}]});
     var _vEl=document.getElementById('viab-mixcredito');
     if(!_vEl&&_memEl&&_memEl.parentNode){ _vEl=document.createElement('div'); _vEl.id='viab-mixcredito'; _memEl.parentNode.appendChild(_vEl); }
     if(_vEl&&window.lhNotaConsultiva) _vEl.innerHTML=window.lhNotaConsultiva({
-      confianca:{nivel:'media',motivo:'Fator de crédito do SN é premissa Lionheart (20%) — depende do anexo/faixa do fornecedor; o tributarista valida.'},
+      confianca:{nivel:'media',motivo:'Crédito do SN pelo DAS na faixa de referência (Anexo I, RBT12 R$ 540 mil) — o real depende do anexo/faixa de cada fornecedor; com o XML de entrada, a Massa usa o de cada nota.'},
       nota:'Este é o DIFERENCIAL ÚNICO Lionheart: ninguém no mercado mostra ao cliente quanto crédito ele perde pela ORIGEM das compras. Renegociar 10 pontos do mix (MEI→regular) pode valer mais que qualquer tese.',
-      premissas:[{label:'Referência',valor:'26,5%'},{label:'Crédito SN',valor:'20% (premissa)'},{label:'MEI/PF',valor:'0%'}],
+      premissas:[{label:'Referência',valor:'26,5%'},{label:'Crédito SN',valor:'do DAS (~13% do cheio)'},{label:'MEI/PF',valor:'0%'}],
       rotuloValor:'Alavanca',valor:'mix de fornecedores'});
   }catch(e){}
 } [onChange] - callback após atualizar (ex: propagarInputs)
@@ -31477,7 +31477,7 @@ function aplicarMixCredito(prefix, res, onChange) {
           '<strong style="color:var(--gold);">Crédito efetivo real:</strong> '+
           '<span class="lh-mix-efetivo" style="color:#10b981;font-weight:700;font-size:1.05em;">~28%</span>'+
           '&nbsp;·&nbsp;<span style="color:rgba(200,215,235,0.55);font-size:0.85em;">'+
-            'Fórmula: %LP×100 + <strong style="color:#c9a227;">%SN×20</strong> + %Ext×100 · art. 28 LC 214/2025.'+
+            'Fórmula: %LP×100 + <strong style="color:#c9a227;">%SN × crédito do DAS</strong> + %Ext×100 · arts. 28 e 47 §9º II LC 214/2025.'+
           '</span>'+
         '</div>'+
         '<div class="lh-mix-alerta-wrap" style="min-height:18px;margin-top:2px;">'+
@@ -31659,7 +31659,7 @@ function renderizarBlocoMixCredito(prefix, valoresIniciais, callbackName, opts) 
         '</div>'+
       '</div>'+
       '<div id="'+prefix+'_mix-credito-feedback" style="font-size:0.78em;color:rgba(200,215,235,0.65);line-height:1.55;padding:8px 10px;background:rgba(0,0,0,0.15);border-radius:6px;margin-top:4px;">'+
-        '<strong style="color:var(--gold);">Crédito efetivo real:</strong> <span style="color:#10b981;font-weight:700;font-size:1.05em;">~28%</span> &nbsp;·&nbsp; <span style="color:rgba(200,215,235,0.5);">Fórmula: %LP×100 + <strong style="color:#c9a227;">%SN×20</strong> + %Ext×100 · art. 28 LC 214/2025.</span>'+
+        '<strong style="color:var(--gold);">Crédito efetivo real:</strong> <span style="color:#10b981;font-weight:700;font-size:1.05em;">~28%</span> &nbsp;·&nbsp; <span style="color:rgba(200,215,235,0.5);">Fórmula: %LP×100 + <strong style="color:#c9a227;">%SN × crédito do DAS</strong> + %Ext×100 · arts. 28 e 47 §9º II LC 214/2025.</span>'+
       '</div>'+
     '</div>';
 }
