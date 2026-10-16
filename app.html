@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v968";</script>
+<body><script>window.LH_VERSAO="v969";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -58437,7 +58437,10 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      +'<b>2033 prateleira</b> — o preço calculado pela estratégia escolhida. <b>Fica c/ você</b> — prateleira menos todo imposto. '
      +(temCusto?'<b>Lucro 2033</b> — o que fica menos o custo líquido do ano (% sobre o que fica). ':'')
      +'<b>Var. 2033</b> — prateleira 2033 contra o preço de hoje. <b>Repasse %</b> — quanto da diferença você repassa nesta linha (vazio = herda do grupo ou do geral). <b>2033 decidido</b> — hoje + repasse × (prateleira − hoje): é o preço que vai para o ERP.');
-   h+='<div style="overflow-x:auto;margin-top:10px"><table style="width:100%;border-collapse:collapse;font-size:.8rem;white-space:nowrap"><thead><tr>';
+   /* ★ v969 · a coluna ITEM fica parada ao rolar para o lado: a tabela tem ~20 colunas e o custo líquido, o crédito e 2033 ficam à direita */
+   h+='<style>.pm-tab thead th:first-child,.pm-tab tr[data-i]>td:first-child{position:sticky;left:0;z-index:2;background:var(--bg,#fff);box-shadow:1px 0 0 rgba(128,128,128,.25)}</style>';
+   h+='<div style="font-size:.72rem;color:var(--text2);margin-top:8px">↔ role a tabela para o lado: a coluna do item fica parada.</div>';
+   h+='<div style="overflow-x:auto;margin-top:4px"><table class="pm-tab" style="width:100%;border-collapse:collapse;font-size:.8rem;white-space:nowrap"><thead><tr>';
    /* ★ v882 · títulos com o subtítulo embaixo: cada coluna diz o que é (compra × líquido do crédito, prateleira × o que fica) */
    var mostraFica=(cfg.estr==='preco'), subAno=mostraFica?'o que fica c/ você':'preço de prateleira';
    var _rpTem=rows.some(function(r){ return r.c.anos[2033] && Array.isArray(r.c.anos[2033].conta); }), _rpCli=rows.some(function(r){ return r.c.anos[2033] && Array.isArray(r.c.anos[2033].cart); });   /* v966 */
@@ -76511,8 +76514,12 @@ window.LH_ABAS = (function(){
     return 12;
   }
   function lh963Peso(w){ w=+w||400; return w<=450 ? 400 : (w<=650 ? 600 : 700); }
+  /* ★ v969 · medir tudo primeiro, escrever tudo depois. Antes cada elemento era medido (getClientRects/getComputedStyle)
+     logo depois de o anterior ter mudado de estilo: o navegador refazia o layout da página inteira a cada célula.
+     Na Precificação em Massa com 256 itens isso passava de 40 s e o Chrome mostrava "Página sem resposta". */
   function lh963Tipo(P){
     if(!P) return;
+    var plano=[];
     [].slice.call(P.querySelectorAll('*')).forEach(function(e){
       try{
         if(e.getAttribute('data-lh-tipo')) return;
@@ -76521,11 +76528,19 @@ window.LH_ABAS = (function(){
         if(!tem && !/^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(e.tagName)) return;
         if(!e.getClientRects().length) return;
         var cs=getComputedStyle(e), px=parseFloat(cs.fontSize), alvo=lh963Tamanho(px, e);
-        if(alvo && Math.abs(alvo-px)>0.01) e.style.setProperty('font-size', alvo+'px', 'important');
+        var fa=(cs.fontFamily||'').toLowerCase(), w=lh963Peso(cs.fontWeight);
+        plano.push([e, (alvo && Math.abs(alvo-px)>0.01) ? alvo : null,
+                    (fa.indexOf('ibm plex')<0 && fa.indexOf('source serif')<0 && !e.closest('code,kbd,pre,samp')),
+                    (String(w)!==String(cs.fontWeight)) ? String(w) : null]);
+      }catch(err){}
+    });
+    plano.forEach(function(x){
+      try{
+        var e=x[0];
+        if(x[1]) e.style.setProperty('font-size', x[1]+'px', 'important');
         /* família: regra antiga mais específica ainda pode vencer a da casa — o próprio elemento leva a família certa */
-        var fa=(cs.fontFamily||'').toLowerCase();
-        if(fa.indexOf('ibm plex')<0 && fa.indexOf('source serif')<0 && !e.closest('code,kbd,pre,samp')) e.style.setProperty('font-family', 'var(--lh-f-ui)', 'important');
-        var w=lh963Peso(cs.fontWeight); if(String(w)!==String(cs.fontWeight)) e.style.setProperty('font-weight', String(w), 'important');
+        if(x[2]) e.style.setProperty('font-family', 'var(--lh-f-ui)', 'important');
+        if(x[3]) e.style.setProperty('font-weight', x[3], 'important');
         e.setAttribute('data-lh-tipo', '1');
       }catch(err){}
     });
