@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v978";</script>
+<body><script>window.LH_VERSAO="v979";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -9235,11 +9235,11 @@ function lhTrocarSenha(){
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
             <div style="margin-bottom:8px;grid-column:1/-1"><button type="button" onclick="lhCarteiraAbrir('cli')" style="padding:5px 12px;font-size:.76rem;background:rgba(46,127,217,.12);border:1px solid rgba(46,127,217,.4);border-radius:7px;color:#4a9eff;cursor:pointer">➕ montar pela carteira (cliente a cliente)</button></div>
-            <div class="input-group"><label style="font-size:.78em">% vendas p/ Real/Presumido</label><input type="number" id="dxh_cli_regular" min="0" max="100" placeholder="ex: 60" oninput="dxhSaidaSoma()"></div>
-            <div class="input-group"><label style="font-size:.78em">% vendas p/ Simples</label><input type="number" id="dxh_cli_simples" min="0" max="100" placeholder="ex: 20" oninput="dxhSaidaSoma()"></div>
-            <div class="input-group"><label style="font-size:.78em">% vendas B2C (consumidor)</label><input type="number" id="dxh_cli_b2c" min="0" max="100" placeholder="ex: 20" oninput="dxhSaidaSoma()"></div>
+            <div class="input-group"><label style="font-size:.78em">% vendas no Brasil p/ Real/Presumido</label><input type="number" id="dxh_cli_regular" min="0" max="100" placeholder="ex: 60" oninput="dxhSaidaSoma()"></div>
+            <div class="input-group"><label style="font-size:.78em">% vendas no Brasil p/ Simples</label><input type="number" id="dxh_cli_simples" min="0" max="100" placeholder="ex: 20" oninput="dxhSaidaSoma()"></div>
+            <div class="input-group"><label style="font-size:.78em">% vendas no Brasil B2C (consumidor)</label><input type="number" id="dxh_cli_b2c" min="0" max="100" placeholder="ex: 20" oninput="dxhSaidaSoma()"></div>
           <div class="input-group" style="margin-top:8px">
-            <label style="font-size:.8em">% da receita que é EXPORTAÇÃO
+            <label style="font-size:.8em">% da receita TOTAL que é EXPORTAÇÃO
               <span class="lh-hint" data-hint="Exportação é IMUNE a IBS/CBS (art. 8º/80 LC 214) — débito zero na saída — MAS mantém o crédito das compras (art. 82), que acumula e pode ser ressarcido. Favorece muito o híbrido: no Simples puro esse crédito é perdido." onclick="lhHint(event,this)">?</span>
             </label>
             <input type="number" id="dxh_export" min="0" max="100" placeholder="ex: 0" oninput="dxhCalc()">
@@ -9553,10 +9553,10 @@ function lhTrocarSenha(){
       <div style="font-weight:700;color:#c9a227;margin-bottom:4px">Motor de saída — para quem eu vendo <span class="lh-hint" data-hint="Só afeta a coluna Simples Híbrido. No híbrido, o cliente PJ do Regime Regular credita o IBS/CBS da sua nota — isso é valor entregue ao cliente (arma comercial). B2C não credita. Exportação é imune mas mantém seu crédito." onclick="lhHint(event,this)">?</span></div>
       <div style="font-size:.76rem;color:#8a97a8;margin-bottom:10px">Define quanto crédito o híbrido transfere aos seus clientes — o argumento comercial da migração. <span style="display:block;margin-top:6px;font-size:.72rem;color:#8a97a8;font-style:italic">💡 Preenchimento manual: o regime dos seus clientes não vem nos XMLs de venda (a nota só carrega o SEU CRT, não o do comprador). Informe a composição estimada da sua carteira de vendas.</span><div style="margin-top:8px"><div id="dxh_cli_info" style="margin-top:6px;font-size:.78rem;color:#8a97a8"></div></div></div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
-        <div class="input-group"><label style="font-size:.82em">% vendas p/ Real/Presumido</label><input type="number" id="c05_cli_regular" min="0" max="100" placeholder="ex: 60"></div>
-        <div class="input-group"><label style="font-size:.82em">% vendas p/ Simples</label><input type="number" id="c05_cli_simples" min="0" max="100" placeholder="ex: 20"></div>
-        <div class="input-group"><label style="font-size:.82em">% vendas B2C (consumidor)</label><input type="number" id="c05_cli_b2c" min="0" max="100" placeholder="ex: 20"></div>
-        <div class="input-group"><label style="font-size:.82em">% receita EXPORTAÇÃO
+        <div class="input-group"><label style="font-size:.82em">% vendas no Brasil p/ Real/Presumido</label><input type="number" id="c05_cli_regular" min="0" max="100" placeholder="ex: 60"></div>
+        <div class="input-group"><label style="font-size:.82em">% vendas no Brasil p/ Simples</label><input type="number" id="c05_cli_simples" min="0" max="100" placeholder="ex: 20"></div>
+        <div class="input-group"><label style="font-size:.82em">% vendas no Brasil B2C (consumidor)</label><input type="number" id="c05_cli_b2c" min="0" max="100" placeholder="ex: 20"></div>
+        <div class="input-group"><label style="font-size:.82em">% da receita TOTAL: EXPORTAÇÃO
           <span class="lh-hint" data-hint="Exportação é imune a IBS/CBS na saída (art. 8º/80) mas mantém o crédito das compras (art. 82). Favorece o híbrido." onclick="lhHint(event,this)">?</span>
         </label><input type="number" id="c05_export" min="0" max="100" placeholder="ex: 0"></div>
       </div>
@@ -11107,13 +11107,13 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <div class="input-group"><label>% de produtor rural pessoa física / sem nota</label><input type="number" id="cad_forn_pf" min="0" max="100" step="0.1" placeholder="ex: 5"><span class="lh-hint" data-hint="Compra de pessoa física não destaca IBS/CBS. Produtor rural PF tem crédito presumido (art. 168) — calculado na tela de Crédito Presumido, não aqui." onclick="lhHint(event,this)">?</span></div>
         <div class="input-group"><label>Compras anuais (R$) — opcional, para ver o crédito em reais</label><input type="number" id="cad_compras" placeholder="ex: 1.200.000" oninput="LH_CADEIA.render()"></div>
       </div>
-      <h3 style="color:#4a9eff;margin-top:14px">Saída — para quem eu vendo <span id="cad_origem_saida"></span></h3>
+      <h3 style="color:#4a9eff;margin-top:14px">Saída — para quem eu vendo <span id="cad_origem_saida"></span></h3><div style="font-size:.8em;color:var(--text2);margin:-4px 0 8px">Duas réguas (v979): PJ Real/Presumido, Simples, consumidor e governo somam 100% das vendas <b>no Brasil</b>; a exportação é % da receita <b>total</b>, à parte — por isso a soma pode passar de 100%. A exportação não leva IBS/CBS, então a régua das vendas no Brasil é a que pesa no crédito do cliente.</div>
       <div class="input-grid-2">
-        <div class="input-group"><label>% das vendas para PJ Real/Presumido (recupera o IBS/CBS)</label><input type="number" id="cad_cli_regular" min="0" max="100" step="0.1" placeholder="ex: 40"></div>
-        <div class="input-group"><label>% das vendas para PJ do Simples</label><input type="number" id="cad_cli_simples" min="0" max="100" step="0.1" placeholder="ex: 20"></div>
-        <div class="input-group"><label>% das vendas para consumidor final</label><input type="number" id="cad_cli_b2c" min="0" max="100" step="0.1" placeholder="ex: 40"></div>
-        <div class="input-group"><label>% das vendas para governo</label><input type="number" id="cad_cli_gov" min="0" max="100" step="0.1" placeholder="ex: 0"></div>
-        <div class="input-group"><label>% da receita que é exportação (imune)</label><input type="number" id="cad_cli_export" min="0" max="100" step="0.1" placeholder="ex: 0"></div>
+        <div class="input-group"><label>% das vendas no Brasil para PJ Real/Presumido (recupera o IBS/CBS)</label><input type="number" id="cad_cli_regular" min="0" max="100" step="0.1" placeholder="ex: 40"></div>
+        <div class="input-group"><label>% das vendas no Brasil para PJ do Simples</label><input type="number" id="cad_cli_simples" min="0" max="100" step="0.1" placeholder="ex: 20"></div>
+        <div class="input-group"><label>% das vendas no Brasil para consumidor final</label><input type="number" id="cad_cli_b2c" min="0" max="100" step="0.1" placeholder="ex: 40"></div>
+        <div class="input-group"><label>% das vendas no Brasil para governo</label><input type="number" id="cad_cli_gov" min="0" max="100" step="0.1" placeholder="ex: 0"></div>
+        <div class="input-group"><label>% da receita TOTAL que é exportação (imune) — régua à parte</label><input type="number" id="cad_cli_export" min="0" max="100" step="0.1" placeholder="ex: 0"></div>
         <div class="input-group"><label>Dos clientes PJ, quantos são do Simples? (%) — usado na leitura dos XMLs</label><input type="number" id="cad_pj_simples" min="0" max="100" step="1" placeholder="30"><span class="lh-hint" data-hint="O XML de venda traz CPF × CNPJ do comprador, mas não o regime dele. Esta fatia divide os PJ entre regular e Simples." onclick="lhHint(event,this)">?</span></div>
         <div class="input-group"><label>Faturamento anual (R$) — opcional</label><input type="number" id="cad_fat" placeholder="herda do Regime Ótimo se vazio" oninput="LH_CADEIA.render()"></div>
       </div>
@@ -46111,6 +46111,10 @@ window.lhXmlDetFiscal=function(det, n){
 };
 function lhImportXML_aggregate(notas){
   var a={n:0,nSaida:0,dtMin:'',dtMax:'',emitNome:'',emitCNPJ:'',vProd:0,vNF:0,vICMS:0,vPIS:0,vCOFINS:0,vProdSaida:0,vNFSaida:0,vICMSSaida:0};
+  /* ★ v979 · achado 1 do teste Horizonte (16/10): a mesma NF-e com outro nome de arquivo somava duas vezes. Uma nota por chave de acesso. */
+  try{ var _vistas={}, _uni=[]; a.nRepetidas=0;
+    (notas||[]).forEach(function(o){ var k=String(o&&o.chave||'').replace(/\D/g,''); if(k.length===44){ if(_vistas[k]){ a.nRepetidas++; return; } _vistas[k]=1; } _uni.push(o); });
+    notas=_uni; }catch(_e){}
   var _empAg=(window.LH_IMPORT_PGDAS&&window.LH_IMPORT_PGDAS.cnpj)?String(window.LH_IMPORT_PGDAS.cnpj).replace(/\D/g,''):(window.LH_EMP_CNPJ||'');
   /* v557 — DESCOBRIR O CNPJ DA EMPRESA PELAS PROPRIAS NOTAS.
      Sem PGDAS (ou com PGDAS em PDF que nao foi lido), o codigo caia no tpNF —
@@ -46131,6 +46135,13 @@ function lhImportXML_aggregate(notas){
       if(_melhor && _max >= notas.length*0.6){ _empAg=_melhor; window.LH_EMP_CNPJ=_melhor; }
     }catch(_e){}
   }
+  /* ★ v979 · achado 2: nota entre terceiros (nem emitida nem recebida pela empresa) não é compra nem venda — fica fora da soma */
+  if(_empAg){ try{ var _r8=String(_empAg).slice(0,8), _proprias=[]; a.nTerceiros=0;
+    notas.forEach(function(o){ var e=String(o.emitCNPJ||'').replace(/\D/g,''), d=String(o.destCNPJ||'').replace(/\D/g,'');
+      if(e.slice(0,8)!==_r8 && d.slice(0,8)!==_r8 && (e||d)){ a.nTerceiros++; return; } _proprias.push(o); });
+    notas=_proprias; }catch(_e){} }
+  /* ★ v979 · achado 4: NCM que a empresa também VENDE é mercadoria de revenda, não investimento (a lâmpada e o fio da ferragem viravam capex) */
+  var _ncmVenda={}; try{ notas.forEach(function(o){ var e=String(o.emitCNPJ||'').replace(/\D/g,''); if(_empAg && e===_empAg && String(o.tpNF)!=='0') (o.itens||[]).forEach(function(it){ var n=String(it.ncm||'').replace(/\D/g,''); if(n) _ncmVenda[n]=1; }); }); }catch(_e){}
   for(var i=0;i<notas.length;i++){ var o=notas[i]; a.n++;
     a.vProd+=o.vProd; a.vNF+=o.vNF; a.vICMS+=o.vICMS; a.vPIS+=o.vPIS; a.vCOFINS+=o.vCOFINS;
     /* v846 — DEVOLUCAO DE VENDA. A v557 passou a classificar por CNPJ em vez de
@@ -46182,7 +46193,7 @@ function lhImportXML_aggregate(notas){
       if(_sai2){ _icmsS+=(+_o2.vICMS||0); } /* v571 — ICMS destacado nas saidas p/ aliquota media real (Tema 69 no LR) */
       if(!_sai2){ var _it2=_o2.itens||[]; var _vMax=0,_nDom='';
         for(var _z2=0;_z2<_it2.length;_z2++){ if((_it2[_z2].vProd||0)>_vMax){_vMax=_it2[_z2].vProd||0;_nDom=String(_it2[_z2].ncm||'');} }
-        if(/^8[45]/.test(_nDom)){ _cap+=(_o2.vNF||0); _nCap++; } }
+        if(/^8[45]/.test(_nDom) && !_ncmVenda[_nDom.replace(/\D/g,'')]){ _cap+=(_o2.vNF||0); _nCap++; } }   /* v979: revenda fora do capex */
     }
     a.pmr=_prV>0?Math.round(_prS/_prV*10)/10:0;
     a.pmp=_ppV>0?Math.round(_ppS/_ppV*10)/10:0;
@@ -58166,8 +58177,8 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      var rg=rpRegimeDaNota(nt), cl=rpClasse(rg);
      (nt.itens||[]).forEach(function(it){ var fx=it.fis; if(!fx) return; nIt++;
        var tot=(+it.vProd||0)+(+it.vIPI||0)+(+fx.vICMSST||0); if(!(tot>0)) return;
-       var soma=function(m,k){ if(!k) return; var e=m[k]||(m[k]={cl:{}}); var c=e.cl[cl]||(e.cl[cl]={rg:rg,v_total:0,v_icms:0,v_pis:0,v_cofins:0,v_st:0,v_ipi:0,v_cred_sn:0,n:0});
-         c.v_total+=tot; c.v_icms+=(+fx.vICMS||0); c.v_pis+=(+fx.vPIS||0); c.v_cofins+=(+fx.vCOFINS||0); c.v_st+=(+fx.vICMSST||0); c.v_ipi+=(+it.vIPI||0); c.v_cred_sn+=(+fx.vCredICMSSN||0); c.n++; };
+       var soma=function(m,k){ if(!k) return; var e=m[k]||(m[k]={cl:{}}); var c=e.cl[cl]||(e.cl[cl]={rg:rg,v_total:0,v_icms:0,v_pis:0,v_cofins:0,v_st:0,v_ipi:0,v_cred_sn:0,n:0,q:0});
+         c.v_total+=tot; c.v_icms+=(+fx.vICMS||0); c.v_pis+=(+fx.vPIS||0); c.v_cofins+=(+fx.vCOFINS||0); c.v_st+=(+fx.vICMSST||0); c.v_ipi+=(+it.vIPI||0); c.v_cred_sn+=(+fx.vCredICMSSN||0); c.q+=(+fx.qCom||0); c.n++; };   /* v979: quantidade comprada (para o custo da nota no servidor) */
        if(fx.cEAN && fx.cEAN.length>=8) soma(ean, fx.cEAN);
        soma(ncm, String(it.ncm||'').replace(/\D/g,''));
        /* v978 · o cClassTrib que o fornecedor declarou no grupo IBS/CBS, contado por código (sem conta) */
@@ -58185,7 +58196,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      var k=ks.sort(function(a,b){ return e.cl[b].v_total-e.cl[a].v_total; })[0], c=e.cl[k];
      var fo={v_total:+c.v_total.toFixed(2), v_icms:+c.v_icms.toFixed(2), v_pis:+c.v_pis.toFixed(2), v_cofins:+c.v_cofins.toFixed(2), v_st:+c.v_st.toFixed(2), v_ipi:+c.v_ipi.toFixed(2), v_cred_sn:+c.v_cred_sn.toFixed(2)};
      if(c.rg.cpf) fo.cpf=true; else if(c.rg.crt) fo.crt=c.rg.crt;
-     return {fo:fo, via:via, notas:c.n}; };
+     return {fo:fo, via:via, notas:c.n, q:c.q}; };
    var e=f.ean && ix.ean[f.ean]; if(e){ var r=pega(e,'ean'); if(r) return r; }
    var n=String(f.ncm||'').replace(/\D/g,''); if(n && ix.ncm[n]) return pega(ix.ncm[n],'ncm');
    return null;
@@ -58407,7 +58418,7 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
      var f={cod:it.cod, desc:it.desc, ncm:it.ncm||it.ncm_sug||'', nbs:it.nbs||'', tipo:it.tipo||(it.nbs?'S':'P'), trat:it.trat, status:s, fonte:it.fonte||'',
             preco:num(precoV), custo:num(x.custo), ipi:num(x.ipi), icms:num(x.icms), st:ehST(x.cstIcms), cstIcms:x.cstIcms||'', cstPis:x.cstPis||'',
             custoNovo:num(x.custoNovo), varCusto:num(x.varCusto), qtd:num(x.qtd), conc:num(x.conc), grupo:x.grupo||'', icmsSt:num(x.icmsSt), icmsStPct:num(x.icmsStPct), origem:x.origem||'', credPct:num(x.credPct), ean:String(x.ean||'').replace(/\D/g,'')};
-     try{ if(window.lhRpFornDoItem){ var _fx=window.lhRpFornDoItem(f); if(_fx){ f.fornecedor=_fx.fo; f.fornVia=_fx.via; } } }catch(_e){}
+     try{ if(window.lhRpFornDoItem){ var _fx=window.lhRpFornDoItem(f); if(_fx){ f.fornecedor=_fx.fo; f.fornVia=_fx.via; if(!(+f.custo>0) && _fx.q>0) f.fornecedor.q=+(+_fx.q).toFixed(4); } } }catch(_e){}   /* v979: sem custo na planilha, o servidor tira o custo da nota */
      try{ if(window.lhRpCcNota){ var _cn=window.lhRpCcNota(f); if(_cn) f.ccNota=_cn; } }catch(_e){}   /* v978 · cClassTrib da nota de compra (só para mostrar) */   /* v966 · TR35: o fornecedor vem da nota de entrada (EAN, ou NCM de um regime só) */
      if(f.icmsSt>0 || f.icmsStPct>0) f.st=true;   /* v886: se a planilha traz o ST pago, o item é ST mesmo sem CST */
      var prontos={CONFIRMADO:1,REGRA_GERAL:1,BENEFICIO_IDENTIFICADO:1,SUGERIDO_DESCRICAO:1};
@@ -70090,7 +70101,14 @@ window.LH_PORTEIRO={
           var tipo=detectarTipo(l.nome, l.texto);
           l.tipoDetectado=tipo;
           if(tipo==='DESCONHECIDO'||tipo==='XML_desconhecido'||tipo==='SPED_desconhecido') estados.push({nome:l.nome, estado:'nao_reconhecido', motivo:(LABELS[tipo]||tipo)+' — o conteúdo foi lido, mas não casou com nenhum leitor (NF-e, NFS-e, CT-e, SPED, PGDAS, DAS, eSocial, Reinf, ECD/ECF, balancete).'});
-          else estados.push({nome:l.nome, estado:'lido', motivo:LABELS[tipo]||tipo});
+          else {
+            /* ★ v979 · achado 3 do teste Horizonte: XML cortado aparecia como "lido". Confere se o XML fecha antes de dizer que leu. */
+            if(/\.xml$/i.test(String(l.nome||'')) || /^\s*</.test(String(l.texto||'').slice(0,50))){ var _bad=false;
+              try{ var _dx=new DOMParser().parseFromString(String(l.texto||''),'text/xml'); _bad=!_dx || _dx.getElementsByTagName('parsererror').length>0; }catch(_e){ _bad=true; }
+              if(_bad){ estados.push({nome:l.nome, estado:'nao_reconhecido', motivo:'XML incompleto ou corrompido (o arquivo parece cortado) — nada foi aplicado; baixe a nota de novo'}); (grupos.ERRO=grupos.ERRO||[]).push(l.nome); return; } }
+            var _rep=false; try{ var _P=window._LH_PROTOCOLO; _rep=!!(_P && (_P.repetidos||[]).some(function(r){ return r && r.nome===l.nome; })); }catch(_e){}
+            estados.push({nome:l.nome, estado:'lido', motivo:(LABELS[tipo]||tipo)+(_rep?' · repetida: esta nota já tinha chegado antes e conta uma vez só':'')});
+          }
           (grupos[tipo]=grupos[tipo]||[]).push(l);
         });
         window.LH_PORTEIRO.ultimoLote={ total:lidos.length, estados:estados };
