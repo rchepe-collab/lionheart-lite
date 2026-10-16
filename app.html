@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v969";</script>
+<body><script>window.LH_VERSAO="v970";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -52202,19 +52202,22 @@ function cmClassificaDesc(desc){
 function cmProcessar(rows){
   if(!rows||rows.length<2){ if(typeof mostrarToast==='function')mostrarToast('Planilha vazia ou sem dados','error'); return; }
   var head=rows[0].map(function(h){return String(h==null?'':h).toLowerCase();});
-  var iNCM=head.findIndex(function(h){return h.indexOf('ncm')>=0;});
-  var iDesc=head.findIndex(function(h){return h.indexOf('desc')>=0||h.indexOf('produto')>=0||h.indexOf('nome')>=0;});
-  var iCod=head.findIndex(function(h){return h.indexOf('cod')>=0||h.indexOf('sku')>=0||h.indexOf('ref')>=0;});
   /* ★ v866 · colunas fiscais e de preço do ERP (nenhuma obrigatória) — viajam na ficha para a Precificação em Massa */
   var _hn=function(h){ return String(h).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,''); };
   var HN=head.map(_hn);
+  /* ★ v969 · "Código fiscal", "Classificação fiscal" e "NCM/NBS" também são a coluna do NCM; o código do item é ID/código/SKU, nunca a coluna fiscal */
+  var iNCM=head.findIndex(function(h){return h.indexOf('ncm')>=0;});
+  if(iNCM<0) iNCM=HN.findIndex(function(h){ return /^(codigofiscal|codfiscal|classificacaofiscal|classfiscal)/.test(h); });
+  var iDesc=head.findIndex(function(h){return h.indexOf('desc')>=0||h.indexOf('produto')>=0||h.indexOf('nome')>=0;});
+  var iCod=HN.findIndex(function(h,i){ return i!==iNCM && /^(id|iditem|idproduto|codigo|cod|coditem|codigoitem|codproduto|codigoproduto|sku|referencia|ref|codigointerno|codinterno)$/.test(h); });
+  if(iCod<0) iCod=head.findIndex(function(h,i){ return i!==iNCM && HN[i].indexOf('fiscal')<0 && (h.indexOf('cod')>=0||h.indexOf('sku')>=0||h.indexOf('ref')>=0); });
   var iPreco=HN.findIndex(function(h){ return /^(preco|precovenda|precodevenda|valorvenda|vlrvenda|pv|valorunitario|precounit|precounitario|precotabela)$/.test(h) || (h.indexOf('preco')>=0 && h.indexOf('custo')<0 && h.indexOf('compra')<0); });
   /* ★ v871 · CUSTO_NOVO (R$) e VAR_CUSTO (%) por linha, GRUPO para a variação por grupo — o custo que mudou viaja na ficha */
-  var _ehNovo=function(h){ return /novo|futur|propost|reajust|negociad|2027|2033/.test(h); };
+  var _ehNovo=function(h){ return /novo|futur|propost|reajust|negociad|depois|2027|2033/.test(h); };   /* v969: "custo depois" */
   var iCusto=HN.findIndex(function(h){ return h.indexOf('custo')>=0 && !_ehNovo(h) && h.indexOf('var')!==0; });
   var iCustoNovo=HN.findIndex(function(h){ return h.indexOf('custo')>=0 && _ehNovo(h) && h.indexOf('var')!==0; });
   var iVarCusto=HN.findIndex(function(h){ return /^(var|variacao|delta|reajuste)(custo|docusto|pct|percent)?/.test(h) && h.indexOf('custo')>=0; });
-  var iGrupo=HN.findIndex(function(h){ return /^(grupo|categoria|setor|familia|linha|departamento|secao|classe)$/.test(h) || h.indexOf('grupo')===0 || h.indexOf('categoria')===0; });
+  var iGrupo=HN.findIndex(function(h){ return /^(grupo|categoria|setor|segmento|familia|linha|departamento|secao|classe)$/.test(h) || h.indexOf('grupo')===0 || h.indexOf('categoria')===0; });
   var iIPI=HN.findIndex(function(h){ return h==='ipi' || h==='aliquotaipi' || h==='aliqipi' || h==='ipipct'; });
   /* ★ v886 · ICMS_ST pago na compra, por unidade (R$) — ou % do custo se o cabeçalho tiver "%" ou "pct". Vira crédito de IBS na curva. */
   var iSt=HN.findIndex(function(h){ return /^(icmsst|valorst|vlrst|stunit|stunitario|icmsstunit|icmsstrs|icmsstpct|stpct|st)$/.test(h) || (h.indexOf('icms')>=0 && h.indexOf('st')>=0 && h.indexOf('cst')<0 && h.indexOf('aliq')<0); });
