@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v975";</script>
+<body><script>window.LH_VERSAO="v978";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -12895,7 +12895,7 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <b style="color:var(--gold)">Ou solte o catálogo aqui</b> — classifica e precifica de uma vez<br>
         <span style="color:var(--text2);font-size:.85rem">Excel/CSV do ERP · precisa de NCM e descrição · aproveita PRECO (uma ou mais listas), CUSTO, CUSTO_NOVO ou VAR_CUSTO (%), GRUPO, IPI, ALIQUOTA_ICMS, CST_ICMS/CSOSN e CST_PIS_COFINS se existirem</span>
       </label>
-      <input type="file" id="pm-file" accept=".xlsx,.xls,.csv" style="display:none">
+      <input type="file" id="pm-file" accept=".xlsx,.xls,.csv" style="display:none"><div id="pm-docs-cli"></div>
     </div>
     <div id="pm-result"></div>
   </div>
@@ -46097,7 +46097,12 @@ window.LH_IMPORT_XML=null;
 window.lhXmlDetFiscal=function(det, n){
   try{ var v=function(tag){ var e=det.getElementsByTagNameNS('*',tag); return (e&&e.length)?n(e[0].textContent):0; };
     var t=function(tag){ var e=det.getElementsByTagNameNS('*',tag); return (e&&e.length)?String(e[0].textContent||'').trim():''; };
-    return {cEAN:t('cEAN').replace(/\D/g,''), cProd:t('cProd'), qCom:v('qCom'), vICMS:v('vICMS'), vICMSST:v('vICMSST'), vPIS:v('vPIS'), vCOFINS:v('vCOFINS'), vCredICMSSN:v('vCredICMSSN')};
+    /* ★ v978 · grupo IBS/CBS do item (NT 2025.002, obrigatório no regime regular desde 03/08/2026): CST e cClassTrib que o
+       emitente declarou e os valores destacados. Só leitura, dentro do grupo IBSCBS (o CST do ICMS fica de fora). */
+    var ib=null, G=det.getElementsByTagNameNS('*','IBSCBS');
+    if(G&&G.length){ var g0=G[0], gt=function(tag){ var e=g0.getElementsByTagNameNS('*',tag); return (e&&e.length)?String(e[0].textContent||'').trim():''; }, gv=function(tag){ var e=g0.getElementsByTagNameNS('*',tag); return (e&&e.length)?n(e[0].textContent):0; };
+      ib={cst:gt('CST'), cclass:gt('cClassTrib'), vBC:gv('vBC'), vIBS:gv('vIBS'), vCBS:gv('vCBS')}; }
+    return {cEAN:t('cEAN').replace(/\D/g,''), cProd:t('cProd'), qCom:v('qCom'), vICMS:v('vICMS'), vICMSST:v('vICMSST'), vPIS:v('vPIS'), vCOFINS:v('vCOFINS'), vCredICMSSN:v('vCredICMSSN'), ibs:ib};
   }catch(_e){ return null; }
 };
 function lhImportXML_aggregate(notas){
@@ -58161,6 +58166,9 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
          c.v_total+=tot; c.v_icms+=(+fx.vICMS||0); c.v_pis+=(+fx.vPIS||0); c.v_cofins+=(+fx.vCOFINS||0); c.v_st+=(+fx.vICMSST||0); c.v_ipi+=(+it.vIPI||0); c.v_cred_sn+=(+fx.vCredICMSSN||0); c.n++; };
        if(fx.cEAN && fx.cEAN.length>=8) soma(ean, fx.cEAN);
        soma(ncm, String(it.ncm||'').replace(/\D/g,''));
+       /* v978 · o cClassTrib que o fornecedor declarou no grupo IBS/CBS, contado por código (sem conta) */
+       if(fx.ibs && fx.ibs.cclass){ var cc=function(m,k){ if(!k || !m[k]) return; var q=m[k].cc||(m[k].cc={}); var x=q[fx.ibs.cclass]||(q[fx.ibs.cclass]={cst:fx.ibs.cst,n:0}); x.n++; };
+         if(fx.cEAN && fx.cEAN.length>=8) cc(ean, fx.cEAN); cc(ncm, String(it.ncm||'').replace(/\D/g,'')); }
      });
    });
    RP_IDX={ean:ean, ncm:ncm, n:nIt}; RP_IDX_N=notas.length; return RP_IDX;
@@ -58178,6 +58186,20 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var n=String(f.ncm||'').replace(/\D/g,''); if(n && ix.ncm[n]) return pega(ix.ncm[n],'ncm');
    return null;
  };
+ /* ★ v978 · TR36 entrega 4 · o cClassTrib das notas de compra do item (pelo EAN; sem EAN, pelo NCM). Só mostra:
+    confirma o palpite do Classificador ou aponta a diferença. NÃO troca o tratamento do item — trocar muda preço e
+    pede o "Autorizo" do Ricardo. A nota de compra diz como o FORNECEDOR vendeu; a venda da empresa pode ter outro destino. */
+ window.lhRpCcNota=function(f){
+   var ix=window.lhRpFornIdx(); if(!ix || !ix.n) return null;
+   var lista=function(e, via){ if(!e || !e.cc) return null; var ks=Object.keys(e.cc); if(!ks.length) return null;
+     return {via:via, cods:ks.map(function(k){ return [k, e.cc[k].cst, e.cc[k].n]; }).sort(function(a,b){ return b[2]-a[2]; })}; };
+   return lista(f.ean && ix.ean[f.ean], 'ean') || lista(ix.ncm[String(f.ncm||'').replace(/\D/g,'')], 'ncm');
+ };
+ window.lhRpCcSelo=function(f, meu){ var d=f && f.ccNota; if(!d) return '';
+   var m=String(meu||'').replace('*',''), c0=d.cods[0][0], igual=d.cods.length===1 && c0===m, via=d.via==='ean'?'EAN':'NCM';
+   var t='notas de compra ('+via+'): '+d.cods.map(function(c){ return c[0]+' (CST '+c[1]+', '+c[2]+' item'+(c[2]>1?'s':'')+')'; }).join(' · ');
+   return igual ? '<span style="display:block;font-size:.64rem;color:#16c47c" title="'+t+'">📄 a nota de compra confirma</span>'
+     : '<span style="display:block;font-size:.64rem;color:#e0a83a" title="'+t+' — a nota diz como o fornecedor vendeu; confira se a sua venda tem o mesmo tratamento. Nada foi trocado.">⚠ nota de compra: '+d.cods.map(function(c){ return c[0]; }).join(', ')+'</span>'; };
  var RP_REG={regular:'Regular', sn:'Simples', sn_hibrido:'Simples híbrido', mei:'MEI', pf:'Produtor PF', mix:'Composição'};
  var rpTd=function(v,extra,title){ return '<td style="text-align:right;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);'+(extra||'')+'"'+(title?' title="'+String(title).replace(/"/g,'&quot;')+'"':'')+'>'+v+'</td>'; };
  window.lhRpFornCel=function(r){
@@ -58281,7 +58303,8 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
  window.lhRpRecolherCel=function(y){
    var c=y&&y.conta; if(!Array.isArray(c)) return rpTd('—','color:var(--text2)');
    var rec=(+c[2]||0)+(+c[5]||0);
-   return rpTd(fmt(rec),'color:#e0a83a','IBS/CBS: débito '+fmt(c[0])+' − crédito '+fmt(c[1])+' = '+fmt(c[2])+(+c[3]?' · ICMS: '+fmt(c[3])+' − '+fmt(c[4])+' = '+fmt(c[5]):''));
+   var k=y.cc, cs=Array.isArray(k)?(k[1]==null?' (CBS débito '+fmt(k[0])+' · IBS débito '+fmt(k[3])+' · crédito do Simples '+fmt(k[6])+', sem divisão)':' (CBS '+fmt(k[0])+' − '+fmt(k[1])+' = '+fmt(k[2])+' · IBS '+fmt(k[3])+' − '+fmt(k[4])+' = '+fmt(k[5])+')'):'';   /* v976 */
+   return rpTd(fmt(rec),'color:#e0a83a','IBS/CBS: débito '+fmt(c[0])+' − crédito '+fmt(c[1])+' = '+fmt(c[2])+cs+(+c[3]?' · ICMS: '+fmt(c[3])+' − '+fmt(c[4])+' = '+fmt(c[5]):''));
  };
  window.lhRpCarteiraCel=function(y){
    var k=y&&y.cart; if(!Array.isArray(k)) return rpTd('—','color:var(--text2)');
@@ -58289,13 +58312,30 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
  };
  var rpTab=function(cab, linhas){ return '<table style="border-collapse:collapse;font-size:.78rem;white-space:nowrap;margin-top:6px"><thead><tr>'+cab.map(function(c,i){ return '<th style="text-align:'+(i?'right':'left')+';padding:5px 8px;color:var(--gold);font-size:.68rem;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.12);vertical-align:bottom">'+c+'</th>'; }).join('')+'</tr></thead><tbody>'+linhas.join('')+'</tbody></table>'; };
  var rpLin=function(cel, forte){ return '<tr'+(forte?' style="font-weight:700"':'')+'>'+cel.map(function(v,i){ return '<td style="text-align:'+(i?'right':'left')+';padding:4px 8px;border-bottom:1px solid rgba(255,255,255,.05)">'+v+'</td>'; }).join('')+'</tr>'; };
+ /* ★ v976 · CBS e IBS separados no quadro "Débito, crédito e a recolher". Os valores vêm do servidor no campo "cc" =
+    [CBS débito, CBS crédito, CBS a recolher, IBS débito, IBS crédito, IBS a recolher, crédito do Simples sem divisão].
+    Crédito de fornecedor do Simples não se divide (a partilha do DAS não segue a proporção das alíquotas): vai numa coluna
+    própria e a CBS e o IBS a recolher ficam só no total. Sem o campo (resposta antiga), a tabela volta ao formato IBS/CBS junto. */
+ window.lhRpContaTab=function(linhas){
+   var temCC=linhas.some(function(l){ return Array.isArray(l[2]); }), temSN=linhas.some(function(l){ return Array.isArray(l[2]) && l[2][2]==null; });
+   var m=function(v){ return v==null?'<span style="color:var(--text2)">—</span>':fmt(v); };
+   var L=linhas.map(function(l){ var c=l[1], k=l[2], cel;
+     if(temCC){ k=Array.isArray(k)?k:[null,null,null,null,null,null,null];
+       cel=[l[0], m(k[0]), m(k[1]), '<b>'+m(k[2])+'</b>', m(k[3]), m(k[4]), '<b>'+m(k[5])+'</b>'].concat(temSN?[m(k[6]||null)]:[]).concat(['<b style="color:#e0a83a">'+fmt(c[2])+'</b>']);
+     } else cel=[l[0], fmt(c[0]), fmt(c[1]), '<b>'+fmt(c[2])+'</b>'];
+     return rpLin(cel.concat([fmt(c[3]), fmt(c[4]), '<b>'+fmt(c[5])+'</b>', fmt(c[6]), fmt(c[7])]), l[3]); });
+   var cab=temCC?['ano','CBS débito','CBS crédito','CBS a recolher','IBS débito','IBS crédito','IBS a recolher'].concat(temSN?['crédito IBS + CBS do Simples <span style="text-transform:none;font-weight:400">(sem divisão)</span>']:[]).concat(['IBS + CBS a recolher']):['ano','IBS/CBS débito','IBS/CBS crédito','IBS/CBS a recolher'];
+   var h=rpTab(cab.concat(['ICMS débito','ICMS crédito','ICMS a recolher','PIS/COFINS débito','PIS/COFINS crédito']), L);
+   if(temSN) h+='<div style="font-size:.74rem;color:var(--text2);margin-top:4px">Compra de fornecedor do Simples: o crédito é o IBS + CBS pago dentro do DAS, que a lei não divide na proporção das alíquotas. Por isso ele aparece inteiro, e a CBS e o IBS a recolher desse item ficam só no total.</div>';
+   return h;
+ };
  var RP_CLI=[['lr','Lucro Real',0],['lp','Lucro Presumido',3],['sn','Simples',6],['sn_hibrido','Simples híbrido',9],['pf','Consumidor / PF',12]];
  window.lhRpContaExtraHTML=function(r,cfg){
    var y33=r.c.anos[2033]; if(!y33 || !Array.isArray(y33.conta)) return '';
    var h='<div style="margin-top:14px;font-size:.82rem;color:var(--gold);font-weight:700">Débito, crédito e a recolher por ano</div>';
-   var L=[]; [2026,2027,2028,2029,2030,2031,2032,2033].forEach(function(a){ var c=(r.c.anos[a]||{}).conta; if(!Array.isArray(c)) return;
-     L.push(rpLin([String(a), fmt(c[0]), fmt(c[1]), '<b>'+fmt(c[2])+'</b>', fmt(c[3]), fmt(c[4]), '<b>'+fmt(c[5])+'</b>', fmt(c[6]), fmt(c[7])], a===2033)); });
-   h+=rpTab(['ano','IBS/CBS débito','IBS/CBS crédito','IBS/CBS a recolher','ICMS débito','ICMS crédito','ICMS a recolher','PIS/COFINS débito','PIS/COFINS crédito'], L);
+   var L=[]; [2026,2027,2028,2029,2030,2031,2032,2033].forEach(function(a){ var y=r.c.anos[a]||{}, c=y.conta; if(!Array.isArray(c)) return;
+     L.push([String(a), c, y.cc, a===2033]); });   /* v976 */
+   h+='<div style="overflow-x:auto">'+window.lhRpContaTab(L)+'</div>';
    var fo=r.c.forn;
    if(fo) h+='<div style="font-size:.76rem;color:var(--text2);margin-top:6px">Fornecedor: <b style="color:#d4dce6">'+(RP_REG[fo.regime]||fo.regime)+'</b>'+(r.f.fornVia?' · lido da nota de compra ('+(r.f.fornVia==='ean'?'EAN':'NCM')+')':'')+' · crédito de IBS/CBS em 2033: '+pct(fo.credito_pct)+' da compra · custo líquido de hoje '+fmt(fo.custo_liq_hoje)+(r.c.custoEstimado?' · <span style="color:#e0a83a">custo estimado pelo % do preço</span>':'')+'</div>';
    [2027,2033].forEach(function(a){ var o=r.c.anos[a]; if(!o || !Array.isArray(o.cli)) return; var k=o.cli, p=(o.finalCli||0)-(o.ipi||0);
@@ -58312,10 +58352,13 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
    var com=rows.filter(function(r){ return r.c.anos[2033] && Array.isArray(r.c.anos[2033].conta); }); if(!com.length) return '';
    var base=0; com.forEach(function(r){ base+=r.c.anos[2033].hojeCli||0; }); if(!(base>0)) return '';
    var esc=100/base, L=[];
-   [2026,2027,2029,2031,2032,2033].forEach(function(a){ var s=[0,0,0,0,0,0,0,0]; com.forEach(function(r){ var c=(r.c.anos[a]||{}).conta; if(Array.isArray(c)) for(var i=0;i<8;i++) s[i]+=(+c[i]||0); });
-     L.push(rpLin([String(a)].concat(s.map(function(v,i){ return (i===2||i===5)?'<b>'+fmt(v*esc)+'</b>':fmt(v*esc); })), a===2033)); });
+   [2026,2027,2029,2031,2032,2033].forEach(function(a){ var s=[0,0,0,0,0,0,0,0], k=[0,0,0,0,0,0,0], tk=true, sn=false;
+     com.forEach(function(r){ var y=r.c.anos[a]||{}, c=y.conta; if(Array.isArray(c)) for(var i=0;i<8;i++) s[i]+=(+c[i]||0);
+       if(!Array.isArray(y.cc)){ tk=false; return; } if(y.cc[1]==null) sn=true; for(var j=0;j<7;j++) k[j]+=(+y.cc[j]||0); });
+     /* v976 · soma do catálogo: com algum item de fornecedor do Simples, o crédito dele vai na coluna própria e o a recolher da CBS e do IBS fica só no total */
+     L.push([String(a), s.map(function(v){ return v*esc; }), tk?(sn?[k[0]*esc,k[1]*esc,null,k[3]*esc,k[4]*esc,null,k[6]*esc]:k.map(function(v){ return v*esc; })):null, a===2033]); });
    var h='<div class="input-card" style="margin-top:12px"><h3 style="color:var(--gold)">Conta aberta do catálogo <span style="font-weight:400;font-size:.8rem;color:var(--text2)">· para cada R$ 100 vendidos hoje (um de cada item)</span></h3>';
-   h+='<div style="overflow-x:auto">'+rpTab(['ano','IBS/CBS débito','IBS/CBS crédito','IBS/CBS a recolher','ICMS débito','ICMS crédito','ICMS a recolher','PIS/COFINS débito','PIS/COFINS crédito'], L)+'</div>';
+   h+='<div style="overflow-x:auto">'+window.lhRpContaTab(L)+'</div>';
    var cart=com.filter(function(r){ return Array.isArray(r.c.anos[2033].cart); });
    if(cart.length){ var pv=0, pb=0; cart.forEach(function(r){ var y=r.c.anos[2033]; pv+=(y.hojeCli||0)*(+y.cart[0]||0)/100; pb+=(y.hojeCli||0); });
      h+='<div style="margin-top:8px;font-size:.84rem">Vendas protegidas em 2033: <b style="color:'+(pv/pb>=0.8?'#16c47c':pv/pb>=0.5?'#e0a83a':'#e05a4d')+'">'+pct(pv/pb*100)+'</b> <span style="color:var(--text2)">— a parte do faturamento em que o cliente aceita o preço calculado sem o custo dele subir (pela carteira informada).</span></div>'; }
@@ -58360,7 +58403,8 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
      var f={cod:it.cod, desc:it.desc, ncm:it.ncm||it.ncm_sug||'', nbs:it.nbs||'', tipo:it.tipo||(it.nbs?'S':'P'), trat:it.trat, status:s, fonte:it.fonte||'',
             preco:num(precoV), custo:num(x.custo), ipi:num(x.ipi), icms:num(x.icms), st:ehST(x.cstIcms), cstIcms:x.cstIcms||'', cstPis:x.cstPis||'',
             custoNovo:num(x.custoNovo), varCusto:num(x.varCusto), qtd:num(x.qtd), conc:num(x.conc), grupo:x.grupo||'', icmsSt:num(x.icmsSt), icmsStPct:num(x.icmsStPct), origem:x.origem||'', credPct:num(x.credPct), ean:String(x.ean||'').replace(/\D/g,'')};
-     try{ if(window.lhRpFornDoItem){ var _fx=window.lhRpFornDoItem(f); if(_fx){ f.fornecedor=_fx.fo; f.fornVia=_fx.via; } } }catch(_e){}   /* v966 · TR35: o fornecedor vem da nota de entrada (EAN, ou NCM de um regime só) */
+     try{ if(window.lhRpFornDoItem){ var _fx=window.lhRpFornDoItem(f); if(_fx){ f.fornecedor=_fx.fo; f.fornVia=_fx.via; } } }catch(_e){}
+     try{ if(window.lhRpCcNota){ var _cn=window.lhRpCcNota(f); if(_cn) f.ccNota=_cn; } }catch(_e){}   /* v978 · cClassTrib da nota de compra (só para mostrar) */   /* v966 · TR35: o fornecedor vem da nota de entrada (EAN, ou NCM de um regime só) */
      if(f.icmsSt>0 || f.icmsStPct>0) f.st=true;   /* v886: se a planilha traz o ST pago, o item é ST mesmo sem CST */
      var prontos={CONFIRMADO:1,REGRA_GERAL:1,BENEFICIO_IDENTIFICADO:1,SUGERIDO_DESCRICAO:1};
      /* bebida/cigarro: a base diz "adrem" por causa do IS, mas o IBS/CBS é percentual (integral) — precifica como cheia + IS marcado */
@@ -58581,7 +58625,7 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
    vis.slice(0,MAXV).forEach(function(r){ var y=r.c.anos, o=y[aT]||y[2033], y33=y[2033]; var mp=(typeof cmCclassPorFonte==='function')?cmCclassPorFonte(r.f.trat,r.f.fonte):['','']; var ri=rows.indexOf(r);
      var d=(cfg.estr==='preco')?o.dFica:o.dFinal;
      h+='<tr data-i="'+ri+'"><td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);white-space:normal;min-width:220px"><span class="pm-abre" onclick="lhPmConta('+ri+',this)" title="abrir a conta ano a ano" style="cursor:pointer;color:var(--gold);font-weight:800;margin-right:6px">▸</span>'+((AB && AB.classe && AB.classe[ri])?'<span title="curva ABC pela receita de hoje: '+(AB.posicao[ri])+'º item · acumulado '+pct(AB.acum_pct[ri])+'" style="display:inline-block;min-width:16px;text-align:center;font-size:.66rem;font-weight:800;border-radius:6px;padding:0 4px;margin-right:5px;background:'+({A:'rgba(22,196,124,.18)',B:'rgba(224,168,58,.18)',C:'rgba(128,128,128,.18)'})[AB.classe[ri]]+';color:'+({A:'#16a06a',B:'#c08a1e',C:'var(--text2)'})[AB.classe[ri]]+'">'+AB.classe[ri]+'</span>':'')+String(r.f.desc||'').slice(0,60)+'<span style="display:block;font-size:.68rem;color:var(--text2);margin-left:18px">'+r.f.cod+' · '+(r.f.nbs?'NBS '+r.f.nbs:'NCM '+r.f.ncm)+(r.f.grupo?' · '+r.f.grupo:'')+'</span></td>';
-     h+='<td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05)" title="'+String(r.f.fonte||'').replace(/"/g,'&quot;').slice(0,200)+'">'+(CM_TRAT_LABEL[r.f.trat]||r.f.trat)+(y33.is?' <span style="background:rgba(224,90,77,.18);color:#e05a4d;border:1px solid rgba(224,90,77,.4);padding:0 6px;border-radius:8px;font-size:.66rem;font-weight:800" title="Imposto Seletivo não somado — por produto/unidade; confira na calculadora do IS">+ IS</span>':'')+'<span style="display:block;font-family:ui-monospace,monospace;font-size:.68rem;color:var(--text2)">'+mp[0]+' · '+String(mp[1]).replace('*','')+' · '+pct(cmAliqAno(r.f.trat,2033))+' em 2033</span></td>';
+     h+='<td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05)" title="'+String(r.f.fonte||'').replace(/"/g,'&quot;').slice(0,200)+'">'+(CM_TRAT_LABEL[r.f.trat]||r.f.trat)+(y33.is?' <span style="background:rgba(224,90,77,.18);color:#e05a4d;border:1px solid rgba(224,90,77,.4);padding:0 6px;border-radius:8px;font-size:.66rem;font-weight:800" title="Imposto Seletivo não somado — por produto/unidade; confira na calculadora do IS">+ IS</span>':'')+'<span style="display:block;font-family:ui-monospace,monospace;font-size:.68rem;color:var(--text2)">'+mp[0]+' · '+String(mp[1]).replace('*','')+' · '+pct(cmAliqAno(r.f.trat,2033))+' em 2033</span>'+(window.lhRpCcSelo?window.lhRpCcSelo(r.f, mp[1]):'')+'</td>';   /* v978 */
      if(temCusto) h+=(window.lhRpFornCel?window.lhRpFornCel(r):'<td></td>');
      var _mh=r.c.mesHoje, _mo=o.mes;
      h+=TD(fmt(y33.hojeCli)+SUB((sn?'DAS':pct(r.c.icmsUsado)+' '+(r.f.tipo==='S'?'ISS':'ICMS'))+(r.f.st?' · ST':'')+(r.c.icmsEstimado?' · est.':'')),'',y33.ipiHoje?'inclui IPI '+fmt(y33.ipiHoje):'');
@@ -58854,6 +58898,7 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
      var _PRx=(window.PM_PRIO&&PM_PRIO.res)||null, _j=(_PRx&&Array.isArray(_PRx.itens))?_PRx.itens[_i]:null; o.conc=r.f.conc>0?r.f.conc:null;
      if(Array.isArray(_j)){ o.acao=((_PRx.textos||{})[_j[0]]||[_j[0]])[0]; o.acaoCod=_j[0]; o.lucroManter=_j[3]; o.varLucroPct=_j[5]; o.lucroConc=_j[6]; o.margemConc=_j[7]; o.acimaConc=_j[8]; o.impMes=_j[9]; o.prioAno=PM_PRIO.ano; }
      var _mp=(typeof cmCclassPorFonte==='function')?cmCclassPorFonte(r.f.trat,r.f.fonte):['','']; o.cst=String(_mp[0]||''); o.cclass=String(_mp[1]||'').replace('*','');   /* v876: CST e cClassTrib na mesma linha do preço */
+     o.cclass_nota=(r.f.ccNota?r.f.ccNota.cods.map(function(c){ return c[0]; }).join(' '):'');   /* v978 · o que as notas de compra declaram */
      ANOS.forEach(function(a){ var y=r.c.anos[a]; o['base'+a]=y.base; o['fora'+a]=y.fora; if(Array.isArray(y.ci)){ o['cbs'+a]=y.ci[0]; o['ibs'+a]=y.ci[1]; } o['ipi'+a]=y.ipi||0; o['final'+a]=y.finalCli; o['liq'+a]=y.liqPJ; o['fica'+a]=y.fica; o['custo'+a]=y.custo; o['lucro'+a]=y.lucro; if(Array.isArray(y.compra)){ o['aq'+a]=y.compra[3]; o['cr'+a]=y.compra[4]; } if(Array.isArray(y.mes)){ o['rm'+a]=y.mes[0]; o['lm'+a]=y.mes[1]; } o['dec'+a]=y.decidido; o['ficaDec'+a]=y.ficaDecidido; }); o.var33=y33.dFinal; o.sinal=y33.sinal; return o; });
  };
  window.lhPmCSV=function(){
@@ -58876,7 +58921,8 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
    var wb=new ExcelJS.Workbook(); wb.creator='Lionheart'; wb.created=new Date();
    var ws=wb.addWorksheet('Precificacao',{properties:{tabColor:{argb:GOLD}}});
    var temC=L.some(function(o){ return o.custoHoje!=null; }), temI=L.some(function(o){ return o.ipi>0; }), temV=L.some(function(o){ return o.custoNovo!=null; }), temG=L.some(function(o){ return !!o.grupo; }), temR=L.some(function(o){ return Math.abs(o.repasse-100)>0.001; });
-   var cols=['Codigo','Descricao','NCM_NBS'].concat(temG?['Grupo']:[]).concat(['Tratamento','CST_IBS_CBS','cClassTrib','ICMS_ISS_%','PIS_COFINS_%']).concat(temI?['IPI_hoje_R$']:[]).concat(['Preco_hoje','Fica_hoje']).concat(temC?['Custo_hoje','Lucro_hoje']:[]).concat(temV?['Custo_novo','Var_custo_%','Preco_hoje_custo_novo','Preco_2033_so_imposto']:[]);
+   var temNC=L.some(function(o){ return !!o.cclass_nota; });   /* v978 */
+   var cols=['Codigo','Descricao','NCM_NBS'].concat(temG?['Grupo']:[]).concat(['Tratamento','CST_IBS_CBS','cClassTrib']).concat(temNC?['cClassTrib_nota_compra']:[]).concat(['ICMS_ISS_%','PIS_COFINS_%']).concat(temI?['IPI_hoje_R$']:[]).concat(['Preco_hoje','Fica_hoje']).concat(temC?['Custo_hoje','Lucro_hoje']:[]).concat(temV?['Custo_novo','Var_custo_%','Preco_hoje_custo_novo','Preco_2033_so_imposto']:[]);
    if(temR) cols.push('Repasse_%','Repasse_origem');
    var temCr=temC && L.some(function(o){ return o.credPct!=null && (o.credPct<99.99 || /linha|origem|grupo|geral/.test(o.credOrigem)); }), temSt=L.some(function(o){ return o.stValor>0; });   /* v887 */
    var temQ=temC && L.some(function(o){ return o.aqHoje!=null; });   /* v968 */
@@ -58888,7 +58934,7 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
    if(temC) cols.push('Credito_2033_R$'); if(temCr) cols.push('Credito_%','Credito_origem'); if(temSt) cols.push('ICMS_ST_R$');
    ANOS.forEach(function(a){ cols.push('Por_dentro_'+a,'IBS_CBS_'+a,'CBS_'+a,'IBS_'+a); if(temI) cols.push('IPI_'+a); cols.push('Preco_final_'+a,'Liquido_PJ_'+a,'Fica_'+a); if(temQ) cols.push('Aquisicao_'+a,'Credito_'+a); if(temM) cols.push('Receita_mes_'+a,'Lucro_mes_'+a); if(temC) cols.push((temQ?'Custo_liquido_':'Custo_')+a,'Lucro_'+a); if(temR) cols.push('Preco_decidido_'+a,'Fica_decidido_'+a); }); cols.push('Var_2033_R$','Sinal');
    ws.addRow(cols); ws.getRow(1).eachCell(hdr);
-   L.forEach(function(o){ var r=[o.cod,o.desc,o.ncm]; if(temG) r.push(o.grupo); r.push(o.trat,o.cst,o.cclass,o.icms+(o.icmsEst?' (est.)':''),o.pis); if(temI) r.push(o.ipi); r.push(o.hojeCli,o.fica); if(temC) r.push(o.custoHoje,o.lucroHoje);
+   L.forEach(function(o){ var r=[o.cod,o.desc,o.ncm]; if(temG) r.push(o.grupo); r.push(o.trat,o.cst,o.cclass); if(temNC) r.push(o.cclass_nota||''); r.push(o.icms+(o.icmsEst?' (est.)':''),o.pis); if(temI) r.push(o.ipi); r.push(o.hojeCli,o.fica); if(temC) r.push(o.custoHoje,o.lucroHoje);
      if(temV) r.push(o.custoNovo!=null?o.custoNovo:null, (o.custoNovo!=null&&o.custoHoje)?Math.round((o.custoNovo/o.custoHoje-1)*10000)/100:null, o.soCusto!=null?o.soCusto:o.hojeCli, o.soImposto33!=null?o.soImposto33:o.final2033);
      if(temR) r.push(o.repasse,o.repOrigem);
      if(temQ) r.push(o.aqHoje,o.crHoje);
@@ -58930,13 +58976,17 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
 
  /* ── entrada pela própria aba: mesmo leitor do Classificador, depois precifica ── */
  window.lhPmUsarClassificado=function(){ window.lhPmRender(); };
+ /* v977 · o mesmo leitor de sempre, agora com nome: a planilha reaberta do cliente passa por aqui também (e não é guardada de novo) */
+ window.lhPmLerPlanilha=function(f, reaberta){ var rd=new FileReader();
+   rd.onload=function(ev){ try{ if(typeof XLSX==='undefined'){ alert('Leitor de planilha não carregou'); return; }
+     var wb=XLSX.read(ev.target.result,{type:'binary'}); var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});
+     if(!reaberta){ try{ if(window.LH_DOCS_CLI) window.LH_DOCS_CLI.aoPlanilha(f); }catch(_e){} }
+     window._PM_APOS=true; window.lhPmEsperar(); cmProcessar(rows); }catch(err){ alert('Erro ao ler: '+err.message); } };
+   rd.readAsBinaryString(f); };
  function wire(){
+   try{ if(window.LH_DOCS_CLI) window.LH_DOCS_CLI.render(); }catch(_e){}   /* v977 · última planilha deste cliente */
    var inp=document.getElementById('pm-file'); if(!inp||inp._wired) return; inp._wired=true;
-   inp.addEventListener('change',function(e){ var f=e.target.files[0]; if(!f) return; var rd=new FileReader();
-     rd.onload=function(ev){ try{ if(typeof XLSX==='undefined'){ alert('Leitor de planilha não carregou'); return; }
-       var wb=XLSX.read(ev.target.result,{type:'binary'}); var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});
-       window._PM_APOS=true; window.lhPmEsperar(); cmProcessar(rows); }catch(err){ alert('Erro ao ler: '+err.message); } finally{ try{ e.target.value=''; }catch(_e){} } };
-     rd.readAsBinaryString(f); });
+   inp.addEventListener('change',function(e){ var f=e.target.files[0]; if(!f) return; window.lhPmLerPlanilha(f); try{ e.target.value=''; }catch(_e){} });
    var drop=document.getElementById('pm-drop');
    if(drop){ ['dragover','dragenter'].forEach(function(ev){ drop.addEventListener(ev,function(e){ e.preventDefault(); this.style.borderColor='#c9a227'; }); });
      drop.addEventListener('drop',function(e){ e.preventDefault(); var f=e.dataTransfer.files[0]; if(f){ inp.files=e.dataTransfer.files; inp.dispatchEvent(new Event('change')); } }); }
@@ -58967,6 +59017,93 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
    return r; };
  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',wire); else wire();
 })();
+</script>
+<script>
+/* ═══ ★ v977 · TR36 · entrega 6 · DOCUMENTOS GUARDADOS POR CLIENTE — só neste navegador ═══
+   Antes: as notas, o SPED, o PGDAS e a planilha do catálogo ficavam só na memória e sumiam no F5 ou na troca de cliente.
+   Agora: o arquivo que entra na Importação Inteligente (e a última planilha da Precificação em Massa) fica guardado no
+   IndexedDB DESTE navegador, separado por cliente (raiz do CNPJ; sem CNPJ, pelo cadastro). Para usar de novo, "Reabrir"
+   passa os mesmos arquivos pelo mesmo leitor de sempre.
+   Regras: nada sai do computador — nem o arquivo, nem o CNPJ, nem o nome (nenhuma chamada de rede aqui). Nenhuma conta:
+   só guarda e devolve. Arquivo acima de 40 MB não é guardado; o total por navegador para em 400 MB. */
+window.LH_DOCS_CLI=(function(){
+  var DB='lh_docs_cliente', ST='arquivos', MAX=40*1048576, TETO=400*1048576, LEIA=/\.(zip|xml|txt|csv|pdf|sped|efd|ecf)$/i;
+  var dbP=null;
+  function abrir(){ if(dbP) return dbP;
+    dbP=new Promise(function(res,rej){ var I=window.indexedDB; if(!I) return rej(new Error('este navegador não guarda arquivos (sem IndexedDB)'));
+      var q=I.open(DB,1);
+      q.onupgradeneeded=function(){ var d=q.result; if(!d.objectStoreNames.contains(ST)){ var s=d.createObjectStore(ST,{keyPath:'id'}); s.createIndex('chave','chave',{unique:false}); } };
+      q.onsuccess=function(){ res(q.result); }; q.onerror=function(){ dbP=null; rej(q.error||new Error('IndexedDB recusou')); }; });
+    return dbP; }
+  function req(r){ return new Promise(function(res,rej){ r.onsuccess=function(){ res(r.result); }; r.onerror=function(){ rej(r.error); }; }); }
+  function so(x){ return String(x||'').replace(/\D/g,''); }
+  /* de quem é: o cliente escolhido; sem CNPJ no cadastro, o dono dos documentos da Central; sem nada, o id do cadastro */
+  function chave(){ var en=null; try{ en=window.LH_GRUPO&&LH_GRUPO.getEntidadeAtiva?LH_GRUPO.getEntidadeAtiva():null; }catch(_e){}
+    var c=so(en&&en.cnpj); if(c.length>=8) return 'cnpj:'+c.slice(0,8);
+    try{ var P=window.LH_CENTRAL_PROC; c=so(P&&P.cnpj); if(c.length>=8) return 'cnpj:'+c.slice(0,8); }catch(_e){}
+    if(en&&en.id) return 'ent:'+en.id;
+    return ''; }
+  function nomeCli(){ try{ var en=window.LH_GRUPO&&LH_GRUPO.getEntidadeAtiva?LH_GRUPO.getEntidadeAtiva():null; if(en&&en.nome) return String(en.nome); }catch(_e){} return 'este cliente'; }
+  function buf(f){ if(f&&typeof f.arrayBuffer==='function') return f.arrayBuffer();
+    return new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(){ res(r.result); }; r.onerror=function(){ rej(r.error); }; r.readAsArrayBuffer(f); }); }
+  function todos(){ return abrir().then(function(d){ return req(d.transaction(ST).objectStore(ST).getAll()); }); }
+  function doCliente(k){ return abrir().then(function(d){ return req(d.transaction(ST).objectStore(ST).index('chave').getAll(k)); }); }
+  /* guarda uma lista de arquivos para o cliente k (tipo 'doc' ou 'planilha'; da planilha fica só a última) */
+  function guardar(lista, k, tipo){ tipo=tipo||'doc'; if(!k) return Promise.resolve({ok:false, motivo:'sem cliente escolhido'});
+    var fs=[].slice.call(lista||[]).filter(function(f){ return f && f.name && (tipo==='planilha' || LEIA.test(f.name)); });
+    var grandes=fs.filter(function(f){ return (f.size||0)>MAX; }); fs=fs.filter(function(f){ return (f.size||0)<=MAX; });
+    if(!fs.length) return Promise.resolve({ok:true, n:0, grandes:grandes.length});
+    return todos().then(function(ts){ var usado=0; ts.forEach(function(t){ usado+=t.bytes||0; });
+      var novo=0; fs.forEach(function(f){ novo+=f.size||0; });
+      if(usado+novo>TETO) return {ok:false, motivo:'espaço deste navegador para documentos guardados acabou (400 MB) — apague os de um cliente antigo', grandes:grandes.length};
+      return Promise.all(fs.map(buf)).then(function(bs){ return abrir().then(function(d){ var tx=d.transaction(ST,'readwrite'), s=tx.objectStore(ST), agora=Date.now();
+        fs.forEach(function(f,i){ s.put({id: tipo==='planilha' ? k+'|planilha' : k+'|'+f.name+'|'+(f.size||0)+'|'+(f.lastModified||0), chave:k, tipo:tipo, nome:f.name, bytes:f.size||bs[i].byteLength, mod:f.lastModified||0, guardado:agora, dados:bs[i]}); });
+        return new Promise(function(res,rej){ tx.oncomplete=function(){ res({ok:true, n:fs.length, grandes:grandes.length}); }; tx.onerror=function(){ rej(tx.error); }; tx.onabort=function(){ rej(tx.error||new Error('gravação cancelada')); }; }); }); }); })
+      .catch(function(e){ return {ok:false, motivo:String(e&&e.message||e)}; }); }
+  function arquivo(r){ return new File([r.dados], r.nome, {lastModified:r.mod||Date.now()}); }
+  function apagar(k, tipo){ return doCliente(k).then(function(rs){ return abrir().then(function(d){ var tx=d.transaction(ST,'readwrite'), s=tx.objectStore(ST);
+    rs.forEach(function(r){ if(!tipo || r.tipo===tipo) s.delete(r.id); });
+    return new Promise(function(res,rej){ tx.oncomplete=function(){ res(true); }; tx.onerror=function(){ rej(tx.error); }; }); }); }); }
+  var mb=function(b){ return (b/1048576).toLocaleString('pt-BR',{maximumFractionDigits:1})+' MB'; };
+  var dt=function(t){ try{ return new Date(t).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(_e){ return ''; } };
+  var esc=function(s){ return String(s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  /* cartões: na Central (documentos) e na Precificação em Massa (última planilha) */
+  function render(){ var k=chave(), bc=document.getElementById('lh-docs-cli'), bp=document.getElementById('pm-docs-cli');
+    if(!bc && !bp) return Promise.resolve();
+    var vazio='<div style="margin-top:10px;font-size:.78em;color:#8a97a8">🗄 Os documentos que entram aqui ficam <b>guardados neste navegador</b>, separados por cliente, para reabrir depois sem procurar os arquivos de novo. Nada sai do seu computador.</div>';
+    if(!k){ if(bc) bc.innerHTML=vazio; if(bp) bp.innerHTML=''; return Promise.resolve(); }
+    return doCliente(k).then(function(rs){
+      var ds=rs.filter(function(r){ return r.tipo==='doc'; }).sort(function(a,b){ return b.guardado-a.guardado; }), pl=rs.filter(function(r){ return r.tipo==='planilha'; })[0];
+      if(bc){ if(!ds.length) bc.innerHTML=vazio; else { var tot=0, ult=0; ds.forEach(function(r){ tot+=r.bytes||0; ult=Math.max(ult,r.guardado||0); });
+        bc.innerHTML='<div style="margin-top:12px;padding:10px 12px;border:1px solid rgba(62,207,142,.35);border-radius:10px;background:rgba(62,207,142,.05);font-size:.84em">'
+          +'🗄 <b style="color:#3ecf8e">Documentos guardados de '+esc(nomeCli())+'</b> <span style="color:#8a97a8">(neste navegador)</span>: <b>'+ds.length.toLocaleString('pt-BR')+'</b> arquivo(s) · '+mb(tot)+' · último em '+dt(ult)
+          +'<div style="margin-top:8px"><button type="button" onclick="LH_DOCS_CLI.reabrir()" style="cursor:pointer;background:#3ecf8e;border:none;color:#0b1a12;border-radius:8px;padding:6px 14px;font-weight:800;font-size:.95em">↺ Reabrir os documentos</button> '
+          +'<button type="button" onclick="LH_DOCS_CLI.apagarCliente()" style="cursor:pointer;background:transparent;border:1px solid rgba(224,90,77,.5);color:#e05a4d;border-radius:8px;padding:6px 12px;font-size:.9em">Apagar os guardados deste cliente</button></div>'
+          +'<details style="margin-top:6px"><summary style="cursor:pointer;color:#8a97a8">ver a lista</summary><div style="max-height:180px;overflow:auto;margin-top:4px">'
+          +ds.map(function(r){ return '<div style="color:#a8b3c2">'+esc(r.nome)+' <span style="color:#6b7787">· '+mb(r.bytes||0)+' · '+dt(r.guardado)+'</span></div>'; }).join('')+'</div></details></div>'; } }
+      if(bp){ bp.innerHTML=pl?'<div style="margin:-4px 0 12px;font-size:.84rem;text-align:center">🗄 Última planilha de '+esc(nomeCli())+' guardada neste navegador: <b>'+esc(pl.nome)+'</b> <span style="color:var(--text2)">('+dt(pl.guardado)+')</span> · <a href="#" onclick="LH_DOCS_CLI.reabrirPlanilha();return false" style="color:var(--gold);font-weight:700">reabrir</a></div>':''; }
+    }).catch(function(e){ if(bc) bc.innerHTML='<div style="margin-top:10px;font-size:.78em;color:#8a97a8">Este navegador não guarda os arquivos ('+esc(e&&e.message||e)+'). Os números da Central continuam guardados como antes.</div>'; }); }
+  var reabrindo=false;
+  return {
+    chave:chave, guardar:guardar, render:render,
+    listar:function(){ var k=chave(); return k?doCliente(k):Promise.resolve([]); },
+    /* chamado pelo porteiro depois que lê um lote: espera a Central saber de quem é e guarda */
+    aoImportar:function(lista){ if(reabrindo) return; var fs=[].slice.call(lista||[]);
+      setTimeout(function(){ guardar(fs, chave(), 'doc').then(function(r){ render(); if(r && r.ok===false && r.motivo && typeof mostrarToast==='function') mostrarToast('Documentos não guardados: '+r.motivo,'warning'); }); }, 2500); },
+    aoPlanilha:function(f){ guardar([f], chave(), 'planilha').then(function(){ render(); }); },
+    reabrir:function(){ var k=chave(); if(!k) return Promise.resolve(0);
+      return doCliente(k).then(function(rs){ var ds=rs.filter(function(r){ return r.tipo==='doc'; }); if(!ds.length) return 0;
+        reabrindo=true; try{ window.LH_PORTEIRO.processarFiles(ds.map(arquivo)); } finally{ setTimeout(function(){ reabrindo=false; }, 50); }
+        return ds.length; }); },
+    reabrirPlanilha:function(){ var k=chave(); if(!k) return Promise.resolve(false);
+      return doCliente(k).then(function(rs){ var pl=rs.filter(function(r){ return r.tipo==='planilha'; })[0]; if(!pl || !window.lhPmLerPlanilha) return false;
+        reabrindo=true; try{ window.lhPmLerPlanilha(arquivo(pl), true); } finally{ reabrindo=false; } return true; }); },
+    apagarCliente:function(){ var k=chave(); if(!k) return Promise.resolve(false);
+      if(typeof confirm==='function' && !confirm('Apagar deste navegador os documentos guardados de '+nomeCli()+'? Os números já aplicados nas telas continuam.')) return Promise.resolve(false);
+      return apagar(k).then(function(){ render(); return true; }); }
+  };
+})();
+document.addEventListener('lh:clienteMudou', function(){ setTimeout(function(){ try{ LH_DOCS_CLI.render(); }catch(_e){} }, 700); });
 </script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -69909,6 +70046,7 @@ window.LH_PORTEIRO={
       window.LH_PORTEIRO.processarFiles(a); try{ input.value=''; }catch(_e){} },
     processarFiles:function(lista){
       var fs=lista; if(!fs||!fs.length) return;
+      try{ if(window.LH_DOCS_CLI) window.LH_DOCS_CLI.aoImportar(fs); }catch(_e){}   /* v977 · guarda os arquivos deste cliente neste navegador */
       var box=document.getElementById('lh-porteiro-result');
       if(box) box.innerHTML='<div style="margin-top:12px;color:#8a97a8;font-size:.85em">⏳ Lendo '+fs.length+' arquivo(s) e identificando cada um...</div>';
       /* ★ v955 · NADA SOME (regra do Ricardo): todo arquivo recebido aparece na lista com estado.
@@ -70450,7 +70588,7 @@ window.LH_PORTEIRO={
       +'<label style="display:inline-block;margin-top:8px;padding:7px 14px;border:1px solid rgba(184,148,31,.45);border-radius:8px;cursor:pointer;color:#E8C24B;font-size:.8em;font-weight:700">'
       +'<input type="file" webkitdirectory multiple onchange="LH_PORTEIRO.processar(this)" style="display:none">'
       +'📂 ou clique aqui para escolher uma PASTA inteira</label>'
-      +'<div id="lh-porteiro-result"></div>'
+      +'<div id="lh-porteiro-result"></div><div id="lh-docs-cli"></div>'
       +'<div style="margin-top:10px;text-align:center"><button type="button" onclick="if(window.lhLimparCentral){lhLimparCentral();} var r=document.getElementById(\'lh-porteiro-result\'); if(r)r.innerHTML=\'<div style=\\\'margin-top:10px;color:#10b981;font-size:.84em\\\'>\\u2713 Tudo limpo. Solte os documentos do pr\\u00f3ximo cliente.</div>\';" style="padding:7px 16px;background:transparent;border:1px solid rgba(148,163,184,.4);border-radius:8px;color:#94a3b8;font-size:.8rem;cursor:pointer">&#128465; Limpar tudo (novo cliente)</button></div>'
       +'<div style="margin-top:12px;font-size:.76em;color:#8a97a8;text-align:center">os campos individuais ficam recolhidos abaixo — use só para um documento solto ↓</div>';
     /* inserir no topo do conteúdo da página */
@@ -70476,6 +70614,7 @@ var alvo=page.querySelector('.page-content')||page;
       }
     }catch(_e){}
     alvo.insertBefore(card, alvo.firstChild);
+    try{ if(window.LH_DOCS_CLI) window.LH_DOCS_CLI.render(); }catch(_e){}   /* v977 */
   }
   if(document.readyState!=='loading') montar(); else document.addEventListener('DOMContentLoaded',montar);
   setTimeout(montar,1000);
