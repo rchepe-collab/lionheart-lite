@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v974";</script>
+<body><script>window.LH_VERSAO="v975";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -52242,7 +52242,8 @@ function cmProcessar(rows){
   var iDesc=head.findIndex(function(h){return h.indexOf('desc')>=0||h.indexOf('produto')>=0||h.indexOf('nome')>=0;});
   var iCod=HN.findIndex(function(h,i){ return i!==iNCM && /^(id|iditem|idproduto|codigo|cod|coditem|codigoitem|codproduto|codigoproduto|sku|referencia|ref|codigointerno|codinterno)$/.test(h); });
   if(iCod<0) iCod=head.findIndex(function(h,i){ return i!==iNCM && HN[i].indexOf('fiscal')<0 && (h.indexOf('cod')>=0||h.indexOf('sku')>=0||h.indexOf('ref')>=0); });
-  var iPreco=HN.findIndex(function(h){ return /^(preco|precovenda|precodevenda|valorvenda|vlrvenda|pv|valorunitario|precounit|precounitario|precotabela)$/.test(h) || (h.indexOf('preco')>=0 && h.indexOf('custo')<0 && h.indexOf('compra')<0); });
+  var _ehConc=function(h){ return /concorr|teto|mercado/.test(h); };   /* v975 · o preço do concorrente não é o preço de venda */
+  var iPreco=HN.findIndex(function(h){ return !_ehConc(h) && (/^(preco|precovenda|precodevenda|valorvenda|vlrvenda|pv|valorunitario|precounit|precounitario|precotabela)$/.test(h) || (h.indexOf('preco')>=0 && h.indexOf('custo')<0 && h.indexOf('compra')<0)); });
   /* ★ v871 · CUSTO_NOVO (R$) e VAR_CUSTO (%) por linha, GRUPO para a variação por grupo — o custo que mudou viaja na ficha */
   var _ehNovo=function(h){ return /novo|futur|propost|reajust|negociad|depois|2027|2033/.test(h); };   /* v969: "custo depois" */
   var iCusto=HN.findIndex(function(h){ return h.indexOf('custo')>=0 && !_ehNovo(h) && h.indexOf('var')!==0; });
@@ -52258,8 +52259,10 @@ function cmProcessar(rows){
   var iEan=HN.findIndex(function(h){ return /^(ean|ean13|gtin|cean|codbarras|codigodebarras|codbarra|barras)$/.test(h); });
   /* ★ v972 · TR36 · quantidade vendida por mês (QTD) — o impacto em R$/mês e a curva ABC saem do servidor */
   var iQtd=HN.findIndex(function(h){ return /^(qtd|qtde|qt|quantidade|qtdmes|qtdemes|quantidademes|qtdmensal|quantidademensal|qtdvendida|qtdvendidames|quantidadevendida|quantidadevendidames|vendasmes|unidadesmes|unidadesvendidas|volumemes|volumemensal|giro|giromes)$/.test(h); });   /* v966 · TR35: casa o item com a nota de compra */
+  /* ★ v975 · TR36 · entrega 2 · preço do concorrente (o teto do mercado), por item: CONCORRENTE, PRECO_CONCORRENTE, TETO, PRECO_MERCADO */
+  var iConc=HN.findIndex(function(h){ return /^(concorrente|precoconcorrente|precodoconcorrente|precoconc|conc|teto|precoteto|precomercado|precodemercado|mercado)$/.test(h) || (h.indexOf('concorr')>=0); });
   var iCred=HN.findIndex(function(h){ return /^(cred|credpct|credito|creditopct|creditavel|creditavelpct|pctcred|pctcredito|comcredito)$/.test(h) || (h.indexOf('cred')===0 && h.indexOf('pct')>=0); });
-  var iPrecos=[]; HN.forEach(function(h,i){ if(i!==iCusto && (h.indexOf('preco')>=0||h.indexOf('valorvenda')>=0||h.indexOf('vlrvenda')>=0||h.indexOf('tabela')>=0) && h.indexOf('custo')<0 && h.indexOf('compra')<0) iPrecos.push(i); });
+  var iPrecos=[]; HN.forEach(function(h,i){ if(i!==iCusto && i!==iConc && !_ehConc(h) && (h.indexOf('preco')>=0||h.indexOf('valorvenda')>=0||h.indexOf('vlrvenda')>=0||h.indexOf('tabela')>=0) && h.indexOf('custo')<0 && h.indexOf('compra')<0) iPrecos.push(i); });
   var iIcms=HN.findIndex(function(h){ return (h.indexOf('aliq')>=0 && (h.indexOf('icms')>=0||h.indexOf('iss')>=0)) || h==='icms' || h==='iss' || h==='aliquotaicms'; });
   var iCstIcms=HN.findIndex(function(h){ return (h.indexOf('cst')>=0 && h.indexOf('icms')>=0) || h.indexOf('csosn')>=0; });
   var iCstPis=HN.findIndex(function(h){ return h.indexOf('cst')>=0 && (h.indexOf('pis')>=0||h.indexOf('cofins')>=0); });
@@ -52273,7 +52276,7 @@ function cmProcessar(rows){
     _it.x={preco:iPreco>=0?row[iPreco]:null, custo:iCusto>=0?row[iCusto]:null, ipi:iIPI>=0?row[iIPI]:null, icms:iIcms>=0?row[iIcms]:null, cstIcms:iCstIcms>=0?row[iCstIcms]:'', cstPis:iCstPis>=0?row[iCstPis]:'',
            custoNovo:iCustoNovo>=0?row[iCustoNovo]:null, varCusto:iVarCusto>=0?row[iVarCusto]:null, grupo:iGrupo>=0?String(row[iGrupo]==null?'':row[iGrupo]).trim():'',
            icmsSt:(iSt>=0&&!stEhPct)?row[iSt]:null, icmsStPct:(iSt>=0&&stEhPct)?row[iSt]:null,
-           origem:iOrigem>=0?String(row[iOrigem]==null?'':row[iOrigem]).trim():'', credPct:iCred>=0?row[iCred]:null, ean:iEan>=0?String(row[iEan]==null?'':row[iEan]).trim():'', qtd:iQtd>=0?row[iQtd]:null};
+           origem:iOrigem>=0?String(row[iOrigem]==null?'':row[iOrigem]).trim():'', credPct:iCred>=0?row[iCred]:null, ean:iEan>=0?String(row[iEan]==null?'':row[iEan]).trim():'', qtd:iQtd>=0?row[iQtd]:null, conc:iConc>=0?row[iConc]:null};
     if(iPrecos.length>1){ _it.x.precos={}; iPrecos.forEach(function(i){ _it.x.precos[String(rows[0][i])]=row[i]; }); }
     if(iNBS>=0 && iNBS!==iNCM && row[iNBS] && !String(_it.ncm||'').replace(/\D/g,'')) { _it.nbs=String(row[iNBS]).trim(); _it.ncm=''; }
     else if(iNBS>=0 && iNBS===iNCM){ _it.nbs=String(row[iNBS]||'').trim(); _it.ncm=''; }
@@ -58228,6 +58231,46 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    h+='<div style="margin-top:6px;font-size:.78rem"><label style="cursor:pointer"><input type="checkbox" '+(window.PM_ORDEM==='abc'?'checked':'')+' onchange="window.PM_ORDEM=this.checked?\'abc\':\'\';lhPmRender()"> ordenar a tabela pelo faturamento (A primeiro)</label></div>';
    return h;
  };
+/* ★ v975 · TR36 · entrega 2 · preço do concorrente e matriz impacto × risco. O servidor (fn_prioridade_preco) faz a conta
+   do lucro mantendo o preço e no preço do concorrente (a mesma do preço decidido) e a tabela de decisão; a tela só pede e escreve. */
+window.PM_PRIO={k:null, res:null, voo:null, erro:null, ano:null};
+window.PM_PRIO_COR={ganho:'#16c47c', ja:'#e0a83a', parcial:'#e05a4d', segurar:'#a78bfa', monitorar:'#8aa0b8'};
+window.lhPmPrioPayload=function(rows, aT){
+  return rows.map(function(r){ var y=r.c.anos[aT]||{}; return [y.hojeCli, y.finalCli, y.lucroHoje, y.custo, y.ipi||0, y.tFora, y.tDentro, r.c.qtd!=null?+r.c.qtd:null, r.f.conc>0?r.f.conc:null]; });
+};
+window.lhPmPrio=function(rows, i){ var P=window.PM_PRIO; if(!P.res || !Array.isArray(P.res.itens)) return null; var j=P.res.itens[i]; return Array.isArray(j)?j:null; };
+window.lhPmPrioHTML=function(rows, cfg){
+  var aT=+(window.PM_ANO_TAB||2033), pl=window.lhPmPrioPayload(rows,aT);
+  var c={leitura:cfg.leitura||'fisco'}; if(cfg.clientes) c.clientes=cfg.clientes;   /* a fatia sem crédito sai no servidor */
+  var k=aT+'|'+JSON.stringify(c)+'|'+JSON.stringify(pl), P=window.PM_PRIO;
+  if(P.k!==k){
+    if(P.voo!==k && window.LH_PONTE && typeof LH_PONTE.chamar==='function'){ P.voo=k;
+      LH_PONTE.chamar('prioridade-preco',{itens:pl, cfg:c}).then(function(res){ if(P.voo!==k) return; P.voo=null;
+        if(res && res.ok && res.resultado && res.resultado.ok!==false){ P.k=k; P.res=res.resultado; P.erro=null; P.ano=aT; } else { P.k=k; P.res=null; P.ano=aT; P.erro=(res && (res.motivo || (res.resultado && res.resultado.motivo))) || 'sem resposta do servidor'; }
+        try{ window.lhPmRender(); }catch(_e){} }); }
+    return '<div class="kpi-card" data-lh-espera="1" style="margin-top:10px"><div class="kpi-label">Calculando a prioridade de cada item no servidor…</div></div>';
+  }
+  if(!P.res) return '<div class="kpi-card" style="margin-top:10px"><div class="kpi-label">Prioridade e plano de ação</div><div class="kpi-sub">'+String(P.erro||'')+'</div></div>';
+  var R=P.res, sc=(R.cortes||{}).sem_credito_pct, A=R.acoes||{}, S=R.impacto_mes_por_acao||{}, T=R.textos||{}, COR=window.PM_PRIO_COR, temQ=window.lhPmTemQtd&&window.lhPmTemQtd(rows), f=window.PM_PRIO_FILTRO||'';
+  var h='<div style="margin-top:14px;font-weight:700;color:var(--gold)">Prioridade e plano de ação — '+aT+' <span style="font-weight:400;color:var(--text2);font-size:.8rem">(impacto: manter o preço de hoje muda o lucro do item em '+pct(R.cortes.impacto_lucro_pct)+' ou mais'+(R.itens_sem_custo?'; sem custo, o preço da conta difere do de hoje em '+pct(R.cortes.impacto_preco_pct)+' ou mais':'')+' · risco: acima do concorrente'+(sc!=null?', ou preço subindo com '+pct(sc)+' das vendas a quem não recupera o imposto':' (sem a carteira de clientes, o risco olha só o concorrente)')+')</span></div>';
+  h+='<div class="kpi-grid" style="margin-top:6px">';
+  ['ja','parcial','ganho','segurar','monitorar'].forEach(function(a){ var t=T[a]||[a,'']; var on=(f===a);
+    h+='<div class="kpi-card" onclick="window.PM_PRIO_FILTRO=(window.PM_PRIO_FILTRO===\''+a+'\'?\'\':\''+a+'\');lhPmRender()" title="'+String(t[1]).replace(/"/g,'&quot;')+' — clique para filtrar a tabela" style="cursor:pointer;border-color:'+(on?COR[a]:'rgba(255,255,255,.08)')+';'+(on?'box-shadow:0 0 0 1px '+COR[a]:'')+'"><div class="kpi-label" style="color:'+COR[a]+'">'+t[0]+'</div><div class="kpi-value" style="font-size:1.1rem">'+(+A[a]||0).toLocaleString('pt-BR')+' <span style="font-size:.7rem;color:var(--text2)">itens</span></div>'+(temQ?'<div class="kpi-sub">mantendo o preço: '+((+S[a]||0)>0?'+':'')+'R$ '+fmt(+S[a]||0)+'/mês</div>':'')+'</div>'; });
+  h+='</div>';
+  if(R.itens_com_concorrente) h+='<div style="margin-top:6px;font-size:.84rem">Preço do concorrente em <b>'+R.itens_com_concorrente.toLocaleString('pt-BR')+'</b> itens · <b style="color:'+(R.itens_acima_concorrente?'#e05a4d':'#16c47c')+'">'+R.itens_acima_concorrente.toLocaleString('pt-BR')+'</b> ficam acima dele com a estratégia escolhida.</div>';
+  else h+='<div style="margin-top:6px;font-size:.78rem;color:var(--text2)">Sem a coluna CONCORRENTE na planilha (o preço final de um concorrente por item), o risco usa só a carteira de clientes.</div>';
+  if(f) h+='<div style="margin-top:4px;font-size:.78rem">Tabela filtrada em <b style="color:'+COR[f]+'">'+(T[f]||[f])[0]+'</b> · <a href="#" onclick="window.PM_PRIO_FILTRO=\'\';lhPmRender();return false" style="color:var(--gold)">mostrar todos</a></div>';
+  return h;
+};
+window.lhPmPrioCels=function(rows, r, TD, SUB, temConc){
+  var j=window.lhPmPrio(rows, rows.indexOf(r)), P=window.PM_PRIO, T=(P.res&&P.res.textos)||{}, COR=window.PM_PRIO_COR, h='';
+  if(!j) return TD('—','color:var(--text2)')+(temConc?TD('—','color:var(--text2)'):'');
+  var t=T[j[0]]||[j[0],''];
+  h+=TD('<span style="color:'+COR[j[0]]+';font-weight:800">'+t[0]+'</span>'+(j[3]!=null?SUB('mantendo o preço: lucro '+fmt(j[3])+(j[5]!=null?' ('+(j[5]>0?'+':'')+pct(j[5])+')':'')):SUB('preço da conta '+(j[10]>0?'+':'')+pct(j[10])+' vs hoje'))+(j[9]!=null?SUB(((+j[9])>0?'+':'')+'R$ '+fmt(j[9])+'/mês'):''),'text-align:left',t[1]);
+  if(temConc){ var co=r.f.conc>0?r.f.conc:null;
+    h+=co==null?TD('—','color:var(--text2)'):TD(fmt(co)+(j[8]?SUB('preço da conta acima','#e05a4d'):SUB('cabe','#16c47c'))+(j[6]!=null?SUB('lucro no preço dele '+fmt(j[6])+' · '+pct(j[7])):''),j[8]?'color:#e05a4d':'','preço final do concorrente: '+fmt(co)+(j[6]!=null?' · vendendo por ele, o lucro do item seria '+fmt(j[6])+' ('+pct(j[7])+' do preço)':'')); }
+  return h;
+};
 /* ★ v973 · CBS e IBS em colunas separadas (pedido do Ricardo, 16/10): os valores vêm do servidor no campo "ci" =
    [CBS por fora, IBS por fora, % CBS, % IBS]; a tela só mostra. Sem o campo (resposta antiga), mostra o total numa coluna. */
 window.lhPmCiVals=function(o){ var c=o&&o.ci; if(!o||!o.fora) return ['—','','—',''];
@@ -58316,7 +58359,7 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
      var precoV=(cfgLista && x.precos && x.precos[cfgLista]!==undefined)?x.precos[cfgLista]:x.preco;
      var f={cod:it.cod, desc:it.desc, ncm:it.ncm||it.ncm_sug||'', nbs:it.nbs||'', tipo:it.tipo||(it.nbs?'S':'P'), trat:it.trat, status:s, fonte:it.fonte||'',
             preco:num(precoV), custo:num(x.custo), ipi:num(x.ipi), icms:num(x.icms), st:ehST(x.cstIcms), cstIcms:x.cstIcms||'', cstPis:x.cstPis||'',
-            custoNovo:num(x.custoNovo), varCusto:num(x.varCusto), qtd:num(x.qtd), grupo:x.grupo||'', icmsSt:num(x.icmsSt), icmsStPct:num(x.icmsStPct), origem:x.origem||'', credPct:num(x.credPct), ean:String(x.ean||'').replace(/\D/g,'')};
+            custoNovo:num(x.custoNovo), varCusto:num(x.varCusto), qtd:num(x.qtd), conc:num(x.conc), grupo:x.grupo||'', icmsSt:num(x.icmsSt), icmsStPct:num(x.icmsStPct), origem:x.origem||'', credPct:num(x.credPct), ean:String(x.ean||'').replace(/\D/g,'')};
      try{ if(window.lhRpFornDoItem){ var _fx=window.lhRpFornDoItem(f); if(_fx){ f.fornecedor=_fx.fo; f.fornVia=_fx.via; } } }catch(_e){}   /* v966 · TR35: o fornecedor vem da nota de entrada (EAN, ou NCM de um regime só) */
      if(f.icmsSt>0 || f.icmsStPct>0) f.st=true;   /* v886: se a planilha traz o ST pago, o item é ST mesmo sem CST */
      var prontos={CONFIRMADO:1,REGRA_GERAL:1,BENEFICIO_IDENTIFICADO:1,SUGERIDO_DESCRICAO:1};
@@ -58467,6 +58510,7 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
    h+='</div>';
    var _credTxt=(function(){ var m={}; rows.forEach(function(r){ var o=(r.c.cred||{}).origem||''; o=o.split(':')[0]; m[o]=(m[o]||0)+1; }); var ks=Object.keys(m); if(ks.length===1 && (ks[0]==='padrão (100%)'||ks[0]==='cadeia')) return null; return ks.map(function(k){ return m[k]+' itens por '+k; }).join(', '); })();
    h+=(window.lhPmMesHTML?window.lhPmMesHTML(rows,cfg):'');   /* v972 · TR36: o mês do catálogo e a curva ABC */
+   h+=(window.lhPmPrioHTML?window.lhPmPrioHTML(rows,cfg):'');   /* v975 · TR36 · entrega 2: prioridade, concorrente e plano de ação */
    h+=(window.lhRpCatalogoHTML?window.lhRpCatalogoHTML(rows,cfg):'');   /* v966 · TR35 */
    h+=window.lhPmPremissasHTML(cfg,{repasse:cfg.repasse, nSt:nSt, credTxt:_credTxt});   /* v885 */
    /* como ler — recolhível (v865) */
@@ -58506,6 +58550,8 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
    var _rpCompra=temCusto && rows.some(function(r){ return r.c.anos[aT] && Array.isArray(r.c.anos[aT].compra); });
    /* v972 · TR36: quantidade, receita e lucro do mês; classe ABC e ordem pelo faturamento (posição do servidor) */
    var temQtd=window.lhPmTemQtd && window.lhPmTemQtd(rows), AB=(window.PM_ABC && PM_ABC.res && PM_ABC.k && PM_ABC.k.indexOf(aT+'|')===0)?PM_ABC.res:null;
+   var _PR=(window.PM_PRIO && PM_PRIO.res && PM_PRIO.ano===aT)?PM_PRIO.res:null, temConc=rows.some(function(r){ return r.f.conc>0; });   /* v975 */
+   if(_PR && window.PM_PRIO_FILTRO){ vis=vis.filter(function(r){ var j=_PR.itens[rows.indexOf(r)]; return Array.isArray(j) && j[0]===window.PM_PRIO_FILTRO; }); }
    if(temQtd && AB && window.PM_ORDEM==='abc' && Array.isArray(AB.posicao)){ vis=vis.slice().sort(function(x,y){ var px=AB.posicao[rows.indexOf(x)], py=AB.posicao[rows.indexOf(y)]; return (px==null?1e12:px)-(py==null?1e12:py); }); }
    h+=window.lhPmDobra('Como ler a tabela',
      'Cada linha é a mesma conta da Formação de Preço, no ano escolhido, da esquerda para a direita: '
@@ -58524,6 +58570,7 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
      .concat(temCusto?[['AQUISIÇÃO','pago ao fornecedor · '+aT],['− CRÉDITO','das compras · '+aT],['= CUSTO LÍQUIDO',String(aT)],['+ LUCRO',String(aT)]]:[])
      .concat([['= FICA C/ VOCÊ',temCusto?'custo + lucro':'sem imposto'],['+ '+(sn?'DAS':'ICMS/ISS')+' DENTRO',sn?'no DAS':(hib?'fatia do DAS que sai':'imposto velho · '+aT)],['+ PIS/COFINS',sn?'no DAS':'só até 2026'],['+ CBS FORA','federal · '+aT],['+ IBS FORA','estados e municípios · '+aT]])   /* v973 · CBS e IBS separados (servidor: campo ci) */
      .concat(temI?[['+ IPI',String(aT)]]:[]).concat([['= PREÇO FINAL',String(aT)],['VAR.','vs. hoje']])
+     .concat(_PR?[['PRIORIDADE','ação · '+aT]].concat(temConc?[['CONCORRENTE','o teto do mercado']]:[]):[])
      .concat(temQtd?[['RECEITA/MÊS','hoje → '+aT]].concat(temCusto?[['LUCRO/MÊS','hoje → '+aT]]:[]):[])
      .concat(_rpTem?[['A RECOLHER '+aT,'IBS/CBS − crédito das compras']]:[]).concat(_rpCli?[['VENDAS PROTEGIDAS',aT+' · teto da carteira']]:[])
      .concat([['REPASSE %','desta linha'],['PREÇO DECIDIDO',aT+' · com o repasse']]);
@@ -58551,6 +58598,7 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
      if(temI) h+=TD(fmt(o.ipi||0));
      h+=TD(fmt(o.finalCli),'font-weight:800','preço sem IBS/CBS (o que a PJ do regime regular paga depois do crédito): '+fmt(o.liqPJ));
      h+=TD(o.sinal+' '+(d>0?'+':'')+pct(d/(y33.hojeCli||1)*100),'color:'+(d>0?'#e05a4d':d<0?'#16c47c':'inherit'));
+     if(_PR) h+=window.lhPmPrioCels(rows,r,TD,SUB,temConc);   /* v975 */
      if(temQtd){ var _sm=function(a,b){ if(a==null||b==null) return '—'; var dd=(+b)-(+a); return fmt(b)+SUB('hoje '+fmt(a)+' · '+(dd>0?'+':'')+fmt(dd), dd>0.005?'#16a06a':dd<-0.005?'#e05a4d':''); };
        h+=TD(Array.isArray(_mh)&&Array.isArray(_mo)?_sm(_mh[0],_mo[0]):'—');
        if(temCusto) h+=TD(Array.isArray(_mh)&&Array.isArray(_mo)?_sm(_mh[1],_mo[1]):'—'); }
@@ -58802,6 +58850,9 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
      /* v972 · TR36: quantidade, mês e curva ABC (do servidor) */
      o.qtd=r.c.qtd!=null?r.c.qtd:null; o.recHoje=Array.isArray(r.c.mesHoje)?r.c.mesHoje[0]:null; o.lucHoje=Array.isArray(r.c.mesHoje)?r.c.mesHoje[1]:null;
      var _AB=(window.PM_ABC&&PM_ABC.res)||null, _i=d.rows.indexOf(r); o.abc=(_AB&&_AB.classe)?_AB.classe[_i]:null;
+     /* v975 · TR36 · entrega 2: prioridade e concorrente (do servidor) */
+     var _PRx=(window.PM_PRIO&&PM_PRIO.res)||null, _j=(_PRx&&Array.isArray(_PRx.itens))?_PRx.itens[_i]:null; o.conc=r.f.conc>0?r.f.conc:null;
+     if(Array.isArray(_j)){ o.acao=((_PRx.textos||{})[_j[0]]||[_j[0]])[0]; o.acaoCod=_j[0]; o.lucroManter=_j[3]; o.varLucroPct=_j[5]; o.lucroConc=_j[6]; o.margemConc=_j[7]; o.acimaConc=_j[8]; o.impMes=_j[9]; o.prioAno=PM_PRIO.ano; }
      var _mp=(typeof cmCclassPorFonte==='function')?cmCclassPorFonte(r.f.trat,r.f.fonte):['','']; o.cst=String(_mp[0]||''); o.cclass=String(_mp[1]||'').replace('*','');   /* v876: CST e cClassTrib na mesma linha do preço */
      ANOS.forEach(function(a){ var y=r.c.anos[a]; o['base'+a]=y.base; o['fora'+a]=y.fora; if(Array.isArray(y.ci)){ o['cbs'+a]=y.ci[0]; o['ibs'+a]=y.ci[1]; } o['ipi'+a]=y.ipi||0; o['final'+a]=y.finalCli; o['liq'+a]=y.liqPJ; o['fica'+a]=y.fica; o['custo'+a]=y.custo; o['lucro'+a]=y.lucro; if(Array.isArray(y.compra)){ o['aq'+a]=y.compra[3]; o['cr'+a]=y.compra[4]; } if(Array.isArray(y.mes)){ o['rm'+a]=y.mes[0]; o['lm'+a]=y.mes[1]; } o['dec'+a]=y.decidido; o['ficaDec'+a]=y.ficaDecidido; }); o.var33=y33.dFinal; o.sinal=y33.sinal; return o; });
  };
@@ -58832,6 +58883,8 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
    if(temQ) cols.push('Aquisicao_hoje_R$','Credito_hoje_R$');
    var temM=L.some(function(o){ return o.qtd!=null; });   /* v972 */
    if(temM) cols.push('Qtd_mes','Classe_ABC','Receita_mes_hoje','Lucro_mes_hoje');
+   var temP=L.some(function(o){ return !!o.acao; }), temK=L.some(function(o){ return o.conc!=null; }), anoP=(L.filter(function(o){ return o.prioAno; })[0]||{}).prioAno;   /* v975 */
+   if(temP) cols.push('Acao_'+anoP,'Lucro_mantendo_preco_'+anoP,'Var_lucro_%'); if(temP&&temM) cols.push('Impacto_mes_R$'); if(temK) cols.push('Concorrente','Acima_do_concorrente','Lucro_no_concorrente','Margem_no_concorrente_%');
    if(temC) cols.push('Credito_2033_R$'); if(temCr) cols.push('Credito_%','Credito_origem'); if(temSt) cols.push('ICMS_ST_R$');
    ANOS.forEach(function(a){ cols.push('Por_dentro_'+a,'IBS_CBS_'+a,'CBS_'+a,'IBS_'+a); if(temI) cols.push('IPI_'+a); cols.push('Preco_final_'+a,'Liquido_PJ_'+a,'Fica_'+a); if(temQ) cols.push('Aquisicao_'+a,'Credito_'+a); if(temM) cols.push('Receita_mes_'+a,'Lucro_mes_'+a); if(temC) cols.push((temQ?'Custo_liquido_':'Custo_')+a,'Lucro_'+a); if(temR) cols.push('Preco_decidido_'+a,'Fica_decidido_'+a); }); cols.push('Var_2033_R$','Sinal');
    ws.addRow(cols); ws.getRow(1).eachCell(hdr);
@@ -58840,6 +58893,7 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
      if(temR) r.push(o.repasse,o.repOrigem);
      if(temQ) r.push(o.aqHoje,o.crHoje);
      if(temM) r.push(o.qtd,o.abc,o.recHoje,o.lucHoje);
+     if(temP) r.push(o.acao||null,o.lucroManter,o.varLucroPct); if(temP&&temM) r.push(o.impMes); if(temK) r.push(o.conc,o.acimaConc==null?null:(o.acimaConc?'sim':'não'),o.lucroConc,o.margemConc);
      if(temC) r.push(o.cred33); if(temCr) r.push(o.credPct,o.credOrigem); if(temSt) r.push(o.stValor);
      ANOS.forEach(function(a){ r.push(o['base'+a],o['fora'+a],o['cbs'+a],o['ibs'+a]); if(temI) r.push(o['ipi'+a]); r.push(o['final'+a],o['liq'+a],o['fica'+a]); if(temQ) r.push(o['aq'+a],o['cr'+a]); if(temM) r.push(o['rm'+a],o['lm'+a]); if(temC) r.push(o['custo'+a],o['lucro'+a]); if(temR) r.push(o['dec'+a],o['ficaDec'+a]); }); r.push(o.var33,o.sinal); ws.addRow(r); });
    ws.views=[{state:'frozen',xSplit:2,ySplit:1}]; ws.autoFilter={from:{row:1,column:1},to:{row:1,column:cols.length}};
@@ -58848,6 +58902,13 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
    var e=wb.addWorksheet('Tabela_Precos_ERP'); var ec=['Codigo','Descricao','NCM_NBS','CST_IBS_CBS','cClassTrib','Preco_hoje'].concat(temV?['Preco_hoje_custo_novo']:[]).concat(AN.map(function(a){ return 'Preco_'+a; })).concat(temR?['Repasse_%'].concat(AN.map(function(a){ return 'Preco_calculado_'+a; })):[]).concat(AN.map(function(a){ return 'Liquido_PJ_'+a; }));
    e.addRow(ec); e.getRow(1).eachCell(hdr); L.forEach(function(o){ e.addRow([o.cod,o.desc,o.ncm,o.cst,o.cclass,o.hojeCli].concat(temV?[o.soCusto!=null?o.soCusto:o.hojeCli]:[]).concat(AN.map(function(a){ return o['dec'+a]; })).concat(temR?[o.repasse].concat(AN.map(function(a){ return o['final'+a]; })):[]).concat(AN.map(function(a){ return o['liq'+a]; }))); });
    e.views=[{state:'frozen',ySplit:1}]; e.getColumn(2).width=40;
+   if(temP){ /* v975 · o plano de ação: por ordem de prioridade e, dentro dela, pelo impacto do mês */
+     var ORD={parcial:0,ja:1,ganho:2,segurar:3,monitorar:4}, pa=wb.addWorksheet('Plano_de_acao',{properties:{tabColor:{argb:'FFE0A83A'}}});
+     var pc=['Prioridade','Acao','Codigo','Descricao','Preco_hoje','Preco_estrategia_'+anoP,'Preco_decidido_'+anoP,'Lucro_mantendo_preco','Var_lucro_%'].concat(temM?['Impacto_mes_R$']:[]).concat(temK?['Concorrente','Acima_do_concorrente']:[]).concat(['Responsavel','Prazo','Decisao']);
+     pa.addRow(pc); pa.getRow(1).eachCell(hdr);
+     L.filter(function(o){ return !!o.acaoCod; }).sort(function(a,b){ return (ORD[a.acaoCod]-ORD[b.acaoCod]) || (Math.abs(b.impMes||0)-Math.abs(a.impMes||0)); })
+      .forEach(function(o){ pa.addRow([ORD[o.acaoCod]+1,o.acao,o.cod,o.desc,o.hojeCli,o['final'+anoP],o['dec'+anoP],o.lucroManter,o.varLucroPct].concat(temM?[o.impMes]:[]).concat(temK?[o.conc,o.acimaConc==null?null:(o.acimaConc?'sim':'não')]:[]).concat(['','',''])); });
+     pa.views=[{state:'frozen',ySplit:1}]; pa.getColumn(2).width=24; pa.getColumn(4).width=40; pa.autoFilter={from:{row:1,column:1},to:{row:1,column:pc.length}}; }
    var p=wb.addWorksheet('Nao_precificados',{properties:{tabColor:{argb:'FF7C1D2B'}}}); p.addRow(['Codigo','Descricao','NCM','Motivo']); p.getRow(1).eachCell(hdr);
    d.fora.forEach(function(f){ p.addRow([f.cod,f.desc,f.ncm,f.motivo]); }); p.getColumn(2).width=40; p.getColumn(4).width=50;
    var m=wb.addWorksheet('Leia-me');
