@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v972";</script>
+<body><script>window.LH_VERSAO="v973";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -58200,6 +58200,13 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    h+='<div style="margin-top:6px;font-size:.78rem"><label style="cursor:pointer"><input type="checkbox" '+(window.PM_ORDEM==='abc'?'checked':'')+' onchange="window.PM_ORDEM=this.checked?\'abc\':\'\';lhPmRender()"> ordenar a tabela pelo faturamento (A primeiro)</label></div>';
    return h;
  };
+/* ★ v973 · CBS e IBS em colunas separadas (pedido do Ricardo, 16/10): os valores vêm do servidor no campo "ci" =
+   [CBS por fora, IBS por fora, % CBS, % IBS]; a tela só mostra. Sem o campo (resposta antiga), mostra o total numa coluna. */
+window.lhPmCiVals=function(o){ var c=o&&o.ci; if(!o||!o.fora) return ['—','','—',''];
+  if(Array.isArray(c)) return [fmt(c[0]),pct(c[2]),fmt(c[1]),pct(c[3])];
+  return [fmt(o.fora),'IBS + CBS · '+pct(o.tFora*100),'—','']; };
+window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
+  return TD(v[0]+(v[1]?SUB(v[1]):''),'color:#e0a83a')+TD(v[2]+(v[3]?SUB(v[3]):''),'color:#e0a83a'); };
  window.lhRpRecolherCel=function(y){
    var c=y&&y.conta; if(!Array.isArray(c)) return rpTd('—','color:var(--text2)');
    var rec=(+c[2]||0)+(+c[5]||0);
@@ -58487,7 +58494,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    h+='<div style="overflow-x:auto;margin-top:4px"><table class="pm-tab" style="width:100%;border-collapse:collapse;font-size:.8rem;white-space:nowrap"><thead><tr>';
    var COLS=[['ITEM','▸ abre a conta ano a ano'],['CLASSIFICAÇÃO','CST · cClassTrib · alíquota 2033']].concat(temCusto?[['FORNECEDOR','regime · de onde veio']]:[]).concat([['PREÇO HOJE','praticado']]).concat(temQtd?[['QTD/MÊS','vendida']]:[])
      .concat(temCusto?[['AQUISIÇÃO','pago ao fornecedor · '+aT],['− CRÉDITO','das compras · '+aT],['= CUSTO LÍQUIDO',String(aT)],['+ LUCRO',String(aT)]]:[])
-     .concat([['= FICA C/ VOCÊ',temCusto?'custo + lucro':'sem imposto'],['+ '+(sn?'DAS':'ICMS/ISS')+' DENTRO',sn?'no DAS':(hib?'fatia do DAS que sai':'imposto velho · '+aT)],['+ PIS/COFINS',sn?'no DAS':'só até 2026'],['+ IBS/CBS FORA','sobre o que fica · '+aT]])
+     .concat([['= FICA C/ VOCÊ',temCusto?'custo + lucro':'sem imposto'],['+ '+(sn?'DAS':'ICMS/ISS')+' DENTRO',sn?'no DAS':(hib?'fatia do DAS que sai':'imposto velho · '+aT)],['+ PIS/COFINS',sn?'no DAS':'só até 2026'],['+ CBS FORA','federal · '+aT],['+ IBS FORA','estados e municípios · '+aT]])   /* v973 · CBS e IBS separados (servidor: campo ci) */
      .concat(temI?[['+ IPI',String(aT)]]:[]).concat([['= PREÇO FINAL',String(aT)],['VAR.','vs. hoje']])
      .concat(temQtd?[['RECEITA/MÊS','hoje → '+aT]].concat(temCusto?[['LUCRO/MÊS','hoje → '+aT]]:[]):[])
      .concat(_rpTem?[['A RECOLHER '+aT,'IBS/CBS − crédito das compras']]:[]).concat(_rpCli?[['VENDAS PROTEGIDAS',aT+' · teto da carteira']]:[])
@@ -58512,7 +58519,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
        h+=TD(o.lucro!=null?fmt(o.lucro)+SUB(pct(o.margemLucro)+' do que fica'):'—'); }
      h+=TD(fmt(o.fica),'color:#16a06a;font-weight:700');
      h+=TD(sn?'DAS':fmt(o.velhoIcms||0))+TD(sn?'DAS':fmt(o.velhoPis||0));
-     h+=TD(o.fora?fmt(o.fora)+SUB(pct(o.tFora*100)):'—','color:#e0a83a');
+     h+=window.lhPmCiCels(o,TD,SUB);   /* v973 */
      if(temI) h+=TD(fmt(o.ipi||0));
      h+=TD(fmt(o.finalCli),'font-weight:800','preço sem IBS/CBS (o que a PJ do regime regular paga depois do crédito): '+fmt(o.liqPJ));
      h+=TD(o.sinal+' '+(d>0?'+':'')+pct(d/(y33.hojeCli||1)*100),'color:'+(d>0?'#e05a4d':d<0?'#16c47c':'inherit'));
@@ -58615,23 +58622,23 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    h+='<style>.pm-conta-tab tr>*:first-child{position:sticky;left:0;z-index:1;background:var(--bg,#fff)}.pm-conta-tab tr>*:last-child{position:sticky;right:0;z-index:1;background:var(--bg,#fff);box-shadow:-1px 0 0 rgba(128,128,128,.25)}</style>';
    h+='<div style="overflow-x:auto;max-width:100%"><table class="pm-conta-tab" style="border-collapse:collapse;font-size:.78rem;white-space:nowrap"><thead><tr><th style="text-align:left;padding:5px 6px;color:var(--gold);font-size:.68rem;border-bottom:1px solid rgba(255,255,255,.12);vertical-align:bottom">ANO</th>'
      +(temQ?th('AQUISIÇÃO','pago ao fornecedor'+(temN?' (custo novo)':''))+th('− CRÉDITO','das compras')+th('= CUSTO LÍQUIDO','')+th('+ LUCRO',''):(temC?th('CUSTO',(temN?'hoje → novo, líq. do crédito':'líq. do crédito')+((r.c.anos[2033].stValor>0)?' (+ ST)':''))+th('+ LUCRO',''):''))+th('= FICA C/ VOCÊ','custo + lucro')
-     +th('+ '+(servico?'ISS':'ICMS')+' DENTRO',sn?'no DAS':(hib?'fatia do DAS que sai':''))+th('+ PIS/COFINS',sn?'no DAS':(hib?'fatia do DAS que sai':''))+th('+ IBS/CBS FORA','sobre o que fica')+(temI?th('+ IPI',''):'')+th('= PREÇO FINAL',temR?'calculado':'na prateleira')+(temR?th('FICA DEC.','')+th('= PREÇO DECIDIDO','com o repasse'):'')+'</tr></thead><tbody>';
+     +th('+ '+(servico?'ISS':'ICMS')+' DENTRO',sn?'no DAS':(hib?'fatia do DAS que sai':''))+th('+ PIS/COFINS',sn?'no DAS':(hib?'fatia do DAS que sai':''))+th('+ CBS FORA','federal')+th('+ IBS FORA','estados e municípios')+(temI?th('+ IPI',''):'')+th('= PREÇO FINAL',temR?'calculado':'na prateleira')+(temR?th('FICA DEC.','')+th('= PREÇO DECIDIDO','com o repasse'):'')+'</tr></thead><tbody>';
    var icmsPct=r.c.icmsUsado, pisPct=r.c.pisUsado||0, hoje=r.c.anos[2026];
    var linha=function(rot,o,custo,lucro,fica,icmsV,icmsS,pisV,pisS,foraV,foraS,ipiV,prat,dest,extra){
      return '<tr'+(dest?' style="font-weight:700"':'')+'><td style="padding:4px 8px;border-bottom:1px solid rgba(255,255,255,.05)">'+rot+'</td>'
        +(temQ?qC(o,(rot==='hoje')?0:3)+td(lucro):(temC?td(custo)+td(lucro):''))+td(fica,'','color:#9fc;font-weight:700')
-       +td(icmsV,icmsS)+td(pisV,pisS)+td(foraV,foraS,'color:#e0a83a')+(temI?td(ipiV):'')+td(prat,'','font-weight:700')+(extra||'')+'</tr>'; };
+       +td(icmsV,icmsS)+td(pisV,pisS)+td(foraV[0],foraV[1],'color:#e0a83a')+td(foraV[2],foraV[3],'color:#e0a83a')+(temI?td(ipiV):'')+td(prat,'','font-weight:700')+(extra||'')+'</tr>'; };
    /* hoje: o preço praticado, imposto velho inteiro */
    var vIcmsH=r2(hoje.velhoHoje*(sn?0:(icmsPct/(icmsPct+pisPct||1)))), vPisH=r2(hoje.velhoHoje-vIcmsH);
    h+=linha('hoje',hoje,temC?fmt(r.f.custo):'',temC?(hoje.lucroHoje!=null?fmt(hoje.lucroHoje):'—'):'',fmt(hoje.ficaHoje),
-     sn?'DAS':fmt(vIcmsH), sn?'':pct(icmsPct)+(r.c.icmsEstimado?' est.':''), sn?'DAS':fmt(vPisH), sn?'':pct(pisPct), '—','', temI?fmt(hoje.ipiHoje):'', fmt(hoje.hojeCli), false, temR?td(fmt(hoje.ficaHoje))+td(fmt(hoje.hojeCli),'','font-weight:700'):'');
+     sn?'DAS':fmt(vIcmsH), sn?'':pct(icmsPct)+(r.c.icmsEstimado?' est.':''), sn?'DAS':fmt(vPisH), sn?'':pct(pisPct), ['—','','—',''],'', temI?fmt(hoje.ipiHoje):'', fmt(hoje.hojeCli), false, temR?td(fmt(hoje.ficaHoje))+td(fmt(hoje.hojeCli),'','font-weight:700'):'');
    [2026,2027,2028,2029,2030,2031,2032,2033].forEach(function(a){ var o=r.c.anos[a]; if(!o) return; var al=A?A(a):{pcVelhoEstadual:1,pcPisCofins:0};
      var fI=(al.pcVelhoEstadual!=null?al.pcVelhoEstadual:1), fP=(al.pcPisCofins!=null?al.pcPisCofins:0);
      var icmsS=sn?'':pct(icmsPct*fI)+(fI<1&&fI>0?' ('+Math.round(fI*10)+'/10)':'');
      var pisS=sn?'':(fP>0?pct(pisPct):(a===2027?'0 · CBS substitui':'0'));
      var rot=String(a)+(a===2026?(temN?' (teste · custo novo)':' (teste)'):'');
      h+=linha(rot,o,temC?fmt(o.custo):'',temC?(o.lucro!=null?fmt(o.lucro):'—'):'',fmt(o.fica),
-       sn?'DAS':fmt(o.velhoIcms||0), icmsS, sn?'DAS':fmt(o.velhoPis||0), pisS, o.fora?fmt(o.fora):'—', o.fora?pct(o.tFora*100):'', temI?fmt(o.ipi||0):'', fmt(o.finalCli), a===2033,
+       sn?'DAS':fmt(o.velhoIcms||0), icmsS, sn?'DAS':fmt(o.velhoPis||0), pisS, window.lhPmCiVals(o),'', temI?fmt(o.ipi||0):'', fmt(o.finalCli), a===2033,
        temR?td(fmt(o.ficaDecidido))+td(fmt(o.decidido),'','color:#e0a83a;font-weight:700'):''); });
    h+='</tbody></table></div>';
    h+=window.lhPmDobra('Como ler esta conta','Lê-se da esquerda para a direita: '+(temC?'custo + lucro = ':'')+'o que fica com você; mais o imposto velho que ainda existe no ano (2029-32: ICMS/ISS a 9/10, 8/10, 7/10, 6/10; 2033: zero; PIS/COFINS some em 2027); mais o IBS/CBS por fora, calculado sobre o que fica (sem ICMS/ISS nem PIS/COFINS na base — LC 214 art. 12 §2º V)'+(temI?'; mais o IPI':'')+' = preço final (a última coluna, sempre à vista). O preço sem o IBS/CBS (o que a empresa do regime regular paga depois do crédito) é o preço final menos a coluna IBS/CBS. '
@@ -58768,7 +58775,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      o.qtd=r.c.qtd!=null?r.c.qtd:null; o.recHoje=Array.isArray(r.c.mesHoje)?r.c.mesHoje[0]:null; o.lucHoje=Array.isArray(r.c.mesHoje)?r.c.mesHoje[1]:null;
      var _AB=(window.PM_ABC&&PM_ABC.res)||null, _i=d.rows.indexOf(r); o.abc=(_AB&&_AB.classe)?_AB.classe[_i]:null;
      var _mp=(typeof cmCclassPorFonte==='function')?cmCclassPorFonte(r.f.trat,r.f.fonte):['','']; o.cst=String(_mp[0]||''); o.cclass=String(_mp[1]||'').replace('*','');   /* v876: CST e cClassTrib na mesma linha do preço */
-     ANOS.forEach(function(a){ var y=r.c.anos[a]; o['base'+a]=y.base; o['fora'+a]=y.fora; o['ipi'+a]=y.ipi||0; o['final'+a]=y.finalCli; o['liq'+a]=y.liqPJ; o['fica'+a]=y.fica; o['custo'+a]=y.custo; o['lucro'+a]=y.lucro; if(Array.isArray(y.compra)){ o['aq'+a]=y.compra[3]; o['cr'+a]=y.compra[4]; } if(Array.isArray(y.mes)){ o['rm'+a]=y.mes[0]; o['lm'+a]=y.mes[1]; } o['dec'+a]=y.decidido; o['ficaDec'+a]=y.ficaDecidido; }); o.var33=y33.dFinal; o.sinal=y33.sinal; return o; });
+     ANOS.forEach(function(a){ var y=r.c.anos[a]; o['base'+a]=y.base; o['fora'+a]=y.fora; if(Array.isArray(y.ci)){ o['cbs'+a]=y.ci[0]; o['ibs'+a]=y.ci[1]; } o['ipi'+a]=y.ipi||0; o['final'+a]=y.finalCli; o['liq'+a]=y.liqPJ; o['fica'+a]=y.fica; o['custo'+a]=y.custo; o['lucro'+a]=y.lucro; if(Array.isArray(y.compra)){ o['aq'+a]=y.compra[3]; o['cr'+a]=y.compra[4]; } if(Array.isArray(y.mes)){ o['rm'+a]=y.mes[0]; o['lm'+a]=y.mes[1]; } o['dec'+a]=y.decidido; o['ficaDec'+a]=y.ficaDecidido; }); o.var33=y33.dFinal; o.sinal=y33.sinal; return o; });
  };
  window.lhPmCSV=function(){
    var L=window.lhPmLinhas(); if(!L.length){ alert('Rode a precificação primeiro.'); return; }
@@ -58798,7 +58805,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    var temM=L.some(function(o){ return o.qtd!=null; });   /* v972 */
    if(temM) cols.push('Qtd_mes','Classe_ABC','Receita_mes_hoje','Lucro_mes_hoje');
    if(temC) cols.push('Credito_2033_R$'); if(temCr) cols.push('Credito_%','Credito_origem'); if(temSt) cols.push('ICMS_ST_R$');
-   ANOS.forEach(function(a){ cols.push('Por_dentro_'+a,'IBS_CBS_'+a); if(temI) cols.push('IPI_'+a); cols.push('Preco_final_'+a,'Liquido_PJ_'+a,'Fica_'+a); if(temQ) cols.push('Aquisicao_'+a,'Credito_'+a); if(temM) cols.push('Receita_mes_'+a,'Lucro_mes_'+a); if(temC) cols.push((temQ?'Custo_liquido_':'Custo_')+a,'Lucro_'+a); if(temR) cols.push('Preco_decidido_'+a,'Fica_decidido_'+a); }); cols.push('Var_2033_R$','Sinal');
+   ANOS.forEach(function(a){ cols.push('Por_dentro_'+a,'IBS_CBS_'+a,'CBS_'+a,'IBS_'+a); if(temI) cols.push('IPI_'+a); cols.push('Preco_final_'+a,'Liquido_PJ_'+a,'Fica_'+a); if(temQ) cols.push('Aquisicao_'+a,'Credito_'+a); if(temM) cols.push('Receita_mes_'+a,'Lucro_mes_'+a); if(temC) cols.push((temQ?'Custo_liquido_':'Custo_')+a,'Lucro_'+a); if(temR) cols.push('Preco_decidido_'+a,'Fica_decidido_'+a); }); cols.push('Var_2033_R$','Sinal');
    ws.addRow(cols); ws.getRow(1).eachCell(hdr);
    L.forEach(function(o){ var r=[o.cod,o.desc,o.ncm]; if(temG) r.push(o.grupo); r.push(o.trat,o.cst,o.cclass,o.icms+(o.icmsEst?' (est.)':''),o.pis); if(temI) r.push(o.ipi); r.push(o.hojeCli,o.fica); if(temC) r.push(o.custoHoje,o.lucroHoje);
      if(temV) r.push(o.custoNovo!=null?o.custoNovo:null, (o.custoNovo!=null&&o.custoHoje)?Math.round((o.custoNovo/o.custoHoje-1)*10000)/100:null, o.soCusto!=null?o.soCusto:o.hojeCli, o.soImposto33!=null?o.soImposto33:o.final2033);
@@ -58806,7 +58813,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      if(temQ) r.push(o.aqHoje,o.crHoje);
      if(temM) r.push(o.qtd,o.abc,o.recHoje,o.lucHoje);
      if(temC) r.push(o.cred33); if(temCr) r.push(o.credPct,o.credOrigem); if(temSt) r.push(o.stValor);
-     ANOS.forEach(function(a){ r.push(o['base'+a],o['fora'+a]); if(temI) r.push(o['ipi'+a]); r.push(o['final'+a],o['liq'+a],o['fica'+a]); if(temQ) r.push(o['aq'+a],o['cr'+a]); if(temM) r.push(o['rm'+a],o['lm'+a]); if(temC) r.push(o['custo'+a],o['lucro'+a]); if(temR) r.push(o['dec'+a],o['ficaDec'+a]); }); r.push(o.var33,o.sinal); ws.addRow(r); });
+     ANOS.forEach(function(a){ r.push(o['base'+a],o['fora'+a],o['cbs'+a],o['ibs'+a]); if(temI) r.push(o['ipi'+a]); r.push(o['final'+a],o['liq'+a],o['fica'+a]); if(temQ) r.push(o['aq'+a],o['cr'+a]); if(temM) r.push(o['rm'+a],o['lm'+a]); if(temC) r.push(o['custo'+a],o['lucro'+a]); if(temR) r.push(o['dec'+a],o['ficaDec'+a]); }); r.push(o.var33,o.sinal); ws.addRow(r); });
    ws.views=[{state:'frozen',xSplit:2,ySplit:1}]; ws.autoFilter={from:{row:1,column:1},to:{row:1,column:cols.length}};
    [12,40,14,20,10,10,11,11].forEach(function(w,i){ ws.getColumn(i+1).width=w; });
    var AN=ANOS.filter(function(a){return a>=2027;});
