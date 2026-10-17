@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v979";</script>
+<body><script>window.LH_VERSAO="v980";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -58115,7 +58115,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
  var PM_PACOTE=150, PM_CACHE={}, PM_VOO=null, PM_META={pisRegime:0};
  function pmItemServidor(f, cfg){
    return {trat:f.trat, preco:f.preco, icms:f.icms, st:!!f.st, cstPis:f.cstPis||'', ipi:f.ipi, custo:f.custo, custoNovo:f.custoNovo, varCusto:f.varCusto,
-           grupo:f.grupo||'', icmsSt:f.icmsSt, icmsStPct:f.icmsStPct, origem:f.origem||'', credPct:f.credPct, fornecedor:f.fornecedor||undefined,
+           grupo:f.grupo||'', icmsSt:f.icmsSt, icmsStPct:f.icmsStPct, origem:f.origem||'', credPct:f.credPct, fornecedor:f.fornecedor||undefined, venda:f.venda||undefined,   /* v980 */
            repLinha:(cfg.repLinha && cfg.repLinha[String(f.cod)]!=null)?+cfg.repLinha[String(f.cod)]:null, qtd:(f.qtd>0?f.qtd:undefined)};
  }
  function pmCfgServidor(cfg){
@@ -58189,6 +58189,32 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
    RP_IDX={ean:ean, ncm:ncm, n:nIt}; RP_IDX_N=notas.length; return RP_IDX;
  };
  /* o fornecedor de um item do catálogo: pelo EAN; sem EAN, pelo NCM quando todas as compras daquele NCM são de um regime só */
+ /* ★ v980 · TR36 entrega 5 · XML de VENDA item a item. Junta as notas de venda da própria empresa (sem canceladas e sem
+    devolução) por código do produto (o cProd da nota é o código do catálogo), EAN e NCM: quantidade, valor, ICMS destacado,
+    valor exportado (CFOP 7xxx). Os meses são os do período das notas de venda. Só somas: a quantidade do mês e o ICMS
+    efetivo saem do servidor (fn_precmassa v980), e só entram onde a planilha não tem. */
+ var RV_IDX=null, RV_IDX_N=-1;
+ window.lhRpVendaIdx=function(){
+   var notas=window._LH_XML_NOTAS||window.LH_XML_NOTAS||[];
+   if(RV_IDX && RV_IDX_N===notas.length) return RV_IDX;
+   var emp=(window.LH_IMPORT_PGDAS&&window.LH_IMPORT_PGDAS.cnpj)?String(window.LH_IMPORT_PGDAS.cnpj).replace(/\D/g,''):String(window.LH_EMP_CNPJ||'').replace(/\D/g,'');
+   var canc=window.LH_CHAVES_CANCELADAS||{}, vistas={}, cod={}, ean={}, ncm={}, meses={}, n=0;
+   if(emp) notas.forEach(function(nt){
+     var emi=String(nt.emitCNPJ||'').replace(/\D/g,''), ch=String(nt.chave||'').replace(/\D/g,'');
+     if(emi!==emp || String(nt.tpNF||'')==='0' || (ch && (canc[ch] || vistas[ch]))) return; if(ch) vistas[ch]=1;
+     var m=String(nt.dhEmi||'').slice(0,7); if(m) meses[m]=1;
+     (nt.itens||[]).forEach(function(it){ var fx=it.fis||{}; var v=+it.vProd||0; if(!(v>0)) return; n++;
+       var exp=/^7/.test(String(it.cfop||''))?v:0;
+       var soma=function(mp,k){ if(!k) return; var e=mp[k]||(mp[k]={q:0,v:0,v_icms:0,v_exp:0}); e.q+=(+fx.qCom||0); e.v+=v; e.v_icms+=(+fx.vICMS||0); e.v_exp+=exp; };
+       soma(cod, String(fx.cProd||'').trim()); if(fx.cEAN && fx.cEAN.length>=8) soma(ean, fx.cEAN); soma(ncm, String(it.ncm||'').replace(/\D/g,'')); });
+   });
+   RV_IDX={cod:cod, ean:ean, ncm:ncm, meses:Object.keys(meses).length, n:n}; RV_IDX_N=notas.length; return RV_IDX;
+ };
+ window.lhRpVendaDoItem=function(f){
+   var ix=window.lhRpVendaIdx(); if(!ix || !ix.n || !ix.meses) return null;
+   var e=(f.cod && ix.cod[String(f.cod).trim()]) || (f.ean && ix.ean[f.ean]) || null; if(!e) return null;
+   return {q:+e.q.toFixed(4), meses:ix.meses, v:+e.v.toFixed(2), v_icms:+e.v_icms.toFixed(2), v_exp:+e.v_exp.toFixed(2)};
+ };
  window.lhRpFornDoItem=function(f){
    var ix=window.lhRpFornIdx(); if(!ix || !ix.n) return null;
    var pega=function(e, via){ var ks=Object.keys(e.cl); if(!ks.length) return null;
@@ -58353,6 +58379,8 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
    h+='<div style="overflow-x:auto">'+window.lhRpContaTab(L)+'</div>';
    var fo=r.c.forn;
    if(fo) h+='<div style="font-size:.76rem;color:var(--text2);margin-top:6px">Fornecedor: <b style="color:#d4dce6">'+(RP_REG[fo.regime]||fo.regime)+'</b>'+(r.f.fornVia?' · lido da nota de compra ('+(r.f.fornVia==='ean'?'EAN':'NCM')+')':'')+' · crédito de IBS/CBS em 2033: '+pct(fo.credito_pct)+' da compra · custo líquido de hoje '+fmt(fo.custo_liq_hoje)+(r.c.custoEstimado?' · <span style="color:#e0a83a">custo estimado pelo % do preço</span>':'')+'</div>';
+   var vn=r.c.vendaNota;   /* v980 · o que as notas de venda do item mostram (o servidor fez as contas) */
+   if(vn) h+='<div style="font-size:.76rem;color:var(--text2);margin-top:4px">Vendas pelas notas ('+(vn.meses||'?')+' '+((+vn.meses)===1?'mês':'meses')+'): '+(vn.qtd_mes!=null?'<b style="color:#d4dce6">'+fmt(vn.qtd_mes)+'</b> por mês':'quantidade não informada')+(vn.icms_pct!=null?' · ICMS efetivo <b style="color:#d4dce6">'+pct(vn.icms_pct)+'</b>':'')+((+vn.export_pct)>0?' · exportado <b style="color:#d4dce6">'+pct(vn.export_pct)+'</b> (sem IBS/CBS na exportação)':'')+'</div>';
    [2027,2033].forEach(function(a){ var o=r.c.anos[a]; if(!o || !Array.isArray(o.cli)) return; var k=o.cli, p=(o.finalCli||0)-(o.ipi||0);
      h+='<div style="margin-top:12px;font-size:.82rem;color:var(--gold);font-weight:700">O mesmo preço para cada cliente — '+a+' <span style="font-weight:400;color:var(--text2)">(preço calculado '+fmt(o.finalCli)+')</span></div>';
      h+=rpTab(['cliente','custo hoje','custo em '+a,'diferença','teto que mantém o custo','cabe?'], RP_CLI.map(function(c){ var ch=k[c[2]], cy=k[c[2]+1], te=k[c[2]+2], d=(+cy)-(+ch);
@@ -58419,7 +58447,8 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
             preco:num(precoV), custo:num(x.custo), ipi:num(x.ipi), icms:num(x.icms), st:ehST(x.cstIcms), cstIcms:x.cstIcms||'', cstPis:x.cstPis||'',
             custoNovo:num(x.custoNovo), varCusto:num(x.varCusto), qtd:num(x.qtd), conc:num(x.conc), grupo:x.grupo||'', icmsSt:num(x.icmsSt), icmsStPct:num(x.icmsStPct), origem:x.origem||'', credPct:num(x.credPct), ean:String(x.ean||'').replace(/\D/g,'')};
      try{ if(window.lhRpFornDoItem){ var _fx=window.lhRpFornDoItem(f); if(_fx){ f.fornecedor=_fx.fo; f.fornVia=_fx.via; if(!(+f.custo>0) && _fx.q>0) f.fornecedor.q=+(+_fx.q).toFixed(4); } } }catch(_e){}   /* v979: sem custo na planilha, o servidor tira o custo da nota */
-     try{ if(window.lhRpCcNota){ var _cn=window.lhRpCcNota(f); if(_cn) f.ccNota=_cn; } }catch(_e){}   /* v978 · cClassTrib da nota de compra (só para mostrar) */   /* v966 · TR35: o fornecedor vem da nota de entrada (EAN, ou NCM de um regime só) */
+     try{ if(window.lhRpCcNota){ var _cn=window.lhRpCcNota(f); if(_cn) f.ccNota=_cn; } }catch(_e){}
+     try{ if(window.lhRpVendaDoItem){ var _vn=window.lhRpVendaDoItem(f); if(_vn) f.venda=_vn; } }catch(_e){}   /* v980 · venda do item pelas notas (somas) */   /* v978 · cClassTrib da nota de compra (só para mostrar) */   /* v966 · TR35: o fornecedor vem da nota de entrada (EAN, ou NCM de um regime só) */
      if(f.icmsSt>0 || f.icmsStPct>0) f.st=true;   /* v886: se a planilha traz o ST pago, o item é ST mesmo sem CST */
      var prontos={CONFIRMADO:1,REGRA_GERAL:1,BENEFICIO_IDENTIFICADO:1,SUGERIDO_DESCRICAO:1};
      /* bebida/cigarro: a base diz "adrem" por causa do IS, mas o IBS/CBS é percentual (integral) — precifica como cheia + IS marcado */
