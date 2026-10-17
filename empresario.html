@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v986";</script>
+<body><script>window.LH_VERSAO="v987";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -6094,17 +6094,6 @@ function lhTrocarSenha(){
       <span class="ni-icon">🔎</span><span class="ni-label" style="color:#22b8d8;font-weight:700">Consulta CNPJ</span>
     </div>
     <div class="nav-group-title" style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">Comercial</div>
-    <div class="nav-item" onclick="abrirPagina('radar',this)">
-      <span class="ni-icon"></span><span class="ni-label">Diagnóstico</span>
-      <span class="ni-pill" style="background:rgba(184,148,31,0.18);color:#c9a227;border:1px solid rgba(184,148,31,0.35);padding:1px 6px;border-radius:8px;font-size:0.62em;font-weight:700;margin-left:auto;">NOVA</span>
-    </div>
-    <div class="nav-item" onclick="abrirPagina('jornada',this)">
-      <span class="ni-icon"></span><span class="ni-label">Jornada do Cliente</span>
-      <span class="ni-pill" style="background:rgba(184,148,31,0.18);color:#c9a227;border:1px solid rgba(184,148,31,0.35);padding:1px 6px;border-radius:8px;font-size:0.62em;font-weight:700;margin-left:auto;">NOVA</span>
-    </div>
-    <div class="nav-item" onclick="abrirPagina('proposta',this)">
-      <span class="ni-icon"></span><span class="ni-label">Proposta Comercial</span>
-    </div>
     <div class="nav-item" onclick="abrirPagina('historico_propostas',this)">
       <span class="ni-icon"></span><span class="ni-label">Histórico de Propostas</span>
     </div>
@@ -6113,6 +6102,18 @@ function lhTrocarSenha(){
     </div>
     <div class="nav-item nav-calc-p4" onclick="abrirPagina('c09',this)">
       <span class="ni-icon"></span><span class="ni-label">Rentabilidade por Cliente</span>
+    </div>
+
+    <!-- ★ v987 · pilar próprio, fora dos planos (pedido do Ricardo, 17/10): o diagnóstico é a porta de entrada do trabalho com o cliente -->
+    <div class="nav-group-title" style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">Diagnóstico</div>
+    <div class="nav-item" onclick="abrirPagina('radar',this)" title="30 perguntas sobre o cliente: aponta os riscos e as oportunidades e as análises que ele precisa">
+      <span class="ni-icon"></span><span class="ni-label">Diagnóstico tributário</span>
+    </div>
+    <div class="nav-item" onclick="abrirPagina('proposta',this)" title="transforma o diagnóstico em proposta de honorários: serviços, valores e PDF para o cliente">
+      <span class="ni-icon"></span><span class="ni-label">Proposta comercial</span>
+    </div>
+    <div class="nav-item" onclick="abrirPagina('jornada',this)" title="os serviços do escritório que servem para este cliente até 2033, na ordem em que fazem sentido">
+      <span class="ni-icon"></span><span class="ni-label">Jornada do cliente</span>
     </div>
 
     <!-- ════════════════════════════════════════════════════════════════
@@ -6592,7 +6593,7 @@ function lhTrocarSenha(){
         <input type="text" id="busca-input" placeholder="Digite calc, empresa ou aba..." oninput="executarBuscaGlobal()" style="width:100%;background:transparent;border:none;color:#e8edf5;font-size:1em;outline:none;font-family:inherit;">
       </div>
       <div id="busca-resultados" style="overflow-y:auto;padding:6px;">
-        <div style="padding:24px;text-align:center;color:rgba(200,215,235,0.4);font-size:0.85em;">Digite para buscar nas 23 calculadoras, abas e empresas</div>
+        <div style="padding:24px;text-align:center;color:rgba(200,215,235,0.4);font-size:0.85em;">Digite para buscar nas análises, abas e empresas</div>
       </div>
       <div style="padding:8px 14px;border-top:1px solid rgba(255,255,255,0.06);font-size:0.72em;color:rgba(200,215,235,0.4);display:flex;justify-content:space-between;">
         <span><kbd style="background:rgba(255,255,255,0.05);padding:1px 6px;border-radius:3px;">↑↓</kbd> navegar · <kbd style="background:rgba(255,255,255,0.05);padding:1px 6px;border-radius:3px;">↵</kbd> abrir · <kbd style="background:rgba(255,255,255,0.05);padding:1px 6px;border-radius:3px;">Esc</kbd> fechar</span>
@@ -7050,17 +7051,19 @@ function lhTrocarSenha(){
     <div onclick="abrirPagina('guiasistema')" style="display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-top:12px;cursor:pointer;transition:border-color .2s;" onmouseover="this.style.borderColor='rgba(201,162,39,0.5)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:1.6em;"></div><div style="flex:1;text-align:left;"><div style="font-weight:700;color:var(--text);font-size:0.98em;margin-bottom:2px;">3. Guia do Sistema</div><div style="font-size:0.84em;color:rgba(240,232,208,0.62);line-height:1.45;">Referência de cada calculadora. Consulte quando tiver dúvidas específicas.</div></div><div style="color:var(--gold);font-size:1.1em;">→</div></div>
     <button onclick="abrirPagina('tour')" style="margin-top:24px;padding:13px 32px;background:linear-gradient(135deg,#c9a227,#e8b020);color:#0c1628;border:none;border-radius:10px;cursor:pointer;font-family:'Syne','Plus Jakarta Sans',sans-serif;font-size:0.95em;font-weight:800;letter-spacing:.03em;">Iniciar pela Imersão</button>
   </div>
+  <!-- ★ v987 · o mapa da Lionheart: os pilares do menu, para que serve cada um e as abas dentro (montado do próprio menu) -->
+  <div id="lh-mapa" class="lh-mapa"></div>
 </div>
 
 <div class="page active" id="page-home">
     <div class="home-hero">
       <h2>Lionheart Calc Suite <span style="color:var(--gold2);">CORE</span></h2>
-      <p>23 calculadoras essenciais para resolver 95% dos casos do dia a dia do escritório BPO — atualizado com a LC 214/2025 e LC 227/2026.</p>
+      <p>As análises da Reforma Tributária para o dia a dia do escritório — atualizado com a LC 214/2025 e a LC 227/2026. <a href="#" onclick="abrirPagina('bemvindo');return false" style="color:var(--gold2)">Ver o mapa da Lionheart →</a></p>
       <div class="hero-badges">
         <span class="hero-badge hb-gold">EC 132/2023</span>
         <span class="hero-badge hb-gold">LC 214/2025</span>
         <span class="hero-badge hb-gold">LC 227/2026</span>
-        <span class="hero-badge hb-green">23 Calculadoras</span>
+        <span class="hero-badge hb-green" id="lh-n-analises">+150 análises</span>
         <span class="hero-badge hb-blue">Transição 2026–2033</span>
       </div>
     </div>
@@ -20296,7 +20299,7 @@ const TOPBAR_INFO = {
   imob_ret: { title:'Incorporação · RET', badge:'Imobiliário', cls:'badge-b1' },
   imobref: { title:'Regime Imobiliário da Reforma', badge:'Reforma Tributária', cls:'badge-b1' },
   inputs:{ title:'Inputs do Cliente — Propagação Global', badge:'30 campos · 23 calcs', cls:'badge-b4' },
-  home:  { title:'Dashboard — 23 Calculadoras',      badge:'LC 214/2025 · LC 227/2026', cls:'badge-lc' },
+  home:  { title:'Dashboard',      badge:'LC 214/2025 · LC 227/2026', cls:'badge-lc' },
   c01:   { title:'Split Payment — Cash Gap',          badge:'Reforma Tributária', cls:'badge-b1' },
   c02:   { title:'Reprecificação de Contratos',       badge:'Reforma Tributária', cls:'badge-b1' },
   c04:   { title:'Alíquota Efetiva por Setor / Atividade',         badge:'Reforma Tributária', cls:'badge-b1' },
@@ -45661,6 +45664,7 @@ window.LH_SAUDE = (function(){
         var _secoes = {
           'Formação Lionheart':            { rot:'Aprendizado e Imersão' },
           'Clientes & Grupos':             { rot:'Carteira de Clientes e Vendas' },
+          'Diagnóstico':                   { rot:'Diagnóstico Estratégico' },   /* ★ v987 · fora dos planos */
           'Reforma Tributária':            { rot:'Adequação',    plano:'preparacao',
                                              sup:'Planos de Assinatura',
                                              nota:'cada plano inclui tudo dos anteriores' },
@@ -48565,6 +48569,7 @@ function calcularICMSST1125(){
   };
   /* ★ v939 · o guia "Como preencher" que ficava dentro da aba (LH_GUIAS, ver LH_GUIA_CENTRAL) passa a morar aqui */
   window.LH_formacao_tem = function(id){ return !!F[id] || !!(window.LH_GUIAS && window.LH_GUIAS[id]); };
+  window.LH_formacao_oq = function(id){ return (F[id] && F[id].oQ) || ''; };   /* ★ v987 · o mapa da Boas-Vindas usa o "o que é" de cada análise */
   window.LH_formacao_abrir = function(id, foco){
     var g=(window.LH_GUIAS||{})[id];
     var d=F[id] || (g ? {} : null); if(!d){ return; }
@@ -59303,6 +59308,141 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
       ['PR001','Refrigerante cola 2L','2202.10.00',9.9,6.2,18,300,'regular']];
     if(window.lhPmAba) lhPmAba('res');
     window._PM_APOS=true; window.lhPmEsperar(); if(typeof cmProcessar==='function') cmProcessar(rows); };
+})();
+</script>
+<style id="lh-mapa-estilos">
+  .lh-mapa{max-width:1100px;margin:0 auto 40px;padding:0 20px}
+  .lh-mapa h3.lh-mapa-tit{font-family:'Syne','Plus Jakarta Sans',sans-serif;font-size:1.35rem;color:var(--gold,#c9a227);margin:8px 0 4px}
+  .lh-mapa .lh-mapa-sub{color:var(--text2);font-size:.9rem;margin-bottom:14px;line-height:1.5}
+  .lh-mapa input.lh-mapa-busca{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:10px;border:1px solid rgba(201,162,39,.4);background:var(--card,transparent);color:var(--text);font-size:.95rem;margin-bottom:16px}
+  .lh-mapa .lh-mapa-faixa{margin:20px 0 8px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:1px solid rgba(201,162,39,.3);padding-bottom:6px}
+  .lh-mapa .lh-mapa-faixa b{font-family:'Sora',sans-serif;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold,#c9a227)}
+  .lh-mapa .lh-mapa-selo{font-size:.72rem;padding:2px 8px;border-radius:8px;border:1px solid rgba(22,196,124,.45);color:#16a06a}
+  .lh-mapa .lh-mapa-selo.trava{border-color:rgba(201,162,39,.5);color:#c08a1e}
+  .lh-mapa .lh-mapa-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+  .lh-mapa .lh-pilar{border:1px solid var(--border,rgba(128,128,128,.25));border-radius:12px;background:var(--card,transparent);padding:12px 14px}
+  .lh-mapa .lh-pilar-cab{display:flex;align-items:center;gap:8px;cursor:pointer}
+  .lh-mapa .lh-pilar-cab .nome{font-weight:800;color:var(--text);flex:1}
+  .lh-mapa .lh-pilar-cab .n{font-size:.74rem;color:var(--text2)}
+  .lh-mapa .lh-q{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1px solid rgba(201,162,39,.55);color:var(--gold,#c9a227);font-weight:800;font-size:.78rem;cursor:pointer;flex:0 0 auto;background:transparent;padding:0}
+  .lh-mapa .lh-seta{color:var(--gold,#c9a227);font-weight:800;transition:transform .2s}
+  .lh-mapa .lh-pilar.aberto .lh-seta{transform:rotate(180deg)}
+  .lh-mapa .lh-pilar-txt{font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px}
+  .lh-mapa .lh-pilar-txt.longo{display:none}
+  .lh-mapa .lh-pilar.mostra .lh-pilar-txt.longo{display:block}
+  .lh-mapa .lh-abas{display:none;margin-top:8px;border-top:1px dashed rgba(128,128,128,.25);padding-top:6px}
+  .lh-mapa .lh-pilar.aberto .lh-abas{display:block}
+  .lh-mapa .lh-aba{display:flex;align-items:flex-start;gap:8px;padding:5px 0}
+  .lh-mapa .lh-aba a{color:var(--text);text-decoration:none;font-size:.86rem;flex:1;cursor:pointer}
+  .lh-mapa .lh-aba a:hover{color:var(--gold,#c9a227)}
+  .lh-mapa .lh-aba .lh-q{width:18px;height:18px;font-size:.68rem}
+  .lh-mapa .lh-aba-txt{display:none;font-size:.78rem;color:var(--text2);line-height:1.45;margin:0 0 6px 2px;padding-left:8px;border-left:2px solid rgba(201,162,39,.35)}
+  .lh-mapa .lh-aba-txt.on{display:block}
+  .lh-mapa .lh-sub{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin:8px 0 2px}
+</style>
+<script>
+/* ═══ ★ v987 · O MAPA DA LIONHEART na Boas-Vindas (pedido do Ricardo, 17/10: "quando o cara olha para aquele menu, não entende") ═══
+   Lê o PRÓPRIO menu (faixas de plano → pilares → abas), então nunca fica desatualizado. Cada pilar: uma frase de para que
+   serve, "?" com a explicação inteira, "▾" abre as abas; cada aba: "?" (ou o cursor em cima) diz para que serve, e o clique
+   abre. Cadeado quando a aba não está no plano. Busca por palavra. Só tela: nenhuma conta. */
+(function(){
+  'use strict';
+  var PIL=[
+    ['formacao', 'Aprenda a usar a ferramenta e a explicar a Reforma ao cliente.', 'Vídeos, o tour de primeiros passos, o guia do sistema, os minicursos de cada análise (Central de Análises) e o glossário. Comece por aqui na primeira semana.'],
+    ['clientes', 'Cadastre o cliente uma vez; todas as análises puxam os dados dele.', 'Cadastro da empresa ou do grupo econômico (matriz, filiais, holding, sócios), a carteira do escritório e a lista de perguntas que a ferramenta responde — busque pela dúvida do cliente.'],
+    ['centraldedocumentos', 'Jogue os arquivos do cliente e a ferramenta preenche os campos.', 'SPED, XML de NF-e (compra e venda), PGDAS, balancete e eSocial: a Central lê, separa compra de venda, descarta nota repetida ou de outra empresa e preenche as análises com selo de origem. Consulta de CNPJ incluída.'],
+    ['diagnostico', 'Comece aqui com cada cliente: onde estão os riscos, as oportunidades e o que vender.', 'Três passos: o Diagnóstico tributário (perguntas sobre o cliente) aponta riscos, oportunidades e as análises que ele precisa; a Proposta comercial transforma isso em honorário e PDF; a Jornada do cliente mostra os serviços do escritório que servem para ele até 2033, na ordem certa.'],
+    ['comercial', 'O histórico das propostas e dos diagnósticos e quanto cada cliente rende.', 'Volte às propostas que não fecharam, compare diagnósticos do mesmo cliente ao longo do tempo e veja a rentabilidade de cada cliente da carteira.'],
+    ['reformatributaria', 'O impacto do IBS/CBS no caixa, no contrato e no preço, de 2026 a 2033.', 'Meu cenário de alíquota, split payment e capital de giro, Imposto Seletivo, reprecificação de contratos, fornecedor do Simples, pagamentos antecipados, crédito de investimentos — e a Central da Reforma, que junta tudo.'],
+    ['cadastropreco', 'O cadastro certo, o crédito das compras e o preço de cada produto até 2033.', 'Classificador em massa (NCM, cClassTrib), auditor do cadastro, Cadeia de Crédito e Mapa de Fornecedores (custo depois do crédito), Formação de Preço e Precificação em Massa 2027-33, analisador de contrato e simulador de notas.'],
+    ['compliance', 'O que é obrigatório na Reforma e quanto custa não fazer.', 'Checklist do que muda em 2026, o custo do descumprimento e a comparação entre denúncia espontânea e autuação.'],
+    ['servicoscomercioturismo', 'A alíquota efetiva do setor e do produto, e os regimes específicos.', 'Alíquota por atividade e por mix de produtos, Raio-X do produto e os regimes próprios da LC 214: cooperativas, saúde, combustíveis, bares e restaurantes, hotelaria, agências, apostas, telecom, serviços financeiros, transporte, medicamentos.'],
+    ['regimepj', 'Qual regime paga menos e como a empresa deve se organizar.', 'Regime ótimo (Simples, Presumido, Real), Simples 2027 dentro × híbrido, Fator R, sublimite, PF × PJ e profissões regulamentadas — e a Central de Oportunidades.'],
+    ['remuneracao', 'Quanto e como o sócio retira com menos imposto.', 'Pró-labore ótimo, dividendos (com a tributação nova), JCP × dividendos e stock options.'],
+    ['creditotributario', 'Dinheiro que o cliente pagou a mais e pode recuperar.', 'As teses de recuperação com valor estimado: Tema 69, 118, 1125, insumos, monofásico, Selic, previdenciária, energia, saldo credor, retenções e pagamento em duplicidade — e a Central de Recuperação.'],
+    ['patrimonial', 'Proteger e passar o patrimônio pagando menos.', 'Holding, sucessão, ITCMD por estado, doação × herança, ganho de capital, aluguel PF × PJ, offshores, M&A, reorganização societária e valuation.'],
+    ['imobiliario', 'Incorporação, construção e o regime imobiliário da Reforma.', 'RET × regime normal, o regime imobiliário da LC 214 e construção e empreitada.'],
+    ['contencioso', 'Débito em discussão: discutir, transacionar ou pagar.', 'Transação PGFN, prescrição e decadência, multas e juros, autuação, REFIS, compensação e o decisor que compara os caminhos.'],
+    ['comercioexterior', 'Exportação, importação e regimes aduaneiros na Reforma.', 'Saldo credor do exportador, importação e regimes, drawback, portos e DIFAL — e a Central Comex.'],
+    ['agronegocio', 'O produtor e a agroindústria na Reforma.', 'Funrural, produtor PF × PJ, crédito presumido, diferimento, venda a alíquota zero, safra e caixa, barter, cooperativa, ITR e sucessão rural.'],
+    ['industria', 'A indústria na transição: crédito, benefícios e preço.', 'Crédito de estoque na virada, subvenções, benefícios estaduais, Reintegra, ressarcimento de ST, IPI e ZFM, energia e preço industrial por fora.'],
+    ['paineldoescritorio', 'A visão do escritório sobre toda a carteira.', 'Dashboard do cliente, Motor 360° (ranking de oportunidades), monitor e LTV da carteira, relatório PDF e cenários salvos.'],
+    ['gestaobpo', 'O preço dos honorários do próprio escritório.', 'Precificação de honorários do BPO.'],
+    ['inteligenciafinanceira', 'O DRE e o fluxo de caixa até 2033 com a Reforma dentro.', 'Dados estratégicos, identificador de créditos (débito × crédito × saldo), DRE e fluxo de caixa 2026–2033 — as análises mandam o resultado para cá.']];
+  function ch(x){ return String(x||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,''); }
+  function txtPilar(nome){ var k=ch(nome); for(var i=0;i<PIL.length;i++) if(k.indexOf(PIL[i][0])>=0) return PIL[i]; return null; }
+  function esc(x){ return String(x||'').replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function txtAba(id, el){
+    var t=''; try{ if(window.LH_formacao_oq) t=window.LH_formacao_oq(id)||''; }catch(_e){}
+    if(!t){ try{ var f=window.lhFrase?window.lhFrase(id):''; if(f && !/^Sugerida pelo Diagn/.test(f)) t=f; }catch(_e){} }
+    if(!t && el) t=el.getAttribute('title')||'';
+    return t;
+  }
+  function livre(id){ try{ return !(window.LH_PLANO && LH_PLANO.liberado) || LH_PLANO.liberado(id); }catch(_e){ return true; } }
+  /* lê o menu já organizado: faixas (nav-secao-js) → pilares (nav-cat-wrap) → abas (nav-item com abrirPagina) */
+  function ler(){
+    var nav=document.querySelector('nav.nav-section'); if(!nav) return [];
+    var faixas=[], f=null;
+    [].forEach.call(nav.children, function(el){
+      if(el.classList.contains('nav-secao-js')){ f={nome:el.textContent.trim(), plano:el.getAttribute('data-lh-plano')||'', pilares:[]}; faixas.push(f); return; }
+      if(!el.classList.contains('nav-cat-wrap')) return;
+      var t=el.querySelector('.nav-group-title'); if(!t) return;
+      var nome=t.textContent.replace(/[▼▶►🔒]/g,'').trim();
+      if(!f){ f={nome:'', plano:'', pilares:[]}; faixas.push(f); }
+      var abas=[], sub='';
+      [].forEach.call(el.querySelectorAll('.nav-cat-itens > *'), function(it){
+        if(it.classList.contains('nav-subdiv')){ sub=it.textContent.trim(); return; }
+        var m=/abrirPagina\('([\w-]+)'/.exec(it.getAttribute('onclick')||''), lab=it.querySelector('.ni-label');
+        var oc=it.getAttribute('onclick')||'';
+        if(!lab) return;
+        abas.push({id:m?m[1]:'', rot:lab.childNodes[0] ? String(lab.childNodes[0].textContent||lab.textContent).trim() : lab.textContent.trim(), sub:sub, oc:oc, el:it});
+        sub='';
+      });
+      if(abas.length) f.pilares.push({nome:nome, abas:abas});
+    });
+    return faixas.filter(function(x){ return x.pilares.length && !/sua conta/i.test(x.nome); });
+  }
+  window.lhMapaRender=function(){
+    var box=document.getElementById('lh-mapa'); if(!box) return;
+    var faixas=ler(); if(!faixas.length){ box.innerHTML=''; return; }
+    var nAbas=0; faixas.forEach(function(f){ f.pilares.forEach(function(p){ nAbas+=p.abas.length; }); });
+    var h='<h3 class="lh-mapa-tit">O mapa da Lionheart</h3><div class="lh-mapa-sub">'+nAbas+' análises em '+faixas.reduce(function(a,f){ return a+f.pilares.length; },0)+' pilares. Clique num pilar para ver as abas; o <b>?</b> explica para que serve; o clique na aba abre a análise. O menu ao lado tem tudo isto também.</div>';
+    h+='<input class="lh-mapa-busca" id="lh-mapa-busca" placeholder="Qual é o problema do seu cliente? Ex.: preço, crédito, holding, Simples, exportação…" oninput="lhMapaFiltra(this.value)">';
+    var gi=0;
+    faixas.forEach(function(f){
+      var todasTravadas=f.pilares.every(function(p){ return p.abas.every(function(a){ return a.id && !livre(a.id); }); });
+      h+='<div class="lh-mapa-faixa" data-faixa><b>'+esc(f.nome||'Início')+'</b>'+(f.plano?(todasTravadas?'<span class="lh-mapa-selo trava">🔒 fora do seu plano</span>':'<span class="lh-mapa-selo">no seu plano</span>'):'')+'</div><div class="lh-mapa-grade">';
+      f.pilares.forEach(function(p){ var tp=txtPilar(p.nome)||[null,'',''], k='lhp'+(gi++);
+        h+='<div class="lh-pilar" id="'+k+'" data-busca="'+esc(ch(p.nome+' '+tp[1]+' '+tp[2]+' '+p.abas.map(function(a){ return a.rot; }).join(' ')))+'">'
+          +'<div class="lh-pilar-cab" onclick="lhMapaAbre(\''+k+'\')"><span class="nome">'+esc(p.nome)+'</span><span class="n">'+p.abas.length+' aba'+(p.abas.length>1?'s':'')+'</span>'
+          +(tp[2]?'<button type="button" class="lh-q" title="para que serve este pilar" onclick="event.stopPropagation();lhMapaExplica(\''+k+'\')">?</button>':'')+'<span class="lh-seta">▾</span></div>'
+          +(tp[1]?'<div class="lh-pilar-txt">'+esc(tp[1])+'</div>':'')+(tp[2]?'<div class="lh-pilar-txt longo">'+esc(tp[2])+'</div>':'')
+          +'<div class="lh-abas">';
+        p.abas.forEach(function(a, j){ var t=txtAba(a.id, a.el), ka=k+'_'+j, trav=a.id && !livre(a.id);
+          if(a.sub) h+='<div class="lh-sub">'+esc(a.sub)+'</div>';
+          h+='<div class="lh-aba"><a title="'+esc(t||a.rot)+'" onclick="lhMapaVai(\''+k+'\','+j+')">'+esc(a.rot)+(trav?' 🔒':'')+'</a>'
+            +(t?'<button type="button" class="lh-q" title="'+esc(t)+'" onclick="lhMapaAba(\''+ka+'\')">?</button>':'')+'</div>'
+            +(t?'<div class="lh-aba-txt" id="'+ka+'">'+esc(t)+'</div>':''); });
+        h+='</div></div>'; });
+      h+='</div>'; });
+    box.innerHTML=h; box._faixas=faixas;
+    var nb=document.getElementById('lh-n-analises'); if(nb) nb.textContent=nAbas+' análises';
+  };
+  window.lhMapaAbre=function(k){ var e=document.getElementById(k); if(e) e.classList.toggle('aberto'); };
+  window.lhMapaExplica=function(k){ var e=document.getElementById(k); if(e) e.classList.toggle('mostra'); };
+  window.lhMapaAba=function(k){ var e=document.getElementById(k); if(e) e.classList.toggle('on'); };
+  window.lhMapaVai=function(k, j){ var box=document.getElementById('lh-mapa'); if(!box || !box._faixas) return; var gi=+String(k).replace('lhp',''), n=0, a=null;
+    box._faixas.forEach(function(f){ f.pilares.forEach(function(p){ if(n++===gi) a=p.abas[j]; }); });
+    if(a && a.el){ try{ a.el.click(); }catch(_e){} } };
+  window.lhMapaFiltra=function(q){ var k=ch(q), box=document.getElementById('lh-mapa'); if(!box) return;
+    [].forEach.call(box.querySelectorAll('.lh-pilar'), function(p){ var ok=!k || p.getAttribute('data-busca').indexOf(k)>=0; p.style.display=ok?'':'none';
+      if(k && ok && !p.classList.contains('aberto')){ p.classList.add('aberto','auto'); } else if(!k && p.classList.contains('auto')){ p.classList.remove('aberto','auto'); } });
+    [].forEach.call(box.querySelectorAll('.lh-mapa-grade'), function(g){ var vis=[].some.call(g.children, function(c){ return c.style.display!=='none'; }); g.style.display=vis?'':'none'; if(g.previousElementSibling) g.previousElementSibling.style.display=vis?'':'none'; }); };
+  /* monta quando o menu já estiver organizado; e de novo ao abrir a Boas-Vindas (o plano pode ter chegado depois) */
+  function tenta(n){ var nav=document.querySelector('nav.nav-section'); if(nav && nav.getAttribute('data-lh-colapsavel')){ window.lhMapaRender(); return; } if(n<30) setTimeout(function(){ tenta(n+1); }, 300); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){ tenta(0); }); else tenta(0);
+  var _ap=window.abrirPagina;
+  if(typeof _ap==='function') window.abrirPagina=function(id){ var r=_ap.apply(this, arguments); if(id==='bemvindo') try{ window.lhMapaRender(); }catch(_e){} return r; };
 })();
 </script>
 <script>
