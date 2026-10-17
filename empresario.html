@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v982";</script>
+<body><script>window.LH_VERSAO="v983";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -12776,6 +12776,33 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
       #page-precmassa.pm-sem-res[data-pm-aba="res"] .pm-aba-vazia,#page-precmassa.pm-sem-res[data-pm-aba="tab"] .pm-aba-vazia{display:block}
       @media (min-width:900px){ #pm-vende-card>.input-grid-2,#pm-avanc>.input-grid-2{grid-template-columns:repeat(2,minmax(0,1fr))} }
       #pm-avanc{width:100%;box-sizing:border-box}
+      /* ★ v983 · a aba Dados em passos: 1 catálogo (ou o item) · 2 documentos · 3 como a empresa vende · o botão no fim */
+      #page-precmassa .pm-passo{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--gold,#c9a227);color:#14181f!important;font-weight:900;font-size:.85rem!important;margin-right:6px;vertical-align:middle;line-height:1}
+      #page-precmassa .pm-head-acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+      #page-precmassa .pm-head-acoes button{padding:7px 14px;border-radius:9px;border:1px solid rgba(201,162,39,.5);background:rgba(201,162,39,.1);color:var(--gold,#c9a227);font-weight:700;font-size:.84rem;cursor:pointer}
+      #page-precmassa .pm-go{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:4px 0 18px}
+      #page-precmassa .pm-go .btn-calcular{margin:0}
+      #page-precmassa .pm-go .btn-secondary{padding:10px 16px;border-radius:10px;border:1px solid rgba(201,162,39,.5);background:rgba(201,162,39,.08);color:var(--gold,#c9a227);font-weight:700;cursor:pointer}
+      #page-precmassa .pm-go-dica{font-size:.84rem;color:var(--text2)}
+      #page-precmassa .pm-ajuda{font-size:.78rem;color:var(--text2);margin-top:5px;line-height:1.45}
+      #page-precmassa .pm-res-acoes{display:flex;gap:14px 24px;flex-wrap:wrap;align-items:flex-end;margin:0 0 14px}
+      #page-precmassa #pm-filtro .input-group{margin:0;min-width:260px}
+      #page-precmassa.pm-so-item #pm-docs-card,#page-precmassa.pm-so-item #pm-filtro,#page-precmassa.pm-so-item .pm-go-cat,#page-precmassa.pm-so-item .pm-so-cat-only,#page-precmassa.pm-so-catalogo .pm-go-item{display:none!important}
+      #page-precmassa[data-pm-aba="dados"] #pm-res-acoes,#page-precmassa.pm-sem-res #pm-res-acoes,#page-precmassa[data-pm-aba="tab"] #pm-res-acoes .pm-dre{display:none!important}
+      #page-precmassa[data-pm-aba="res"] #pm-docs-card,#page-precmassa[data-pm-aba="tab"] #pm-docs-card,#page-precmassa[data-pm-aba="res"] #pm-go,#page-precmassa[data-pm-aba="tab"] #pm-go{display:none!important}
+      #page-precmassa .pm-doc-t{width:100%;border-collapse:collapse;font-size:.84rem}
+      #page-precmassa .pm-doc-t td,#page-precmassa .pm-doc-t th{padding:8px 10px;border-bottom:1px solid rgba(128,128,128,.15);text-align:left;vertical-align:top}
+      #page-precmassa .pm-doc-t th{font-size:.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:.04em}
+      #page-precmassa .pm-doc-ok{color:#16c47c;font-weight:700}
+      #page-precmassa .pm-doc-falta{color:#e0a83a;font-weight:700}
+      #page-precmassa .pm-doc-na{color:var(--text2)}
+      #page-precmassa .pm-doc-btn{padding:5px 10px;border-radius:8px;border:1px solid rgba(201,162,39,.5);background:transparent;color:var(--gold,#c9a227);font-weight:700;font-size:.78rem;cursor:pointer;white-space:nowrap}
+      #page-precmassa .pm-termo{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:4px 0 14px}
+      #page-precmassa .pm-termo>div{border:1px solid rgba(128,128,128,.18);border-radius:10px;padding:10px 12px}
+      #page-precmassa .pm-termo b{font-size:1.25rem}
+      #page-precmassa .pm-barra{height:8px;border-radius:5px;background:rgba(128,128,128,.18);overflow:hidden;margin-top:6px}
+      #page-precmassa .pm-barra>i{display:block;height:100%;background:#16c47c}
+      @media (max-width:700px){ #page-precmassa .pm-doc-t .pm-doc-sem{display:none} }
       #page-precmassa .pm-tab-wrap{overflow:auto;max-height:64vh;border:1px solid rgba(128,128,128,.18);border-radius:10px}
       #page-precmassa .pm-tab-wrap thead th{position:sticky;top:0;z-index:3;background:var(--bg-card,var(--bg,#fff))}
       #page-precmassa .pm-tab-wrap thead th:first-child{z-index:4}
@@ -12793,11 +12820,12 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
       <div>
         <h2 id="pm-titulo">Formação de Preço e Precificação em Massa 2027-33 · um item ou o catálogo inteiro</h2>
         <p id="pm-intro">Esta ferramenta <b>reprecifica, não forma preço</b>: parte do preço que você já pratica e responde quanto ele muda dado o que mudou — o imposto (ano a ano, 2027-33) e, se a planilha trouxer, o custo de compra. O imposto velho por dentro derrete, o IBS/CBS entra por fora, e a tabela diz qual preço mantém o que fica com você em cada item — ou, se você mantiver o preço, quanto sobra. Não calcula custo, rateio nem margem ideal (isso é a Formação de Preço). A classificação vem do Classificador em Massa; a nota simulada prova o resultado.</p>
+        <div class="pm-head-acoes"><button type="button" class="pm-aprenda" onclick="lhPmAprenda()">📘 Aprenda em 4 minutos</button><button type="button" class="pm-exemplo pm-so-cat-only" onclick="lhPmExemplo()">▶ Ver com um catálogo de exemplo</button></div>
       </div>
     </div>
     <div class="lh-abas-barra pm-abas-barra" id="pm-abas"><button type="button" data-aba="dados" onclick="lhPmAba('dados')">📝 Dados</button><button type="button" data-aba="res" onclick="lhPmAba('res')">📊 Resultado</button><button type="button" data-aba="tab" onclick="lhPmAba('tab')">▦ Tabela</button></div>
     <div class="input-card" id="pm-item-card" style="border-color:rgba(201,162,39,.45)">
-      <h3>Um item — Formação de Preço 2027-33 <span style="font-weight:400;font-size:.8rem;color:var(--text2)">· o mesmo motor do catálogo, para um produto ou serviço</span></h3>
+      <h3><span class="pm-passo">1</span> O item <span style="font-weight:400;font-size:.8rem;color:var(--text2)">· um produto (NCM) ou serviço (NBS) e o preço que você cobra hoje</span></h3>
       <div class="input-grid-2">
         <div class="input-group"><label>NCM (produto) ou NBS (serviço)</label>
           <input id="pmi_cod" placeholder="ex.: 73181500 · 1.0303.11.00 · ou digite arroz, 8414… e escolha na lista" autocomplete="off" oninput="lhPmItemSugere('cod')" onchange="lhPmItemClassifica()"><span class="lh-hint" data-hint="8 dígitos = NCM (mercadoria); com pontos no padrão 1.0303.11.00 = NBS (serviço). A alíquota nova vem do Classificador (mesma base da nota e do catálogo). Vazio: tributação integral." onclick="lhHint(event,this)">?</span></div>
@@ -12812,18 +12840,32 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         <div class="input-group"><label>PIS/COFINS na nota de compra (%) — opcional</label><input type="number" step="0.01" min="0" max="30" id="pmi_forn_pc" placeholder="9,25 (Real) · 3,65 (Presumido)"><span class="lh-hint" data-hint="O PIS/COFINS que o fornecedor regular destaca. Ele sai do preço dele a partir de 2027 e vira folga no seu custo. Vazio: 9,25% se você está no Lucro Real (efeito zero) ou 3,65% nos demais." onclick="lhHint(event,this)">?</span></div>
         <div class="input-group"><label>Ou: % da compra de fornecedor regular (mistura) — opcional</label><input type="number" step="5" min="0" max="100" id="pmi_cred" placeholder="ex.: 70 (o resto do Simples)"></div>
         <div class="input-group"><label>ICMS-ST pago na compra (R$ por unidade) — opcional</label><input type="number" step="0.01" id="pmi_st" placeholder="bebida, cosmético, autopeça: o ST que veio na nota do fornecedor, por unidade"><span class="lh-hint" data-hint="Hoje o ICMS-ST pago na compra é custo morto (não gera crédito na revenda). Conforme o ICMS some (2029-32 a 1/10 ao ano, zero em 2033), o IBS que o substitui é creditável: o custo do ano cai. Vazio = neutro." onclick="lhHint(event,this)">?</span></div>
-        <div class="input-group" style="grid-column:1/-1"><div id="pmi_class" style="font-size:.82rem;color:var(--text2)">Regime, estratégia, leitura da transição e tipo de cliente vêm do bloco "Como você vende", logo abaixo.</div></div>
+        <div class="input-group" style="grid-column:1/-1"><div id="pmi_class" style="font-size:.82rem;color:var(--text2)">Regime, para quem vende e o que você quer manter ficam no passo 2, logo abaixo.</div></div>
       </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px"><button class="btn-calcular" onclick="window.lhPmAba&&lhPmAba('res');lhPmItem()">◆ Calcular este item</button><button class="btn-secondary" onclick="lhPmItemExemplo()">▤ Exemplo (R$ 100 · ICMS 17 · Presumido)</button></div>
       <div id="pmi_res" style="margin-top:12px"></div>
     </div>
     <div id="pm-catalogo-convite" style="display:none"></div>
+    <div class="input-card" id="pm-upload-card">
+      <h3><span class="pm-passo">1</span> Catálogo <span style="font-weight:400;font-size:.8rem;color:var(--text2)">· a planilha do ERP com NCM, descrição e preço</span></h3>
+      <div id="pm-n" style="display:none;color:#16c47c;font-weight:700;margin-bottom:8px"></div>
+      <div style="margin:0 0 12px;font-size:.85rem;color:var(--text2)">Já classificou no <a href="#" onclick="abrirPagina('classmassa');return false" style="color:var(--gold)">Classificador em Massa</a>? O catálogo já está aqui — siga para o passo 2. Se não, solte a planilha abaixo.</div>
+      <label class="cm-drop" id="pm-drop" for="pm-file" style="display:block;border:2px dashed rgba(201,162,39,.4);border-radius:12px;padding:26px;text-align:center;cursor:pointer;transition:.2s">
+        <div style="font-size:1.6rem;margin-bottom:6px">◆</div>
+        <b style="color:var(--gold)">Ou solte o catálogo aqui</b> — classifica e precifica de uma vez<br>
+        <span style="color:var(--text2);font-size:.85rem">Excel/CSV do ERP · precisa de NCM e descrição · aproveita PRECO (uma ou mais listas), CUSTO, CUSTO_NOVO ou VAR_CUSTO (%), GRUPO, IPI, ALIQUOTA_ICMS, CST_ICMS/CSOSN e CST_PIS_COFINS se existirem</span>
+      </label>
+      <input type="file" id="pm-file" accept=".xlsx,.xls,.csv" style="display:none"><div id="pm-docs-cli"></div>
+    </div>
+    <div class="input-card" id="pm-docs-card">
+      <h3><span class="pm-passo">2</span> Documentos <span style="font-weight:400;font-size:.8rem;color:var(--text2)">· opcional — deixam o resultado mais preciso</span></h3>
+      <div id="pm-docs-lista"></div>
+    </div>
     <div class="input-card" id="pm-vende-card">
-      <h3>Como você vende</h3>
+      <h3><span class="pm-passo" id="pm-passo-vende">3</span> Como a empresa vende</h3>
       <div class="input-grid-2">
         <div class="input-group"><label>Regime tributário</label>
           <select id="pm_regime" onchange="lhPmRender()"><option value="presumido">Lucro Presumido</option><option value="real">Lucro Real</option><option value="simples">Simples Nacional (dentro do DAS)</option><option value="hibrido">Simples Nacional híbrido (IBS/CBS por fora — art. 41)</option></select>
-          <div id="pm_c05_info" style="font-size:.78rem;color:var(--text2);margin-top:4px"></div><div style="margin-top:8px"><button type="button" class="lh-fin-btn" onclick="LH_FIN.afluente('precmassa')" title="leva esta análise ao DRE e ao Fluxo de Caixa 2026–2033 (Inteligência Financeira)" style="background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.5);color:#3ecf8e;padding:10px 15px;border-radius:10px;cursor:pointer;font-size:.85em;font-weight:700">→ Usar no meu DRE / Fluxo (8 anos)</button> <span style="font-size:.74rem;color:var(--text2)">leva ao DRE a reprecificação decidida (preço decidido ÷ hoje) e o mix de alíquota do catálogo</span></div></div>
+          <div id="pm_c05_info" style="font-size:.78rem;color:var(--text2);margin-top:4px"></div></div>
         <div class="input-group" id="pm_hib_box" style="display:none;grid-column:1/-1;background:rgba(201,162,39,.05);border:1px solid rgba(201,162,39,.25);border-radius:10px;padding:10px 12px">
           <label>Híbrido: o que sai do DAS e vira IBS/CBS por fora <span style="font-weight:400;text-transform:none;color:var(--text2)">— mesma tabela do Dentro × Híbrido (LC 214 arts. 501/519)</span></label>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
@@ -12837,10 +12879,8 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         </div>
         <div class="input-group"><label>Para quem vende</label>
           <select id="pm_cliente" onchange="lhPmRender()"><option value="pf">Consumidor final (preço de prateleira)</option><option value="pj">Empresa do regime regular (recupera IBS/CBS)</option></select></div>
-        <div class="input-group"><label>Estratégia</label>
-          <select id="pm_estr" onchange="lhPmRender()"><option value="liquido" selected>Manter o que fica com você — não conta com a economia que o fornecedor ainda não deu (padrão)</option><option value="fica">Manter o lucro em R$ — passa ao preço a economia das compras (preço neutro, se o fornecedor repassar)</option><option value="preco">Manter o preço → ver a nova margem</option><option value="pj">Manter o custo líquido do cliente PJ</option><option value="margem" disabled>Manter a margem % (com custo e crédito de compra) — precisa de coluna CUSTO</option><option value="markup" disabled>Manter o markup sobre o custo — precisa de coluna CUSTO</option></select></div>
-        <div class="input-group"><label>Mostrar <span id="pm_tipo_n" style="font-weight:400;text-transform:none;color:var(--text2)"></span></label>
-          <select id="pm_tipo" onchange="lhPmRender()"><option value="todos">Produtos e serviços (tudo o que veio no arquivo)</option><option value="P">Só os produtos (NCM)</option><option value="S">Só os serviços (NBS)</option></select></div>
+        <div class="input-group"><label>O que você quer manter</label>
+          <select id="pm_estr" onchange="lhPmRender()"><option value="liquido" selected>Ganhar o mesmo por unidade (padrão, mais seguro)</option><option value="fica">Ganhar o mesmo, contando com desconto do fornecedor</option><option value="preco">Segurar o preço de hoje e ver quanto sobra</option><option value="pj">Cliente empresa: o custo dele fica igual</option><option value="margem" disabled>Manter a margem % — precisa do custo</option><option value="markup" disabled>Manter o markup — precisa do custo</option></select><div id="pm_estr_txt" class="pm-ajuda"></div></div>
         <div class="input-group" id="pm_lista_box" style="display:none"><label>Lista de preço (o arquivo tem mais de uma coluna de preço)</label>
           <select id="pm_lista" onchange="lhPmRender()"></select></div>
         <details class="pm-avanc" id="pm-avanc" style="grid-column:1/-1;min-width:0;border:1px solid rgba(201,162,39,.25);border-radius:10px;padding:0 14px;background:rgba(201,162,39,.03)">
@@ -12920,16 +12960,15 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
         </details>
       </div>
     </div>
-    <div class="input-card" id="pm-upload-card">
-      <h3>Catálogo</h3>
-      <div id="pm-n" style="display:none;color:#16c47c;font-weight:700;margin-bottom:8px"></div>
-      <button class="btn-calcular" onclick="lhPmUsarClassificado()">◆ Precificar o catálogo já classificado</button><div style="text-align:center;margin:-8px 0 12px;font-size:.85rem;color:var(--text2)">ainda não classificou? <a href="#" onclick="abrirPagina('classmassa');return false" style="color:var(--gold)">ir ao Classificador em Massa</a></div>
-      <label class="cm-drop" id="pm-drop" for="pm-file" style="display:block;border:2px dashed rgba(201,162,39,.4);border-radius:12px;padding:26px;text-align:center;cursor:pointer;transition:.2s">
-        <div style="font-size:1.6rem;margin-bottom:6px">◆</div>
-        <b style="color:var(--gold)">Ou solte o catálogo aqui</b> — classifica e precifica de uma vez<br>
-        <span style="color:var(--text2);font-size:.85rem">Excel/CSV do ERP · precisa de NCM e descrição · aproveita PRECO (uma ou mais listas), CUSTO, CUSTO_NOVO ou VAR_CUSTO (%), GRUPO, IPI, ALIQUOTA_ICMS, CST_ICMS/CSOSN e CST_PIS_COFINS se existirem</span>
-      </label>
-      <input type="file" id="pm-file" accept=".xlsx,.xls,.csv" style="display:none"><div id="pm-docs-cli"></div>
+    <div class="pm-go" id="pm-go">
+      <button class="btn-calcular pm-go-cat" onclick="lhPmUsarClassificado()">◆ Precificar o catálogo</button>
+      <button class="btn-calcular pm-go-item" onclick="window.lhPmAba&&lhPmAba('res');lhPmItem()">◆ Calcular este item</button><button class="btn-secondary pm-go-item" onclick="lhPmItemExemplo()">▤ Exemplo (R$ 100 · ICMS 17 · Presumido)</button>
+      <span class="pm-go-dica" id="pm-go-dica"></span>
+    </div>
+    <div class="pm-res-acoes" id="pm-res-acoes">
+      <div class="pm-dre"><div><button type="button" class="lh-fin-btn" onclick="LH_FIN.afluente('precmassa')" title="leva esta análise ao DRE e ao Fluxo de Caixa 2026–2033 (Inteligência Financeira)" style="background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.5);color:#3ecf8e;padding:10px 15px;border-radius:10px;cursor:pointer;font-size:.85em;font-weight:700">→ Usar no meu DRE / Fluxo (8 anos)</button> <span style="font-size:.74rem;color:var(--text2)">leva ao DRE a reprecificação decidida (preço decidido ÷ hoje) e o mix de alíquota do catálogo</span></div></div>
+      <div id="pm-filtro"><div class="input-group"><label>Mostrar <span id="pm_tipo_n" style="font-weight:400;text-transform:none;color:var(--text2)"></span></label>
+          <select id="pm_tipo" onchange="lhPmRender()"><option value="todos">Produtos e serviços (tudo o que veio no arquivo)</option><option value="P">Só os produtos (NCM)</option><option value="S">Só os serviços (NBS)</option></select></div></div>
     </div>
     <div class="pm-aba-vazia" id="pm-aba-vazia">Ainda não há resultado: preencha a aba <b>Dados</b> e clique em precificar.</div>
     <div id="pm-result"></div>
@@ -58137,7 +58176,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
 (function(){
  'use strict';
  var ANOS=[2026,2027,2028,2029,2030,2031,2032,2033];
- var ESTR={fica:'Manter o lucro em R$ — passa ao preço a economia das compras (preço neutro, se o fornecedor repassar)', liquido:'Manter o que fica com você — não conta com a economia que o fornecedor ainda não deu', preco:'Manter o preço → nova margem', pj:'Manter o custo líquido do cliente PJ', margem:'Manter a margem % (com o custo e o crédito)', markup:'Manter o markup sobre o custo'};
+ var ESTR={fica:'Ganhar o mesmo por unidade (contando com desconto do fornecedor)', liquido:'Ganhar o mesmo por unidade (sem contar com desconto do fornecedor)', preco:'Segurar o preço e ver quanto sobra', pj:'Cliente empresa: o custo dele fica igual', margem:'Manter a margem % (com o custo e o crédito)', markup:'Manter o markup sobre o custo'};   /* v983 · em língua de gente, igual à lista do passo 3 */
  window.LH_PM_ESTRATEGIAS=ESTR;
  function num(v){ if(v==null||v==='') return null; var s=String(v).trim().replace(/[R$\s%]/g,''); if(s.indexOf(',')>=0 && s.indexOf('.')>=0) s=s.replace(/\./g,'').replace(',','.'); else s=s.replace(',','.'); var n=parseFloat(s); return isFinite(n)?n:null; }
  function r2(x){ return Math.round((+x||0)*100)/100; }
@@ -58652,10 +58691,11 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
    /* maiores movimentos */
    var ord=rows.slice().sort(function(a,b){ var ka=(cfg.estr==='preco')?a.c.anos[2033].dFica:a.c.anos[2033].dFinal, kb=(cfg.estr==='preco')?b.c.anos[2033].dFica:b.c.anos[2033].dFinal; return (kb/(b.c.anos[2033].hojeCli||1))-(ka/(a.c.anos[2033].hojeCli||1)); });
    var top=ord.slice(0,5), bot=ord.slice(-5).reverse();
+   var _mv=function(r){ var y=r.c.anos[2033]; return ((cfg.estr==='preco')?y.dFica:y.dFinal)||0; }, _sobe=top.length && _mv(top[0])>0.004, _cai=bot.length && _mv(bot[0])<-0.004;   /* v983 · nada sobe → "Menores quedas" */
    var li=function(r){ var y=r.c.anos[2033]; var d=(cfg.estr==='preco')?y.dFica:y.dFinal; return '<tr><td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.06)">'+String(r.f.desc||'').slice(0,46)+'</td><td style="padding:5px 8px;text-align:right;border-bottom:1px solid rgba(255,255,255,.06)">'+fmt(y.hojeCli)+'</td><td style="padding:5px 8px;text-align:right;border-bottom:1px solid rgba(255,255,255,.06)">'+fmt(cfg.estr==='preco'?y.fica:y.finalCli)+'</td><td style="padding:5px 8px;text-align:right;border-bottom:1px solid rgba(255,255,255,.06);color:'+(d>0?'#e05a4d':d<0?'#16c47c':'inherit')+'">'+(d>0?'+':'')+pct(d/(y.hojeCli||1)*100)+'</td></tr>'; };
    h+='<div class="input-card" data-pm-sec="res"><h3 style="color:var(--gold)">Maiores movimentos até 2033</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;font-size:.84rem">';
-   h+='<div><div style="color:#e05a4d;font-weight:700;margin-bottom:4px">Mais sobem</div><table style="width:100%;border-collapse:collapse"><tr><th style="text-align:left;padding:4px 8px;color:var(--text2);font-size:.72rem">ITEM</th><th style="text-align:right;padding:4px 8px;color:var(--text2);font-size:.72rem">HOJE</th><th style="text-align:right;padding:4px 8px;color:var(--text2);font-size:.72rem">2033</th><th style="text-align:right;padding:4px 8px;color:var(--text2);font-size:.72rem">VAR.</th></tr>'+top.map(li).join('')+'</table></div>';
-   h+='<div><div style="color:#16c47c;font-weight:700;margin-bottom:4px">Mais caem</div><table style="width:100%;border-collapse:collapse"><tr><th style="text-align:left;padding:4px 8px;color:var(--text2);font-size:.72rem">ITEM</th><th style="text-align:right;padding:4px 8px;color:var(--text2);font-size:.72rem">HOJE</th><th style="text-align:right;padding:4px 8px;color:var(--text2);font-size:.72rem">2033</th><th style="text-align:right;padding:4px 8px;color:var(--text2);font-size:.72rem">VAR.</th></tr>'+bot.map(li).join('')+'</table></div></div></div>';
+   h+='<div><div style="color:#e05a4d;font-weight:700;margin-bottom:4px">'+(_sobe?'Mais sobem':'Menores quedas')+'</div><table style="width:100%;border-collapse:collapse"><tr><th style="text-align:left;padding:4px 8px;color:var(--text2);font-size:.72rem">ITEM</th><th style="text-align:right;padding:4px 8px;color:var(--text2);font-size:.72rem">HOJE</th><th style="text-align:right;padding:4px 8px;color:var(--text2);font-size:.72rem">2033</th><th style="text-align:right;padding:4px 8px;color:var(--text2);font-size:.72rem">VAR.</th></tr>'+top.map(li).join('')+'</table></div>';
+   h+='<div><div style="color:#16c47c;font-weight:700;margin-bottom:4px">'+(_cai?'Mais caem':'Menores altas')+'</div><table style="width:100%;border-collapse:collapse"><tr><th style="text-align:left;padding:4px 8px;color:var(--text2);font-size:.72rem">ITEM</th><th style="text-align:right;padding:4px 8px;color:var(--text2);font-size:.72rem">HOJE</th><th style="text-align:right;padding:4px 8px;color:var(--text2);font-size:.72rem">2033</th><th style="text-align:right;padding:4px 8px;color:var(--text2);font-size:.72rem">VAR.</th></tr>'+bot.map(li).join('')+'</table></div></div></div>';
    h+='<div class="input-card" data-pm-sec="res"><h3 style="color:var(--gold)">Como ler este resultado</h3>';
    h+=window.lhPmPremissasHTML(cfg,{repasse:cfg.repasse, nSt:nSt, credTxt:_credTxt});   /* v885 */
    /* como ler — recolhível (v865) */
@@ -58885,7 +58925,7 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
      else { out.fonte='NCM não localizado na tabela oficial — regra geral 26,5% (confira o código)'; out.status='REVISAO_NCM'; }
      if(!desc && window.LH_NCM_OFICIAL && LH_NCM_OFICIAL.porCodigo){ var of=LH_NCM_OFICIAL.porCodigo(dig); if(of) (document.getElementById('pmi_desc')||{}).value=String(of[1]||'').slice(0,60); }
    }
-   var el=document.getElementById('pmi_class'); if(el){ var mp2=(typeof cmCclassPorFonte==='function')?cmCclassPorFonte(out.trat,out.fonte):['','']; el.innerHTML=(cod?('<b style="color:'+(out.ok?'var(--gold)':'#e05a4d')+'">'+(CM_TRAT_LABEL[out.trat]||out.trat)+'</b> · '+pct(cmAliqAno(out.trat,2033))+' em 2033 · '+mp2[0]+' · '+String(mp2[1]).replace('*','')+' <span style="color:var(--text2)">— '+String(out.fonte).slice(0,160)+'</span>'):'Regime, estratégia, leitura da transição e tipo de cliente vêm do bloco "Como você vende", logo abaixo.'); }
+   var el=document.getElementById('pmi_class'); if(el){ var mp2=(typeof cmCclassPorFonte==='function')?cmCclassPorFonte(out.trat,out.fonte):['','']; el.innerHTML=(cod?('<b style="color:'+(out.ok?'var(--gold)':'#e05a4d')+'">'+(CM_TRAT_LABEL[out.trat]||out.trat)+'</b> · '+pct(cmAliqAno(out.trat,2033))+' em 2033 · '+mp2[0]+' · '+String(mp2[1]).replace('*','')+' <span style="color:var(--text2)">— '+String(out.fonte).slice(0,160)+'</span>'):'Regime, para quem vende e o que você quer manter ficam no passo 2, logo abaixo.'); }
    window._PMI_CLASS=out; return out;
  };
  /* ★ v883 · o motor de busca do Auditor de Cadastro dentro do cartão "Um item" (pedido do Ricardo, 30/09):
@@ -59080,6 +59120,7 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
  function wire(){
    try{ if(window.LH_DOCS_CLI) window.LH_DOCS_CLI.render(); }catch(_e){}   /* v977 · última planilha deste cliente */
    try{ if(window.lhPmAbaSync) setTimeout(lhPmAbaSync,0); }catch(_e){}   /* v982 · abre na aba certa (com resultado: Resultado; sem: Dados) */
+   try{ if(window.lhPmDocs) setTimeout(lhPmDocs,0); if(window.lhPmEstrTxt) lhPmEstrTxt(); }catch(_e){}   /* v983 · passo 2 (documentos) e a estratégia em uma linha */
    var inp=document.getElementById('pm-file'); if(!inp||inp._wired) return; inp._wired=true;
    inp.addEventListener('change',function(e){ var f=e.target.files[0]; if(!f) return; window.lhPmLerPlanilha(f); try{ e.target.value=''; }catch(_e){} });
    var drop=document.getElementById('pm-drop');
@@ -59093,8 +59134,9 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
  /* v971 · o título diz qual das duas telas está aberta */
  function lhPmTitulo(modo){ var t=document.getElementById('pm-titulo'); if(t) t.textContent=(modo==='item')?'Formação de Preço 2027-33 · um produto ou serviço':'Precificação em Massa 2027-33 · o catálogo inteiro';
    var p=document.getElementById('pm-intro'); if(p) p.innerHTML=(modo==='item')
-     ? 'Parte do preço que você já pratica para <b>um produto ou serviço</b> e abre a conta de cada ano, de 2027 a 2033: o que você paga ao fornecedor, o crédito que volta, o custo líquido, o lucro, o imposto velho que sai por dentro, o IBS/CBS que entra por fora e o <b>preço final</b>. Para o catálogo inteiro, use a <b>Precificação em Massa</b>.'
-     : 'Parte do preço que você já pratica em <b>todo o catálogo</b> (planilha do ERP, classificada no Classificador em Massa) e mostra, item a item, a mesma conta da Formação de Preço no ano que você escolher: aquisição, crédito, custo líquido, lucro, impostos e o <b>preço final</b> — e o preço decidido que vai para o ERP. Reprecifica pelo imposto e, se a planilha trouxer, pelo custo novo; não calcula rateio nem margem ideal.'; }
+     ? 'Parte do preço que você já cobra por <b>um produto ou serviço</b> e mostra, ano a ano de 2027 a 2033, quanto cobrar para continuar ganhando o mesmo que hoje.'
+     : 'Parte do preço que você já cobra em <b>todo o catálogo</b> e mostra, item a item e ano a ano de 2027 a 2033, quanto cobrar para continuar ganhando o mesmo que hoje.';
+   var ps=document.getElementById('pm-passo-vende'); if(ps) ps.textContent=(modo==='item')?'2':'3';   /* v983 */ }
  window.abrirPagina=function(id){
    /* ★ v879 · Formação de Preço = o cartão "um item" da Precificação em Massa. Quem tem o catálogo (Consultoria+) cai na
       página inteira; quem está na Adequação vê o item + "Como você vende" e o catálogo vira convite de upgrade. */
@@ -59133,6 +59175,115 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
     var at=P.getAttribute('data-pm-aba');
     if(!at || P.getAttribute('data-pm-modo')!==modo(P)){ var sv=null; try{ sv=localStorage.getItem('lh_pm_aba_'+modo(P)); }catch(_e){}
       window.lhPmAba(sv && (sv==='dados' || t) ? sv : (t?'res':'dados')); } };
+})();
+</script>
+<script>
+/* ═══ ★ v983 · A ABA DADOS EM PASSOS (pedido do Ricardo, 17/10: "te coloca no lugar do contador que nunca precificou") ═══
+   1 · catálogo (ou o item) · 2 · documentos · 3 · como a empresa vende · o botão no fim.
+   O passo 2 diz, ANTES de precificar, o que já veio e o que falta: lê as notas que já estão na Central de Documentos e
+   CONTA quantos itens do catálogo casam com uma nota de compra (EAN; sem EAN, NCM de um regime só) e de venda — o mesmo
+   casamento que a precificação usa (lhRpFornDoItem / lhRpVendaDoItem). Só conta e mostra: nenhuma conta de imposto,
+   nada sai do navegador. Também aqui: a explicação de uma linha da estratégia, o botão Aprenda (a trilha mora na
+   Central de Análises) e o catálogo de exemplo. */
+(function(){
+  /* a regra do botão dourado (R5) tem display com !important: a troca item × catálogo precisa vir depois dela */
+  try{ var st=document.createElement('style'); st.id='pm-passos-modo'; st.textContent='#page-precmassa.pm-so-item #pm-go .pm-go-cat,#page-precmassa.pm-so-catalogo #pm-go .pm-go-item,#page-precmassa.pm-so-item .pm-head-acoes .pm-so-cat-only{display:none!important}'+'[data-theme="claro"] #lh-form-ov [style*="#e8edf5"],[data-theme="claro"] #lh-form-ov [style*="#e8e6e3"],[data-theme="claro"] #lh-form-ov [style*="#cdd6e4"]{color:#e8edf5!important}'+'[data-theme="claro"] #lh-form-ov .lh-curso-body{color:#d9e1ec!important}[data-theme="claro"] #lh-form-ov .lh-curso-body b{color:#fff!important}';   /* v983 · a Central de Análises tem fundo escuro fixo: no tema claro o texto virava escuro sobre escuro */ (document.head||document.documentElement).appendChild(st); }catch(_e){}
+  var EST={
+    liquido:'O preço novo garante que sobre para você, por unidade, o mesmo que sobra hoje. Não conta com a economia que o fornecedor talvez repasse — se ele repassar, é lucro a mais. Comece por aqui.',
+    fica:'Também garante o mesmo por unidade, mas já conta que o fornecedor vai baixar o preço dele (o imposto que sai da compra). O preço sai menor — e fica curto se o fornecedor não repassar.',
+    preco:'Não mexe no preço: mostra quanto passa a sobrar para você em cada ano com o preço de hoje.',
+    pj:'Para quem vende a empresas do regime regular: o preço é ajustado para o custo do seu cliente (depois de ele tomar o crédito) ficar igual ao de hoje.',
+    margem:'Mantém a margem % sobre o preço. Precisa do custo de compra (coluna CUSTO).',
+    markup:'Mantém o markup sobre o custo. Precisa do custo de compra (coluna CUSTO).'};
+  window.lhPmEstrTxt=function(){ var sl=document.getElementById('pm_estr'), d=document.getElementById('pm_estr_txt'); if(sl && d) d.textContent=EST[sl.value]||''; };
+  document.addEventListener('change', function(e){ var t=e.target; if(!t || !t.id) return;
+    if(t.id==='pm_estr') window.lhPmEstrTxt(); if(t.id==='pm_regime') window.lhPmDocs(); });
+
+  function nn(v){ v=(typeof v==='number')?v:parseFloat(String(v==null?'':v).replace(',','.')); return isFinite(v)?v:0; }
+  function vazio(v){ return v==null || v===''; }
+  function pc(a,b){ return b?Math.round(a/b*100):0; }
+  function cartao(rot, n, N, txt){ var x=pc(n,N); return '<div><div style="font-size:.74rem;color:var(--text2);text-transform:uppercase;letter-spacing:.04em">'+rot+'</div><b>'+x+'%</b> <span style="font-size:.8rem;color:var(--text2)">'+n.toLocaleString('pt-BR')+' de '+N.toLocaleString('pt-BR')+'</span><div class="pm-barra"><i style="width:'+x+'%"></i></div><div style="font-size:.74rem;color:var(--text2);margin-top:5px">'+txt+'</div></div>'; }
+  function levar(){ return '<button type="button" class="pm-doc-btn" onclick="abrirPagina(\'importsped\')">Levar à Central de Documentos →</button>'; }
+
+  window.lhPmDocs=function(){
+    var box=document.getElementById('pm-docs-lista'); if(!box) return;
+    var notas=window._LH_XML_NOTAS||window.LH_XML_NOTAS||[], its=(window.CM_ULTIMO && CM_ULTIMO.itens)||[], N=its.length;
+    var emp=(window.LH_IMPORT_PGDAS && LH_IMPORT_PGDAS.cnpj) || window.LH_EMP_CNPJ || '';
+    var reg=(document.getElementById('pm_regime')||{}).value||'';
+    var nC=0, nV=0, nCusto=0, nCustoNota=0, nForn=0, nQtd=0, nReal=0;
+    its.forEach(function(it){ var x=it.x||{};
+      var f={cod:it.cod, ncm:String(it.ncm||it.ncm_sug||'').replace(/\D/g,''), ean:String(x.ean||'').replace(/\D/g,'')};
+      var c=null, v=null; try{ c=window.lhRpFornDoItem?lhRpFornDoItem(f):null; }catch(_e){} try{ v=window.lhRpVendaDoItem?lhRpVendaDoItem(f):null; }catch(_e){}
+      if(c) nC++; if(v) nV++;
+      var custo=nn(x.custo)>0, custoNota=!custo && !!(c && c.q>0); if(custo) nCusto++; if(custoNota) nCustoNota++;
+      var forn=!!c || !vazio(x.origem) || !vazio(x.credPct); if(forn) nForn++;
+      if(nn(x.qtd)>0 || (v && v.q>0)) nQtd++;
+      if((custo || custoNota) && forn) nReal++; });
+    var h='';
+    if(N){
+      h+='<div style="font-size:.9rem;margin-bottom:8px"><b style="color:'+(pc(nReal,N)>=70?'#16c47c':'#e0a83a')+'">'+pc(nReal,N)+'% dos '+N.toLocaleString('pt-BR')+' itens</b> têm custo e fornecedor de verdade (da planilha ou das notas). O resto a ferramenta estima — e avisa nas premissas do resultado.</div>';
+      h+='<div class="pm-termo">'+cartao('Custo de compra', nCusto+nCustoNota, N, (nCustoNota?nCustoNota.toLocaleString('pt-BR')+' pela nota de compra · ':'')+((nCusto+nCustoNota)<N?'sem custo: estimado pelo % do preço':'todos com custo'))
+        +cartao('De quem você compra', nForn, N, (nForn<N?'sem nota: tratado como fornecedor do regime regular':'todos com fornecedor conhecido'))
+        +cartao('Quantidade vendida', nQtd, N, (nQtd<N?'sem quantidade: o resultado sai por unidade, sem o total do mês':'todos com quantidade'))+'</div>';
+    } else h+='<div class="pm-doc-falta" style="margin-bottom:10px">Carregue o catálogo no passo 1 — aqui aparece quanto dele já tem dado de verdade.</div>';
+    var st=function(ok, txt){ return ok===null?'<span class="pm-doc-na">'+txt+'</span>':'<span class="'+(ok?'pm-doc-ok':'pm-doc-falta')+'">'+(ok?'✓ ':'⚠ ')+txt+'</span>'; };
+    var temNotas=notas.length>0;
+    h+='<table class="pm-doc-t"><tr><th>Documento</th><th>Situação</th><th>O que ele traz</th><th class="pm-doc-sem">Sem ele, a ferramenta…</th><th></th></tr>';
+    h+='<tr><td><b>XML de compra</b><br><span style="font-size:.74rem;color:var(--text2)">NF-e de entrada</span></td><td>'+(!temNotas?st(false,'nenhuma nota na Central'):N?st(nC>0, nC.toLocaleString('pt-BR')+' de '+N.toLocaleString('pt-BR')+' itens com nota'):st(true,'notas na Central'))+'</td>'
+      +'<td>de quem você compra (Simples, regular, produtor), o ICMS, o PIS/COFINS, o IPI e o ST pagos; o custo, se a planilha não tiver</td><td class="pm-doc-sem">trata o fornecedor como regular, usa PIS/COFINS de 3,65% e o ICMS da venda; custo pelo %</td><td>'+levar()+'</td></tr>';
+    var vTxt=!temNotas?st(false,'nenhuma nota na Central'):!emp?st(false,'selecione o cliente no topo (o CNPJ separa compra de venda)'):N?st(nV>0, nV.toLocaleString('pt-BR')+' de '+N.toLocaleString('pt-BR')+' itens com nota'):st(true,'notas na Central');
+    h+='<tr><td><b>XML de venda</b><br><span style="font-size:.74rem;color:var(--text2)">NF-e de saída</span></td><td>'+vTxt+'</td>'
+      +'<td>quanto vende por mês, o ICMS efetivo das vendas e a parte exportada</td><td class="pm-doc-sem">usa a quantidade e o ICMS da planilha (ou o ICMS médio)</td><td>'+levar()+'</td></tr>';
+    var simples=(reg==='simples' || reg==='hibrido');
+    h+='<tr><td><b>PGDAS-D</b><br><span style="font-size:.74rem;color:var(--text2)">só Simples</span></td><td>'+(!simples?st(null,'— não se aplica ao regime escolhido'):st(!!window.LH_IMPORT_PGDAS, window.LH_IMPORT_PGDAS?'na Central':'não veio'))+'</td>'
+      +'<td>receita dos últimos 12 meses e a alíquota efetiva do DAS</td><td class="pm-doc-sem">você digita a faixa e a alíquota no passo 3</td><td>'+(simples?levar():'')+'</td></tr>';
+    h+='</table>';
+    h+='<div class="pm-ajuda" style="margin-top:10px">As notas trazem o que a empresa <b>pagou e vendeu de verdade hoje</b>. A projeção de 2027 a 2033 — imposto por dentro e por fora, crédito, débito e preço — é a ferramenta que faz, a partir disso. Nada sai do seu computador: as notas ficam neste navegador.</div>';
+    box.innerHTML=h;
+    var dica=document.getElementById('pm-go-dica'); if(dica) dica.textContent=N?'':'primeiro carregue o catálogo (passo 1)';
+  };
+
+  /* ── o botão Aprenda: abre a trilha na Central de Análises (Formação Lionheart) ── */
+  window.lhPmAprenda=function(){ var P=document.getElementById('page-precmassa'); var id=(P && P.classList.contains('pm-so-item'))?'formpreco':'precmassa';
+    if(typeof window.LH_formacao_abrir==='function') window.LH_formacao_abrir(id,'preencher'); };
+  var TRILHA='<div style="color:#f0c44c;font-size:1rem;font-weight:800;margin:16px 0 6px">1 · O que esta ferramenta responde</div>'
+    +'<p style="color:#d9e1ec;margin:0 0 8px">Uma pergunta só: <b>quanto cobrar em cada ano de 2027 a 2033 para continuar ganhando o mesmo que hoje.</b> Ela não forma preço do zero — parte do preço que a empresa já pratica e mostra quanto ele precisa mudar porque o imposto mudou (e, se você informar, porque o custo de compra mudou).</p>'
+    +'<div style="color:#f0c44c;font-size:1rem;font-weight:800;margin:16px 0 6px">2 · As três ideias que bastam</div>'
+    +'<p style="color:#d9e1ec;margin:0 0 8px"><b>Por dentro × por fora.</b> Hoje o ICMS, o ISS e o PIS/COFINS estão <i>dentro</i> do preço: o cliente nem vê. O IBS e a CBS vêm <i>por fora</i>, destacados em cima do preço, como um IPI. De 2027 a 2033 um sai aos poucos e o outro entra aos poucos — por isso a conta é ano a ano.</p>'
+    +'<p style="color:#d9e1ec;margin:0 0 8px"><b>O que fica com você.</b> É o que sobra por unidade depois de pagar o fornecedor e o imposto. A ferramenta protege esse número (é a estratégia padrão).</p>'
+    +'<p style="color:#d9e1ec;margin:0 0 8px"><b>O crédito da compra vira margem.</b> No sistema novo, o imposto que veio na nota do fornecedor volta como crédito. Quem compra de fornecedor do regime regular recupera mais; quem compra do Simples ou de produtor pessoa física recupera menos. Por isso <b>de quem você compra</b> mexe no preço.</p>'
+    +'<div style="color:#f0c44c;font-size:1rem;font-weight:800;margin:16px 0 6px">3 · O passo a passo</div>'
+    +'<p style="color:#d9e1ec;margin:0 0 8px"><b>Passo 1 · Catálogo.</b> A planilha do ERP com código, descrição, NCM e preço. Se tiver custo, ICMS e quantidade vendida, melhor. Ela passa pelo Classificador, que diz o tratamento de cada item (cheio, reduzido, zero).</p>'
+    +'<p style="color:#d9e1ec;margin:0 0 8px"><b>Passo 2 · Documentos (opcional, mas faz diferença).</b> Os XML de compra dizem de quem a empresa compra e quanto imposto pagou; os XML de venda dizem quanto ela vende por mês. Coloque na Central de Documentos e volte: o passo 2 mostra quantos itens ficaram com dado de verdade.</p>'
+    +'<p style="color:#d9e1ec;margin:0 0 8px"><b>Passo 3 · Como a empresa vende.</b> O regime, para quem vende (consumidor ou empresa) e o que você quer manter. Os ajustes finos podem ficar como estão.</p>'
+    +'<p style="color:#d9e1ec;margin:0 0 8px">Depois, <b>Precificar</b>. Para ver tudo funcionando antes de usar com um cliente, clique em <b>Ver com um catálogo de exemplo</b> (na Formação de Preço, <b>Exemplo</b>).</p>'
+    +'<div style="color:#f0c44c;font-size:1rem;font-weight:800;margin:16px 0 6px">4 · Como ler o resultado</div>'
+    +'<p style="color:#d9e1ec;margin:0 0 8px"><b>Resultado</b>: quantos itens sobem, caem ou ficam, o preço médio em 2033 e os maiores movimentos. <b>Tabela</b>: item a item, no ano que você escolher; clique no item para abrir a conta. O <b>Excel</b> traz tudo para levar ao ERP.</p>'
+    +'<p style="color:#d9e1ec;margin:0 0 8px">O preço <b>calculado</b> é o que a conta pede; o preço <b>decidido</b> é o que a empresa topa repassar (campo Repasse, nos ajustes finos). A decisão é comercial, não tributária.</p>'
+    +'<div style="color:#f0c44c;font-size:1rem;font-weight:800;margin:16px 0 6px">5 · Cuidados que evitam erro</div>'
+    +'<p style="color:#d9e1ec;margin:0 0 8px">Confira as <b>premissas</b> no fim do Resultado: elas dizem o que foi estimado. Custo estimado, fornecedor suposto e ICMS de cesta básica são os pontos para conferir com o cliente. Na nota de compra, a unidade pode ser caixa e na planilha, unidade — confira quando o custo vier da nota.</p>';
+  try{ var G=window.LH_GUIAS=window.LH_GUIAS||{};
+    G.precmassa={titulo:'Precificação em Massa', html:TRILHA};
+    G.formpreco={titulo:'Formação de Preço', html:TRILHA.replace('<b>Passo 1 · Catálogo.</b> A planilha do ERP com código, descrição, NCM e preço. Se tiver custo, ICMS e quantidade vendida, melhor. Ela passa pelo Classificador, que diz o tratamento de cada item (cheio, reduzido, zero).','<b>Passo 1 · O item.</b> O NCM (produto) ou NBS (serviço) — ou a descrição, que a lista sugere o código —, o preço de hoje e, se tiver, o custo e o ICMS.').replace('<p style="color:#d9e1ec;margin:0 0 8px"><b>Passo 2 · Documentos (opcional, mas faz diferença).</b> Os XML de compra dizem de quem a empresa compra e quanto imposto pagou; os XML de venda dizem quanto ela vende por mês. Coloque na Central de Documentos e volte: o passo 2 mostra quantos itens ficaram com dado de verdade.</p>','').replace('<b>Passo 3 · Como a empresa vende.</b>','<b>Passo 2 · Como a empresa vende.</b>').replace('Depois, <b>Precificar</b>. Para ver tudo funcionando antes de usar com um cliente, clique em <b>Ver com um catálogo de exemplo</b> (na Formação de Preço, <b>Exemplo</b>).','Depois, <b>Calcular este item</b>. Para ver tudo funcionando antes de usar com um cliente, clique em <b>Exemplo</b>.')}; }catch(_e){}
+
+  /* ── o catálogo de exemplo: uma ferragem com mercearia, preços e custos ilustrativos, pelo mesmo leitor da planilha ── */
+  window.lhPmExemplo=function(){
+    if(window.CM_ULTIMO && CM_ULTIMO.itens && CM_ULTIMO.itens.length && !confirm('Isto troca o catálogo carregado ('+CM_ULTIMO.itens.length.toLocaleString('pt-BR')+' itens) pelo catálogo de exemplo. Continuar?')) return;
+    var rows=[['Codigo','Descricao','NCM','PRECO','CUSTO','ALIQUOTA_ICMS','QTD_MES','ORIGEM_COMPRA'],
+      ['FE001','Parafuso sextavado 1/2','7318.15.00',2.5,1.2,18,900,'regular'],
+      ['FE002','Tinta acrilica 18L','3209.10.00',379,210,18,18,'regular'],
+      ['FE003','Cano PVC 100mm','3917.23.00',45.9,26,18,60,'regular'],
+      ['FE004','Cimento CP-II 50kg','2523.29.00',38.9,29.5,18,200,'regular'],
+      ['FE005','Furadeira impacto 700W','8467.21.00',289,170,18,6,'regular'],
+      ['FE006','Lixa d agua 220','6805.30.10',3.9,1.6,18,150,'simples'],
+      ['AL001','Arroz tipo 1 5kg','1006.30.21',27.9,21,7,150,'regular'],
+      ['AL002','Feijao preto 1kg','0713.33.19',8.9,6.4,7,120,'simples'],
+      ['AL003','Leite integral 1L','0401.20.10',5.49,4.1,7,400,'regular'],
+      ['AL004','Cafe torrado 500g','0901.21.00',18.9,13.5,18,80,'regular'],
+      ['AL005','Tomate kg','0702.00.00',6.99,4,0,100,'pf'],
+      ['PR001','Refrigerante cola 2L','2202.10.00',9.9,6.2,18,300,'regular']];
+    if(window.lhPmAba) lhPmAba('res');
+    window._PM_APOS=true; window.lhPmEsperar(); if(typeof cmProcessar==='function') cmProcessar(rows); };
 })();
 </script>
 <script>
