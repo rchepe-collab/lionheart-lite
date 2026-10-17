@@ -2509,7 +2509,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v980";</script>
+<body><script>window.LH_VERSAO="v981";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -52367,6 +52367,15 @@ function cmProcessar(rows){
       var _sc=_sd && _sd.ncm ? String(_sd.ncm).replace(/\D/g,'').slice(0,2) : '';
       if(_sd && !_sd.ambiguo && !_sd.insuf && _sd.conf==='alta' && _sc.length===2 && ((+_sc<=24)!==(+k.slice(0,2)<=24))){   /* alimento/agro (cap. 01-24) × indústria (25-97): troca grosseira de NCM */
         it.status='validar'; it.trat='cheia'; it.fonte='Descrição ("'+String(it.desc).slice(0,40)+'") indica outro produto (NCM provável '+_sd.ncm+') — não combina com o NCM '+k.replace(/^(\d{4})(\d{2})(\d{2})$/,'$1.$2.$3')+' ('+String(t.fonte||'').slice(0,60)+'); confira o NCM antes de aplicar o benefício'; st.revisar++; return; }
+      /* ★ v981 · a mesma trava dentro do mesmo lado da TEC (teste do catálogo de 35.000 itens, 16/10): a descrição aponta, com
+         confiança, outro produto (outra posição de 4 dígitos) que NÃO tem o benefício do NCM informado — refrigerante, presunto
+         ou biscoito no NCM do arroz; disjuntor no NCM do papel higiênico. Sem isso o item saía com alíquota zero ou −60% por engano. */
+      if(_sd && !_sd.ambiguo && !_sd.insuf && (_sd.conf==='alta'||_sd.conf==='media')){
+        var _s4=String(_sd.ncm||'').replace(/\D/g,'').slice(0,4);
+        if(_s4.length===4 && _s4!==k.slice(0,4)){ var _ts=null; try{ _ts=cmBuscaTrat(_sd.ncm, it.desc); }catch(_e){}
+          var _rk={zero:4, imune:4, red60:3, red40:2, red30:1}, _rG=(_rk[t.trat]!=null?_rk[t.trat]:0.5), _tS=(_sd.trat||(_ts&&_ts.trat)||''), _rS=(_rk[_tS]!=null)?_rk[_tS]:0;   /* o dicionário da descrição já traz o benefício (água sanitária → −60%); sem ele, o do NCM provável */
+          if(_rS < _rG){
+            it.status='validar'; it.trat='cheia'; it.fonte='Descrição ("'+String(it.desc).slice(0,40)+'") indica outro produto (NCM provável '+_sd.ncm+(_tS&&_tS!=='cheia'?' · '+_tS:' · sem benefício')+') — não combina com o NCM '+k.replace(/^(\d{4})(\d{2})(\d{2})$/,'$1.$2.$3')+' ('+String(t.fonte||'').slice(0,60)+'); confira o NCM antes de aplicar o benefício'; st.revisar++; return; } } }
     }
     if(!t){
       if(cmNcmValido(k)){ it.status='ok_default'; it.trat='cheia'; it.conf='media';
@@ -58449,6 +58458,13 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
      var prontos={CONFIRMADO:1,REGRA_GERAL:1,BENEFICIO_IDENTIFICADO:1,SUGERIDO_DESCRICAO:1};
      /* bebida/cigarro: a base diz "adrem" por causa do IS, mas o IBS/CBS é percentual (integral) — precifica como cheia + IS marcado */
      if(it.trat==='adrem'){ var _mp=(typeof cmCclassPorFonte==='function')?cmCclassPorFonte(it.trat,it.fonte||''):['','']; if(String(_mp[1]).replace('*','')==='000001' && s!=='REVISAO_NCM' && s!=='PENDENTE'){ f.trat='cheia+IS'; ok.push(f); return; } f.motivo='regime ad rem (R$/unidade), não percentual — combustível'; fora.push(f); return; }
+     /* ★ v981 · teste do catálogo de 35.000 itens (16/10): os 10.693 de fora caíam todos em "NCM a validar". O motivo agora diz qual: código inexistente na tabela oficial ou descrição que não combina com um NCM de benefício. */
+     if(!prontos[s] && (s==='REVISAO_NCM'||s==='PENDENTE')){ var _fo=String(f.fonte||'');
+       f.motivo=/^NBS .*não localizado/i.test(_fo)?'NBS que não existe na tabela oficial — corrija o código do serviço no cadastro'
+         :/não existe na TEC/i.test(_fo)?'NCM que não existe na TEC vigente — corrija o código no cadastro'
+         :/indica outro produto/i.test(_fo)?'a descrição não combina com o NCM, e o NCM dá benefício (alíquota reduzida ou zero) — confirme o NCM antes de precificar'
+         :'NCM a validar no cadastro';
+       fora.push(f); return; }
      if(!prontos[s]){ f.motivo=(s==='REVISAO_NCM'||s==='PENDENTE')?'NCM a validar no cadastro':(/regime espec/i.test(f.fonte)?'regime específico (base e alíquota próprias) — não se precifica pela alíquota geral':'em revisão tributária (benefício condicionado à descrição ou ao uso)'); fora.push(f); return; }
      /* ★ v872 · a planilha TEM coluna de preço e este item veio sem preço (vazio ou zero): não há o que reprecificar — antes saía por R$ 100 */
      if(temColPreco && !(f.preco>0)){ f.motivo='sem preço no cadastro (coluna de preço vazia ou zero)'; fora.push(f); return; }
@@ -58995,8 +59011,8 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
      L.filter(function(o){ return !!o.acaoCod; }).sort(function(a,b){ return (ORD[a.acaoCod]-ORD[b.acaoCod]) || (Math.abs(b.impMes||0)-Math.abs(a.impMes||0)); })
       .forEach(function(o){ pa.addRow([ORD[o.acaoCod]+1,o.acao,o.cod,o.desc,o.hojeCli,o['final'+anoP],o['dec'+anoP],o.lucroManter,o.varLucroPct].concat(temM?[o.impMes]:[]).concat(temK?[o.conc,o.acimaConc==null?null:(o.acimaConc?'sim':'não')]:[]).concat(['','',''])); });
      pa.views=[{state:'frozen',ySplit:1}]; pa.getColumn(2).width=24; pa.getColumn(4).width=40; pa.autoFilter={from:{row:1,column:1},to:{row:1,column:pc.length}}; }
-   var p=wb.addWorksheet('Nao_precificados',{properties:{tabColor:{argb:'FF7C1D2B'}}}); p.addRow(['Codigo','Descricao','NCM','Motivo']); p.getRow(1).eachCell(hdr);
-   d.fora.forEach(function(f){ p.addRow([f.cod,f.desc,f.ncm,f.motivo]); }); p.getColumn(2).width=40; p.getColumn(4).width=50;
+   var p=wb.addWorksheet('Nao_precificados',{properties:{tabColor:{argb:'FF7C1D2B'}}}); p.addRow(['Codigo','Descricao','NCM_NBS','Motivo','Detalhe_do_Classificador']); p.getRow(1).eachCell(hdr);   /* v981: o detalhe (NCM provável, artigo) vai junto */
+   d.fora.forEach(function(f){ p.addRow([f.cod,f.desc,f.ncm||f.nbs,f.motivo,String(f.fonte||'').slice(0,300)]); }); p.getColumn(2).width=40; p.getColumn(4).width=50; p.getColumn(5).width=70;
    var m=wb.addWorksheet('Leia-me');
    [['Lionheart — Precificação em Massa 2027-33',''],['Análise',hoje],['Itens',String(L.length)],['Estratégia',ESTR[cfg.estr]],['Regime',cfg.regime],['Cliente',cfg.b2b?'PJ (recupera IBS/CBS como crédito)':'consumidor final'],['',''],
     ['Regra','Reprecifica, não forma preço: parte do preço praticado e responde quanto ele muda pelo imposto e, se houver, pelo custo de compra novo. Não calcula custo, rateio nem margem ideal. "O que fica com você não muda" — preço por dentro cobre o ICMS/ISS que ainda existe no ano; IBS/CBS vai por fora.'],
