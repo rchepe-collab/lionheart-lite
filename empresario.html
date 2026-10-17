@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v988";</script>
+<body><script>window.LH_VERSAO="v989";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -14566,8 +14566,13 @@ window.LH_RAZAO = (function(){
       var emit = String(n.emitCNPJ||'').replace(/\D/g,'');
       var saida = meu ? (emit===meu) : (String(n.tpNF)==='1');
       var vProd = +n.vProd||0, vNF = +n.vNF||0;
+      /* ★ v989 · nota da empresa: a entrada que é devolução de venda não é compra nem venda; a entrada própria (importação,
+         produtor PF) é compra; da saída, só a parte com CFOP de venda é receita */
+      if(saida && String(n.tpNF)==='0'){ if(window.lhNotaEhDevolucaoVenda && lhNotaEhDevolucaoVenda(n)) return; saida=false; }
+      var _frR = (saida && window.lhNotaFracoes) ? lhNotaFracoes(n) : {rec:1};
+      if(saida && !(_frR.rec>0)) return;
       if(saida){
-        lanca(razao, comp, 'receita_bruta', vProd||vNF, 'XML_SAIDA');
+        lanca(razao, comp, 'receita_bruta', (vProd||vNF)*_frR.rec, 'XML_SAIDA');
         lanca(razao, comp, 'icms_saida', +n.vICMS||0, 'XML_SAIDA');
         lanca(razao, comp, 'pis_saida', +n.vPIS||0, 'XML_SAIDA');
         lanca(razao, comp, 'cofins_saida', +n.vCOFINS||0, 'XML_SAIDA');
@@ -46135,9 +46140,11 @@ function parseNFeXML(xmlText){
        fica em LH_CHAVES_CANCELADAS; aqui a nota é recusada com o motivo. */
     var _chv=''; try{ _chv=String(inf.getAttribute('Id')||'').replace(/^NFe/i,'').replace(/\D/g,''); }catch(_e){}
     var _cancEv=!!(_chv && window.LH_CHAVES_CANCELADAS && window.LH_CHAVES_CANCELADAS[_chv]);
-    if( (_cSt && _cSt!=='100' && _cSt!=='150') || /denegad|cancelad/i.test(_xMot) || _cancEv ){
+    /* ★ v989 · nota de HOMOLOGAÇÃO (tpAmb 2) é teste do emissor, sem valor fiscal — somava como venda */
+    var _homolog=false; try{ _homolog=!!(ide && String(txt(ide,'tpAmb')||'')==='2'); }catch(_e){}
+    if( (_cSt && _cSt!=='100' && _cSt!=='150') || /denegad|cancelad/i.test(_xMot) || _cancEv || _homolog ){
       try{ (window.LH_NOTAS_RECUSADAS=window.LH_NOTAS_RECUSADAS||[]).push({
-        nNF: ide?txt(ide,'nNF'):'', cStat:_cancEv?'135':_cSt, motivo:_cancEv?'Cancelada por evento 110111':String(_xMot).slice(0,60) }); }catch(_e2){}
+        nNF: ide?txt(ide,'nNF'):'', cStat:_cancEv?'135':_cSt, motivo:_cancEv?'Cancelada por evento 110111':(_homolog?'Ambiente de homologação (nota de teste, sem valor fiscal)':String(_xMot).slice(0,60)) }); }catch(_e2){}
       continue;
     }
     out.push({ cStat:_cSt, chave:_chv, nNF:ide?txt(ide,'nNF'):'', dhEmi:ide?(txt(ide,'dhEmi')||txt(ide,'dEmi')):'', tpNF:ide?txt(ide,'tpNF'):'', mod:ide?txt(ide,'mod'):'',
@@ -46183,6 +46190,31 @@ window.lhXmlDetFiscal=function(det, n){
     return {cEAN:t('cEAN').replace(/\D/g,''), cProd:t('cProd'), qCom:v('qCom'), vICMS:v('vICMS'), vICMSST:v('vICMSST'), vPIS:v('vPIS'), vCOFINS:v('vCOFINS'), vCredICMSSN:v('vCredICMSSN'), ibs:ib};
   }catch(_e){ return null; }
 };
+/* ★ v989 · Frankenstein de documentos (17/10): o que é VENDA numa nota emitida pela empresa.
+   Saída com CFOP de devolução de compra (x201–x210, x410–x413, x553, x556, x660–x662), transferência (x151–x159, x408,
+   x409, x552, x557, x658, x659), remessa/bonificação/conserto/retorno/outras saídas (x901–x949, exceto x922 entrega futura
+   e x933 serviço com ISS), venda do imobilizado (x551) e transferência de crédito (x601–x606) NÃO é receita — somava
+   no faturamento. E a nota de ENTRADA emitida pela própria empresa só é devolução de venda quando o CFOP é de devolução
+   (x201–x210, x410/x411, x553, x556, x660–x662) ou não veio: a entrada própria de importação (3102) e a de produtor PF
+   (1102) são COMPRA e antes abatiam a venda. */
+window.lhCfopNaoReceita=function(cfop){ var c=String(cfop||'').replace(/\D/g,''); if(c.length!==4 || !/^[567]/.test(c)) return ''; var x=+c.slice(1);
+  if((x>=201&&x<=210)||(x>=410&&x<=413)||x===553||x===556||(x>=660&&x<=662)) return 'devcompra';
+  if((x>=151&&x<=159)||x===408||x===409||x===552||x===557||x===658||x===659) return 'transf';
+  if((x>=901&&x<=949&&x!==922&&x!==933)||x===551||(x>=601&&x<=606)) return 'outra';
+  return ''; };
+window.lhCfopDevolucaoEntrada=function(cfop){ var c=String(cfop||'').replace(/\D/g,''); if(c.length!==4 || !/^[12]/.test(c)) return false; var x=+c.slice(1);
+  return (x>=201&&x<=210)||x===410||x===411||x===553||x===556||(x>=660&&x<=662); };
+/* parte da nota (pelo vProd dos itens) que é receita, devolução de compra e outra saída — para a nota emitida pela empresa */
+window.lhNotaFracoes=function(o){ var it=(o&&o.itens)||[], t=0, dv=0, ou=0;
+  for(var i=0;i<it.length;i++){ var v=+it[i].vProd||0, k=window.lhCfopNaoReceita(it[i].cfop); t+=v; if(k==='devcompra') dv+=v; else if(k) ou+=v; }
+  if(!(t>0)){ var k0=window.lhCfopNaoReceita(o&&o.cfop); return {rec:k0?0:1, dev:k0==='devcompra'?1:0, out:(k0&&k0!=='devcompra')?1:0}; }
+  return {rec:Math.max(0,(t-dv-ou)/t), dev:dv/t, out:ou/t}; };
+/* nota de entrada emitida pela empresa: devolução de venda (abate a venda) ou entrada própria (compra) */
+window.lhNotaEhDevolucaoVenda=function(o){ var it=(o&&o.itens)||[], cfs=it.map(function(x){ return String(x.cfop||'').replace(/\D/g,''); }).filter(Boolean);
+  if(!cfs.length){ var c0=String(o&&o.cfop||'').replace(/\D/g,''); if(!c0) return true; cfs=[c0]; }
+  /* só é entrada própria (compra) quando TODO item tem CFOP de entrada (1/2/3) que não é de devolução; CFOP de saída
+     numa nota de entrada (nota mal preenchida) segue a regra antiga: devolução */
+  return !cfs.every(function(c){ return /^[123]/.test(c) && !window.lhCfopDevolucaoEntrada(c); }); };
 function lhImportXML_aggregate(notas){
   var a={n:0,nSaida:0,dtMin:'',dtMax:'',emitNome:'',emitCNPJ:'',vProd:0,vNF:0,vICMS:0,vPIS:0,vCOFINS:0,vProdSaida:0,vNFSaida:0,vICMSSaida:0};
   /* ★ v979 · achado 1 do teste Horizonte (16/10): a mesma NF-e com outro nome de arquivo somava duas vezes. Uma nota por chave de acesso. */
@@ -46216,6 +46248,11 @@ function lhImportXML_aggregate(notas){
     notas=_proprias; }catch(_e){} }
   /* ★ v979 · achado 4: NCM que a empresa também VENDE é mercadoria de revenda, não investimento (a lâmpada e o fio da ferragem viravam capex) */
   var _ncmVenda={}; try{ notas.forEach(function(o){ var e=String(o.emitCNPJ||'').replace(/\D/g,''); if(_empAg && e===_empAg && String(o.tpNF)!=='0') (o.itens||[]).forEach(function(it){ var n=String(it.ncm||'').replace(/\D/g,''); if(n) _ncmVenda[n]=1; }); }); }catch(_e){}
+  /* ★ v989 · nota de 2031 ou de 2015 (fora de hoje−72 meses … hoje) não entra na soma — a mesma regra da janela de meses e da razão */
+  try{ var _hjA=new Date(), _nHjA=_hjA.getFullYear()*12+(_hjA.getMonth()+1), _dentro=[]; a.nForaPeriodo=0;
+    notas.forEach(function(o){ var _dd=String(o.dhEmi||''); if(_dd.length>=7){ var _nn=(+_dd.slice(0,4))*12+(+_dd.slice(5,7)); if(_nn>_nHjA || _nn<_nHjA-72){ a.nForaPeriodo++; return; } } _dentro.push(o); });
+    notas=_dentro; }catch(_e){}
+  var _vEnt=0,_pEnt=0,_iEnt=0; a.vDevCompra=0; a.nOutrasSaidas=0; a.vOutrasSaidas=0; a.nEntradaPropria=0;
   for(var i=0;i<notas.length;i++){ var o=notas[i]; a.n++;
     a.vProd+=o.vProd; a.vNF+=o.vNF; a.vICMS+=o.vICMS; a.vPIS+=o.vPIS; a.vCOFINS+=o.vCOFINS;
     /* v846 — DEVOLUCAO DE VENDA. A v557 passou a classificar por CNPJ em vez de
@@ -46226,14 +46263,23 @@ function lhImportXML_aggregate(notas){
        as notas fecham com o PGDAS ao centavo.
        Agora: emitida por nos com tpNF=1 e saida; com tpNF=0 e devolucao e ABATE. */
     var _nosso  = _empAg ? ((o.emitCNPJ||'').replace(/\D/g,'')===_empAg) : (o.tpNF==='1');
-    var _devol  = _nosso && String(o.tpNF)==='0';
-    var _ehSaida = _nosso && !_devol;
-    if(_ehSaida){ a.nSaida++; a.vProdSaida+=o.vProd; a.vNFSaida+=o.vNF; a.vICMSSaida+=o.vICMS; }
+    var _entNossa = _nosso && String(o.tpNF)==='0';
+    var _devol  = _entNossa && window.lhNotaEhDevolucaoVenda(o);   /* v989: entrada própria de importação/PF é compra */
+    var _ehSaida = _nosso && !_entNossa;
+    if(_ehSaida){ var _fr=window.lhNotaFracoes(o);   /* v989: só a parte com CFOP de venda é receita */
+      if(_fr.rec<1){ a.nOutrasSaidas++; a.vOutrasSaidas+=o.vNF*(1-_fr.rec); a.vDevCompra+=o.vNF*_fr.dev; }
+      if(_fr.rec>0){ a.nSaida++; a.vProdSaida+=o.vProd*_fr.rec; a.vNFSaida+=o.vNF*_fr.rec; a.vICMSSaida+=o.vICMS*_fr.rec; } }
     else if(_devol){ a.nDevol=(a.nDevol||0)+1; a.vDevol=(a.vDevol||0)+o.vNF;
                      a.vProdSaida-=o.vProd; a.vNFSaida-=o.vNF; a.vICMSSaida-=o.vICMS; }
+    else { if(_entNossa) a.nEntradaPropria++; _vEnt+=o.vNF; _pEnt+=o.vProd; _iEnt+=o.vICMS; }
     if(o.emitNome&&!a.emitNome){ a.emitNome=o.emitNome; a.emitCNPJ=o.emitCNPJ; }
     var d=(o.dhEmi||'').slice(0,10); if(d){ if(!a.dtMin||d<a.dtMin)a.dtMin=d; if(!a.dtMax||d>a.dtMax)a.dtMax=d; }
   }
+  /* ★ v989 · as COMPRAS saem por diferença (vNF − vNFSaida) em todas as telas: o total passa a ser venda + compra de
+     verdade. Antes a devolução de venda entrava duas vezes nas compras (somava no total e abatia a venda) e a devolução
+     de compra, a remessa e a bonificação emitidas pela empresa viravam venda. */
+  a.vNFTodas=a.vNF; a.vProdTodas=a.vProd; a.vICMSTodas=a.vICMS;
+  a.vNFEntrada=Math.max(0,_vEnt-a.vDevCompra); a.vNF=a.vNFSaida+a.vNFEntrada; a.vProd=a.vProdSaida+Math.max(0,_pEnt-(_vEnt>0?a.vDevCompra*_pEnt/_vEnt:0)); a.vICMS=a.vICMSSaida+_iEnt;
     /* v564 — U1: prazos e capex num pos-passe com o CNPJ ja resolvido.
      PMR = media ponderada (vDup) dos dias ate o vencimento nas SAIDAS; PMP =
      idem nas ENTRADAS; pctPrazoSaida = fatia do faturamento a prazo. Capex =
@@ -46246,6 +46292,7 @@ function lhImportXML_aggregate(notas){
       var _o2=notas[_q2]; var _e2=String(_o2.emitCNPJ||'').replace(/\D/g,'');
       /* v846 — mesma regra da devolucao no pos-passe: nota nossa com tpNF=0 nao e venda. */
       var _sai2=(_empAg?(_e2===_empAg):(String(_o2.tpNF)==='1')) && String(_o2.tpNF)!=='0';
+      if(_sai2 && !(window.lhNotaFracoes(_o2).rec>0)) continue;   /* v989: remessa/devolução de compra não é venda nem compra */
       var _de=_dY(_o2.dhEmi||''); var _tem=false; var _ds2=_o2.dups||[];
       for(var _w2=0;_w2<_ds2.length;_w2++){
         var _dv=_dY(_ds2[_w2].venc||''); var _vv=+_ds2[_w2].v||0;
@@ -46695,9 +46742,11 @@ function parseNFeXML(xmlText){
        fica em LH_CHAVES_CANCELADAS; aqui a nota é recusada com o motivo. */
     var _chv=''; try{ _chv=String(inf.getAttribute('Id')||'').replace(/^NFe/i,'').replace(/\D/g,''); }catch(_e){}
     var _cancEv=!!(_chv && window.LH_CHAVES_CANCELADAS && window.LH_CHAVES_CANCELADAS[_chv]);
-    if( (_cSt && _cSt!=='100' && _cSt!=='150') || /denegad|cancelad/i.test(_xMot) || _cancEv ){
+    /* ★ v989 · nota de HOMOLOGAÇÃO (tpAmb 2) é teste do emissor, sem valor fiscal — somava como venda */
+    var _homolog=false; try{ _homolog=!!(ide && String(txt(ide,'tpAmb')||'')==='2'); }catch(_e){}
+    if( (_cSt && _cSt!=='100' && _cSt!=='150') || /denegad|cancelad/i.test(_xMot) || _cancEv || _homolog ){
       try{ (window.LH_NOTAS_RECUSADAS=window.LH_NOTAS_RECUSADAS||[]).push({
-        nNF: ide?txt(ide,'nNF'):'', cStat:_cancEv?'135':_cSt, motivo:_cancEv?'Cancelada por evento 110111':String(_xMot).slice(0,60) }); }catch(_e2){}
+        nNF: ide?txt(ide,'nNF'):'', cStat:_cancEv?'135':_cSt, motivo:_cancEv?'Cancelada por evento 110111':(_homolog?'Ambiente de homologação (nota de teste, sem valor fiscal)':String(_xMot).slice(0,60)) }); }catch(_e2){}
       continue;
     }
     out.push({ cStat:_cSt, chave:_chv, nNF:ide?txt(ide,'nNF'):'', dhEmi:ide?(txt(ide,'dhEmi')||txt(ide,'dEmi')):'', tpNF:ide?txt(ide,'tpNF'):'', mod:ide?txt(ide,'mod'):'',
@@ -46879,7 +46928,7 @@ function lhInsPuxarCentral(){
   function S(id,v){ var e=document.getElementById(id); if(e){ e.value=v; e.dispatchEvent(new Event('input')); } }
   var fez=[];
   if(pg&&pg.ok){ S('ins-regime','sn'); fez.push('regime Simples (PGDAS) \u2014 tese N\u00c3O se aplica'); }
-  else if(efd&&efd.ok&&efd.regimeInc){ var _rI=String(efd.regimeInc); if(_rI==='1'||_rI==='2'){ S('ins-regime', _rI==='1'?'lr':'lp'); fez.push('regime (EFD 0110)'); } }   /* v953 (D-05): COD_INC_TRIB 1 = cumulativo/LP, 2 = nao cumulativo/LR (estava invertido) */
+  else if(efd&&efd.ok&&efd.regimeInc){ var _rI=String(efd.regimeInc); if(_rI==='1'||_rI==='2'||_rI==='3'){ S('ins-regime', _rI!=='2'?'lr':'lp'); fez.push('regime (EFD 0110)'); } }   /* v953 (D-05): COD_INC_TRIB 1 = cumulativo/LP, 2 = nao cumulativo/LR (estava invertido) */
   var d=new Date(); d.setMonth(d.getMonth()-60);
   S('ins-compini', d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')); /* v584: prazo em branco */ fez.push('janela 5 anos');
   show((fez.length?'\u2713 Preenchi: <b>'+fez.join(', ')+'</b>. ':'')+'\u26a0 Os valores por categoria v\u00eam do <b>raz\u00e3o cont\u00e1bil/balancete por conta de despesa</b> \u2014 identifique o que N\u00c3O foi creditado e digite a m\u00e9dia mensal em cada linha.', fez.length?'ok':'no');
@@ -47007,7 +47056,7 @@ function lhRetPuxarCentral(){
   function S(id,v){ var e=document.getElementById(id); if(e){ e.value=v; e.dispatchEvent(new Event('input')); } }
   var fez=[];
   if(pg&&pg.ok){ S('ret-regime','sn'); fez.push('regime Simples (PGDAS)'); }
-  else if(efd&&efd.ok&&efd.regimeInc){ var _rI=String(efd.regimeInc); if(_rI==='1'||_rI==='2'){ S('ret-regime', _rI==='1'?'lr':'lp'); fez.push('regime (EFD 0110)'); } }   /* v953 (D-05): COD_INC_TRIB 1 = cumulativo/LP, 2 = nao cumulativo/LR (estava invertido) */
+  else if(efd&&efd.ok&&efd.regimeInc){ var _rI=String(efd.regimeInc); if(_rI==='1'||_rI==='2'||_rI==='3'){ S('ret-regime', _rI!=='2'?'lr':'lp'); fez.push('regime (EFD 0110)'); } }   /* v953 (D-05): COD_INC_TRIB 1 = cumulativo/LP, 2 = nao cumulativo/LR (estava invertido) */
   var d=new Date(); d.setMonth(d.getMonth()-60);
   S('ret-compini', d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')); /* v584: prazo em branco */ fez.push('janela de 5 anos');
   show((fez.length?'\u2713 Preenchi: <b>'+fez.join(', ')+'</b>. ':'')+'\u26a0 Os valores retidos v\u00eam dos <b>informes de rendimento, DIRF/EFD-Reinf e DCTF</b> \u2014 documentos que n\u00e3o passam pela Central. Digite o retido m\u00e9dio mensal por linha e o % j\u00e1 aproveitado na apura\u00e7\u00e3o.', fez.length?'ok':'no');
@@ -47141,7 +47190,7 @@ function lhAgroPuxarCentral(){
   function S(id,v){ var e=document.getElementById(id); if(e){ e.value=v; e.dispatchEvent(new Event('input')); } }
   var fez=[];
   if(pg&&pg.ok){ S('cp-regime','sn'); fez.push('regime Simples (PGDAS) \u2014 n\u00e3o se aplica'); }
-  else if(efd&&efd.ok&&efd.regimeInc){ var _rI=String(efd.regimeInc); if(_rI==='1'||_rI==='2'){ S('cp-regime', _rI==='1'?'lr':'lp'); fez.push('regime (EFD 0110)'); } }   /* v953 (D-05): COD_INC_TRIB 1 = cumulativo/LP, 2 = nao cumulativo/LR (estava invertido) */
+  else if(efd&&efd.ok&&efd.regimeInc){ var _rI=String(efd.regimeInc); if(_rI==='1'||_rI==='2'||_rI==='3'){ S('cp-regime', _rI!=='2'?'lr':'lp'); fez.push('regime (EFD 0110)'); } }   /* v953 (D-05): COD_INC_TRIB 1 = cumulativo/LP, 2 = nao cumulativo/LR (estava invertido) */
   var d=new Date(); d.setMonth(d.getMonth()-60);
   fez.push('informe o periodo');
   show((fez.length?'\u2713 Preenchi: <b>'+fez.join(', ')+'</b>. ':'')+'\u26a0 As <b>aquisi\u00e7\u00f5es de produtos agropecu\u00e1rios</b> (de PF/cooperado) v\u00eam do <b>raz\u00e3o/EFD por fornecedor</b> \u2014 digite o total mensal. Escolha a al\u00edquota (60/50/35) pela <b>SA\u00cdDA</b> da agro, n\u00e3o pela origem do insumo.', fez.length?'ok':'no');
@@ -50406,7 +50455,10 @@ function setVal(id,v,papel){ var e=document.getElementById(id); if(e){ e.value=v
         var _cr=document.getElementById('c05_forn_regular'); if(_cr){ _cr.value=_crt.pReg; _cr.dispatchEvent(new Event('input')); nc++; }
         var _cs=document.getElementById('c05_forn_simples'); if(_cs){ _cs.value=_crt.pSN; _cs.dispatchEvent(new Event('input')); nc++; }
         if(!silencioso&&window.mostrarToast) mostrarToast('✓ Composição de fornecedores (CRT) aplicada: '+_crt.pReg+'% Regular · '+_crt.pSN+'% Simples','success');
-        return {campos:nc,calcs:1};
+        /* ★ v989 · com Reinf/eSocial/balancete etc. no lote, segue para os outros papéis (antes parava aqui e o INSS
+           retido do Reinf não chegava à tela quando as vendas zeravam — venda + devolução no mesmo período) */
+        var _temDoc0=false; try{ _temDoc0=!!((window.LH_IMPORT_ESOCIAL&&LH_IMPORT_ESOCIAL.ok)||(window.LH_IMPORT_REINF&&LH_IMPORT_REINF.ok)||(window.LH_IMPORT_BALANCETE&&LH_IMPORT_BALANCETE.ok)||window.LH_IMPORT_SPEDFISCAL||(window.LH_IMPORT_NFSE&&LH_IMPORT_NFSE.ok)||(window.LH_IMPORT_CTE&&LH_IMPORT_CTE.ok)||(window.LH_IMPORT_ECD&&LH_IMPORT_ECD.ok)); }catch(_e){}
+        if(!_temDoc0) return {campos:nc,calcs:1};
       }
       /* ★ v953 (D-03) · sem receita mas COM documentos (eSocial, Reinf, balancete, SPED Fiscal, NFS-e, CT-e):
          segue sem os papeis de faturamento/carga — abortar deixava ~300 destinos vazios no kit SPED sem NF-e. */
@@ -50443,7 +50495,13 @@ function setVal(id,v,papel){ var e=document.getElementById(id); if(e){ e.value=v
       }
     }catch(_e){}
     if(_fonteFat && _fonteFat.tipo==='XML' && _mesesXml>0) meses=_mesesXml;
-    if(meses<=1){ try{
+    /* ★ v989 · a janela das NOTAS só mede o período quando a receita vem das notas. Com a EFD de 1 mês (agosto)
+       e notas de agosto e setembro, a receita de agosto era dividida por 2: faturamento mensal pela metade e
+       anual pela metade (Kit Horizonte: 4.212 e 50.543 em vez de 8.423,80 e 101.085,60). */
+    var _periodoDaFonte = !!(_fonteFat && _fonteFat.tipo!=='XML');
+    /* a EFD é mensal: sem o período ainda gravado (a Central aplica enquanto lê), vale o nº de meses que ela mesma contou */
+    if(_fonteFat && _fonteFat.tipo==='EFD' && !_fp){ var _mE=(imp&&+imp.meses)||(window.LH_IMPORT_EFD&&+window.LH_IMPORT_EFD.meses)||1; meses=(_mE>=1&&_mE<=60)?_mE:1; }
+    if(meses<=1 && !_periodoDaFonte){ try{
       /* ★ v646 · O PERÍODO TAMBÉM PRECISA DE SANIDADE — teste do Chepe.
          A janela era medida entre a nota mais antiga e a mais nova, sem filtrar as doentes:
          com uma nota de 2015 e outra de 2030 no lote, o intervalo dava 180 meses; o limite
@@ -50582,7 +50640,7 @@ function setVal(id,v,papel){ var e=document.getElementById(id); if(e){ e.value=v
        das notas fiscais; não conseguindo, marca como suspeito para a tela
        avisar, em vez de calcular em silêncio. */
     try{
-      if(meses<=1){
+      if(meses<=1 && !_periodoDaFonte){   /* ★ v989 · a janela das notas não vale para receita que veio da EFD/PGDAS/ECD (o terceiro gêmeo do mesmo erro) */
         var _nt2=window._LH_XML_NOTAS||[], _min=null, _max=null;
         for(var _w=0;_w<_nt2.length;_w++){
           var _dh=String(_nt2[_w].dhEmi||'');
@@ -50931,8 +50989,10 @@ function setVal(id,v,papel){ var e=document.getElementById(id); if(e){ e.value=v
       if(_pg && _pg.ok) _regime='simples';
       else if(_ef && _ef.regimeInc){
         var _ri=String(_ef.regimeInc).trim();
-        if(_ri==='1') _regime='lr';        /* ★ v988 · Guia Prático EFD-Contribuições, 0110 COD_INC_TRIB: 1 = exclusivamente NÃO cumulativo (Lucro Real) */
-        else if(_ri==='2') _regime='lp';   /* 2 = exclusivamente cumulativo (Lucro Presumido); 3 = os dois, fica em branco. Estava invertido desde a v495 */
+        if(_ri==='1'||_ri==='3') _regime='lr';        /* ★ v988 · Guia Prático EFD-Contribuições, 0110 COD_INC_TRIB: 1 = exclusivamente NÃO cumulativo (Lucro Real) */
+        else if(_ri==='2') _regime='lp';   /* 2 = exclusivamente cumulativo (Lucro Presumido). Estava invertido desde a v495.
+           ★ v989 · 3 = não cumulativo E cumulativo: só o Lucro Real tem regime não cumulativo (o Presumido é todo cumulativo,
+           Lei 10.637/02 art. 8º e 10.833/03 art. 10) — então 3 também é Lucro Real, com parte da receita no cumulativo */
       }
     }catch(_e){}
     var pctCofSep=_pc(_cofV);
@@ -51942,7 +52002,7 @@ function lhCr04PuxarCentral(){
   function CK(id){ var e=document.getElementById(id); if(e&&!e.checked){ e.checked=true; e.dispatchEvent(new Event('change')); } }
   var fez=[];
   if(pg&&pg.ok){ S('cr04_regime','sn'); fez.push('regime Simples (PGDAS) \u2014 avalie o regime regular p\u00f3s-Reforma'); }
-  else if(efd&&efd.ok&&efd.regimeInc){ var _r4=String(efd.regimeInc); if(_r4==='1'||_r4==='2'){ S('cr04_regime', _r4==='1'?'lr':'lp'); fez.push('regime (EFD 0110)'); } }   /* v953 (D-05): 1 = cumulativo/LP, 2 = nao cumulativo/LR */
+  else if(efd&&efd.ok&&efd.regimeInc){ var _r4=String(efd.regimeInc); if(_r4==='1'||_r4==='2'||_r4==='3'){ S('cr04_regime', _r4!=='2'?'lr':'lp'); fez.push('regime (EFD 0110)'); } }   /* v953 (D-05): 1 = cumulativo/LP, 2 = nao cumulativo/LR */
   var MAPA=[[/alug/i,'aluguel'],[/energia|luz el/i,'energia'],[/frete|carret|transporte/i,'frete'],[/softw|sistema|tecnolog|\bti\b|licen\u00e7a/i,'ti'],[/consult|assessor|auditor/i,'consultoria'],[/market|publicid|propag|an\u00fanc/i,'marketing'],[/viag|passag|hosped/i,'viagem'],[/trein|curso|capacit/i,'treinamento'],[/m[a\u00e1]quin|equipam/i,'equipamento']];
   var achou=[];
   /* ★ v953 (D-10) · IDEMPOTENTE: somava em cima do valor ja na tela a cada execucao (Aplicar + cada abertura da
@@ -51969,7 +52029,7 @@ function lhCr06PuxarCentral(){
   function S(id,v){ var e=document.getElementById(id); if(e){ e.value=v; e.dispatchEvent(new Event('input')); e.dispatchEvent(new Event('change')); } }
   var fez=[];
   if(pg&&pg.ok){ S('cr06_regime','sn'); fez.push('regime Simples (PGDAS) \u2014 n\u00e3o se aplica'); }
-  else if(efd&&efd.ok&&efd.regimeInc){ var _r6=String(efd.regimeInc); if(_r6==='1'||_r6==='2'){ S('cr06_regime', _r6==='1'?'lr':'lp'); fez.push('regime (EFD 0110)'); } }   /* v953 (D-05) */
+  else if(efd&&efd.ok&&efd.regimeInc){ var _r6=String(efd.regimeInc); if(_r6==='1'||_r6==='2'||_r6==='3'){ S('cr06_regime', _r6!=='2'?'lr':'lp'); fez.push('regime (EFD 0110)'); } }   /* v953 (D-05) */
   show((fez.length?'\u2713 Preenchi: <b>'+fez.join(', ')+'</b>. ':'')+'\u26a0 O valor do benef\u00edcio e as condi\u00e7\u00f5es v\u00eam do <b>ato concessivo</b> (TARE/termo/decreto) e da <b>apura\u00e7\u00e3o ICMS (SPED Fiscal E110)</b> \u2014 fora da Central. Confirme: concedido at\u00e9 <b>31/05/2023</b> e car\u00e1ter <b>oneroso</b>.', fez.length?'ok':'no');
 }
 window.lhCr06PuxarCentral=lhCr06PuxarCentral;
@@ -52325,8 +52385,46 @@ function cmClassificaDesc(desc){
   if(Object.keys(trats).length>1) return {trat:r.trat,ncm:r.ncm,fonte:'Múltiplos tratamentos possíveis pela descrição — requer conferência',conf:'baixa',ambiguo:true};
   return {trat:r.trat,ncm:r.ncm,fonte:r.fonte,conf:r.conf};
 }
+/* ★ v989 · leitor único da planilha do catálogo (Frankenstein de 17/10):
+   · CSV do Excel brasileiro (";" e vírgula decimal, em Latin-1) era lido pelo SheetJS como número americano — "69,90"
+     virava 6990. Agora o CSV é lido como TEXTO (UTF-8, ou Windows-1252 se não for UTF-8) e cada célula vai como está;
+     quem converte é o num() da ficha, que entende "R$ 1.234,56", "69,90", "17%".
+   · a aba certa: a primeira aba cujo cabeçalho (nas 20 linhas de cima) tem NCM/NBS — não mais sempre a primeira. */
+window.lhPlanilhaLinhaCabecalho=function(rows){
+  var nh=function(h){ return String(h==null?'':h).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,''); };
+  for(var i=0;i<Math.min(20,(rows||[]).length);i++){ var r=rows[i]||[];
+    if(r.some(function(c){ var h=nh(c); return h.indexOf('ncm')>=0 || h==='nbs' || h.indexOf('nbs')===0 || /^(codigofiscal|codfiscal|classificacaofiscal|classfiscal)/.test(h); })) return i; }
+  return -1; };
+window.lhPlanilhaCsv=function(txt){
+  txt=String(txt||'').replace(/^﻿/,''); var L1=(txt.split(/\r?\n/)[0])||'';
+  var dl=[';','\t',',','|'].map(function(d){ return [d, L1.split(d).length]; }).sort(function(a,b){ return b[1]-a[1]; })[0][0];
+  var rows=[], row=[], cel='', q=false;
+  for(var i=0;i<txt.length;i++){ var ch=txt[i];
+    if(q){ if(ch==='"'){ if(txt[i+1]==='"'){ cel+='"'; i++; } else q=false; } else cel+=ch; continue; }
+    if(ch==='"' && cel===''){ q=true; continue; }
+    if(ch===dl){ row.push(cel); cel=''; continue; }
+    if(ch==='\n' || ch==='\r'){ if(ch==='\r' && txt[i+1]==='\n') i++; row.push(cel); rows.push(row); row=[]; cel=''; continue; }
+    cel+=ch; }
+  if(cel!=='' || row.length){ row.push(cel); rows.push(row); }
+  return rows.map(function(r){ return r.map(function(c){ c=String(c).trim(); return c===''?null:c; }); }); };
+window.lhPlanilhaLer=function(f, cb){
+  var rd=new FileReader(), csv=/\.(csv|txt)$/i.test(String(f&&f.name||''));
+  rd.onload=function(ev){ try{
+    if(csv){ var b=new Uint8Array(ev.target.result), t;
+      try{ t=new TextDecoder('utf-8',{fatal:true}).decode(b); }catch(_e){ t=new TextDecoder('windows-1252').decode(b); }
+      return cb(null, window.lhPlanilhaCsv(t), {aba:'', csv:true}); }
+    if(typeof XLSX==='undefined') return cb(new Error('Leitor de planilha não carregou'));
+    var wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'}), esc=wb.SheetNames[0], rows=null;
+    for(var i=0;i<wb.SheetNames.length;i++){ var r=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[i]],{header:1}); if(window.lhPlanilhaLinhaCabecalho(r)>=0){ esc=wb.SheetNames[i]; rows=r; break; } }
+    if(!rows) rows=XLSX.utils.sheet_to_json(wb.Sheets[esc],{header:1});
+    if(esc!==wb.SheetNames[0]){ try{ if(typeof mostrarToast==='function') mostrarToast('Catálogo lido da aba "'+esc+'" (a primeira aba não tem coluna de NCM)','info'); }catch(_e){} }
+    cb(null, rows, {aba:esc}); }catch(err){ cb(err); } };
+  rd.readAsArrayBuffer(f); };
 function cmProcessar(rows){
   if(!rows||rows.length<2){ if(typeof mostrarToast==='function')mostrarToast('Planilha vazia ou sem dados','error'); return; }
+  /* ★ v989 · Frankenstein (17/10): relatório do ERP com título e linhas em branco ANTES do cabeçalho — acha a linha do
+     cabeçalho (a primeira das 20 de cima com uma coluna NCM/NBS/classificação fiscal) e começa dali */
+  try{ var _hdr=window.lhPlanilhaLinhaCabecalho?window.lhPlanilhaLinhaCabecalho(rows):0; if(_hdr>0) rows=rows.slice(_hdr); }catch(_e){}
   var head=rows[0].map(function(h){return String(h==null?'':h).toLowerCase();});
   /* ★ v866 · colunas fiscais e de preço do ERP (nenhuma obrigatória) — viajam na ficha para a Precificação em Massa */
   var _hn=function(h){ return String(h).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,''); };
@@ -52364,9 +52462,12 @@ function cmProcessar(rows){
   var iNBS=HN.findIndex(function(h){ return h==='nbs' || h.indexOf('nbs')===0; });
   if(iNCM<0 && iNBS>=0) iNCM=iNBS;
   if(iNCM<0){ if(typeof mostrarToast==='function')mostrarToast('Não achei coluna de NCM. Cabeçalhos: NCM, Descrição','error'); return; }
-  var itens=[];
+  var itens=[], _totIgn=0, _codVisto={}, _codRep=[];
   for(var r=1;r<rows.length;r++){ var row=rows[r]; if(!row||!row.length)continue;
     if(!row.some(function(c){ return c!=null && String(c).trim()!==''; })) continue;   /* v872: linha em branco no meio da planilha não é item */
+    /* ★ v989 · linha de TOTAL/SUBTOTAL do relatório (sem NCM e sem código) não é item */
+    if(String(row[iNCM]==null?'':row[iNCM]).replace(/\D/g,'')==='' && (iCod<0 || String(row[iCod]==null?'':row[iCod]).trim()==='') && row.some(function(c){ return /^\s*(sub-?\s*)?tota(l|is)\b|^\s*soma\b/i.test(String(c==null?'':c)); })){ _totIgn++; continue; }
+    if(iCod>=0){ var _ck=String(row[iCod]==null?'':row[iCod]).trim(); if(_ck){ if(_codVisto[_ck]) _codRep.push(_ck); _codVisto[_ck]=1; } }
     var _it={cod:iCod>=0?row[iCod]:('#'+r), desc:iDesc>=0?row[iDesc]:'', ncm:row[iNCM]};
     _it.x={preco:iPreco>=0?row[iPreco]:null, custo:iCusto>=0?row[iCusto]:null, ipi:iIPI>=0?row[iIPI]:null, icms:iIcms>=0?row[iIcms]:null, cstIcms:iCstIcms>=0?row[iCstIcms]:'', cstPis:iCstPis>=0?row[iCstPis]:'',
            custoNovo:iCustoNovo>=0?row[iCustoNovo]:null, varCusto:iVarCusto>=0?row[iVarCusto]:null, grupo:iGrupo>=0?String(row[iGrupo]==null?'':row[iGrupo]).trim():'',
@@ -52376,7 +52477,8 @@ function cmProcessar(rows){
     if(iNBS>=0 && iNBS!==iNCM && row[iNBS] && !String(_it.ncm||'').replace(/\D/g,'')) { _it.nbs=String(row[iNBS]).trim(); _it.ncm=''; }
     else if(iNBS>=0 && iNBS===iNCM){ _it.nbs=String(row[iNBS]||'').trim(); _it.ncm=''; }
     itens.push(_it); }
-  var st={total:itens.length,semNCM:0,ncmInval:0,classif:0,benef:0,is:0,revisar:0,defaultCheia:0,porDesc:0,ambiguo:0, colsPreco:iPrecos.map(function(i){ return String(rows[0][i]); })};
+  if(_totIgn || _codRep.length){ try{ if(typeof mostrarToast==='function') mostrarToast((_totIgn?_totIgn+' linha(s) de total ignorada(s)':'')+(_totIgn&&_codRep.length?' · ':'')+(_codRep.length?_codRep.length+' código(s) repetido(s) na planilha ('+_codRep.slice(0,3).join(', ')+(_codRep.length>3?'…':'')+') — confira se é o mesmo item duas vezes':''),'info'); }catch(_e){} }
+  var st={total:itens.length,totalIgnorado:_totIgn,codRepetido:_codRep.slice(0,50),semNCM:0,ncmInval:0,classif:0,benef:0,is:0,revisar:0,defaultCheia:0,porDesc:0,ambiguo:0, colsPreco:iPrecos.map(function(i){ return String(rows[0][i]); })};
   var grupos={};
   if(!CM_IDX)cmMontaIdx();
   var up=document.getElementById('cm-upload-card'); if(up)up.style.display='none';
@@ -52734,18 +52836,11 @@ function cmWireUpload(){
   var inp=document.getElementById('cm-file'); if(!inp||inp._wired)return; inp._wired=true;
   inp.addEventListener('change',function(e){
     var f=e.target.files[0]; if(!f)return;
-    var rd=new FileReader();
-    rd.onload=function(ev){
-      try{
-        if(typeof XLSX==='undefined'){ if(typeof mostrarToast==='function')mostrarToast('Leitor de planilha não carregou','error'); return; }
-        var wb=XLSX.read(ev.target.result,{type:'binary'});
-        var ws=wb.Sheets[wb.SheetNames[0]];
-        var rows=XLSX.utils.sheet_to_json(ws,{header:1});
-        cmProcessar(rows);
-      }catch(err){ if(typeof mostrarToast==='function')mostrarToast('Erro ao ler: '+err.message,'error'); }
-      finally{ try{ e.target.value=''; }catch(_e){} }
-    };
-    rd.readAsBinaryString(f);
+    /* v989 · leitor único (CSV como texto, a aba que tem o NCM) */
+    window.lhPlanilhaLer(f, function(err, rows){
+      try{ if(err){ if(typeof mostrarToast==='function')mostrarToast('Erro ao ler: '+err.message,'error'); return; } cmProcessar(rows); }
+      catch(err2){ if(typeof mostrarToast==='function')mostrarToast('Erro ao ler: '+err2.message,'error'); }
+      finally{ try{ e.target.value=''; }catch(_e){} } });
   });
   var drop=document.getElementById('cm-drop');
   if(drop){ ['dragover','dragenter'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();this.style.borderColor='#c9a227';});});
@@ -58183,7 +58278,10 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
  var ANOS=[2026,2027,2028,2029,2030,2031,2032,2033];
  var ESTR={fica:'Ganhar o mesmo por unidade (contando com desconto do fornecedor)', liquido:'Ganhar o mesmo por unidade (sem contar com desconto do fornecedor)', preco:'Segurar o preço e ver quanto sobra', pj:'Cliente empresa: o custo dele fica igual', margem:'Manter a margem % (com o custo e o crédito)', markup:'Manter o markup sobre o custo'};   /* v983 · em língua de gente, igual à lista do passo 3 */
  window.LH_PM_ESTRATEGIAS=ESTR;
- function num(v){ if(v==null||v==='') return null; var s=String(v).trim().replace(/[R$\s%]/g,''); if(s.indexOf(',')>=0 && s.indexOf('.')>=0) s=s.replace(/\./g,'').replace(',','.'); else s=s.replace(',','.'); var n=parseFloat(s); return isFinite(n)?n:null; }
+ function num(v){ if(v==null||v==='') return null; if(typeof v==='number') return isFinite(v)?v:null; var s=String(v).trim().replace(/[R$\s%\u00a0]/g,'');
+   /* v989 · o último separador é o decimal: "1.234,56" (BR) e "1,234.56" (americano); só vírgula = decimal BR */
+   if(s.indexOf(',')>=0 && s.indexOf('.')>=0) s=(s.lastIndexOf(',')>s.lastIndexOf('.'))?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,''); else if((s.match(/,/g)||[]).length>1) s=s.replace(/,/g,''); else s=s.replace(',','.');
+   var n=parseFloat(s); return isFinite(n)?n:null; }
  function r2(x){ return Math.round((+x||0)*100)/100; }
  function fmt(x){ return (+x||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
  function pct(x){ return (Math.round((+x||0)*100)/100).toLocaleString('pt-BR')+'%'; }
@@ -58287,7 +58385,7 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
      var emi=String(nt.emitCNPJ||'').replace(/\D/g,''), ch=String(nt.chave||'').replace(/\D/g,'');
      if(emi!==emp || String(nt.tpNF||'')==='0' || (ch && (canc[ch] || vistas[ch]))) return; if(ch) vistas[ch]=1;
      var m=String(nt.dhEmi||'').slice(0,7); if(m) meses[m]=1;
-     (nt.itens||[]).forEach(function(it){ var fx=it.fis||{}; var v=+it.vProd||0; if(!(v>0)) return; n++;
+     (nt.itens||[]).forEach(function(it){ var fx=it.fis||{}; var v=+it.vProd||0; if(!(v>0)) return; if(window.lhCfopNaoReceita && lhCfopNaoReceita(it.cfop)) return; n++;   /* v989 */
        var exp=/^7/.test(String(it.cfop||''))?v:0;
        var soma=function(mp,k){ if(!k) return; var e=mp[k]||(mp[k]={q:0,v:0,v_icms:0,v_exp:0}); e.q+=(+fx.qCom||0); e.v+=v; e.v_icms+=(+fx.vICMS||0); e.v_exp+=exp; };
        soma(cod, String(fx.cProd||'').trim()); if(fx.cEAN && fx.cEAN.length>=8) soma(ean, fx.cEAN); soma(ncm, String(it.ncm||'').replace(/\D/g,'')); });
@@ -58551,6 +58649,10 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
      f.custoMaior=!!(f.custo>0 && f.preco>0 && f.custo>f.preco);
      ok.push(f);
    });
+   /* ★ v989 · preço fora da escala (Frankenstein: R$ 2,79 bilhões num arroz de 5 kg — vírgula ou casas decimais perdidas):
+      acima de R$ 1 milhão E mais de 1.000 vezes a mediana do catálogo não se precifica; vai para fora com o motivo */
+   if(ok.length>=3){ var _ps=ok.map(function(f){ return +f.preco||0; }).filter(function(p){ return p>0; }).sort(function(a,b){ return a-b; }), _med=_ps.length?_ps[Math.floor(_ps.length/2)]:0;
+     if(_med>0) ok=ok.filter(function(f){ if(f.preco>=1e6 && f.preco>1000*_med){ f.motivo='preço fora da escala do catálogo (R$ '+fmt(f.preco)+' contra mediana de R$ '+fmt(_med)+') — confira vírgula e casas decimais no cadastro'; fora.push(f); return false; } return true; }); }
    return {ok:ok, fora:fora};
  }
  function cfgTela(){
@@ -59116,12 +59218,10 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
  /* ── entrada pela própria aba: mesmo leitor do Classificador, depois precifica ── */
  window.lhPmUsarClassificado=function(){ if(window.lhPmAba) lhPmAba('res'); window.lhPmRender(); };   /* v982: vai para a aba Resultado */
  /* v977 · o mesmo leitor de sempre, agora com nome: a planilha reaberta do cliente passa por aqui também (e não é guardada de novo) */
- window.lhPmLerPlanilha=function(f, reaberta){ var rd=new FileReader();
-   rd.onload=function(ev){ try{ if(typeof XLSX==='undefined'){ alert('Leitor de planilha não carregou'); return; }
-     var wb=XLSX.read(ev.target.result,{type:'binary'}); var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});
+ window.lhPmLerPlanilha=function(f, reaberta){   /* v989 · leitor único (CSV como texto, a aba que tem o NCM) */
+   window.lhPlanilhaLer(f, function(err, rows){ try{ if(err){ alert('Erro ao ler: '+err.message); return; }
      if(!reaberta){ try{ if(window.LH_DOCS_CLI) window.LH_DOCS_CLI.aoPlanilha(f); }catch(_e){} }
-     window._PM_APOS=true; window.lhPmEsperar(); cmProcessar(rows); }catch(err){ alert('Erro ao ler: '+err.message); } };
-   rd.readAsBinaryString(f); };
+     window._PM_APOS=true; window.lhPmEsperar(); cmProcessar(rows); }catch(err2){ alert('Erro ao ler: '+err2.message); } }); };
  function wire(){
    try{ if(window.LH_DOCS_CLI) window.LH_DOCS_CLI.render(); }catch(_e){}   /* v977 · última planilha deste cliente */
    try{ if(window.lhPmAbaSync) setTimeout(lhPmAbaSync,0); }catch(_e){}   /* v982 · abre na aba certa (com resultado: Resultado; sem: Dados) */
@@ -59258,6 +59358,7 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
       if(emi!==emp || String(nt.tpNF||'')==='0' || (ch && (canc[ch] || vistas[ch]))) return; if(ch) vistas[ch]=1; r.n++;
       var pf=String(nt.mod||'')==='65' || !!String(nt.destCPF||'').replace(/\D/g,'') || !String(nt.destCNPJ||'').replace(/\D/g,'');
       (nt.itens||[]).forEach(function(it){ var v=+it.vProd||0; if(!(v>0)) return;
+        if(window.lhCfopNaoReceita && lhCfopNaoReceita(it.cfop)) return;   /* v989: remessa/bonificação não é venda */
         if(/^7/.test(String(it.cfop||''))) r.exp+=v; else if(pf) r.pf+=v; else r.pj+=v; }); });
     var dom=r.pf+r.pj; if(!r.n || !(dom+r.exp>0)) return null;
     r.pf_pct=dom?Math.round(r.pf/dom*1000)/10:0; r.pj_pct=dom?Math.round((100-r.pf_pct)*10)/10:0; r.exp_pct=Math.round(r.exp/(dom+r.exp)*1000)/10; return r; };
@@ -65031,7 +65132,7 @@ function lhCr03PuxarCentral(){
   function S(id,v){ var e=document.getElementById(id); if(e){ e.value=v; e.dispatchEvent(new Event('input')); } }
   var fez=[];
   if(pg&&pg.ok){ S('cr03_regime','sn'); fez.push('regime Simples (PGDAS) \u2014 n\u00e3o se aplica'); }
-  else if(efd&&efd.ok&&efd.regimeInc){ var _rI=String(efd.regimeInc); if(_rI==='1'||_rI==='2'){ S('cr03_regime', _rI==='1'?'lr':'lp'); fez.push('regime (EFD 0110)'); } }   /* v953 (D-05): COD_INC_TRIB 1 = cumulativo/LP, 2 = nao cumulativo/LR (estava invertido) */
+  else if(efd&&efd.ok&&efd.regimeInc){ var _rI=String(efd.regimeInc); if(_rI==='1'||_rI==='2'||_rI==='3'){ S('cr03_regime', _rI!=='2'?'lr':'lp'); fez.push('regime (EFD 0110)'); } }   /* v953 (D-05): COD_INC_TRIB 1 = cumulativo/LP, 2 = nao cumulativo/LR (estava invertido) */
   var d=new Date(); d.setMonth(d.getMonth()-60);
   fez.push('informe o periodo');
   show((fez.length?'\u2713 Preenchi: <b>'+fez.join(', ')+'</b>. ':'')+'\u26a0 O valor da <b>energia consumida</b> vem da <b>fatura de energia</b> (separe do CIP/ICMS/tributos) \u2014 digite a m\u00e9dia mensal do consumo. Confira na EFD se o cr\u00e9dito j\u00e1 vinha sendo tomado.', fez.length?'ok':'no');
@@ -65557,7 +65658,7 @@ function lhC5PuxarCentral(){
        declaradas — DIRF, DARFs, ECF, ato concessivo e NFS-e estao na fila. */
     try{
       /* ★ v953 (D-05) · COD_INC_TRIB do 0110: 1 = cumulativo (Presumido), 2 = nao cumulativo (Real). Estava invertido. */
-      var _reg2 = (efd&&efd.regimeInc!=null&&String(efd.regimeInc)!=='') ? (String(efd.regimeInc)==='1'?'lr':(String(efd.regimeInc)==='2'?'lp':null))   /* ★ v988 · 1 = não cumulativo (LR), 2 = cumulativo (LP) */ : null;
+      var _reg2 = (efd&&efd.regimeInc!=null&&String(efd.regimeInc)!=='') ? ((String(efd.regimeInc)==='1'||String(efd.regimeInc)==='3')?'lr':(String(efd.regimeInc)==='2'?'lp':null))   /* ★ v988 · 1 = não cumulativo (LR), 2 = cumulativo (LP) */ : null;
       var _vo2=0; if(spf&&spf.porCFOP){ var _EN2={'1252':1,'1253':1,'2252':1,'2253':1,'1257':1,'2257':1};
         Object.keys(spf.porCFOP).forEach(function(_c2){ if(_EN2[_c2]) _vo2+=(spf.porCFOP[_c2].vlOpr||0); }); }
       if(_vo2>0){ set('cr04_chk_energia', true); set('cr04_val_energia', Math.round(_vo2*12), 0); }
@@ -65671,7 +65772,17 @@ function lhC05PuxarCentral(){
       } }catch(_e){}
   }
   var xm=window.LH_IMPORT_XML;
-  if((!pg||(!pg.rbt12&&!pg.rpa)) && xm && ((xm.vNFSaida||0)>0 || (xm.vNF||0)>0)){
+  /* ★ v989 · mesma ordem de confiança da Central (PGDAS > EFD > notas): com a EFD-Contribuições, o faturamento
+     do Regime Ótimo é a receita escriturada anualizada pelo período dela — antes ele ia direto às notas e ficava
+     diferente das outras telas (Kit Horizonte: 88.258 aqui × 101.085,60 no resto). */
+  var _usouEFD=false;
+  try{ var _ef5=window.LH_IMPORT_EFD;
+    if((!pg||(!pg.rbt12&&!pg.rpa)) && _ef5 && _ef5.ok && (+_ef5.receitaBruta||0)>0){
+      var _m5=+_ef5.meses||0;
+      if(!(_m5>0) && _ef5.dtIni && _ef5.dtFin && _ef5.dtIni.length>=8 && _ef5.dtFin.length>=8){
+        _m5=(+_ef5.dtFin.slice(4,8)-+_ef5.dtIni.slice(4,8))*12+(+_ef5.dtFin.slice(2,4)-+_ef5.dtIni.slice(2,4))+1; }
+      if(_m5>=1 && _m5<=60){ S('c05_fat', Math.round(_ef5.receitaBruta/_m5*12), 'EFD-Contribuições\u2192faturamento ('+_m5+' m\u00eas(es) anualizados)'); _usouEFD=true; } } }catch(_e9){}
+  if(!_usouEFD && (!pg||(!pg.rbt12&&!pg.rpa)) && xm && ((xm.vNFSaida||0)>0 || (xm.vNF||0)>0)){
     /* v563 — FATURAMENTO DE SAIDA A PROVA DE CORRIDA ASSINCRONA.
        Antes: (1) confiava no xm.vNFSaida — que vinha com as ENTRADAS somadas
        quando a classificacao por CNPJ ainda nao tinha rodado (leitura assincrona
@@ -73874,7 +73985,7 @@ window.LH_MAPA_FORN = (function(){
   function regimeDaCentral(){
     try{ var pg=window.LH_IMPORT_PGDAS; if(pg && pg.ok) return { valor:'SN', origem:'PGDAS-D' }; }catch(_e){}
     try{ var ef=window.LH_IMPORT_EFD||window.LH_IMPORT, ri=ef&&ef.regimeInc!=null?String(ef.regimeInc).trim():'';
-      if(ri==='1') return { valor:'LR', origem:'EFD-Contribuições (0110)' }; if(ri==='2') return { valor:'LP', origem:'EFD-Contribuições (0110)' };   /* ★ v988 · era o inverso */ }catch(_e){}
+      if(ri==='1'||ri==='3') return { valor:'LR', origem:'EFD-Contribuições (0110)' };   /* v989: 3 (os dois) também é Real */ if(ri==='2') return { valor:'LP', origem:'EFD-Contribuições (0110)' };   /* ★ v988 · era o inverso */ }catch(_e){}
     try{ var e=window.LH_GRUPO&&LH_GRUPO.getEntidadeAtiva?LH_GRUPO.getEntidadeAtiva():null, r=String(e&&e.regime||'').toLowerCase();
       var mapa=[[/h[ií]brido/,'SN_HIBRIDO'],[/simples|^sn$|mei/,'SN'],[/presumido|^lp$/,'LP'],[/real|^lr$/,'LR']];
       for(var i=0;i<mapa.length;i++){ if(mapa[i][0].test(r)) return { valor:mapa[i][1], origem:'cadastro do cliente' }; } }catch(_e){}
