@@ -2513,7 +2513,7 @@ body.tema-claro input.lh-auto, body.tema-claro select.lh-auto{
 </style>
 <style id="lh-pdf-css">.btn-pdf-calc{display:inline-flex;align-items:center;gap:6px;margin:18px 0 4px;padding:10px 22px;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:8px;border:1px solid var(--gold,#c9a227);background:transparent;color:var(--gold2,#f4cc4a);transition:background .2s}.btn-pdf-calc:hover{background:rgba(201,162,39,.12)}.btn-pdf-calc:active{transform:translateY(1px)}</style>
 </head>
-<body><script>window.LH_VERSAO="v990";</script>
+<body><script>window.LH_VERSAO="v991";</script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    LH_PONTE · v673 — a ponte para o servidor, com MODO SOMBRA
@@ -12858,6 +12858,24 @@ window.LH_aplicarDocsNasCalcs && window.LH_aplicarDocsNasCalcs()">Aplicar aos c�
     <div class="input-card" id="pm-docs-card">
       <h3><span class="pm-passo">2</span> Documentos <span style="font-weight:400;font-size:.8rem;color:var(--text2)">· opcional — deixam o resultado mais preciso</span></h3>
       <div id="pm-docs-lista"></div>
+      <!-- ★ v991 · faltam dados de compra: sem custo, o resultado conta só o imposto da venda. Os campos que mexem na conta, à vista. -->
+      <style>#pm-cf-mix span{display:block;margin-bottom:3px;min-height:2.2em}#pm-cf-mix input{width:100%;box-sizing:border-box;padding:8px 10px;border-radius:8px;border:1px solid var(--border,rgba(128,128,128,.35));background:var(--card,#fff);color:var(--text);font-size:.95rem}</style>
+      <div id="pm-compra-falta" style="display:none;margin-top:12px;border:1px solid rgba(224,168,58,.55);border-left:4px solid #e0a83a;border-radius:10px;padding:12px 14px;background:rgba(224,168,58,.07)">
+        <div style="font-weight:800;color:#b37a12;margin-bottom:4px">⚠ Faltam dados de compra <span id="pm-cf-n" style="font-weight:600"></span></div>
+        <div id="pm-cf-txt" style="font-size:.86rem;line-height:1.5;color:var(--text);margin-bottom:10px"></div>
+        <div id="pm-cf-custo" class="input-group" style="max-width:420px"><label>Custo médio em % do preço</label>
+          <input type="number" id="pm_custopct_q" min="1" max="99" step="1" placeholder="ex.: 60 (o custo é 60% do preço de venda)" oninput="lhPmCompraFalta('custo',this.value)">
+          <div style="font-size:.76rem;color:var(--text2);margin-top:3px">Por grupo de produto: em Ajustes finos, no passo 3.</div></div>
+        <div id="pm-cf-mix" style="margin-top:10px"><label style="font-size:.8rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em">De quem você compra — % das compras <span id="pm-cf-soma" style="font-weight:600;text-transform:none"></span></label>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:6px">
+            <div><span style="font-size:.76rem;color:var(--text2)">Regime regular ou importação</span><input type="number" id="pm_mix_regular" min="0" max="100" step="5" placeholder="%" oninput="lhPmCompraFalta('mix')"></div>
+            <div><span style="font-size:.76rem;color:var(--text2)">Simples (dentro do DAS)</span><input type="number" id="pm_mix_sn" min="0" max="100" step="5" placeholder="%" oninput="lhPmCompraFalta('mix')"></div>
+            <div><span style="font-size:.76rem;color:var(--text2)">Simples híbrido</span><input type="number" id="pm_mix_snh" min="0" max="100" step="5" placeholder="%" oninput="lhPmCompraFalta('mix')"></div>
+            <div><span style="font-size:.76rem;color:var(--text2)">MEI</span><input type="number" id="pm_mix_mei" min="0" max="100" step="5" placeholder="%" oninput="lhPmCompraFalta('mix')"></div>
+            <div><span style="font-size:.76rem;color:var(--text2)">Produtor rural / pessoa física</span><input type="number" id="pm_mix_pf" min="0" max="100" step="5" placeholder="%" oninput="lhPmCompraFalta('mix')"></div>
+          </div>
+          <div style="font-size:.76rem;color:var(--text2);margin-top:4px">Vale para os itens sem nota de compra e sem a coluna ORIGEM_COMPRA na planilha. Vazio = regime regular.</div></div>
+      </div>
     </div>
     <div class="input-card" id="pm-vende-card">
       <h3><span class="pm-passo" id="pm-passo-vende">3</span> Como a empresa vende</h3>
@@ -58294,10 +58312,12 @@ function SN_FAT(){ var f=SN_TRANS[SN_ANO]||SN_TRANS[2027];
  function pmItemServidor(f, cfg){
    return {trat:f.trat, preco:f.preco, icms:f.icms, st:!!f.st, cstPis:f.cstPis||'', ipi:f.ipi, custo:f.custo, custoNovo:f.custoNovo, varCusto:f.varCusto,
            grupo:f.grupo||'', icmsSt:f.icmsSt, icmsStPct:f.icmsStPct, origem:f.origem||'', credPct:f.credPct, fornecedor:f.fornecedor||undefined, venda:f.venda||undefined,   /* v980 */
-           repLinha:(cfg.repLinha && cfg.repLinha[String(f.cod)]!=null)?+cfg.repLinha[String(f.cod)]:null, qtd:(f.qtd>0?f.qtd:undefined)};
+           repLinha:(cfg.repLinha && cfg.repLinha[String(f.cod)]!=null)?+cfg.repLinha[String(f.cod)]:null, qtd:(f.qtd>0?f.qtd:undefined),
+           /* ★ v991 · composição de compras da tela: só para o item sem nota de compra, sem ORIGEM_COMPRA, sem CRED_% e sem % do grupo */
+           fornecedor:f.fornecedor||((cfg.mixCompra && !f.origem && !(f.credPct!=null && f.credPct>=0) && !(f.grupo && cfg.credGrupo && cfg.credGrupo[f.grupo]!=null))?{mix:cfg.mixCompra}:undefined)};
  }
  function pmCfgServidor(cfg){
-   var c={}, fora={busca:1, tipo:1, lista:1, repLinha:1, b2b:1};
+   var c={}, fora={busca:1, tipo:1, lista:1, repLinha:1, b2b:1, mixCompra:1};
    for(var k in cfg){ if(!fora[k] && cfg[k]!==undefined) c[k]=cfg[k]; }
    c.formato='compacto'; return c;
  }
@@ -58670,6 +58690,7 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
            credGrupo:(function(){ var m={}; var els=document.querySelectorAll('#pm_cred_grupos input.pm-cg'); for(var i=0;i<els.length;i++){ var v=num(els[i].value); if(v!=null) m[els[i].getAttribute('data-grupo')]=Math.max(0,Math.min(100,v)); } return m; })(),
            /* v966 · TR35: o motor único no servidor; custo % do preço para quem não tem custo; carteira de clientes */
            motor:'repreco', custoPct:num(g('pm_custopct')),
+           mixCompra:(function(){ var m={}, t=0; [['regular','pm_mix_regular'],['sn','pm_mix_sn'],['sn_hibrido','pm_mix_snh'],['mei','pm_mix_mei'],['pf','pm_mix_pf']].forEach(function(p){ var v=num(g(p[1])); if(v!=null && v>0){ m[p[0]]=Math.min(100,v); t+=v; } }); return t>0?m:undefined; })(),   /* v991 */
            custoPctGrupo:(function(){ var m={}; var els=document.querySelectorAll('#pm_custopct_grupos input.pm-cp'); for(var i=0;i<els.length;i++){ var v=num(els[i].value); if(v!=null && v>0 && v<100) m[els[i].getAttribute('data-grupo')]=v; } return m; })(),
            clientes:(function(){ var m={}, t=0; [['lr','pm_cli_lr'],['lp','pm_cli_lp'],['sn','pm_cli_sn'],['sn_hibrido','pm_cli_snh'],['pf','pm_cli_pf']].forEach(function(p){ var v=num(g(p[1])); if(v!=null && v>0){ m[p[0]]=v; t+=v; } }); return t>0?m:undefined; })(),
            creditavel:(function(){ try{ var c=window.LH_CADEIA&&LH_CADEIA.calcular(2033); var e=LH_CADEIA.get().entrada; return (c && Object.keys(e).some(function(k){ return e[k]!=null; }))?c.creditavel:1; }catch(_e){ return 1; } })()};
@@ -58767,6 +58788,8 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
    var varCustoMed=somaCH?((somaCN-somaCH)/somaCH*100):0, varSoCusto=somaHojeVar?((somaSoCusto-somaHojeVar)/somaHojeVar*100):0;
    var _vn=document.getElementById('pm_var_n'); if(_vn) _vn.textContent=(temVar?('— '+nVar.toLocaleString('pt-BR')+' itens com custo novo'+(servPuro?' · '+servPuro+' serviço'+(servPuro===1?'':'s')+' puro'+(servPuro===1?'':'s')+' fora (sem custo)':'')):(pediuVar&&servPuro?'— '+servPuro+' serviço'+(servPuro===1?'':'s')+' puro'+(servPuro===1?'':'s')+' fora (sem custo)':''))+(nInv?' · '+nInv+' custo'+(nInv===1?'':'s')+' novo'+(nInv===1?'':'s')+' inválido'+(nInv===1?'':'s')+' (≤ 0 ou variação ≤ −100%) ignorado'+(nInv===1?'':'s'):'');
    var h='<div class="input-card" data-pm-sec="res"><h3 style="color:var(--gold)">Tabela de preços 2027-33 — '+ESTR[cfg.estr]+'</h3>';
+   /* ★ v991 · o resultado diz quando saiu sem o lado da compra (sem custo): o número é conservador, não definitivo */
+   if(n && n-nCusto>0) h+='<div id="pm-res-semcompra" style="border-left:4px solid #e0a83a;background:rgba(224,168,58,.08);border-radius:8px;padding:9px 12px;margin:0 0 12px;font-size:.88rem;line-height:1.5">⚠ <b>'+(n-nCusto).toLocaleString('pt-BR')+' de '+n.toLocaleString('pt-BR')+' itens saíram sem o custo de compra</b> — para eles a conta considera só o imposto da venda (o custo fica como hoje). Informe o custo médio em % do preço e de quem a empresa compra na aba <a href="#" onclick="try{lhPmAba(\'dados\');document.getElementById(\'pm-compra-falta\').scrollIntoView({behavior:\'smooth\',block:\'center\'});}catch(e){}return false;">Dados</a>.</div>';
    h+='<div style="color:var(--text2);font-size:.88rem;margin-bottom:12px">'+n.toLocaleString('pt-BR')+' itens precificados · regime '+({presumido:'Lucro Presumido',real:'Lucro Real',hibrido:'Simples híbrido (IBS/CBS por fora)',simples:'Simples Nacional'}[cfg.regime]||cfg.regime)+' · '+(cfg.b2b?'vende para PJ':'vende para consumidor')+(temPreco?'':' · <b>sem coluna de preço: resultado por R$ 100</b>')+'</div>';
    h+='<div class="kpi-grid">';
    h+='<div class="kpi-card kpi-hero"><div class="kpi-label">Itens precificados</div><div class="kpi-value">'+n.toLocaleString('pt-BR')+'</div></div>';
@@ -59323,8 +59346,9 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
     var h='';
     if(N){
       h+='<div style="font-size:.9rem;margin-bottom:8px"><b style="color:'+(pc(nReal,N)>=70?'#16c47c':'#e0a83a')+'">'+pc(nReal,N)+'% dos '+N.toLocaleString('pt-BR')+' itens</b> têm custo e fornecedor de verdade (da planilha ou das notas). O resto a ferramenta estima — e avisa nas premissas do resultado.</div>';
-      h+='<div class="pm-termo">'+cartao('Custo de compra', nCusto+nCustoNota, N, (nCustoNota?nCustoNota.toLocaleString('pt-BR')+' pela nota de compra · ':'')+((nCusto+nCustoNota)<N?'sem custo: estimado pelo % do preço':'todos com custo'))
-        +cartao('De quem você compra', nForn, N, (nForn<N?'sem nota: tratado como fornecedor do regime regular':'todos com fornecedor conhecido'))
+      var _cp=+((document.getElementById('pm_custopct')||{}).value||0), _mx=['pm_mix_regular','pm_mix_sn','pm_mix_snh','pm_mix_mei','pm_mix_pf'].some(function(i){ return +((document.getElementById(i)||{}).value||0)>0; });
+      h+='<div class="pm-termo">'+cartao('Custo de compra', nCusto+nCustoNota, N, (nCustoNota?nCustoNota.toLocaleString('pt-BR')+' pela nota de compra · ':'')+((nCusto+nCustoNota)<N?(_cp>0?'sem custo: estimado em '+_cp+'% do preço':'sem custo: só o imposto da venda entra na conta'):'todos com custo'))
+        +cartao('De quem você compra', nForn, N, (nForn<N?(_mx?'sem nota: pela composição que você informou':'sem nota: tratado como fornecedor do regime regular'):'todos com fornecedor conhecido'))
         +cartao('Quantidade vendida', nQtd, N, (nQtd<N?'sem quantidade: o resultado sai por unidade, sem o total do mês':'todos com quantidade'))+'</div>';
     } else h+='<div class="pm-doc-falta" style="margin-bottom:10px">Carregue o catálogo no passo 1 — aqui aparece quanto dele já tem dado de verdade.</div>';
     var st=function(ok, txt){ return ok===null?'<span class="pm-doc-na">'+txt+'</span>':'<span class="'+(ok?'pm-doc-ok':'pm-doc-falta')+'">'+(ok?'✓ ':'⚠ ')+txt+'</span>'; };
@@ -59341,10 +59365,33 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
     h+='</table>';
     h+='<div class="pm-ajuda" style="margin-top:10px">As notas trazem o que a empresa <b>pagou e vendeu de verdade hoje</b>. A projeção de 2027 a 2033 — imposto por dentro e por fora, crédito, débito e preço — é a ferramenta que faz, a partir disso. Nada sai do seu computador: as notas ficam neste navegador.</div>';
     box.innerHTML=h;
+    try{ window.lhPmCompraFalta('ver', null, {N:N, semCusto:N-(nCusto+nCustoNota), semForn:N-nForn}); }catch(_e){}   /* v991 */
     var dica=document.getElementById('pm-go-dica'); if(dica) dica.textContent=N?'':'primeiro carregue o catálogo (passo 1)';
   };
 
 
+  /* ★ v991 · o quadro "Faltam dados de compra": aparece quando a planilha e as notas não trazem custo ou fornecedor. O campo de
+     custo é o mesmo % dos Ajustes finos (escreve lá); a composição vai ao servidor como fornecedor.mix (o servidor faz a conta). */
+  var _cf={N:0, semCusto:0, semForn:0};
+  window.lhPmCompraFalta=function(o, v, st){
+    if(st) _cf=st;
+    var box=document.getElementById('pm-compra-falta'); if(!box) return;
+    var q=document.getElementById('pm_custopct_q'), aj=document.getElementById('pm_custopct');
+    if(o==='custo'){ if(aj){ aj.value=v; } clearTimeout(window._pmT); window._pmT=setTimeout(function(){ try{ lhPmRender(); }catch(_e){} try{ lhPmDocs(); }catch(_e){} },400); return; }
+    if(o==='mix'){ var t=0; ['pm_mix_regular','pm_mix_sn','pm_mix_snh','pm_mix_mei','pm_mix_pf'].forEach(function(i){ t+=+((document.getElementById(i)||{}).value||0); });
+      var sm=document.getElementById('pm-cf-soma'); if(sm) sm.innerHTML=t>0?('— soma '+t.toLocaleString('pt-BR')+'%'+(Math.abs(t-100)>0.5?' <span style="color:#b37a12">(a conta usa a proporção entre eles)</span>':' ✓')):'';
+      clearTimeout(window._pmT); window._pmT=setTimeout(function(){ try{ lhPmRender(); }catch(_e){} try{ lhPmDocs(); }catch(_e){} },400); return; }
+    if(q && aj && document.activeElement!==q) q.value=aj.value||'';
+    var mostra=_cf.N>0 && (_cf.semCusto>0 || _cf.semForn>0); box.style.display=mostra?'':'none'; if(!mostra) return;
+    var cc=document.getElementById('pm-cf-custo'), cm=document.getElementById('pm-cf-mix');
+    if(cc) cc.style.display=_cf.semCusto>0?'':'none'; if(cm) cm.style.display=_cf.semForn>0?'':'none';
+    var fmt=function(x){ return (+x).toLocaleString('pt-BR'); }, temCp=+(aj&&aj.value||0)>0;
+    var n=document.getElementById('pm-cf-n'); if(n) n.textContent='em '+fmt(Math.max(_cf.semCusto,_cf.semForn))+' de '+fmt(_cf.N)+' itens';
+    var t=document.getElementById('pm-cf-txt'); if(t) t.innerHTML=(_cf.semCusto>0
+      ? (temCp?'Sem custo na planilha nem nota de compra, o custo de '+fmt(_cf.semCusto)+' itens sai do % abaixo. ':'<b>Sem o custo, o resultado conta só o imposto da venda</b>: a ferramenta supõe que o custo das compras não muda. Na Reforma ele costuma cair — o fornecedor regular deixa de embutir PIS/COFINS e ICMS e a compra passa a dar crédito cheio —, então o preço pode cair mais do que o resultado mostra. ')
+      : '')+(_cf.semForn>0?'De quem a empresa compra muda o crédito: compra do Simples, do MEI ou de produtor pessoa física dá pouco ou nenhum crédito. ':'')
+      +'Preencha o que souber; sem mexer, valem os padrões e o resultado avisa.';
+  };
   /* ★ v986 · para quem a empresa vende, pelas notas de venda (só SOMA valores: consumidor = NFC-e ou nota para CPF; empresa =
      nota para CNPJ; exportação = CFOP 7 e fica fora da carteira). O regime do cliente empresa não vem na nota. */
   window.lhPmClientesNotas=function(){
@@ -59376,6 +59423,7 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
     +'<div style="color:#f0c44c;font-size:1rem;font-weight:800;margin:16px 0 6px">3 · O passo a passo</div>'
     +'<p style="color:#d9e1ec;margin:0 0 8px"><b>Passo 1 · Catálogo.</b> A planilha do ERP com código, descrição, NCM e preço. Se tiver custo, ICMS e quantidade vendida, melhor. Ela passa pelo Classificador, que diz o tratamento de cada item (cheio, reduzido, zero).</p>'
     +'<p style="color:#d9e1ec;margin:0 0 8px"><b>Passo 2 · Documentos (opcional, mas faz diferença).</b> Os XML de compra dizem de quem a empresa compra e quanto imposto pagou; os XML de venda dizem quanto ela vende por mês. Coloque na Central de Documentos e volte: o passo 2 mostra quantos itens ficaram com dado de verdade.</p>'
+    +'<p style="color:#d9e1ec;margin:0 0 8px"><b>Planilha só com preço e NCM?</b> Funciona: o lado da venda (o imposto que sai e o que entra, ano a ano) vem do NCM, do regime e do ano. Mas sem o custo a conta supõe que o custo das compras não muda — e na Reforma ele costuma cair. O passo 2 mostra o quadro <b>Faltam dados de compra</b>: informe o custo médio em % do preço e de quem a empresa compra (regular, Simples, Simples híbrido, MEI, produtor). Com isso o resultado deixa de ser só o imposto da venda.</p>'
     +'<p style="color:#d9e1ec;margin:0 0 8px"><b>Passo 3 · Como a empresa vende.</b> O regime, para quem vende (consumidor ou empresa) e o que você quer manter. Os ajustes finos podem ficar como estão.</p>'
     +'<p style="color:#d9e1ec;margin:0 0 8px">Depois, <b>Precificar</b>. Para ver tudo funcionando antes de usar com um cliente, clique em <b>Ver com um catálogo de exemplo</b> (na Formação de Preço, <b>Exemplo</b>).</p>'
     +'<div style="color:#f0c44c;font-size:1rem;font-weight:800;margin:16px 0 6px">4 · Como ler o resultado</div>'
@@ -59385,7 +59433,8 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
     +'<p style="color:#d9e1ec;margin:0 0 8px">Confira as <b>premissas</b> no fim do Resultado: elas dizem o que foi estimado. Custo estimado, fornecedor suposto e ICMS de cesta básica são os pontos para conferir com o cliente. Na nota de compra, a unidade pode ser caixa e na planilha, unidade — confira quando o custo vier da nota.</p>';
   try{ var G=window.LH_GUIAS=window.LH_GUIAS||{};
     G.precmassa={titulo:'Precificação em Massa', html:TRILHA};
-    G.formpreco={titulo:'Formação de Preço', html:TRILHA.replace('<b>Passo 1 · Catálogo.</b> A planilha do ERP com código, descrição, NCM e preço. Se tiver custo, ICMS e quantidade vendida, melhor. Ela passa pelo Classificador, que diz o tratamento de cada item (cheio, reduzido, zero).','<b>Passo 1 · O item.</b> O NCM (produto) ou NBS (serviço) — ou a descrição, que a lista sugere o código —, o preço de hoje e, se tiver, o custo e o ICMS.').replace('<p style="color:#d9e1ec;margin:0 0 8px"><b>Passo 2 · Documentos (opcional, mas faz diferença).</b> Os XML de compra dizem de quem a empresa compra e quanto imposto pagou; os XML de venda dizem quanto ela vende por mês. Coloque na Central de Documentos e volte: o passo 2 mostra quantos itens ficaram com dado de verdade.</p>','').replace('<b>Passo 3 · Como a empresa vende.</b>','<b>Passo 2 · Como a empresa vende.</b>').replace('Depois, <b>Precificar</b>. Para ver tudo funcionando antes de usar com um cliente, clique em <b>Ver com um catálogo de exemplo</b> (na Formação de Preço, <b>Exemplo</b>).','Depois, <b>Calcular este item</b>. Para ver tudo funcionando antes de usar com um cliente, clique em <b>Exemplo</b>.')}; }catch(_e){}
+    G.formpreco={titulo:'Formação de Preço', html:TRILHA.replace('<b>Passo 1 · Catálogo.</b> A planilha do ERP com código, descrição, NCM e preço. Se tiver custo, ICMS e quantidade vendida, melhor. Ela passa pelo Classificador, que diz o tratamento de cada item (cheio, reduzido, zero).','<b>Passo 1 · O item.</b> O NCM (produto) ou NBS (serviço) — ou a descrição, que a lista sugere o código —, o preço de hoje e, se tiver, o custo e o ICMS.').replace('<p style="color:#d9e1ec;margin:0 0 8px"><b>Passo 2 · Documentos (opcional, mas faz diferença).</b> Os XML de compra dizem de quem a empresa compra e quanto imposto pagou; os XML de venda dizem quanto ela vende por mês. Coloque na Central de Documentos e volte: o passo 2 mostra quantos itens ficaram com dado de verdade.</p>'
+    +'<p style="color:#d9e1ec;margin:0 0 8px"><b>Planilha só com preço e NCM?</b> Funciona: o lado da venda (o imposto que sai e o que entra, ano a ano) vem do NCM, do regime e do ano. Mas sem o custo a conta supõe que o custo das compras não muda — e na Reforma ele costuma cair. O passo 2 mostra o quadro <b>Faltam dados de compra</b>: informe o custo médio em % do preço e de quem a empresa compra (regular, Simples, Simples híbrido, MEI, produtor). Com isso o resultado deixa de ser só o imposto da venda.</p>','').replace('<b>Passo 3 · Como a empresa vende.</b>','<b>Passo 2 · Como a empresa vende.</b>').replace('Depois, <b>Precificar</b>. Para ver tudo funcionando antes de usar com um cliente, clique em <b>Ver com um catálogo de exemplo</b> (na Formação de Preço, <b>Exemplo</b>).','Depois, <b>Calcular este item</b>. Para ver tudo funcionando antes de usar com um cliente, clique em <b>Exemplo</b>.')}; }catch(_e){}
 
   /* ── o catálogo de exemplo: uma ferragem com mercearia, preços e custos ilustrativos, pelo mesmo leitor da planilha ── */
   window.lhPmExemplo=function(){
@@ -59415,18 +59464,22 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
   /* ★ v990 · as caixas do mapa são as MESMAS do menu: faixa = caixa dourada do menu, pilar = cabeça escura do menu */
   .lh-mapa .lh-mapa-super{margin:26px 0 6px;padding:0 4px 7px;border-bottom:1px solid rgba(212,168,42,.45);font-family:'Sora',sans-serif;font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#b8901f}
   .lh-mapa .lh-mapa-super small{display:block;margin-top:3px;font-family:inherit;font-size:.86rem;letter-spacing:0;text-transform:none;font-weight:500;color:var(--text2)}
-  .lh-mapa .lh-mapa-faixa{margin:22px 0 4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .lh-mapa .lh-mapa-faixa b{display:inline-block;background:linear-gradient(100deg,rgba(201,162,39,.42),rgba(244,204,74,.18)),#1e293b;border-left:3px solid #c69214;border-radius:8px;padding:6px 12px;box-shadow:0 1px 4px rgba(0,0,0,.25);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.95)}
-  .lh-mapa .lh-mapa-faixa-txt{color:var(--text2);font-size:.86rem;line-height:1.5;margin:0 0 10px 2px}
+  .lh-mapa .lh-mapa-faixa{margin:26px 0 6px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .lh-mapa .lh-mapa-faixa b{display:block;flex:1 1 100%;font-size:1.02rem !important;padding:11px 16px !important;border-left-width:5px !important;letter-spacing:.1em !important;box-sizing:border-box;background:linear-gradient(100deg,rgba(201,162,39,.42),rgba(244,204,74,.18)),#1e293b;border-left:3px solid #c69214;border-radius:8px;padding:6px 12px;box-shadow:0 1px 4px rgba(0,0,0,.25);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.95)}
+  .lh-mapa .lh-mapa-faixa-txt{color:var(--text2);font-size:.9rem;line-height:1.5;margin:0 0 12px 2px}
+  .lh-mapa .lh-mapa-faixa .lh-mapa-selo{order:2}
   .lh-mapa .lh-mapa-selo{font-size:.72rem;padding:2px 8px;border-radius:8px;border:1px solid rgba(22,196,124,.45);color:#16a06a}
   .lh-mapa .lh-mapa-selo.trava{border-color:rgba(201,162,39,.5);color:#c08a1e}
   .lh-mapa .lh-mapa-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;align-items:start}
   .lh-mapa .lh-pilar{border:1px solid var(--border,rgba(128,128,128,.25));border-radius:12px;background:var(--card,transparent);overflow:hidden}
   .lh-mapa .lh-pilar-cab{display:flex;align-items:center;gap:8px;cursor:pointer;background:linear-gradient(rgba(201,162,39,.07),rgba(201,162,39,.07)),#1e293b;border-left:3px solid rgba(201,162,39,.55);padding:10px 12px}
   .lh-mapa .lh-pilar-cab .nome{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.88);flex:1}
-  .lh-mapa .lh-pilar-cab .n{font-size:.72rem;color:rgba(255,255,255,.55)}
+  .lh-mapa .lh-pilar-cab .n{font-size:.82rem;font-weight:700;color:rgba(255,255,255,.85);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:2px 9px;white-space:nowrap}
   .lh-mapa .lh-q{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1px solid rgba(201,162,39,.7);color:#e0b43a;font-weight:800;font-size:.78rem;cursor:pointer;flex:0 0 auto;background:transparent;padding:0}
   .lh-mapa .lh-seta{color:#e0b43a;font-weight:800;transition:transform .2s}
+  .lh-mapa .lh-pilar-cab .lh-q{width:30px;height:30px;font-size:1rem;border-width:2px}
+  .lh-mapa .lh-pilar-cab .lh-seta{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;border:2px solid rgba(240,196,76,.75);font-size:1rem}
+  .lh-mapa .lh-pilar-cab .lh-q:hover,.lh-mapa .lh-pilar-cab .lh-seta:hover{background:rgba(240,196,76,.18)}
   .lh-mapa .lh-pilar-cab .lh-q,.lh-mapa .lh-pilar-cab .lh-seta{color:#f0c44c !important;-webkit-text-fill-color:#f0c44c !important;border-color:rgba(240,196,76,.75) !important}
   .lh-mapa .lh-aba .lh-q{color:#a37a12 !important;-webkit-text-fill-color:#a37a12 !important}
   :root:not([data-theme="claro"]) .lh-mapa .lh-aba .lh-q{color:#e0b43a !important;-webkit-text-fill-color:#e0b43a !important}
@@ -59443,7 +59496,7 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
   .lh-mapa .lh-aba{display:flex;align-items:flex-start;gap:8px;padding:6px 0 2px}
   .lh-mapa .lh-aba a{color:var(--text);text-decoration:none;font-size:.86rem;font-weight:600;flex:1;cursor:pointer}
   .lh-mapa .lh-aba a:hover{color:var(--gold,#c9a227)}
-  .lh-mapa .lh-aba .lh-q{width:18px;height:18px;font-size:.68rem}
+  .lh-mapa .lh-aba .lh-q{width:22px;height:22px;font-size:.78rem;border-width:2px}
   .lh-mapa .lh-aba-perg{font-size:.79rem;color:var(--text2);line-height:1.4;margin:0 0 4px;font-style:italic}
   .lh-mapa .lh-aba-txt{display:none;font-size:.78rem;color:var(--text2);line-height:1.45;margin:0 0 6px 2px;padding-left:8px;border-left:2px solid rgba(201,162,39,.35)}
   .lh-mapa .lh-aba-txt.on{display:block}
@@ -59590,6 +59643,12 @@ window.lhPmCiCels=function(o,TD,SUB){ var v=window.lhPmCiVals(o);
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){ tenta(0); }); else tenta(0);
   var _ap=window.abrirPagina;
   if(typeof _ap==='function') window.abrirPagina=function(id){ var r=_ap.apply(this, arguments); if(id==='bemvindo') try{ window.lhMapaRender(); }catch(_e){} return r; };
+  /* ★ v991 · o Ricardo viu a Adequação só com a Reforma Tributária: categorias que o menu monta ou move DEPOIS (plano carregado,
+     cliente escolhido) não entravam no mapa já desenhado. O mapa se refaz quando o menu muda (pilar ou faixa entra/sai). */
+  (function vigia(n){ var nav=document.querySelector('nav.nav-section'); if(!nav || typeof MutationObserver!=='function'){ if(n<40) setTimeout(function(){ vigia(n+1); }, 300); return; }
+    var t=null, assina=function(){ return [].map.call(nav.children, function(e){ return (e.className||'')+':'+(e.querySelector&&e.querySelector('.nav-group-title')?e.querySelectorAll('.nav-cat-itens > *').length:''); }).join('|'); }, ult='';
+    new MutationObserver(function(){ clearTimeout(t); t=setTimeout(function(){ var a=assina(); if(a===ult) return; ult=a; try{ var box=document.getElementById('lh-mapa'), q=document.getElementById('lh-mapa-busca'), qv=q?q.value:''; if(box && box.innerHTML){ window.lhMapaRender(); if(qv){ var q2=document.getElementById('lh-mapa-busca'); if(q2){ q2.value=qv; window.lhMapaFiltra(qv); } } } }catch(_e){} }, 400); })
+      .observe(nav, {childList:true, subtree:true}); ult=assina(); })(0);
 })();
 </script>
 <script>
